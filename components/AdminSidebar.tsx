@@ -1,20 +1,50 @@
 "use client";
 import type { ReactNode } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
-const navGroups: { label: string; items: { label: string; href: string; exact?: boolean; icon: ReactNode }[] }[] = [
+type NavLeaf = { label: string; href: string; exact?: boolean; icon: ReactNode };
+type NavDropdown = { label: string; icon: ReactNode; children: NavLeaf[] };
+type NavItem = NavLeaf | NavDropdown;
+type NavGroup = { label: string; items: NavItem[] };
+
+function isDropdown(item: NavItem): item is NavDropdown {
+  return "children" in item;
+}
+
+const navGroups: NavGroup[] = [
   {
     label: "메인페이지 관리",
     items: [
       {
-        label: "메인 비주얼",
-        href: "/admin/main/visual",
+        label: "슬라이딩 메뉴",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
             <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
           </svg>
         ),
+        children: [
+          {
+            label: "메인 비주얼",
+            href: "/admin/main/visual",
+            icon: (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            ),
+          },
+          {
+            label: "상품 비주얼",
+            href: "/admin/main/visual?type=product",
+            icon: (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            ),
+          },
+          // 추후 슬라이딩 메뉴 추가 시 여기에 추가
+        ],
       },
       {
         label: "신상품 영역",
@@ -131,6 +161,15 @@ const navGroups: { label: string; items: { label: string; href: string; exact?: 
         ),
       },
       {
+        label: "회원 직접등록",
+        href: "/admin/members/new",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        ),
+      },
+      {
         label: "휴면회원 관리",
         href: "/admin/members/dormant",
         icon: (
@@ -187,6 +226,36 @@ const navGroups: { label: string; items: { label: string; href: string; exact?: 
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // 활성 자식을 가진 드롭다운을 초기에 펼침
+  const getInitialOpen = () => {
+    const open = new Set<string>();
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (isDropdown(item)) {
+          const hasActive = item.children.some((c) => isLeafActive(c, pathname, searchParams.toString()));
+          if (hasActive) open.add(item.label);
+        }
+      }
+    }
+    return open;
+  };
+
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(() => getInitialOpen());
+
+  useEffect(() => {
+    setOpenDropdowns(getInitialOpen());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, searchParams]);
+
+  const toggleDropdown = (label: string) => {
+    setOpenDropdowns((prev) => {
+      const next = new Set(prev);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
+  };
 
   return (
     <aside className="w-72 flex-shrink-0 bg-[#0f172a] min-h-full flex flex-col">
@@ -198,11 +267,65 @@ export default function AdminSidebar() {
             </p>
             <div className="space-y-0.5 px-3">
               {group.items.map((item) => {
-                const active = item.exact ? pathname === item.href : (pathname === item.href || pathname.startsWith(item.href + "/"));
+                if (isDropdown(item)) {
+                  const isOpen = openDropdowns.has(item.label);
+                  const hasActive = item.children.some((c) =>
+                    isLeafActive(c, pathname, searchParams.toString())
+                  );
+                  return (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => toggleDropdown(item.label)}
+                        className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-[15px] font-medium transition-all ${
+                          hasActive
+                            ? "text-white bg-white/8"
+                            : "text-slate-400 hover:text-white hover:bg-white/8"
+                        }`}
+                      >
+                        <span className={`flex-shrink-0 ${hasActive ? "text-blue-400" : "text-slate-500"}`}>
+                          {item.icon}
+                        </span>
+                        <span className="flex-1 text-left">{item.label}</span>
+                        <svg
+                          className={`w-4 h-4 flex-shrink-0 text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                          fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {isOpen && (
+                        <div className="ml-4 mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
+                          {item.children.map((child) => {
+                            const active = isLeafActive(child, pathname, searchParams.toString());
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all ${
+                                  active
+                                    ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
+                                    : "text-slate-400 hover:text-white hover:bg-white/8"
+                                }`}
+                              >
+                                <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>
+                                  {child.icon}
+                                </span>
+                                {child.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // 일반 링크
+                const active = isLeafActive(item as NavLeaf, pathname, searchParams.toString());
                 return (
                   <Link
-                    key={item.href}
-                    href={item.href}
+                    key={(item as NavLeaf).href}
+                    href={(item as NavLeaf).href}
                     className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[15px] font-medium transition-all ${
                       active
                         ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
@@ -212,7 +335,7 @@ export default function AdminSidebar() {
                     <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>
                       {item.icon}
                     </span>
-                    {item.label}
+                    {(item as NavLeaf).label}
                   </Link>
                 );
               })}
@@ -221,10 +344,33 @@ export default function AdminSidebar() {
         ))}
       </nav>
 
-      {/* 하단 */}
       <div className="px-6 py-5 border-t border-white/5">
         <p className="text-[12px] text-slate-600 font-medium">WORKUP Admin v1.0</p>
       </div>
     </aside>
   );
+}
+
+function isLeafActive(item: NavLeaf, pathname: string, searchParamsStr: string): boolean {
+  const [itemPath, itemQuery] = item.href.split("?");
+  if (item.exact) {
+    if (pathname !== itemPath) return false;
+  } else {
+    if (pathname !== itemPath && !pathname.startsWith(itemPath + "/")) return false;
+  }
+  if (!itemQuery) {
+    // 쿼리 없는 링크: 쿼리가 없거나 type=main 일 때만 활성
+    if (itemPath === "/admin/main/visual") {
+      const sp = new URLSearchParams(searchParamsStr);
+      return !sp.has("type") || sp.get("type") === "main";
+    }
+    return true;
+  }
+  // 쿼리 있는 링크: 모든 파라미터가 일치해야 활성
+  const itemParams = new URLSearchParams(itemQuery);
+  const currentParams = new URLSearchParams(searchParamsStr);
+  for (const [k, v] of itemParams.entries()) {
+    if (currentParams.get(k) !== v) return false;
+  }
+  return true;
 }
