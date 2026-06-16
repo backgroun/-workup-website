@@ -89,6 +89,14 @@ export default function Header() {
               )}
             </Link>
 
+            {/* 회원가입 */}
+            <Link href="/register" className="p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors" aria-label="회원가입">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+              </svg>
+            </Link>
+
           </div>
         </div>
 
