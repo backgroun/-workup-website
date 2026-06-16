@@ -1047,6 +1047,241 @@ function BannerTextEditor({ editing, set, sameImage }: {
   );
 }
 
+// ── 자유 배치 텍스트 캔버스 (다중 텍스트 개체) ──
+
+function newTextLayer(): TextLayer {
+  return {
+    id: crypto.randomUUID(),
+    text: "새 텍스트",
+    font_family: "",
+    color: "#ffffff",
+    weight: 700,
+    align: "left",
+    letter_spacing: 0,
+    scale_x: 1,
+    line_height: 1.2,
+    pc_x: 8, pc_y: 40, pc_size: 64,
+    mobile_x: 8, mobile_y: 40, mobile_size: 40,
+  };
+}
+
+function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobilePos, pcScale, mobileScale }: {
+  layers: TextLayer[];
+  onChange: (next: TextLayer[]) => void;
+  pcImage: string; mobileImage: string;
+  pcPos: string; mobilePos: string;
+  pcScale: number; mobileScale: number;
+}) {
+  const [mode, setMode] = useState<"pc" | "mobile">("pc");
+  const [selId, setSelId] = useState<string | null>(layers[0]?.id ?? null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ id: string; dx: number; dy: number } | null>(null);
+
+  const designW = mode === "pc" ? 1920 : 750;
+  const aspectPad = mode === "pc" ? "35.4%" : "92.7%";
+  const bg = mode === "pc" ? pcImage : (mobileImage || pcImage);
+  const bgPos = mode === "pc" ? pcPos : mobilePos;
+  const bgScale = mode === "pc" ? pcScale : mobileScale;
+
+  const getXY = (l: TextLayer) =>
+    mode === "pc" ? { x: l.pc_x, y: l.pc_y, size: l.pc_size } : { x: l.mobile_x, y: l.mobile_y, size: l.mobile_size };
+
+  const patch = (id: string, p: Partial<TextLayer>) =>
+    onChange(layers.map((l) => (l.id === id ? { ...l, ...p } : l)));
+  const patchPos = (id: string, x: number, y: number) =>
+    patch(id, mode === "pc" ? { pc_x: x, pc_y: y } : { mobile_x: x, mobile_y: y });
+  const patchSize = (id: string, size: number) =>
+    patch(id, mode === "pc" ? { pc_size: size } : { mobile_size: size });
+
+  const sel = layers.find((l) => l.id === selId) ?? null;
+
+  const addLayer = () => {
+    const l = newTextLayer();
+    onChange([...layers, l]);
+    setSelId(l.id);
+  };
+  const removeLayer = (id: string) => {
+    onChange(layers.filter((l) => l.id !== id));
+    if (selId === id) setSelId(null);
+  };
+
+  const onLayerMouseDown = (e: React.MouseEvent, l: TextLayer) => {
+    e.preventDefault(); e.stopPropagation();
+    setSelId(l.id);
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const curX = ((e.clientX - rect.left) / rect.width) * 100;
+    const curY = ((e.clientY - rect.top) / rect.height) * 100;
+    const { x, y } = getXY(l);
+    drag.current = { id: l.id, dx: curX - x, dy: curY - y };
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!drag.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100 - drag.current.dx));
+    const y = Math.max(0, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100 - drag.current.dy));
+    patchPos(drag.current.id, Math.round(x * 10) / 10, Math.round(y * 10) / 10);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* PC / 모바일 전환 */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          {(["pc", "mobile"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => setMode(m)}
+              className={`px-4 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${mode === m ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"}`}>
+              {m === "pc" ? "PC (1920×680)" : "모바일 (750×695)"}
+            </button>
+          ))}
+        </div>
+        <button type="button" onClick={addLayer}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+          + 텍스트 추가
+        </button>
+      </div>
+
+      {/* 캔버스 미리보기 */}
+      <div
+        ref={containerRef}
+        className="relative w-full rounded-lg overflow-hidden bg-slate-900 select-none"
+        style={{ paddingBottom: aspectPad, containerType: "inline-size" }}
+        onMouseMove={onMouseMove}
+        onMouseUp={() => { drag.current = null; }}
+        onMouseLeave={() => { drag.current = null; }}
+      >
+        <div className="absolute inset-0" onMouseDown={() => setSelId(null)}>
+          {bg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: bgPos, transform: `scale(${bgScale || 1})`, transformOrigin: bgPos }} />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs">이미지를 먼저 등록하세요</div>
+          )}
+          {layers.map((l) => {
+            const { x, y, size } = getXY(l);
+            return (
+              <div
+                key={l.id}
+                onMouseDown={(e) => onLayerMouseDown(e, l)}
+                className={`absolute cursor-move ${l.id === selId ? "outline outline-2 outline-blue-400 outline-offset-2" : ""}`}
+                style={{
+                  left: `${x}%`, top: `${y}%`,
+                  fontFamily: l.font_family || undefined,
+                  color: l.color,
+                  fontWeight: l.weight,
+                  textAlign: l.align,
+                  letterSpacing: `${l.letter_spacing}px`,
+                  lineHeight: l.line_height,
+                  fontSize: `${(size / designW * 100).toFixed(2)}cqw`,
+                  transform: `scaleX(${l.scale_x})`,
+                  transformOrigin: "left top",
+                  whiteSpace: "pre-wrap",
+                  textShadow: "0 1px 8px rgba(0,0,0,0.25)",
+                }}
+              >
+                {l.text || "텍스트"}
+              </div>
+            );
+          })}
+          <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
+            텍스트를 드래그해 배치 · 클릭해 선택
+          </div>
+        </div>
+      </div>
+
+      {/* 레이어 목록 */}
+      <div className="flex gap-1.5 flex-wrap">
+        {layers.length === 0 && <p className="text-xs text-slate-400">텍스트 개체가 없습니다. “+ 텍스트 추가”를 눌러보세요.</p>}
+        {layers.map((l, i) => (
+          <button key={l.id} type="button" onClick={() => setSelId(l.id)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full border max-w-[160px] transition-colors ${l.id === selId ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+            <span className="truncate">{i + 1}. {l.text || "(빈 텍스트)"}</span>
+            <span onClick={(e) => { e.stopPropagation(); removeLayer(l.id); }}
+              className={`flex-shrink-0 leading-none ${l.id === selId ? "text-white/70 hover:text-white" : "text-slate-300 hover:text-red-500"}`}>×</span>
+          </button>
+        ))}
+      </div>
+
+      {/* 선택 개체 편집 패널 */}
+      {sel && (
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <textarea value={sel.text} onChange={(e) => patch(sel.id, { text: e.target.value })}
+            rows={2} placeholder="텍스트 입력 (줄바꿈 가능)"
+            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded resize-none" />
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">폰트</label>
+              <select value={sel.font_family} onChange={(e) => patch(sel.id, { font_family: e.target.value })}
+                className="w-full border border-gray-200 px-2 py-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#1A2B4A]">
+                {FONT_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value} style={{ fontFamily: f.value || undefined }}>{f.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">크기 ({mode === "pc" ? "PC" : "모바일"}) · {getXY(sel).size}px</label>
+              <input type="range" min={12} max={mode === "pc" ? 240 : 140} value={getXY(sel).size}
+                onChange={(e) => patchSize(sel.id, Number(e.target.value))}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">색상</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
+                  className="w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5" />
+                <input type="text" value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
+                  className="flex-1 border border-gray-200 px-2 py-1.5 text-xs rounded font-mono uppercase" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">굵기 · 정렬</label>
+              <div className="flex gap-1">
+                {[400, 700, 900].map((w) => (
+                  <button key={w} type="button" onClick={() => patch(sel.id, { weight: w })}
+                    className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${sel.weight === w ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}
+                    style={{ fontWeight: w }}>{w === 400 ? "보통" : w === 700 ? "굵게" : "더굵게"}</button>
+                ))}
+                {(["left", "center", "right"] as const).map((a) => (
+                  <button key={a} type="button" onClick={() => patch(sel.id, { align: a })}
+                    className={`w-7 py-1.5 text-[11px] rounded border transition-colors ${sel.align === a ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}>
+                    {a === "left" ? "↤" : a === "center" ? "↔" : "↦"}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">자간 · {sel.letter_spacing}px</label>
+              <input type="range" min={-10} max={30} step={0.5} value={sel.letter_spacing}
+                onChange={(e) => patch(sel.id, { letter_spacing: Number(e.target.value) })}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">장평 · {Math.round(sel.scale_x * 100)}%</label>
+              <input type="range" min={0.5} max={1.5} step={0.01} value={sel.scale_x}
+                onChange={(e) => patch(sel.id, { scale_x: Number(e.target.value) })}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">줄간격 · {sel.line_height.toFixed(2)}</label>
+              <input type="range" min={0.9} max={2} step={0.05} value={sel.line_height}
+                onChange={(e) => patch(sel.id, { line_height: Number(e.target.value) })}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-400">크기·위치는 PC/모바일 각각 따로 저장됩니다. 상단 탭으로 전환해 모바일도 배치하세요.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── AI 이미지 프롬프트 빌더 ──
 
 const VISUAL_SHOT_TYPES = {
