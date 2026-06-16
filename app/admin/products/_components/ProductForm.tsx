@@ -549,7 +549,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       (needsModel && promptModelAge ? ` · 모델: ${promptModelAge}` : "") + `\n` +
       (promptExtras.length > 0 ? `추가 옵션: ${promptExtras.join(", ")}\n` : "") +
       `배경: ${(needsModel && onLocation) ? "야외 현장(아웃포커스)" : "#EDEDED 단색 스튜디오"} · 비율 1:1 · 960×930px\n` +
-      (wornFocus ? wornFocus.kor : shot.kor);
+      (wornFocus ? wornFocus.kor : bottomHalfBody ? "대표 반신컷(하의) — 허리~종아리 하반신 중심 · 바지가 화면 60~70% · 상체·머리는 프레임 밖 · 85mm" : shot.kor);
 
     setAiPrompt(POSITIVE + NEGATIVE + MJ_PARAMS + korRef);
     setShowAiPrompt(true);
