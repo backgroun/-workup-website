@@ -17,12 +17,8 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<"ok" | "err" | null>(null);
-
-  // 새 대카테고리 입력
   const [newMain, setNewMain] = useState("");
-  // 각 카테고리별 하위카테고리 입력값
   const [newSubInputs, setNewSubInputs] = useState<Record<number, string>>({});
-  // 카테고리 이름 편집 모드
   const [editingMain, setEditingMain] = useState<number | null>(null);
   const [editMainVal, setEditMainVal] = useState("");
 
@@ -115,41 +111,44 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+      <div className="flex items-center gap-3 py-20 text-base text-gray-400">
+        <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+        불러오는 중...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] p-8">
-      <div className="max-w-2xl mx-auto">
-
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-xl font-bold text-[#1A2B4A]">카테고리 관리</h1>
-            <p className="text-sm text-gray-400 mt-1">대카테고리 · 중카테고리 2단계 구조</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {saveMsg && (
-              <span className={`text-sm font-medium ${saveMsg === "ok" ? "text-green-600" : "text-red-500"}`}>
-                {saveMsg === "ok" ? "저장됐습니다 ✓" : "저장 실패"}
-              </span>
-            )}
-            <button onClick={save} disabled={saving}
-              className="px-5 py-2 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded-lg">
-              {saving ? "저장 중..." : "저장"}
-            </button>
-          </div>
+    <div className="space-y-6">
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">카테고리 관리</h1>
+          <p className="text-sm text-gray-500 mt-1">대카테고리 · 중카테고리 2단계 구조. 변경 후 저장을 눌러주세요.</p>
         </div>
+        <div className="flex items-center gap-3">
+          {saveMsg && (
+            <span className={`text-sm font-medium ${saveMsg === "ok" ? "text-green-600" : "text-red-500"}`}>
+              {saveMsg === "ok" ? "저장됐습니다 ✓" : "저장 실패"}
+            </span>
+          )}
+          <button onClick={save} disabled={saving}
+            className="px-5 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded-lg">
+            {saving ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
 
-        {/* 카테고리 목록 */}
-        <div className="space-y-4">
+      {/* 카테고리 목록 */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <p className="text-[13px] font-bold text-gray-500 uppercase tracking-wide">대카테고리 목록</p>
+        </div>
+        <div className="divide-y divide-gray-100">
           {cats.map((cat, catIdx) => (
-            <div key={catIdx} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div key={catIdx}>
               {/* 대카테고리 헤더 */}
-              <div className="flex items-center gap-3 px-5 py-3.5 bg-[#1A2B4A]/5 border-b border-gray-100">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gray-50/60">
                 <div className="flex gap-1">
                   <button onClick={() => moveMain(catIdx, -1)} disabled={catIdx === 0}
                     className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs rounded border border-gray-200 bg-white">↑</button>
@@ -164,59 +163,56 @@ export default function CategoriesPage() {
                     onChange={(e) => setEditMainVal(e.target.value)}
                     onBlur={() => commitEditMain(catIdx)}
                     onKeyDown={(e) => { if (e.key === "Enter") commitEditMain(catIdx); if (e.key === "Escape") setEditingMain(null); }}
-                    className="flex-1 border border-[#1A2B4A] px-2 py-1 text-sm font-bold text-[#1A2B4A] focus:outline-none rounded"
+                    className="flex-1 border border-[#1A2B4A] px-3 py-1.5 text-sm font-bold text-[#1A2B4A] focus:outline-none rounded-lg"
                   />
                 ) : (
                   <button onClick={() => startEditMain(catIdx)}
-                    className="flex-1 text-left text-sm font-bold text-[#1A2B4A] hover:text-[#ff550c] transition-colors">
+                    className="flex-1 text-left text-[15px] font-bold text-gray-800 hover:text-[#ff550c] transition-colors">
                     {cat.name}
                     <span className="ml-2 text-[11px] font-normal text-gray-400">클릭하여 이름 수정</span>
                   </button>
                 )}
 
-                <span className="text-[11px] text-gray-400">{cat.subs.length}개</span>
+                <span className="text-[13px] text-gray-400 font-medium">{cat.subs.length}개 하위</span>
                 <button onClick={() => deleteMainCat(catIdx)}
-                  className="text-xs text-red-400 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                  className="px-3 py-1.5 text-[13px] border border-red-200 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium">
                   삭제
                 </button>
               </div>
 
               {/* 하위 카테고리 */}
-              <div className="p-4">
+              <div className="px-6 py-4">
                 {cat.subs.length === 0 ? (
-                  <p className="text-[12px] text-gray-400 text-center py-2">
-                    하위 카테고리가 없습니다. 아래에서 추가하세요.
-                  </p>
+                  <p className="text-[13px] text-gray-400 py-2">하위 카테고리가 없습니다. 아래에서 추가하세요.</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {cat.subs.map((sub, subIdx) => (
                       <div key={subIdx}
-                        className="flex items-center gap-1.5 border border-gray-200 bg-gray-50 rounded-lg px-2.5 py-1.5 text-sm">
+                        className="flex items-center gap-1.5 border border-gray-200 bg-gray-50 rounded-lg px-3 py-1.5 text-[13px]">
                         <div className="flex gap-0.5">
                           <button onClick={() => moveSub(catIdx, subIdx, -1)} disabled={subIdx === 0}
                             className="text-[9px] text-gray-300 hover:text-gray-600 disabled:opacity-20 leading-none">◀</button>
                           <button onClick={() => moveSub(catIdx, subIdx, 1)} disabled={subIdx === cat.subs.length - 1}
                             className="text-[9px] text-gray-300 hover:text-gray-600 disabled:opacity-20 leading-none">▶</button>
                         </div>
-                        <span className="text-gray-700">{sub}</span>
+                        <span className="text-gray-700 font-medium">{sub}</span>
                         <button onClick={() => deleteSub(catIdx, subIdx)}
-                          className="text-gray-300 hover:text-red-500 text-sm leading-none transition-colors">×</button>
+                          className="text-gray-300 hover:text-red-500 text-base leading-none transition-colors ml-1">×</button>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* 하위 카테고리 추가 입력 */}
                 <div className="flex gap-2">
                   <input
                     value={newSubInputs[catIdx] ?? ""}
                     onChange={(e) => setNewSubInputs((p) => ({ ...p, [catIdx]: e.target.value }))}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSub(catIdx); } }}
                     placeholder={`"${cat.name}" 하위 카테고리 추가`}
-                    className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded-lg"
+                    className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#1A2B4A] rounded-lg"
                   />
                   <button type="button" onClick={() => addSub(catIdx)}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition-colors rounded-lg font-medium">
+                    className="px-4 py-2 bg-gray-100 text-gray-700 text-[13px] hover:bg-gray-200 transition-colors rounded-lg font-medium">
                     추가
                   </button>
                 </div>
@@ -224,28 +220,24 @@ export default function CategoriesPage() {
             </div>
           ))}
         </div>
+      </div>
 
-        {/* 대카테고리 추가 */}
-        <div className="mt-6 bg-white border border-dashed border-gray-300 rounded-xl p-5">
-          <p className="text-xs font-semibold text-gray-500 mb-3">+ 대카테고리 추가</p>
-          <div className="flex gap-2">
-            <input
-              value={newMain}
-              onChange={(e) => setNewMain(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
-              placeholder="새 대카테고리 이름 (예: 안전용품)"
-              className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded-lg"
-            />
-            <button type="button" onClick={addMainCat}
-              className="px-5 py-2 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] transition-colors rounded-lg">
-              추가
-            </button>
-          </div>
+      {/* 대카테고리 추가 */}
+      <div className="bg-white border border-dashed border-gray-300 rounded-xl p-6">
+        <p className="text-[13px] font-bold text-gray-500 uppercase tracking-wide mb-3">+ 대카테고리 추가</p>
+        <div className="flex gap-2">
+          <input
+            value={newMain}
+            onChange={(e) => setNewMain(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
+            placeholder="새 대카테고리 이름 (예: 안전용품)"
+            className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#1A2B4A] rounded-lg"
+          />
+          <button type="button" onClick={addMainCat}
+            className="px-5 py-2 bg-[#1A2B4A] text-white text-[13px] font-semibold hover:bg-[#243d5e] transition-colors rounded-lg">
+            추가
+          </button>
         </div>
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          변경 후 반드시 <strong>저장</strong>을 눌러야 적용됩니다.
-        </p>
       </div>
     </div>
   );
