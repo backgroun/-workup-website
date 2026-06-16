@@ -163,31 +163,16 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 </>
               )}
 
-              {/* 텍스트 컨텐츠 — content_x/content_y 기반 절대 위치 */}
-              <div
-                className="absolute z-[2] max-w-xl"
-                style={{
-                  left: `${slide.content_x ?? 5}%`,
-                  top: `${slide.content_y ?? 35}%`,
-                  transform: "translateY(-50%)",
-                }}
-              >
-                <div>
-                  {slide.season_text && (
-                    <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">
-                      {slide.season_text}
-                    </p>
-                  )}
-                  {slide.title && (
-                    <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-6 whitespace-pre-line">
-                      {slide.title}
-                    </h1>
-                  )}
-                  {slide.subtitle && (
-                    <p className="text-base text-gray-300 leading-relaxed mb-10 whitespace-pre-line">
-                      {slide.subtitle}
-                    </p>
-                  )}
+              {/* 버튼 CTA — content_x/content_y 위치 (텍스트는 자유 배치 캔버스 사용) */}
+              {((slide.btn1_visible && slide.btn1_text) || (slide.btn2_visible && slide.btn2_text)) && (
+                <div
+                  className="absolute z-[2]"
+                  style={{
+                    left: `${slide.content_x ?? 5}%`,
+                    top: `${slide.content_y ?? 35}%`,
+                    transform: "translateY(-50%)",
+                  }}
+                >
                   <div className="flex flex-wrap gap-4">
                     {slide.btn1_visible && slide.btn1_text && (
                       <a
@@ -207,7 +192,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     )}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
