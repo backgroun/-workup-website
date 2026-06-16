@@ -1003,11 +1003,18 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
           )}
           {layers.map((l) => {
             const { x, y, size } = getXY(l);
+            const isEditing = editId === l.id;
             return (
               <div
                 key={l.id}
-                onMouseDown={(e) => onLayerMouseDown(e, l)}
-                className={`absolute cursor-move ${l.id === selId ? "outline outline-2 outline-blue-400 outline-offset-2" : ""}`}
+                ref={isEditing ? editRef : undefined}
+                contentEditable={isEditing}
+                suppressContentEditableWarning
+                onMouseDown={(e) => { if (isEditing) { e.stopPropagation(); return; } onLayerMouseDown(e, l); }}
+                onDoubleClick={(e) => { e.stopPropagation(); setSelId(l.id); setEditId(l.id); }}
+                onBlur={(e) => { if (isEditing) { patch(l.id, { text: e.currentTarget.textContent ?? "" }); setEditId(null); } }}
+                onKeyDown={(e) => { if (isEditing && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
+                className={`absolute outline-offset-2 ${isEditing ? "cursor-text outline-dashed outline-2 outline-blue-300" : "cursor-move"} ${l.id === selId && !isEditing ? "outline outline-2 outline-blue-400" : ""}`}
                 style={{
                   left: `${x}%`, top: `${y}%`,
                   fontFamily: l.font_family || undefined,
@@ -1016,19 +1023,21 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
                   textAlign: l.align,
                   letterSpacing: `${l.letter_spacing}px`,
                   lineHeight: l.line_height,
+                  opacity: l.opacity ?? 1,
                   fontSize: `${(size / designW * 100).toFixed(2)}cqw`,
                   transform: `scaleX(${l.scale_x})`,
                   transformOrigin: "left top",
                   whiteSpace: "pre-wrap",
                   textShadow: "0 1px 8px rgba(0,0,0,0.25)",
+                  ...(l.bg_color ? { backgroundColor: l.bg_color, padding: "0.08em 0.35em" } : {}),
                 }}
               >
-                {l.text || "텍스트"}
+                {isEditing ? l.text : (l.text || "텍스트")}
               </div>
             );
           })}
           <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
-            텍스트를 드래그해 배치 · 클릭해 선택
+            더블클릭해 바로 입력 · 드래그로 이동
           </div>
         </div>
       </div>
@@ -1049,9 +1058,11 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
       {/* 선택 개체 편집 패널 */}
       {sel && (
         <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
-          <textarea value={sel.text} onChange={(e) => patch(sel.id, { text: e.target.value })}
-            rows={2} placeholder="텍스트 입력 (줄바꿈 가능)"
-            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded resize-none" />
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold text-slate-600">선택한 텍스트 스타일</p>
+            <button type="button" onClick={() => { setSelId(sel.id); setEditId(sel.id); }}
+              className="text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100">이미지에서 직접 편집 ✎</button>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -1116,6 +1127,25 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
               <input type="range" min={0.9} max={2} step={0.05} value={sel.line_height}
                 onChange={(e) => patch(sel.id, { line_height: Number(e.target.value) })}
                 className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+          </div>
+
+          {/* 투명도 · 배경 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">투명도 · {Math.round((sel.opacity ?? 1) * 100)}%</label>
+              <input type="range" min={0.1} max={1} step={0.01} value={sel.opacity ?? 1}
+                onChange={(e) => patch(sel.id, { opacity: Number(e.target.value) })}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+            </div>
+            <div>
+              <label className="block text-[11px] text-slate-500 mb-1">배경색</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={sel.bg_color || "#000000"} onChange={(e) => patch(sel.id, { bg_color: e.target.value })}
+                  className="w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5" />
+                <button type="button" onClick={() => patch(sel.id, { bg_color: "" })}
+                  className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${!sel.bg_color ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}>없음(투명)</button>
+              </div>
             </div>
           </div>
           <p className="text-[10px] text-slate-400">크기·위치는 PC/모바일 각각 따로 저장됩니다. 상단 탭으로 전환해 모바일도 배치하세요.</p>
