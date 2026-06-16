@@ -312,8 +312,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   // ── AI 이미지 프롬프트 생성 ────────────────────────────────────────────────
   const generateAIPrompt = () => {
-    const name    = form.name    || "[제품명]";
-    const tagline = form.tagline || "";
+    const name     = form.name    || "[제품명]";
+    const tagline  = form.tagline || "";
     const features = form.features.split("\n").map((s) => s.trim()).filter(Boolean);
     const catLabel = form.categories[0]
       ? `${form.categories[0].main} / ${form.categories[0].sub}`
@@ -321,146 +321,162 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
     const clothingEng = promptClothingType === "일상복"
       ? "Korean casual everyday wear"
-      : "Korean workwear";
+      : "Korean functional workwear";
 
     const SEASON_ENG: Record<string, string> = {
-      "봄":  "spring transitional weather — light layering, mild temperature",
-      "여름": "summer heat — cooling, breathable, sweat-wicking",
-      "가을": "autumn transitional weather — light layering, mild temperature",
-      "겨울": "winter cold — warm, insulated, wind-resistant",
-      "전천후": "all-season year-round wear",
+      "봄":   "spring transitional weather — light layering, mild-temperature styling",
+      "여름": "midsummer heat — lightweight, breathable, sweat-wicking styling",
+      "가을": "autumn transitional weather — light layering, mild-temperature styling",
+      "겨울": "deep winter cold — warm, insulated, wind-resistant layered styling",
+      "전천후": "all-season, year-round versatility",
     };
     const seasonContext = promptSeason ? SEASON_ENG[promptSeason] : "";
-    const extrasContext = promptExtras.length > 0 ? promptExtras.join(", ") : "";
 
-    // ── 공통 규칙 ──
-    const COMMON =
-      `[THUMBNAIL GENERATION RULE] Generate ONE single image only. ` +
-      `Do NOT combine multiple image types. Do NOT create collages, grids, card-news layouts, or multi-panel compositions. ` +
-      `\n\n[COMMON RULES]\n` +
-      `- Aspect ratio: 1:1 | Target size: 960 × 930 px\n` +
-      `- Background: solid #EDEDED only — no gradients, no props, no shadows\n` +
-      `- Product: ${clothingEng} "${name}" (${catLabel})` +
-      (tagline ? ` — "${tagline}"` : "") +
-      (features.length > 0 ? `\n- Key features: ${features.slice(0, 3).join(", ")}` : "") +
-      (seasonContext ? `\n- Season context: ${seasonContext}` : "") +
-      (extrasContext ? `\n- Additional requirements: ${extrasContext}` : "") + `\n` +
-      `- Preserve ALL original product details exactly: colors, logos, prints, embroidery, stitching, and construction\n` +
-      `- No text, watermarks, brand logos, or decorative overlays\n` +
-      `- Commercial apparel photography quality, photorealistic, high resolution\n` +
-      `- Do not distort product shape or proportions\n` +
-      `- Generate exactly 1 image — never merge multiple shots into one`;
-
-    // ── 모델 인간 표현 규칙 (착용컷 전용) ──
-    const MODEL_RULES =
-      `\n\n[HUMAN DEPICTION RULES]\n` +
-      `- Natural commercial fashion editorial style — NOT runway, NOT editorial exaggeration\n` +
-      `- Anatomically correct body proportions — natural finger positions, realistic joint angles\n` +
-      `- Wrists, elbows, knees, ankles must NOT be unnaturally bent or distorted\n` +
-      `- Weight naturally on one leg, relaxed comfortable stance\n` +
-      `- Shoulders relaxed, subtle non-exaggerated expression, gentle natural smile\n` +
-      `- Natural gaze, model appears naturally unaware of camera\n` +
-      `- No over-retouching, no plastic skin, no unrealistic body proportions\n` +
-      `- Realistic fine skin texture, subtle natural skin quality, lifelike\n` +
-      `- Captured as if photographed by a professional fashion photographer during a real commercial apparel shoot\n` +
-      `- Hands should be fully visible and anatomically correct, with natural finger positions and realistic proportions`;
-
-    // ── 유형별 규칙 ──
-    const TYPE_RULES: Record<PromptTypeKey, { eng: string; kor: string }> = {
-      "대표반신컷": {
-        eng:
-          `\n\n[SHOT TYPE: Half-body representative shot]\n` +
-          `- Model wearing the product — half-body framing (waist-up for upper-body garments, thigh-up for lower-body garments)\n` +
-          `- Product occupies approximately 70–80% of the frame\n` +
-          `- Natural front-facing or slight diagonal pose\n` +
-          `- Clean, professional apparel thumbnail composition\n` +
-          `- DO NOT generate this shot for full-set outfits or dresses`,
-        kor:
-          `이미지 유형: 대표 반신컷\n` +
-          `상의 → 상체 중심 반신 구도 / 하의 → 하체 중심 반신 구도\n` +
-          `제품이 화면 70~80% 차지 / 자연스러운 정면 또는 사선 포즈`,
-      },
-      "전신컷": {
-        eng:
-          `\n\n[SHOT TYPE: Full-body shot]\n` +
-          `- Model wearing the product — full body from head to toe, all visible\n` +
-          `- Model height must occupy approximately 80–90% of the vertical frame (930 px)\n` +
-          `- Minimize space above head and below feet\n` +
-          `- Balanced left-right margins\n` +
-          `- Model's feet naturally near the bottom edge of frame; head near top with minimal clearance\n` +
-          `- Model must appear large in frame — maximize the 960 × 930 canvas`,
-        kor:
-          `이미지 유형: 전신컷\n` +
-          `머리부터 발끝까지 모두 포함 / 모델 키가 세로 90% 차지\n` +
-          `상하 여백 최소화 / 좌우 여백 균형 유지`,
-      },
-      "측면컷": {
-        eng:
-          `\n\n[SHOT TYPE: 90-degree side profile shot]\n` +
-          `- Model wearing the product — exactly sideways to camera (90-degree side view)\n` +
-          `- Clearly shows product side silhouette, side seams, and lateral lines\n` +
-          `- Arms and legs in natural relaxed position\n` +
-          `- No product details obscured by arms or body`,
-        kor:
-          `이미지 유형: 측면컷\n` +
-          `모델 90도 측면 구도 / 제품의 옆라인과 실루엣 강조\n` +
-          `팔다리 자연스럽게 유지 / 제품 디테일 가리지 않음`,
-      },
-      "후면컷": {
-        eng:
-          `\n\n[SHOT TYPE: Rear-facing shot]\n` +
-          `- Model wearing the product — back directly facing camera, full rear view\n` +
-          `- Back panel design and fit clearly visible\n` +
-          `- Hair must be tied up or moved to sides — must NOT cover product back\n` +
-          `- Pose should not obscure any product detail on the back`,
-        kor:
-          `이미지 유형: 후면컷\n` +
-          `모델 등이 카메라 정면을 향한 후면 구도\n` +
-          `제품 뒷면 디자인과 핏 명확히 표현 / 머리카락·포즈로 제품 가리지 않음`,
-      },
-      "누끼컷": {
-        eng:
-          `\n\n[SHOT TYPE: Product-only flat display — NO human model]\n` +
-          `- Product only, NO model, NO mannequin\n` +
-          `- Product centered on solid #EDEDED background\n` +
-          `- Full product visible with comfortable even margins on all sides\n` +
-          `- Front-facing display, slightly angled to show product shape naturally\n` +
-          `- Suitable for e-commerce product listing thumbnail`,
-        kor:
-          `이미지 유형: 누끼컷\n` +
-          `모델 없음 / 제품 단독 정면 중앙 배치\n` +
-          `전체가 잘 보이도록 여백 확보 / 상품 목록 썸네일 활용`,
-      },
-      "원단컷": {
-        eng:
-          `\n\n[SHOT TYPE: Fabric close-up detail shot — NO human model]\n` +
-          `- NO model, NO mannequin\n` +
-          `- Extreme close-up / macro shot of product fabric surface\n` +
-          `- Emphasize material texture, weave structure, and tactile surface quality\n` +
-          `- Show sewing construction, stitching details, and seam finishing clearly\n` +
-          `- Do NOT distort actual material properties, color, or texture`,
-        kor:
-          `이미지 유형: 원단컷\n` +
-          `모델 없음 / 원단 소재 클로즈업 (매크로)\n` +
-          `봉제 디테일·조직감·표면 질감 명확히 표현 / 소재 특성 왜곡 없음`,
-      },
+    // 추가 옵션 → 영문 매핑 (성별·인종 / 무드 분리)
+    const DESCRIPTOR: Record<string, string> = {
+      "남성 모델": "male", "여성 모델": "female",
+      "한국인 모델": "Korean", "동양인 모델": "East Asian",
     };
+    const MOOD: Record<string, string> = {
+      "캐주얼 무드": "relaxed, approachable casual mood",
+      "프로페셔널 무드": "confident, professional working mood",
+      "스튜디오": "clean studio styling",
+    };
+    const onLocation  = promptExtras.includes("야외 현장");
+    const descriptors = promptExtras.filter((e) => e in DESCRIPTOR).map((e) => DESCRIPTOR[e]);
+    const moods       = promptExtras.filter((e) => e in MOOD).map((e) => MOOD[e]);
+    const customExtras = promptExtras.filter((e) => !(e in DESCRIPTOR) && !(e in MOOD) && e !== "야외 현장");
+    const ageEng      = promptModelAge ? `in their ${promptModelAge.replace("대", "")}s` : "";
 
-    const { eng: typeEng, kor: typeKor } = TYPE_RULES[promptType];
     const needsModel = !["누끼컷", "원단컷"].includes(promptType);
 
+    const modelSubject = (descriptors.length || ageEng)
+      ? [descriptors.join(" "), "model", ageEng].filter(Boolean).join(" ").replace(/\s+/g, " ").trim()
+      : "natural, authentic real-worker-type model";
+    const moodLine = [...moods, ...customExtras].join(", ");
+
+    // ── 배경 ──
+    const background = (needsModel && onLocation)
+      ? "Realistic on-location worksite environment (construction / industrial / field), softly out of focus with a shallow depth of field so the product stays razor-sharp"
+      : "Solid #EDEDED seamless studio backdrop — no gradients, no props, no patterns, no cast shadows on the backdrop";
+
+    // ── 샷별 구도 · 카메라/렌즈 · 라이팅 ──
+    const SHOT: Record<PromptTypeKey, { compose: string; camera: string; light: string; kor: string }> = {
+      "대표반신컷": {
+        compose:
+          "Half-body representative crop — waist-up for tops, mid-thigh-up for bottoms. " +
+          "Product fills ~70–80% of the frame. Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
+        camera: "Full-frame mirrorless, 85mm f/5.6 portrait lens, eye-level — tack-sharp on the garment fabric",
+        light:  "Large octabox key light at 45°, white fill card opposite, subtle rim light for clean subject separation — even, true-to-color commercial lighting",
+        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · 제품 70~80% · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
+      },
+      "전신컷": {
+        compose:
+          "Full body, head-to-toe, every part visible. Subject height occupies ~85–90% of the 930px vertical frame. " +
+          "Minimal headroom and floor gap, balanced left-right margins, feet near bottom edge.",
+        camera: "Full-frame mirrorless, 50mm f/8 from slightly below eye-level to elongate the silhouette, sharp front-to-back",
+        light:  "Two tall softboxes for even head-to-toe illumination, soft fill, gentle floor falloff",
+        kor: "전신컷 — 머리~발끝 전체 · 세로 85~90% · 50mm · 상하 여백 최소 · 좌우 균형",
+      },
+      "측면컷": {
+        compose:
+          "Exact 90° side profile. Clearly reveals the side silhouette, side seams and lateral lines. Arms and legs relaxed, no product detail hidden.",
+        camera: "Full-frame mirrorless, 85mm f/5.6, perfectly perpendicular side angle",
+        light:  "Key light from the front-side to model the silhouette and side seams, soft fill to retain shadow detail",
+        kor: "측면컷 — 정확한 90° 측면 · 옆라인/사이드심 강조 · 85mm",
+      },
+      "후면컷": {
+        compose:
+          "Direct rear view, back panel squarely facing camera, full rear visible. Back design and fit clearly shown. " +
+          "Hair tied up or swept aside — never covering the back. No detail obscured by pose.",
+        camera: "Full-frame mirrorless, 85mm f/5.6, centered on the back panel",
+        light:  "Even back-panel illumination, soft fill, subtle rim light for shoulder-edge separation",
+        kor: "후면컷 — 등이 카메라 정면 · 뒷면 디자인/핏 강조 · 머리·포즈로 가리지 않음",
+      },
+      "누끼컷": {
+        compose:
+          "Product only — NO model, NO visible mannequin. Invisible/ghost-mannequin look for garments so the 3D shape and fit read naturally. " +
+          "Centered, front-facing with a slight angle, full product with even comfortable margins.",
+        camera: "100mm product lens, f/11, tethered studio capture, dead-centered",
+        light:  "Two-softbox even cross-lighting, soft and near-shadowless, true product color — e-commerce listing standard",
+        kor: "누끼컷 — 모델 없음 · 고스트(투명)마네킹 · 정면 중앙 · 100mm f/11 · 균일 무그림자 라이팅",
+      },
+      "원단컷": {
+        compose:
+          "Extreme macro close-up of the fabric surface — NO model, NO mannequin. Emphasize weave structure, texture and tactile surface relief. " +
+          "Show stitching, seam finishing and construction crisply. Never alter true material color or texture.",
+        camera: "100mm macro lens, f/8, focus-stacked for edge-to-edge sharpness",
+        light:  "Low raking side light grazing the surface to reveal weave relief, thread dimensionality and stitch detail",
+        kor: "원단컷 — 모델 없음 · 매크로 클로즈업 · 조직감/봉제 디테일 · 100mm 매크로 · 측면 그레이징 라이트",
+      },
+    };
+    const shot = SHOT[promptType];
+
+    // ── 모델·스타일링 블록 (착용컷 전용) ──
+    const MODEL_BLOCK = needsModel
+      ? `\n\n[MODEL & STYLING]\n` +
+        `- ${modelSubject}\n` +
+        (moodLine ? `- Mood / styling: ${moodLine}\n` : "") +
+        `- Natural commercial fashion-editorial style — believable, never runway-exaggerated\n` +
+        `- Anatomically correct proportions; natural finger positions, realistic joint angles (wrists/elbows/knees/ankles never warped)\n` +
+        `- Relaxed stance, weight on one leg, loose shoulders, subtle authentic expression / gentle natural smile\n` +
+        `- Natural gaze, appears unaware of the camera\n` +
+        `- Realistic fine skin texture — no over-retouching, no plastic skin, no unrealistic proportions\n` +
+        `- Hands fully visible and anatomically correct`
+      : (customExtras.length ? `\n\n[ADDITIONAL NOTES]\n- ${customExtras.join(", ")}` : "");
+
+    // ── 긍정 프롬프트 ──
+    const POSITIVE =
+      `[GENERATION DIRECTIVE]\n` +
+      `Generate ONE single photorealistic image only. No collage, grid, card-news, or multi-panel composition.\n\n` +
+      `[SUBJECT]\n` +
+      `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
+      (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
+      (seasonContext ? `- Season styling: ${seasonContext}\n` : "") +
+      `\n[COMPOSITION — ${promptType}]\n- ${shot.compose}\n` +
+      `\n[CAMERA & LENS]\n- ${shot.camera}\n` +
+      `\n[LIGHTING]\n- ${shot.light}` +
+      MODEL_BLOCK +
+      `\n\n[BACKGROUND]\n- ${background}\n` +
+      `\n[COLOR & FIDELITY]\n` +
+      `- Neutral 5500K white balance, color-accurate and true-to-life — no color cast, no over-saturation\n` +
+      `- Preserve the EXACT product colors, logos, prints, embroidery, stitching and construction — zero shape distortion\n` +
+      `\n[OUTPUT]\n` +
+      `- 1:1 aspect ratio, 960 × 930 px, high-resolution photorealistic commercial apparel photography, tack-sharp product detail`;
+
+    // ── 네거티브 프롬프트 (샷 유형별 분기) ──
+    const NEG_COMMON =
+      "text, typography, captions, watermark, signature, brand logo overlay, " +
+      "collage, grid, split-screen, multi-panel, card-news layout, border, frame, " +
+      "distorted product shape, warped proportions, wrong colors, color cast, oversaturated, " +
+      "blurry, low-resolution, jpeg artifacts, noise, cropped product";
+    const NEG_MODEL =
+      ", deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, " +
+      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face";
+    const NEG_PRODUCT =
+      ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
+    const NEGATIVE =
+      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL : NEG_PRODUCT);
+
+    // ── Midjourney 파라미터 (참고) ──
+    const MJ_PARAMS =
+      `\n\n[MIDJOURNEY PARAMS · 참고] --ar 1:1 --style raw --q 2 --v 6.1` +
+      (needsModel ? "" : " --no people");
+
+    // ── 한글 참고 ──
     const korRef =
-      `\n\n── 한글 참고 (영문 프롬프트를 AI 도구에 입력하세요) ──\n` +
+      `\n\n── 한글 참고 (위 영문 프롬프트를 AI 도구에 입력) ──\n` +
       `제품명: ${name}\n` +
       (tagline ? `한줄 소개: ${tagline}\n` : "") +
-      (features.length > 0 ? `주요 특징: ${features.slice(0, 3).join(" / ")}\n` : "") +
-      `카테고리: ${catLabel} / 의류유형: ${promptClothingType}\n` +
-      (promptSeason ? `시즌: ${promptSeason}\n` : "") +
+      (features.length > 0 ? `주요 특징: ${features.slice(0, 4).join(" / ")}\n` : "") +
+      `카테고리: ${catLabel} · 의류유형: ${promptClothingType}` +
+      (promptSeason ? ` · 시즌: ${promptSeason}` : "") +
+      (needsModel && promptModelAge ? ` · 모델: ${promptModelAge}` : "") + `\n` +
       (promptExtras.length > 0 ? `추가 옵션: ${promptExtras.join(", ")}\n` : "") +
-      `배경: #EDEDED 단색 / 비율: 1:1 / 규격: 960×930px\n` +
-      typeKor;
+      `배경: ${(needsModel && onLocation) ? "야외 현장(아웃포커스)" : "#EDEDED 단색 스튜디오"} · 비율 1:1 · 960×930px\n` +
+      shot.kor;
 
-    setAiPrompt(COMMON + (needsModel ? MODEL_RULES : "") + typeEng + korRef);
+    setAiPrompt(POSITIVE + NEGATIVE + MJ_PARAMS + korRef);
     setShowAiPrompt(true);
     setPromptCopied(false);
   };
@@ -1372,6 +1388,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     ))}
                   </div>
                 </div>
+
+                {/* 모델 연령대 — 착용컷 전용 */}
+                {!["누끼컷", "원단컷"].includes(promptType) && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-600 mb-1.5">모델 연령대 <span className="text-gray-400 font-normal">(선택)</span></p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {["20대", "30대", "40대", "50대"].map(a => (
+                        <button key={a} type="button"
+                          onClick={() => setPromptModelAge(promptModelAge === a ? "" : a)}
+                          className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
+                            promptModelAge === a
+                              ? "bg-violet-600 text-white border-violet-600"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
+                          }`}>{a}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* 추가 옵션 */}
                 <div>
