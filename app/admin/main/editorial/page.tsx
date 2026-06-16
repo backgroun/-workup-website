@@ -642,8 +642,8 @@ function BannerEditor({ banner, label, onChange, products }: {
 
       {/* AI 이미지 프롬프트 빌더 */}
       <PromptBuilder
-        buildFn={(shotType, clothingType, season, extras) =>
-          buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, banner.image_url || undefined)
+        buildFn={(shotType, clothingType, season, extras, scene) =>
+          buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, scene, banner.image_url || undefined)
         }
         sizeLabel="440 × 495px"
         ratioLabel="8 : 9"
@@ -1285,8 +1285,8 @@ function HeroEditor({ hero, onChange, products }: {
       {/* AI 이미지 프롬프트 빌더 */}
       <PromptBuilder
         isHero
-        buildFn={(shotType, clothingType, season, extras) =>
-          buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, hero.image_url || undefined)
+        buildFn={(shotType, clothingType, season, extras, scene) =>
+          buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, scene, hero.image_url || undefined)
         }
         refImageUrl={hero.image_url || undefined}
       />
