@@ -936,6 +936,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
     const l = newTextLayer();
     onChange([...layers, l]);
     setSelId(l.id);
+    setEditId(l.id);
   };
   const removeLayer = (id: string) => {
     onChange(layers.filter((l) => l.id !== id));
@@ -992,7 +993,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
         onMouseUp={() => { drag.current = null; }}
         onMouseLeave={() => { drag.current = null; }}
       >
-        <div className="absolute inset-0" onMouseDown={() => setSelId(null)}>
+        <div className="absolute inset-0" onMouseDown={() => { setSelId(null); setEditId(null); }}>
           {bg ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover"
