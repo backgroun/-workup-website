@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { createAdminClient } from "@/lib/supabase-server";
+import { cookies } from "next/headers";
 
 function hashPassword(pw: string): string {
   return createHash("sha256").update(pw + (process.env.PASSWORD_SALT ?? "wu-salt")).digest("hex");
@@ -40,6 +41,16 @@ export async function POST(req: Request) {
     }]).select("id, name, email").single();
 
     if (error) throw error;
+
+    // 회원가입 후 자동 로그인
+    const cookieStore = await cookies();
+    cookieStore.set("wu-member", String(data.id), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+    });
 
     return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
   } catch (e: unknown) {

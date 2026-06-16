@@ -15,7 +15,7 @@ interface Member {
   created_at: string;
 }
 
-const GRADES   = ["전체", "일반회원", "VIP", "VVIP", "도매회원", "거래처"];
+const GRADES   = ["전체", "일반회원", "VIP", "VVIP", "도매회원", "거래처", "관리자"];
 const STATUSES = ["전체", "active", "dormant", "withdrawn"];
 const STATUS_LABEL: Record<string, string> = { active: "활성", dormant: "휴면", withdrawn: "탈퇴" };
 const STATUS_COLOR: Record<string, string> = {
@@ -29,6 +29,7 @@ const GRADE_COLOR: Record<string, string> = {
   VVIP:    "bg-purple-100 text-purple-700",
   도매회원:  "bg-blue-100 text-blue-700",
   거래처:   "bg-green-100 text-green-700",
+  관리자:   "bg-red-100 text-red-700",
 };
 
 function fmtDate(iso?: string) {

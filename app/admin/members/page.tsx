@@ -19,6 +19,7 @@ const GRADE_COLOR: Record<string, string> = {
   VVIP:    "bg-purple-100 text-purple-700",
   도매회원:  "bg-blue-100 text-blue-700",
   거래처:   "bg-green-100 text-green-700",
+  관리자:   "bg-red-100 text-red-700",
 };
 
 function fmtDateTime(iso?: string) {

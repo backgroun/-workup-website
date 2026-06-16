@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-const GRADES = ["일반회원", "VIP", "VVIP", "도매회원", "거래처"] as const;
+const GRADES = ["일반회원", "VIP", "VVIP", "도매회원", "거래처", "관리자"] as const;
 
 export default function AdminMemberNewPage() {
   const [form, setForm] = useState({
