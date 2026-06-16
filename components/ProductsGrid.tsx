@@ -177,6 +177,8 @@ function FilterDropdown({
 }
 
 export default function ProductsGrid() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [products, setProducts] = useState(staticProducts);
   const catParam = searchParams.get("cat");
   const [activeCategory, setActiveCategory] = useState<MainCategory | "전체">(
@@ -192,8 +194,6 @@ export default function ProductsGrid() {
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const { count } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const searchQuery = searchParams.get("q") ?? "";
