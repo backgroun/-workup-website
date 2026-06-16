@@ -452,6 +452,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
                 imageUrl={editing.pc_image_url}
                 value={editing.pc_image_position || "50% 50%"}
                 onChange={(v) => set("pc_image_position", v)}
+                aspect="pc"
               />
             )}
 
@@ -472,6 +473,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
                     imageUrl={editing.mobile_image_url || editing.pc_image_url}
                     value={editing.mobile_image_position || "50% 50%"}
                     onChange={(v) => set("mobile_image_position", v)}
+                    aspect="mobile"
                   />
                 )}
               </>
@@ -483,6 +485,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
                 imageUrl={editing.pc_image_url}
                 value={editing.mobile_image_position || "50% 50%"}
                 onChange={(v) => set("mobile_image_position", v)}
+                aspect="mobile"
               />
             )}
           </div>
@@ -642,29 +645,64 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
   );
 }
 
-// ── 이미지 위치 조절 ──
+// ── 이미지 위치 조절 (실제 배너 비율 + 줌) ──
 
-function ImagePositionPicker({ label, imageUrl, value, onChange }: {
+const ZOOM_LEVELS = [0.3, 0.5, 0.75, 1.0];
+
+function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
   label: string; imageUrl: string; value: string;
   onChange: (v: string) => void;
+  aspect: "pc" | "mobile";
 }) {
+  const [zoom, setZoom] = useState(0);
   const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   const x = parts ? Math.round(parseFloat(parts[1])) : 50;
   const y = parts ? Math.round(parseFloat(parts[2])) : 50;
-
   const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
+
+  // PC: 1920/680 ≈ 2.82:1   Mobile: 750/695 ≈ 1.08:1
+  const paddingBottom = aspect === "pc" ? "35.4%" : "92.7%";
+
+  const zoomScale = ZOOM_LEVELS[zoom];
+  const zoomLabel = ["30%", "50%", "75%", "100%"][zoom];
 
   return (
     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
-      <p className="text-xs font-semibold text-slate-600">{label}</p>
-      <div className="relative w-full h-28 rounded overflow-hidden border border-slate-200 bg-slate-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="w-full h-full object-cover"
-          style={{ objectPosition: value }} />
-        <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
-          {x}% / {y}%
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-slate-600">{label}</p>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-slate-400 mr-1">배율</span>
+          {ZOOM_LEVELS.map((_, i) => (
+            <button key={i} type="button" onClick={() => setZoom(i)}
+              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${zoom === i ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"}`}>
+              {["30%", "50%", "75%", "100%"][i]}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* 실제 배너 비율 미리보기 */}
+      <div className="relative w-full rounded overflow-hidden border border-slate-200 bg-slate-800"
+        style={{ paddingBottom }}>
+        <div className="absolute inset-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl} alt=""
+            className="absolute top-0 left-0 object-cover"
+            style={{
+              width: `${100 / zoomScale}%`,
+              height: `${100 / zoomScale}%`,
+              objectPosition: value,
+              transformOrigin: "top left",
+              transform: `scale(${zoomScale})`,
+            }}
+          />
+          <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+            {x}% / {y}% · {zoomLabel}
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <div>
           <div className="flex justify-between text-xs text-slate-500 mb-1">
@@ -687,6 +725,179 @@ function ImagePositionPicker({ label, imageUrl, value, onChange }: {
           <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
             <span>위</span><span>아래</span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── 배너 텍스트·버튼 배치 에디터 ──
+
+function BannerTextEditor({ editing, set, sameImage }: {
+  editing: {
+    pc_image_url: string; mobile_image_url: string;
+    pc_image_position: string; mobile_image_position: string;
+    content_x: number; content_y: number;
+    season_text: string; title: string; subtitle: string;
+    btn1_text: string; btn1_link: string; btn1_visible: boolean;
+    btn2_text: string; btn2_link: string; btn2_visible: boolean;
+  };
+  set: (key: string, value: string | boolean | number | null) => void;
+  sameImage: boolean;
+}) {
+  const [mode, setMode] = useState<"pc" | "mobile">("pc");
+  const [dragging, setDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const imageUrl = mode === "mobile"
+    ? (editing.mobile_image_url || editing.pc_image_url)
+    : editing.pc_image_url;
+  const imgPosition = mode === "mobile"
+    ? (editing.mobile_image_position || "50% 50%")
+    : (editing.pc_image_position || "50% 50%");
+
+  const contentX = typeof editing.content_x === "number" ? editing.content_x : 5;
+  const contentY = typeof editing.content_y === "number" ? editing.content_y : 35;
+
+  const paddingBottom = mode === "pc" ? "35.4%" : "92.7%";
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+    const ny = Math.max(0, Math.min(90, ((e.clientY - rect.top) / rect.height) * 100));
+    set("content_x", Math.round(nx));
+    set("content_y", Math.round(ny));
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* PC / 모바일 전환 탭 */}
+      <div className="flex gap-2">
+        {(["pc", "mobile"] as const).map((m) => (
+          <button key={m} type="button" onClick={() => setMode(m)}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${mode === m ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"}`}>
+            {m === "pc" ? "PC (1920×680)" : "모바일 (750×695)"}
+          </button>
+        ))}
+      </div>
+
+      {/* 배너 미리보기 + 드래그 배치 */}
+      <div
+        ref={containerRef}
+        className="relative w-full rounded-lg overflow-hidden bg-slate-900 select-none cursor-crosshair"
+        style={{ paddingBottom }}
+        onMouseMove={handleMouseMove}
+        onMouseUp={() => setDragging(false)}
+        onMouseLeave={() => setDragging(false)}
+      >
+        <div className="absolute inset-0">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="" className="w-full h-full object-cover"
+              style={{ objectPosition: imgPosition }} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">이미지 없음</div>
+          )}
+          {/* 배너 어두운 오버레이 */}
+          <div className="absolute inset-0 bg-black/25" />
+
+          {/* 드래그 가능한 텍스트 블록 */}
+          <div
+            className="absolute cursor-move"
+            style={{ left: `${contentX}%`, top: `${contentY}%` }}
+            onMouseDown={(e) => { e.preventDefault(); setDragging(true); }}
+          >
+            <div className="bg-black/40 border border-white/40 backdrop-blur-sm rounded px-2.5 py-2 min-w-[100px] max-w-[280px]">
+              {editing.season_text && (
+                <p className="text-[9px] font-semibold text-[#ff550c] uppercase tracking-widest mb-1">{editing.season_text}</p>
+              )}
+              {editing.title && (
+                <p className="text-sm font-bold text-white leading-tight mb-1 whitespace-pre-line">{editing.title}</p>
+              )}
+              {editing.subtitle && (
+                <p className="text-[10px] text-gray-300 leading-snug whitespace-pre-line">{editing.subtitle}</p>
+              )}
+              {(editing.btn1_visible && editing.btn1_text) && (
+                <div className="mt-2 flex gap-1 flex-wrap">
+                  <span className="text-[9px] bg-[#ff550c] text-white px-2 py-0.5 rounded-sm">{editing.btn1_text}</span>
+                  {editing.btn2_visible && editing.btn2_text && (
+                    <span className="text-[9px] border border-white text-white px-2 py-0.5 rounded-sm">{editing.btn2_text}</span>
+                  )}
+                </div>
+              )}
+              {!editing.season_text && !editing.title && !editing.subtitle && (
+                <p className="text-[10px] text-white/50 italic">텍스트를 입력하면 여기에 표시됩니다</p>
+              )}
+            </div>
+          </div>
+
+          {/* 안내 텍스트 */}
+          <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
+            텍스트 블록을 드래그해서 위치 조정
+          </div>
+          <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
+            {contentX}% / {contentY}%
+          </div>
+        </div>
+      </div>
+
+      {/* 텍스트 입력 */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">시즌 문구 <span className="text-slate-400 font-normal">(선택)</span></label>
+          <input type="text" value={editing.season_text} onChange={(e) => set("season_text", e.target.value)}
+            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+            placeholder="2026 Summer Collection" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">메인 타이틀 <span className="text-slate-400 font-normal">(선택)</span></label>
+          <input type="text" value={editing.title} onChange={(e) => set("title", e.target.value)}
+            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+            placeholder="일하는 사람이 제일 멋있다." />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">서브 문구 <span className="text-slate-400 font-normal">(선택)</span></label>
+        <textarea value={editing.subtitle} onChange={(e) => set("subtitle", e.target.value)}
+          rows={2}
+          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
+          placeholder="워크업은 일하는 사람 편에서 만든 옷입니다." />
+      </div>
+
+      {/* 버튼 입력 */}
+      <div className="space-y-2">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">버튼1 텍스트</label>
+            <input type="text" value={editing.btn1_text} onChange={(e) => set("btn1_text", e.target.value)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="컬렉션 보기" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">링크</label>
+            <input type="text" value={editing.btn1_link} onChange={(e) => set("btn1_link", e.target.value)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/products" />
+          </div>
+          <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" checked={editing.btn1_visible} onChange={(e) => set("btn1_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
+            <span className="text-xs text-gray-600">노출</span>
+          </label>
+        </div>
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">버튼2 텍스트</label>
+            <input type="text" value={editing.btn2_text} onChange={(e) => set("btn2_text", e.target.value)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="브랜드 스토리" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">링크</label>
+            <input type="text" value={editing.btn2_link} onChange={(e) => set("btn2_link", e.target.value)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/story" />
+          </div>
+          <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" checked={editing.btn2_visible} onChange={(e) => set("btn2_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
+            <span className="text-xs text-gray-600">노출</span>
+          </label>
         </div>
       </div>
     </div>
