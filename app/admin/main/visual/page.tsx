@@ -1135,11 +1135,11 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
 // ── AI 이미지 프롬프트 빌더 ──
 
 const VISUAL_SHOT_TYPES = {
-  full: "전신 (Full Body)",
-  half: "반신 (Half Body)",
-  bust: "흉상 (Bust Shot)",
-  detail: "디테일 (Detail Shot)",
-  group: "그룹 (Group Shot)",
+  full:   { ko: "전신",   en: "full body" },
+  half:   { ko: "반신",   en: "half body" },
+  bust:   { ko: "흉상",   en: "bust shot" },
+  detail: { ko: "디테일", en: "detail shot" },
+  group:  { ko: "그룹",   en: "group shot" },
 } as const;
 type VisualShotKey = keyof typeof VISUAL_SHOT_TYPES;
 
@@ -1171,7 +1171,7 @@ function buildVisualPrompt(
   return [
     `A professional fashion photograph for a Korean apparel brand hero banner, ultra-wide 16:9 format.`,
     descCtx && `Scene: ${descCtx}.`,
-    `${VISUAL_SHOT_TYPES[shotType]} shot of a model wearing high-quality ${clothingEng}.`,
+    `${VISUAL_SHOT_TYPES[shotType].en} shot of a model wearing high-quality ${clothingEng}.`,
     seasonCtx && `${seasonCtx}.`,
     allExtras && `${allExtras}.`,
     textCtx && `Brand message: "${textCtx}".`,
