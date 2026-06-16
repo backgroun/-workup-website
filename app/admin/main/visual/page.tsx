@@ -87,7 +87,7 @@ export default function AdminMainVisualPage() {
   const [editing, setEditing] = useState<HeroSlide | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [useSchedule, setUseSchedule] = useState(false);
-  const [sameImage, setSameImage] = useState(false);
+  const [sameImage, setSameImage] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [promptOpen, setPromptOpen] = useState(false);
@@ -123,7 +123,7 @@ export default function AdminMainVisualPage() {
     setEditing({ id: "", ...EMPTY, slide_type: slideType, sort_order: slides.length });
     setIsNew(true);
     setUseSchedule(false);
-    setSameImage(false);
+    setSameImage(true);
     setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
