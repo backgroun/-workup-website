@@ -317,7 +317,7 @@ export default function PopupManagePage() {
       {/* ── AI 생성기 탭 ── */}
       {tab === "ai" && (
         <div className="max-w-2xl space-y-6">
-          <p className="text-sm text-gray-500">제품 정보를 입력하면 Claude AI가 이미지 프롬프트와 팝업 문구를 생성합니다.</p>
+          <p className="text-sm text-gray-500">제품 정보를 입력하면 AI가 이미지 프롬프트와 팝업 문구를 생성합니다.</p>
 
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <h2 className="font-semibold text-gray-800">제품 정보 입력</h2>

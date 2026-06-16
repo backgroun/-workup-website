@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
 async function isAuthed() {
   const store = await cookies();
@@ -10,16 +10,16 @@ async function isAuthed() {
 export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다. Vercel 환경변수를 확인해주세요." },
+      { error: "OPENAI_API_KEY가 설정되지 않았습니다. Vercel 환경변수를 확인해주세요." },
       { status: 500 }
     );
   }
 
   const { productName, season, features, mood, target, style } = await req.json();
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const prompt = `당신은 워크업(WORKUP) 브랜드의 마케터입니다.
 워크업은 일하는 사람들을 위한 워크웨어 브랜드로, 오프라인 매장 방문을 유도하는 디지털 카탈로그 사이트를 운영합니다.
@@ -46,7 +46,7 @@ Midjourney 또는 DALL-E에서 사용할 수 있는 상업용 제품 광고 이�
 - 메인 타이틀 (title): 2줄, 각 12자 이내, 매장 방문 욕구를 자극하는 문구
 - CTA 텍스트: 5자 이내 (예: "지금 보러가기", "매장에서 만나기")
 
-반드시 아래 JSON 형식으로만 응답하세요. 다른 설명은 쓰지 마세요.
+반드시 아래 JSON 형식으로만 응답하세요.
 {
   "imagePrompt": "...",
   "subtitle": "...",
@@ -56,15 +56,16 @@ Midjourney 또는 DALL-E에서 사용할 수 있는 상업용 제품 광고 이�
 
   let text = "";
   try {
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o",
       max_tokens: 1024,
+      response_format: { type: "json_object" },
       messages: [{ role: "user", content: prompt }],
     });
-    text = message.content[0].type === "text" ? message.content[0].text : "";
+    text = completion.choices[0]?.message?.content ?? "";
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error("[popup/generate] Claude API error:", e);
+    console.error("[popup/generate] OpenAI API error:", e);
     return NextResponse.json({ error: `AI 호출 실패: ${msg}` }, { status: 500 });
   }
 
