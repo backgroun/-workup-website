@@ -414,6 +414,56 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     };
     const shot = SHOT[promptType];
 
+    // ── 착용 부위 (장갑·모자·안전용품 등 — 착용컷이 해당 신체 부위에 집중) ──
+    const WORN_FOCUS: Record<string, { eng: string; head: boolean; kor: string }> = {
+      "손·장갑": {
+        eng: "Tight close-up of both hands and forearms WEARING the gloves — hands naturally posed (relaxed, or lightly gripping a tool / handle). The gloves fill ~60–70% of the frame; every finger, seam, grip pad and cuff fully visible; anatomically correct hands.",
+        head: false,
+        kor: "착용 부위: 손·장갑 — 양손/팔뚝 클로즈업 · 장갑 화면 60~70% · 손가락 정확",
+      },
+      "머리·모자": {
+        eng: "Head-and-shoulders portrait WEARING the cap / hat — face clearly visible, the hat correctly fitted on the head, slight front-3/4 angle. Hat and upper face fill the frame.",
+        head: true,
+        kor: "착용 부위: 머리·모자 — 얼굴+어깨 포트레이트 · 모자가 머리에 명확",
+      },
+      "발·신발/양말": {
+        eng: "Lower legs and feet WEARING the shoes / socks — calf-down crop, feet planted naturally. The footwear is the clear focal point, filling ~50–60% of the frame.",
+        head: false,
+        kor: "착용 부위: 발·신발/양말 — 종아리~발 크롭 · 신발/양말이 초점",
+      },
+      "허리·벨트": {
+        eng: "Waist and hip area WEARING the belt — mid-torso crop (lower chest to upper thigh). The belt and buckle at the waistline are the clear, sharp focal point.",
+        head: false,
+        kor: "착용 부위: 허리·벨트 — 허리/골반 크롭 · 벨트 버클이 초점",
+      },
+      "상체·조끼/가방": {
+        eng: "Upper body WEARING the safety vest / CARRYING the bag — half-body crop. The vest or bag is the clear hero on the torso / shoulder, worn naturally.",
+        head: true,
+        kor: "착용 부위: 상체·조끼/가방 — 반신 크롭 · 조끼/가방이 초점",
+      },
+      "얼굴·고글/마스크": {
+        eng: "Face WEARING the protective goggles / mask / eyewear — head-and-shoulders, the protective gear correctly worn on the face, sharp focus on the gear.",
+        head: true,
+        kor: "착용 부위: 얼굴·고글/마스크 — 얼굴+어깨 · 보호장비가 얼굴에 명확",
+      },
+    };
+    const ANGLE_NOTE: Record<PromptTypeKey, string> = {
+      "대표반신컷": "front-facing or slight 3/4 angle",
+      "전신컷": "front-facing, slightly wider view",
+      "측면컷": "exact 90° side-profile angle",
+      "후면컷": "rear / from-behind angle",
+      "누끼컷": "", "원단컷": "",
+    };
+    const wornFocus = needsModel ? WORN_FOCUS[promptWornFocus] : undefined;
+    const accessoryMode = !!wornFocus;
+    const headInFrame = !wornFocus || wornFocus.head;
+    const composeText = wornFocus
+      ? `${wornFocus.eng} Shown from a ${ANGLE_NOTE[promptType]}. The worn item is the hero of the shot — fill the frame with it, never render it small or distant.`
+      : shot.compose;
+    const cameraText = wornFocus
+      ? "Full-frame mirrorless, 90mm at close focusing distance, f/5.6 — tack-sharp on the worn item with gentle background falloff"
+      : shot.camera;
+
     // ── 모델·스타일링 블록 (착용컷 전용) ──
     const MODEL_BLOCK = needsModel
       ? `\n\n[MODEL & STYLING]\n` +
@@ -427,8 +477,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         `- Hands fully visible and anatomically correct`
       : (customExtras.length ? `\n\n[ADDITIONAL NOTES]\n- ${customExtras.join(", ")}` : "");
 
-    // ── 헤드룸 / 여백 (착용컷 전용 — 썸네일에서 답답하지 않게) ──
-    const HEADROOM_BLOCK = needsModel
+    // ── 헤드룸 / 여백 (착용컷 전용 · 머리가 화면에 있을 때만 — 썸네일에서 답답하지 않게) ──
+    const HEADROOM_BLOCK = (needsModel && headInFrame)
       ? `\n[FRAMING & HEADROOM — identical scale every time]\n` +
         `- Small, consistent headroom: the top of the head sits ~8–12% down from the top edge — never touching the top, but do NOT add excessive empty space\n` +
         `- The model must FILL the frame at the SAME size every time — centered, with only modest, even side margins\n` +
@@ -443,9 +493,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
       (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
       (seasonContext ? `- Season styling: ${seasonContext}\n` : "") +
-      `\n[COMPOSITION — ${promptType}]\n- ${shot.compose}\n` +
+      `\n[COMPOSITION — ${promptType}${accessoryMode ? " · " + promptWornFocus : ""}]\n- ${composeText}\n` +
       HEADROOM_BLOCK +
-      `\n[CAMERA & LENS]\n- ${shot.camera}\n` +
+      `\n[CAMERA & LENS]\n- ${cameraText}\n` +
       `\n[LIGHTING]\n- ${shot.light}` +
       MODEL_BLOCK +
       `\n\n[BACKGROUND]\n- ${background}\n` +
@@ -487,7 +537,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       (needsModel && promptModelAge ? ` · 모델: ${promptModelAge}` : "") + `\n` +
       (promptExtras.length > 0 ? `추가 옵션: ${promptExtras.join(", ")}\n` : "") +
       `배경: ${(needsModel && onLocation) ? "야외 현장(아웃포커스)" : "#EDEDED 단색 스튜디오"} · 비율 1:1 · 960×930px\n` +
-      shot.kor;
+      (wornFocus ? wornFocus.kor : shot.kor);
 
     setAiPrompt(POSITIVE + NEGATIVE + MJ_PARAMS + korRef);
     setShowAiPrompt(true);
