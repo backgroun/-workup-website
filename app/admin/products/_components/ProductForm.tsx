@@ -425,6 +425,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         `- Hands fully visible and anatomically correct`
       : (customExtras.length ? `\n\n[ADDITIONAL NOTES]\n- ${customExtras.join(", ")}` : "");
 
+    // ── 헤드룸 / 여백 (착용컷 전용 — 썸네일에서 답답하지 않게) ──
+    const HEADROOM_BLOCK = needsModel
+      ? `\n[FRAMING & HEADROOM]\n` +
+        `- Leave clear, comfortable empty headroom above the head — the top of the head sits roughly 10–15% down from the top edge, and must NEVER touch or crowd the top\n` +
+        `- Keep the subject slightly smaller in the frame with calm negative space around it, so it reads cleanly as a thumbnail — not cramped, not oversized\n` +
+        `- Vertically center the subject with balanced breathing room top and bottom\n`
+      : "";
+
     // ── 긍정 프롬프트 ──
     const POSITIVE =
       `[GENERATION DIRECTIVE]\n` +
@@ -434,6 +442,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
       (seasonContext ? `- Season styling: ${seasonContext}\n` : "") +
       `\n[COMPOSITION — ${promptType}]\n- ${shot.compose}\n` +
+      HEADROOM_BLOCK +
       `\n[CAMERA & LENS]\n- ${shot.camera}\n` +
       `\n[LIGHTING]\n- ${shot.light}` +
       MODEL_BLOCK +
@@ -452,7 +461,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       "blurry, low-resolution, jpeg artifacts, noise, cropped product";
     const NEG_MODEL =
       ", deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, " +
-      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face";
+      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face, " +
+      "head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight";
     const NEG_PRODUCT =
       ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
     const NEGATIVE =
