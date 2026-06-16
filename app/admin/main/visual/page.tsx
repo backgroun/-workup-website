@@ -1208,7 +1208,6 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
   const [season, setSeason] = useState("");   // "" = 컨셉에서 자동 감지
   const [error, setError] = useState("");
   const [result, setResult] = useState<{ titles: string[]; subtitles: string[] } | null>(null);
-  const [copiedKey, setCopiedKey] = useState("");
   const [addedKey, setAddedKey] = useState("");
 
   const generate = () => {
@@ -1221,12 +1220,6 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
     });
   };
 
-  const copy = (key: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(""), 1500);
-  };
-
   const addLayer = (text: string, kind: "title" | "sub", key: string) => {
     const layer: TextLayer = kind === "title"
       ? { ...newTextLayer(), text, weight: 900, pc_x: 8, pc_y: 32, pc_size: 80, mobile_x: 8, mobile_y: 30, mobile_size: 46 }
@@ -1235,20 +1228,6 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
     setAddedKey(key);
     setTimeout(() => setAddedKey(""), 1500);
   };
-
-  const Candidate = ({ text, kind, k }: { text: string; kind: "title" | "sub"; k: string }) => (
-    <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-2.5 py-1.5">
-      <span className="text-sm text-slate-800 flex-1 whitespace-pre-line leading-tight">{text}</span>
-      <button type="button" onClick={() => copy(k, text)}
-        className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 shrink-0">
-        {copiedKey === k ? "복사됨" : "복사"}
-      </button>
-      <button type="button" onClick={() => addLayer(text, kind, k)}
-        className="text-[11px] px-2 py-0.5 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700 shrink-0">
-        {addedKey === k ? "추가됨 ✓" : "캔버스+"}
-      </button>
-    </div>
-  );
 
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-slate-50 rounded-xl p-4 border border-indigo-100 space-y-3">
@@ -1287,8 +1266,15 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
             </div>
           </div>
           <div className="space-y-1.5">
-            <p className="text-[11px] font-semibold text-slate-500">서브타이틀 후보</p>
-            {result.subtitles.map((t, i) => <Candidate key={`s${i}`} text={t} kind="sub" k={`s${i}`} />)}
+            <p className="text-[11px] font-semibold text-slate-500">서브타이틀 후보 — 클릭하면 캔버스에 추가됩니다</p>
+            <div className="grid grid-cols-3 gap-2">
+              {result.subtitles.map((t, i) => (
+                <button key={`s${i}`} type="button" onClick={() => addLayer(t, "sub", `s${i}`)}
+                  className="text-sm text-slate-800 bg-white rounded-lg border border-slate-200 px-2.5 py-2 hover:border-indigo-400 hover:bg-indigo-50 transition-colors text-center leading-tight">
+                  {addedKey === `s${i}` ? "추가됨 ✓" : t}
+                </button>
+              ))}
+            </div>
           </div>
           <p className="text-[10px] text-slate-400">
             정형 템플릿 문구입니다. 추가한 뒤 아래 텍스트 캔버스에서 자유롭게 수정하세요.
