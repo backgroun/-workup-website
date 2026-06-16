@@ -365,7 +365,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       "대표반신컷": {
         compose:
           "Half-body representative crop — waist-up for tops, mid-thigh-up for bottoms. " +
-          "Product fills ~60–70% of the frame with calm breathing space around the subject. Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
+          "FIXED, REPEATABLE SCALE — frame the model identically every single time: the shoulders span ~48–56% of the image width, and the body is cropped at the hip / upper-thigh line. The subject must FILL the frame at this exact scale — do NOT zoom out, do NOT render the model small or distant, do NOT leave wide empty margins. " +
+          "Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
         camera: "Full-frame mirrorless, 85mm f/5.6 portrait lens, eye-level — tack-sharp on the garment fabric",
         light:  "Large octabox key light at 45°, white fill card opposite, subtle rim light for clean subject separation — even, true-to-color commercial lighting",
         kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · 제품 60~70%(상단 여백 확보) · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
