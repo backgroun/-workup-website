@@ -386,8 +386,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
           </ul>
         )}
       </div>
-      </div>{/* end slide list card */}
-      </div>{/* end left col */}
+      </div>
 
       {/* ── 오른쪽: 편집 폼 ── */}
       <div className="flex-1 min-w-0">
