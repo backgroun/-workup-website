@@ -17,6 +17,8 @@ type HeroSlide = {
   mobile_image_url: string | null;
   pc_image_position?: string | null;
   mobile_image_position?: string | null;
+  content_x?: number | null;
+  content_y?: number | null;
   is_visible: boolean;
   scheduled_start: string | null;
   scheduled_end: string | null;

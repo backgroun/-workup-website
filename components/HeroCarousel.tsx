@@ -97,9 +97,16 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 <div className="absolute right-0 top-0 h-full w-1/3 bg-[#152238] hidden lg:block" />
               )}
 
-              {/* 텍스트 컨텐츠 */}
-              <div className="relative z-[2] max-w-6xl mx-auto px-6 py-16 w-full">
-                <div className="max-w-2xl">
+              {/* 텍스트 컨텐츠 — content_x/content_y 기반 절대 위치 */}
+              <div
+                className="absolute z-[2] max-w-xl"
+                style={{
+                  left: `${slide.content_x ?? 5}%`,
+                  top: `${slide.content_y ?? 35}%`,
+                  transform: "translateY(-50%)",
+                }}
+              >
+                <div>
                   {slide.season_text && (
                     <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">
                       {slide.season_text}
