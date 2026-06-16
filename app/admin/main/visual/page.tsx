@@ -487,26 +487,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           </div>
           <div className="p-6 space-y-6">
 
-          {/* 1. 관리용 타이틀 (기획 컨셉) + AI 자동 생성 */}
-          <div className="pb-6 border-b border-slate-100 space-y-4">
-            <Field label="관리용 타이틀 (기획 컨셉)" hint="목록 식별용 + AI 생성의 기준. 실제 화면에 표시되지 않음.">
-              <input
-                type="text"
-                value={editing.admin_title}
-                onChange={(e) => set("admin_title", e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
-                placeholder="예: 2026 여름 — 그늘에서 쉬는 현장 작업자"
-              />
-            </Field>
-
-            <VisualConceptGenerator
-              concept={editing.admin_title}
-              currentLayers={editing.text_layers ?? []}
-              onChangeLayers={(next) => set("text_layers", next)}
-            />
-          </div>
-
-          {/* 노출 설정 (상단) */}
+          {/* 노출 설정 (최상단) */}
           <div className="pb-6 border-b border-gray-100 space-y-4">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 설정</p>
             <div className="flex items-center gap-6 flex-wrap">
@@ -556,6 +537,25 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                 </Field>
               </div>
             )}
+          </div>
+
+          {/* 관리용 타이틀 (기획 컨셉) + AI 자동 생성 */}
+          <div className="pb-6 border-b border-slate-100 space-y-4">
+            <Field label="관리용 타이틀 (기획 컨셉)" hint="목록 식별용 + AI 생성의 기준. 실제 화면에 표시되지 않음.">
+              <input
+                type="text"
+                value={editing.admin_title}
+                onChange={(e) => set("admin_title", e.target.value)}
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                placeholder="예: 2026 여름 — 그늘에서 쉬는 현장 작업자"
+              />
+            </Field>
+
+            <VisualConceptGenerator
+              concept={editing.admin_title}
+              currentLayers={editing.text_layers ?? []}
+              onChangeLayers={(next) => set("text_layers", next)}
+            />
           </div>
 
           {/* AI 이미지 프롬프트 */}
@@ -1172,15 +1172,19 @@ function detectSeason(text: string): string {
   return "";
 }
 
-function buildTitleCandidates(season: string): string[] {
+function buildTitleCandidates(season: string, concept: string): string[] {
   const s = season;
-  return [
-    s ? `${s}, 더 가볍게` : "더 가볍게,\n더 자유롭게",
-    "현장의 기준이\n되다",
-    s ? `일하는 사람의\n${s}` : "일하는 사람이\n제일 멋있다",
-    "오늘도,\n버티는 옷",
-    s ? `${s}을\n제대로 입다` : "제대로\n입는다는 것",
-  ];
+  const c = concept.trim();
+  const list: string[] = [];
+  if (c && c.length <= 16) list.push(c);   // 컨셉이 짧으면 그대로 후보에 (컨셉 변경 시 반영)
+  list.push(
+    s ? `${s}, 더 가볍게` : "더 가볍게, 더 자유롭게",
+    "현장의 기준이 되다",
+    s ? `일하는 사람의 ${s}` : "일하는 사람이 제일 멋있다",
+    "오늘도, 버티는 옷",
+    s ? `${s}을 제대로 입다` : "제대로 입는다는 것",
+  );
+  return list;
 }
 
 function buildSubtitleCandidates(season: string, concept: string): string[] {
@@ -1201,11 +1205,9 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
   currentLayers: TextLayer[];
   onChangeLayers: (next: TextLayer[]) => void;
 }) {
-  const [target, setTarget] = useState<"pc" | "mobile">("pc");
-  const [clothingType, setClothingType] = useState<"작업복" | "일상복">("작업복");
   const [season, setSeason] = useState("");   // "" = 컨셉에서 자동 감지
   const [error, setError] = useState("");
-  const [result, setResult] = useState<{ titles: string[]; subtitles: string[]; imagePrompt: string } | null>(null);
+  const [result, setResult] = useState<{ titles: string[]; subtitles: string[] } | null>(null);
   const [copiedKey, setCopiedKey] = useState("");
   const [addedKey, setAddedKey] = useState("");
 
@@ -1214,9 +1216,8 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
     setError("");
     const s = season || detectSeason(concept);
     setResult({
-      titles: buildTitleCandidates(s),
+      titles: buildTitleCandidates(s, concept),
       subtitles: buildSubtitleCandidates(s, concept),
-      imagePrompt: buildVisualPrompt(target, clothingType, s, [], "full", "", concept.trim()),
     });
   };
 
@@ -1251,33 +1252,15 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
 
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-slate-50 rounded-xl p-4 border border-indigo-100 space-y-3">
-      <p className="text-xs font-bold text-indigo-700">✨ 컨셉으로 카피·이미지 태그 만들기 <span className="font-normal text-indigo-400">(무료 · API 불필요)</span></p>
+      <p className="text-xs font-bold text-indigo-700">✨ 컨셉으로 타이틀·서브타이틀 만들기 <span className="font-normal text-indigo-400">(무료 · API 불필요)</span></p>
 
       {/* 옵션 */}
       <div className="flex items-center gap-3 flex-wrap text-[11px]">
         <div className="flex items-center gap-1">
-          <span className="text-slate-500">대상</span>
-          <div className="flex gap-0.5 bg-white rounded-md p-0.5 border border-slate-200">
-            {([["pc", "PC"], ["mobile", "모바일"]] as const).map(([t, label]) => (
-              <button key={t} type="button" onClick={() => setTarget(t)}
-                className={`px-2 py-0.5 rounded font-medium transition-colors ${target === t ? "bg-indigo-600 text-white" : "text-slate-500"}`}>{label}</button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-slate-500">종류</span>
-          <div className="flex gap-0.5 bg-white rounded-md p-0.5 border border-slate-200">
-            {(["작업복", "일상복"] as const).map((t) => (
-              <button key={t} type="button" onClick={() => setClothingType(t)}
-                className={`px-2 py-0.5 rounded font-medium transition-colors ${clothingType === t ? "bg-indigo-600 text-white" : "text-slate-500"}`}>{t}</button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
           <span className="text-slate-500">계절</span>
           <select value={season} onChange={(e) => setSeason(e.target.value)}
             className="border border-slate-200 rounded-md px-1.5 py-0.5 bg-white focus:outline-none">
-            <option value="">자동</option>
+            <option value="">자동 (컨셉에서 감지)</option>
             {["봄", "여름", "가을", "겨울"].map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
@@ -1285,7 +1268,7 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
 
       <button type="button" onClick={generate}
         className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
-        타이틀 · 서브타이틀 · 이미지 태그 생성
+        타이틀 · 서브타이틀 생성
       </button>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
@@ -1293,25 +1276,22 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
       {result && (
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <p className="text-[11px] font-semibold text-slate-500">타이틀 후보 — 마음에 드는 것을 캔버스에 추가</p>
-            {result.titles.map((t, i) => <Candidate key={`t${i}`} text={t} kind="title" k={`t${i}`} />)}
+            <p className="text-[11px] font-semibold text-slate-500">타이틀 후보 — 클릭하면 캔버스에 추가됩니다</p>
+            <div className="grid grid-cols-3 gap-2">
+              {result.titles.map((t, i) => (
+                <button key={`t${i}`} type="button" onClick={() => addLayer(t, "title", `t${i}`)}
+                  className="text-sm text-slate-800 bg-white rounded-lg border border-slate-200 px-2.5 py-2 hover:border-indigo-400 hover:bg-indigo-50 transition-colors text-center leading-tight">
+                  {addedKey === `t${i}` ? "추가됨 ✓" : t}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="space-y-1.5">
             <p className="text-[11px] font-semibold text-slate-500">서브타이틀 후보</p>
             {result.subtitles.map((t, i) => <Candidate key={`s${i}`} text={t} kind="sub" k={`s${i}`} />)}
           </div>
-          <div className="bg-white rounded-lg border border-slate-200 p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400">이미지 프롬프트 ({target === "pc" ? "PC 2.8:1" : "모바일 1:1"})</span>
-              <button type="button" onClick={() => copy("img", result.imagePrompt)}
-                className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600">
-                {copiedKey === "img" ? "복사됨" : "복사"}
-              </button>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed">{result.imagePrompt}</p>
-          </div>
           <p className="text-[10px] text-slate-400">
-            정형 템플릿 문구입니다. ‘캔버스+’로 추가한 뒤 아래 텍스트 캔버스에서 자유롭게 수정하세요. 이미지 프롬프트는 복사해 이미지 생성 도구에 붙여넣으세요.
+            정형 템플릿 문구입니다. 추가한 뒤 아래 텍스트 캔버스에서 자유롭게 수정하세요.
           </p>
         </div>
       )}

@@ -25,7 +25,7 @@ type HeroSlide = {
   sort_order: number;
 };
 
-async function getActiveSlides(): Promise<HeroSlide[]> {
+async function getActiveSlides(slideType: string): Promise<HeroSlide[]> {
   noStore();
   try {
     const supabase = createAdminClient();
@@ -34,6 +34,7 @@ async function getActiveSlides(): Promise<HeroSlide[]> {
       .from("hero_slides")
       .select("*")
       .eq("is_visible", true)
+      .eq("slide_type", slideType)
       .order("sort_order", { ascending: true });
     if (!data || data.length === 0) return [];
     return data.filter((s: HeroSlide) => {
@@ -46,9 +47,10 @@ async function getActiveSlides(): Promise<HeroSlide[]> {
   }
 }
 
-export default async function Hero() {
-  const slides = await getActiveSlides();
-  if (slides.length === 0) return <HeroDefault />;
+// slideType: "main"(홈) | "product"(프로덕트 상단). product는 슬라이드가 없으면 아무것도 렌더하지 않음.
+export default async function Hero({ slideType = "main" }: { slideType?: string }) {
+  const slides = await getActiveSlides(slideType);
+  if (slides.length === 0) return slideType === "main" ? <HeroDefault /> : null;
   return <HeroCarousel slides={slides} />;
 }
 
