@@ -532,8 +532,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
     const NEG_PRODUCT =
       ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
+    // 배경 통일(#EDEDED) 강제 — 야외 현장 옵션이 꺼져 있을 때만 환경/배경 요소를 차단
+    const NEG_BACKGROUND = onLocation
+      ? ""
+      : ", background scenery, environment, on-location background, outdoor scene, indoor scene, room, worksite background, " +
+        "construction site, factory, warehouse, street, nature, wall, props, furniture, plants, " +
+        "bokeh background, depth-of-field background, blurred background, gradient background, textured background, shadows cast on the backdrop";
     const NEGATIVE =
-      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL_ANATOMY + NEG_MODEL_FRAMING : NEG_PRODUCT);
+      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL_ANATOMY + NEG_MODEL_FRAMING : NEG_PRODUCT) + NEG_BACKGROUND;
 
     // ── Midjourney 파라미터 (참고) ──
     const MJ_PARAMS =
@@ -1522,9 +1528,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                           promptExtras.includes(opt)
                             ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold"
                             : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
-                        }`}>{opt}</button>
+                        }`}>{opt === "야외 현장" ? "야외 현장(배경변경)" : opt}</button>
                     ))}
                   </div>
+                  {promptExtras.includes("야외 현장") && (
+                    <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-2.5 py-1.5 mb-2">
+                      ⚠ <b>야외 현장</b>을 켜면 썸네일 통일 배경(#EDEDED)이 <b>현장 배경으로 대체</b>됩니다. 일반 제품컷은 이 옵션을 꺼두세요.
+                    </p>
+                  )}
                   <div className="flex gap-1.5">
                     <input
                       value={promptCustomInput}
