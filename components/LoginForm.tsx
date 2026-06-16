@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/partnership";
+  const redirect = searchParams.get("redirect") ?? "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
