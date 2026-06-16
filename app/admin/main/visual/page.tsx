@@ -2,6 +2,20 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+type TextLayer = {
+  id: string;
+  text: string;
+  font_family: string;
+  color: string;
+  weight: number;                       // 400 | 700 | 900
+  align: "left" | "center" | "right";
+  letter_spacing: number;               // 자간 (px)
+  scale_x: number;                      // 장평 (가로 비율, 1 = 기본)
+  line_height: number;
+  pc_x: number; pc_y: number; pc_size: number;          // PC 좌표·크기
+  mobile_x: number; mobile_y: number; mobile_size: number; // 모바일 좌표·크기
+};
+
 type HeroSlide = {
   id: string;
   admin_title: string;
@@ -26,6 +40,7 @@ type HeroSlide = {
   subtitle_size: number;
   season_text_size: number;
   font_family: string;
+  text_layers: TextLayer[];
   is_visible: boolean;
   scheduled_start: string | null;
   scheduled_end: string | null;
@@ -63,6 +78,7 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   subtitle_size: 14,
   season_text_size: 11,
   font_family: "",
+  text_layers: [],
   slide_type: "main",
   is_visible: true,
   scheduled_start: null,
