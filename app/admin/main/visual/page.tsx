@@ -357,9 +357,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
           </ul>
         )}
       </div>
+      </div>{/* end slide list card */}
+      </div>{/* end left col */}
 
-      {/* ── 편집 폼 ── */}
-      {editing && (
+      {/* ── 오른쪽: 편집 폼 ── */}
+      <div className="flex-1 min-w-0">
+      {editing ? (
         <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-6 py-4 bg-slate-800 flex items-center justify-between">
             <h2 className="text-base font-semibold text-white">
