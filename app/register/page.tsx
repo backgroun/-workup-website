@@ -2,6 +2,13 @@
 import { useState } from "react";
 import Link from "next/link";
 
+function formatPhone(val: string): string {
+  const d = val.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
+
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "", email: "", password: "", passwordConfirm: "",
@@ -104,14 +111,18 @@ export default function RegisterPage() {
               <input
                 type="text" value={form.name} onChange={e => set("name", e.target.value)}
                 placeholder="홍길동"
+                autoComplete="name"
                 className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">전화번호</label>
               <input
-                type="tel" value={form.phone} onChange={e => set("phone", e.target.value)}
+                type="tel" value={form.phone}
+                onChange={e => set("phone", formatPhone(e.target.value))}
                 placeholder="010-0000-0000"
+                inputMode="numeric"
+                autoComplete="tel"
                 className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
               />
             </div>
