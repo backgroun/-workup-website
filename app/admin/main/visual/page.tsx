@@ -573,53 +573,40 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               onUpload={(file) => uploadImage(file, "pc")}
               inputRef={pcRef}
             />
-            {editing.pc_image_url && (
-              <ImagePositionPicker
-                label="PC 이미지 위치·크기"
-                imageUrl={editing.pc_image_url}
-                value={editing.pc_image_position || "50% 50%"}
-                onChange={(v) => set("pc_image_position", v)}
-                scale={editing.pc_image_scale ?? 1}
-                onScaleChange={(v) => set("pc_image_scale", v)}
-                aspect="pc"
-              />
-            )}
-
             {!sameImage && (
-              <>
-                <ImageField
-                  label="모바일 이미지"
-                  hint="권장: 750 × 695px · JPG/PNG · 1MB 이하 · 미입력 시 PC 이미지로 대체"
-                  value={editing.mobile_image_url}
-                  onChange={(v) => set("mobile_image_url", v)}
-                  uploading={uploading === "mobile"}
-                  onUpload={(file) => uploadImage(file, "mobile")}
-                  inputRef={mobileRef}
-                />
-                {(editing.mobile_image_url || editing.pc_image_url) && (
-                  <ImagePositionPicker
-                    label="모바일 이미지 위치·크기"
-                    imageUrl={editing.mobile_image_url || editing.pc_image_url}
-                    value={editing.mobile_image_position || "50% 50%"}
-                    onChange={(v) => set("mobile_image_position", v)}
-                    scale={editing.mobile_image_scale ?? 1}
-                    onScaleChange={(v) => set("mobile_image_scale", v)}
-                    aspect="mobile"
-                  />
-                )}
-              </>
+              <ImageField
+                label="모바일 이미지"
+                hint="권장: 750 × 695px · JPG/PNG · 1MB 이하 · 미입력 시 PC 이미지로 대체"
+                value={editing.mobile_image_url}
+                onChange={(v) => set("mobile_image_url", v)}
+                uploading={uploading === "mobile"}
+                onUpload={(file) => uploadImage(file, "mobile")}
+                inputRef={mobileRef}
+              />
             )}
 
-            {sameImage && editing.pc_image_url && (
-              <ImagePositionPicker
-                label="모바일 표시 위치·크기 (PC와 별도 조정)"
-                imageUrl={editing.pc_image_url}
-                value={editing.mobile_image_position || "50% 50%"}
-                onChange={(v) => set("mobile_image_position", v)}
-                scale={editing.mobile_image_scale ?? 1}
-                onScaleChange={(v) => set("mobile_image_scale", v)}
-                aspect="mobile"
-              />
+            {/* 위치·크기 — PC / 모바일 양옆 배치 (드래그로 위치 조정) */}
+            {editing.pc_image_url && (
+              <div className="grid grid-cols-2 gap-3">
+                <ImagePositionPicker
+                  label="PC 위치·크기"
+                  imageUrl={editing.pc_image_url}
+                  value={editing.pc_image_position || "50% 50%"}
+                  onChange={(v) => set("pc_image_position", v)}
+                  scale={editing.pc_image_scale ?? 1}
+                  onScaleChange={(v) => set("pc_image_scale", v)}
+                  aspect="pc"
+                />
+                <ImagePositionPicker
+                  label="모바일 위치·크기"
+                  imageUrl={editing.mobile_image_url || editing.pc_image_url}
+                  value={editing.mobile_image_position || "50% 50%"}
+                  onChange={(v) => set("mobile_image_position", v)}
+                  scale={editing.mobile_image_scale ?? 1}
+                  onScaleChange={(v) => set("mobile_image_scale", v)}
+                  aspect="mobile"
+                />
+              </div>
             )}
           </div>
 
