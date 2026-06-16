@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { bgColorWithAlpha } from "@/lib/color";
 
 type TextLayer = {
   id: string;
@@ -1006,13 +1007,12 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
                   textAlign: l.align,
                   letterSpacing: `${l.letter_spacing}px`,
                   lineHeight: l.line_height,
-                  opacity: l.opacity ?? 1,
                   fontSize: `${(size / designW * 100).toFixed(2)}cqw`,
                   transform: `scaleX(${l.scale_x})`,
                   transformOrigin: "left top",
                   whiteSpace: "pre-wrap",
                   textShadow: "0 1px 8px rgba(0,0,0,0.25)",
-                  ...(l.bg_color ? { backgroundColor: l.bg_color, padding: "0.08em 0.35em" } : {}),
+                  ...(l.bg_color ? { backgroundColor: bgColorWithAlpha(l.bg_color, l.opacity ?? 1), padding: "0.08em 0.35em" } : {}),
                 }}
               >
                 {isEditing ? l.text : (l.text || "텍스트")}
@@ -1137,13 +1137,14 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
             </div>
           </div>
 
-          {/* 투명도 · 배경 */}
+          {/* 배경 투명도 · 배경 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">투명도 · {Math.round((sel.opacity ?? 1) * 100)}%</label>
-              <input type="range" min={0.1} max={1} step={0.01} value={sel.opacity ?? 1}
+              <label className="block text-[11px] text-slate-500 mb-1">배경 투명도 · {Math.round((sel.opacity ?? 1) * 100)}%</label>
+              <input type="range" min={0} max={1} step={0.01} value={sel.opacity ?? 1}
                 onChange={(e) => patch(sel.id, { opacity: Number(e.target.value) })}
                 className="w-full accent-blue-600 h-1.5 mt-2" />
+              {!sel.bg_color && <p className="text-[10px] text-slate-400 mt-1">배경색을 지정하면 적용됩니다</p>}
             </div>
             <div>
               <label className="block text-[11px] text-slate-500 mb-1">배경색</label>

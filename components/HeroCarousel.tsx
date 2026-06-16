@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { bgColorWithAlpha } from "@/lib/color";
 
 type TextLayer = {
   id: string;
@@ -137,11 +138,10 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                         fontFamily: l.font_family || undefined, color: l.color,
                         fontWeight: l.weight, textAlign: l.align,
                         letterSpacing: `${l.letter_spacing}px`, lineHeight: l.line_height,
-                        opacity: l.opacity ?? 1,
                         fontSize: `${(l.pc_size / 1920 * 100).toFixed(3)}cqw`,
                         transform: `scaleX(${l.scale_x})`, transformOrigin: "left top",
                         whiteSpace: "pre-wrap",
-                        ...(l.bg_color ? { backgroundColor: l.bg_color, padding: "0.08em 0.35em" } : {}),
+                        ...(l.bg_color ? { backgroundColor: bgColorWithAlpha(l.bg_color, l.opacity ?? 1), padding: "0.08em 0.35em" } : {}),
                       }}>{l.text}</div>
                     ))}
                   </div>
@@ -152,11 +152,10 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                         fontFamily: l.font_family || undefined, color: l.color,
                         fontWeight: l.weight, textAlign: l.align,
                         letterSpacing: `${l.letter_spacing}px`, lineHeight: l.line_height,
-                        opacity: l.opacity ?? 1,
                         fontSize: `${(l.mobile_size / 750 * 100).toFixed(3)}cqw`,
                         transform: `scaleX(${l.scale_x})`, transformOrigin: "left top",
                         whiteSpace: "pre-wrap",
-                        ...(l.bg_color ? { backgroundColor: l.bg_color, padding: "0.08em 0.35em" } : {}),
+                        ...(l.bg_color ? { backgroundColor: bgColorWithAlpha(l.bg_color, l.opacity ?? 1), padding: "0.08em 0.35em" } : {}),
                       }}>{l.text}</div>
                     ))}
                   </div>
