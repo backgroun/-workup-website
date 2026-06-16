@@ -504,10 +504,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';`}<
             />
             {editing.pc_image_url && (
               <ImagePositionPicker
-                label="PC 이미지 위치"
+                label="PC 이미지 위치·크기"
                 imageUrl={editing.pc_image_url}
                 value={editing.pc_image_position || "50% 50%"}
                 onChange={(v) => set("pc_image_position", v)}
+                scale={editing.pc_image_scale ?? 1}
+                onScaleChange={(v) => set("pc_image_scale", v)}
                 aspect="pc"
               />
             )}
@@ -525,10 +527,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';`}<
                 />
                 {(editing.mobile_image_url || editing.pc_image_url) && (
                   <ImagePositionPicker
-                    label="모바일 이미지 위치"
+                    label="모바일 이미지 위치·크기"
                     imageUrl={editing.mobile_image_url || editing.pc_image_url}
                     value={editing.mobile_image_position || "50% 50%"}
                     onChange={(v) => set("mobile_image_position", v)}
+                    scale={editing.mobile_image_scale ?? 1}
+                    onScaleChange={(v) => set("mobile_image_scale", v)}
                     aspect="mobile"
                   />
                 )}
@@ -537,10 +541,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';`}<
 
             {sameImage && editing.pc_image_url && (
               <ImagePositionPicker
-                label="모바일 표시 위치 (PC와 별도 조정)"
+                label="모바일 표시 위치·크기 (PC와 별도 조정)"
                 imageUrl={editing.pc_image_url}
                 value={editing.mobile_image_position || "50% 50%"}
                 onChange={(v) => set("mobile_image_position", v)}
+                scale={editing.mobile_image_scale ?? 1}
+                onScaleChange={(v) => set("mobile_image_scale", v)}
                 aspect="mobile"
               />
             )}
@@ -703,77 +709,68 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
 
 // ── 이미지 위치 조절 (실제 배너 비율 + 줌 확대/축소) ──
 
-function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
+function ImagePositionPicker({ label, imageUrl, value, onChange, scale, onScaleChange, aspect }: {
   label: string; imageUrl: string; value: string;
   onChange: (v: string) => void;
+  scale: number; onScaleChange: (v: number) => void;
   aspect: "pc" | "mobile";
 }) {
-  const [zoom, setZoom] = useState(1); // 1.0 = 실제 크기의 30%
-
   const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   const x = parts ? Math.round(parseFloat(parts[1])) : 50;
   const y = parts ? Math.round(parseFloat(parts[2])) : 50;
   const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
 
-  // 기본(30%) × zoom 배율: PC 1920×680 → 576×204, Mobile 750×695 → 225×209
-  const baseW = aspect === "pc" ? 576 : 225;
-  const baseH = aspect === "pc" ? 204 : 209;
-  const previewW = Math.round(baseW * zoom);
-  const previewH = Math.round(baseH * zoom);
-  const pct = Math.round(zoom * 30);
-
-  const zoomOut = () => setZoom((z) => Math.max(0.5, parseFloat((z - 0.25).toFixed(2))));
-  const zoomIn  = () => setZoom((z) => Math.min(2.0, parseFloat((z + 0.25).toFixed(2))));
+  // 고정 미리보기 박스 — 실제 배너 비율(PC 1920×680 / Mobile 750×695)
+  const previewW = aspect === "pc" ? 560 : 225;
+  const previewH = aspect === "pc" ? 198 : 209;
+  const s = scale || 1;
+  const pct = Math.round(s * 100);
 
   return (
     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-slate-600">{label}</p>
-        {/* 확대/축소 컨트롤 */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-400">실제 크기의 {pct}%</span>
-          <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-            <button
-              type="button"
-              onClick={zoomOut}
-              disabled={zoom <= 0.5}
-              title="축소"
-              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors text-base font-bold leading-none"
-            >−</button>
-            <span className="px-1.5 text-[11px] text-slate-700 font-semibold select-none min-w-[30px] text-center">
-              {pct}%
-            </span>
-            <button
-              type="button"
-              onClick={zoomIn}
-              disabled={zoom >= 2.0}
-              title="확대"
-              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors text-base font-bold leading-none"
-            >+</button>
-          </div>
-        </div>
-      </div>
+      <p className="text-xs font-semibold text-slate-600">{label}</p>
 
-      {/* 확대/축소 가능한 미리보기 (가로 스크롤 허용) */}
-      <div className="overflow-auto rounded">
-        <div
-          className="relative rounded overflow-hidden border border-slate-200 bg-slate-800 flex-shrink-0"
-          style={{ width: previewW, height: previewH }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: value }}
-          />
-          <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
-            {x}% / {y}%
-          </div>
+      {/* 고정 박스 안에서 내부 이미지만 확대/축소·이동 */}
+      <div
+        className="relative rounded overflow-hidden border border-slate-200 bg-slate-800 mx-auto"
+        style={{ width: previewW, height: previewH }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: value, transform: `scale(${s})`, transformOrigin: value }}
+        />
+        <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
+          크기 {pct}% · {x}/{y}
         </div>
       </div>
 
       <div className="space-y-2">
+        {/* 이미지 크기 (자유 확대/축소) */}
+        <div>
+          <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <span className="font-semibold text-slate-600">이미지 크기 (확대/축소)</span>
+            <span className="font-medium">{pct}%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="range" min={0.5} max={3} step={0.01} value={s}
+              onChange={(e) => onScaleChange(parseFloat(e.target.value))}
+              className="flex-1 accent-blue-600 h-1.5" />
+            <input type="number" min={50} max={300} step={1} value={pct}
+              onChange={(e) => {
+                const v = parseInt(e.target.value || "100", 10);
+                onScaleChange(Math.min(3, Math.max(0.5, v / 100)));
+              }}
+              className="w-16 border border-slate-200 rounded px-2 py-1 text-[11px] text-right" />
+            <button type="button" onClick={() => onScaleChange(1)}
+              className="text-[10px] text-slate-400 hover:text-slate-600 whitespace-nowrap">초기화</button>
+          </div>
+          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>축소(50%)</span><span>확대(300%)</span>
+          </div>
+        </div>
         <div>
           <div className="flex justify-between text-xs text-slate-500 mb-1">
             <span>가로 위치</span><span className="font-medium">{x}%</span>
@@ -781,9 +778,6 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
           <input type="range" min={0} max={100} value={x}
             onChange={(e) => update(parseInt(e.target.value), y)}
             className="w-full accent-slate-700 h-1.5" />
-          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
-            <span>왼쪽</span><span>오른쪽</span>
-          </div>
         </div>
         <div>
           <div className="flex justify-between text-xs text-slate-500 mb-1">
@@ -792,9 +786,6 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
           <input type="range" min={0} max={100} value={y}
             onChange={(e) => update(x, parseInt(e.target.value))}
             className="w-full accent-slate-700 h-1.5" />
-          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
-            <span>위</span><span>아래</span>
-          </div>
         </div>
       </div>
     </div>
