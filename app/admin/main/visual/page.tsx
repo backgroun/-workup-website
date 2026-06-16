@@ -270,8 +270,10 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
         </div>
       )}
 
-      {/* 슬라이드 목록 */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+      <div className="flex gap-6 items-start">
+      {/* ── 왼쪽: 슬라이드 목록 ── */}
+      <div className="w-[340px] flex-shrink-0 sticky top-6">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-700">슬라이드 목록</h2>
           <span className="text-xs text-slate-400">드래그로 순서 변경</span>
