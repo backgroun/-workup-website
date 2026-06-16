@@ -63,6 +63,7 @@ export default function AdminCombinedCategoriesPage() {
   const [newSubInputs, setNewSubInputs] = useState<Record<number, string>>({});
   const [editingMain, setEditingMain] = useState<number | null>(null);
   const [editMainVal, setEditMainVal] = useState("");
+  const [selectedCatIdx, setSelectedCatIdx] = useState<number>(0);
 
   // ── 퀵 카테고리 state ──
   const [qcConfig, setQcConfig] = useState<QuickCategoriesConfig>(DEFAULT_QC);
