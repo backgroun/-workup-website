@@ -359,10 +359,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       : "natural, authentic real-worker-type model";
     const moodLine = [...moods, ...customExtras].join(", ");
 
-    // ── 배경 ──
-    const background = (needsModel && onLocation)
-      ? "Realistic on-location worksite environment (construction / industrial / field), softly out of focus with a shallow depth of field so the product stays razor-sharp"
-      : "STRICT plain solid #EDEDED light-gray seamless studio backdrop ONLY. The ENTIRE background must be one flat #EDEDED color — absolutely NO scenery, NO environment, NO location, NO real-world setting, NO props, NO furniture, NO gradients, NO patterns, NO texture, NO cast shadows on the backdrop. This is a strict e-commerce thumbnail rule — the background color must stay identical across every product.";
+    // ── 배경 (썸네일 통일 — 항상 #EDEDED 단색) ──
+    const background =
+      "STRICT plain solid #EDEDED light-gray seamless studio backdrop ONLY. The ENTIRE background must be one flat #EDEDED color — absolutely NO scenery, NO environment, NO location, NO real-world setting, NO props, NO furniture, NO gradients, NO patterns, NO texture, NO cast shadows on the backdrop. This is a strict e-commerce thumbnail rule — the background color must stay identical across every product.";
 
     // ── 샷별 구도 · 카메라/렌즈 · 라이팅 ──
     const SHOT: Record<PromptTypeKey, { compose: string; camera: string; light: string; kor: string }> = {
@@ -498,7 +497,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const POSITIVE =
       `[GENERATION DIRECTIVE]\n` +
       `Generate ONE single photorealistic image only. No collage, grid, card-news, or multi-panel composition.` +
-      (onLocation ? "" : ` The background MUST be a plain solid #EDEDED studio backdrop — NEVER a real-world scene, room, or outdoor/worksite environment.`) +
+      ` The background MUST be a plain solid #EDEDED studio backdrop — NEVER a real-world scene, room, or outdoor/worksite environment.` +
       `\n\n` +
       `[SUBJECT]\n` +
       `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
@@ -531,12 +530,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
     const NEG_PRODUCT =
       ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
-    // 배경 통일(#EDEDED) 강제 — 야외 현장 옵션이 꺼져 있을 때만 환경/배경 요소를 차단
-    const NEG_BACKGROUND = onLocation
-      ? ""
-      : ", background scenery, environment, on-location background, outdoor scene, indoor scene, room, worksite background, " +
-        "construction site, factory, warehouse, street, nature, wall, props, furniture, plants, " +
-        "bokeh background, depth-of-field background, blurred background, gradient background, textured background, shadows cast on the backdrop";
+    // 배경 통일(#EDEDED) 강제 — 환경/배경 요소 차단
+    const NEG_BACKGROUND =
+      ", background scenery, environment, on-location background, outdoor scene, indoor scene, room, worksite background, " +
+      "construction site, factory, warehouse, street, nature, wall, props, furniture, plants, " +
+      "bokeh background, depth-of-field background, blurred background, gradient background, textured background, shadows cast on the backdrop";
     const NEGATIVE =
       `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL_ANATOMY + NEG_MODEL_FRAMING : NEG_PRODUCT) + NEG_BACKGROUND;
 
@@ -555,7 +553,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       (promptSeason ? ` · 시즌: ${promptSeason}` : "") +
       (needsModel && promptModelAge ? ` · 모델: ${promptModelAge}` : "") + `\n` +
       (promptExtras.length > 0 ? `추가 옵션: ${promptExtras.join(", ")}\n` : "") +
-      `배경: ${(needsModel && onLocation) ? "야외 현장(아웃포커스)" : "#EDEDED 단색 스튜디오"} · 비율 1:1 · 960×930px\n` +
+      `배경: #EDEDED 단색 스튜디오 · 비율 1:1 · 960×930px\n` +
       (wornFocus ? wornFocus.kor : bottomHalfBody ? "대표 반신컷(하의) — 허리~종아리 하반신 중심 · 바지가 화면 60~70% · 상체·머리는 프레임 밖 · 85mm" : shot.kor);
 
     setAiPrompt(POSITIVE + NEGATIVE + MJ_PARAMS + korRef);
@@ -1518,7 +1516,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div>
                   <p className="text-[11px] font-semibold text-gray-600 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(선택 · 복수가능)</span></p>
                   <div className="flex gap-1.5 flex-wrap mb-2">
-                    {["남성 모델", "여성 모델", "한국인 모델", "동양인 모델", "캐주얼 무드", "프로페셔널 무드", "야외 현장", "스튜디오"].map(opt => (
+                    {["남성 모델", "여성 모델", "한국인 모델", "동양인 모델", "캐주얼 무드", "프로페셔널 무드", "스튜디오"].map(opt => (
                       <button key={opt} type="button"
                         onClick={() => setPromptExtras(prev =>
                           prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]
@@ -1527,14 +1525,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                           promptExtras.includes(opt)
                             ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold"
                             : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
-                        }`}>{opt === "야외 현장" ? "야외 현장(배경변경)" : opt}</button>
+                        }`}>{opt}</button>
                     ))}
                   </div>
-                  {promptExtras.includes("야외 현장") && (
-                    <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-2.5 py-1.5 mb-2">
-                      ⚠ <b>야외 현장</b>을 켜면 썸네일 통일 배경(#EDEDED)이 <b>현장 배경으로 대체</b>됩니다. 일반 제품컷은 이 옵션을 꺼두세요.
-                    </p>
-                  )}
                   <div className="flex gap-1.5">
                     <input
                       value={promptCustomInput}
