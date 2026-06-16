@@ -339,13 +339,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
     // 추가 옵션 → 영문 매핑 (성별·인종 / 무드 분리)
     const DESCRIPTOR: Record<string, string> = {
-      "남성 모델": "male", "여성 모델": "female",
-      "한국인 모델": "Korean", "동양인 모델": "East Asian",
+      "남성": "male", "여성": "female",
+      "한국인": "Korean", "서양인": "Western",
     };
     const MOOD: Record<string, string> = {
-      "캐주얼 무드": "relaxed, approachable casual mood",
-      "프로페셔널 무드": "confident, professional working mood",
-      "스튜디오": "clean studio styling",
+      "캐주얼": "relaxed, approachable casual mood",
+      "프로페셔널": "confident, professional working mood",
     };
     const descriptors = promptExtras.filter((e) => e in DESCRIPTOR).map((e) => DESCRIPTOR[e]);
     const moods       = promptExtras.filter((e) => e in MOOD).map((e) => MOOD[e]);
@@ -1516,7 +1515,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div>
                   <p className="text-[11px] font-semibold text-gray-600 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(선택 · 복수가능)</span></p>
                   <div className="flex gap-1.5 flex-wrap mb-2">
-                    {["남성 모델", "여성 모델", "한국인 모델", "동양인 모델", "캐주얼 무드", "프로페셔널 무드", "스튜디오"].map(opt => (
+                    {["남성", "여성", "한국인", "서양인", "캐주얼", "프로페셔널"].map(opt => (
                       <button key={opt} type="button"
                         onClick={() => setPromptExtras(prev =>
                           prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]
