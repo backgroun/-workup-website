@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DEFAULT_TESTS, type Test, type DataPoint } from "@/data/field-test";
+import AdminImageField from "@/components/admin/AdminImageField";
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
@@ -190,6 +191,14 @@ export default function AdminFieldTestPage() {
                   <input type="text" value={editing.subtitle} onChange={e => set("subtitle", e.target.value)} placeholder="20,000mm 방수 수치 현장 검증"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
                 </div>
+
+                <AdminImageField
+                  value={editing.image_url}
+                  onChange={url => set("image_url", url)}
+                  promptType="product"
+                  promptSeed={`${editing.product}${editing.category ? `, ${editing.category}` : ""}${editing.title ? `, ${editing.title}` : ""}`}
+                  label="테스트 이미지"
+                />
 
                 {/* 테스트 조건 */}
                 <div>

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DEFAULT_PEOPLE, type Person, type PersonProduct } from "@/data/people";
+import AdminImageField from "@/components/admin/AdminImageField";
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
@@ -111,7 +112,7 @@ export default function AdminMainPeoplePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">PEOPLE (MATE) 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900">MATE 관리</h1>
           <p className="mt-1 text-sm text-gray-500">/people 페이지에 노출되는 인물 인터뷰를 관리합니다.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -230,6 +231,14 @@ export default function AdminMainPeoplePage() {
                     ))}
                   </div>
                 </div>
+
+                <AdminImageField
+                  value={editing.image_url}
+                  onChange={url => set("image_url", url)}
+                  promptType="person"
+                  promptSeed={`${editing.job}${editing.theme ? `, ${editing.theme}` : ""}`}
+                  label="인물 사진 (등록 시 아바타 대신 표시)"
+                />
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">중요하게 여기는 것</label>

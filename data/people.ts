@@ -11,8 +11,9 @@ export type Person = {
   story: string[];    // 이야기 문단
   theme: string;      // 중요하게 여기는 것
   products: PersonProduct[];
-  bg: string;         // 사진 영역 배경색 (hex)
-  initial: string;    // 아바타 글자
+  bg: string;         // 사진 영역 배경색 (hex, 이미지 없을 때 표시)
+  initial: string;    // 아바타 글자 (이미지 없을 때 표시)
+  image_url?: string; // 인물 사진 (등록 시 아바타 대신 표시)
 };
 
 export const DEFAULT_PEOPLE: Person[] = [

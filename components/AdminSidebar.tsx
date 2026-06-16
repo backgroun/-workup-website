@@ -74,7 +74,7 @@ const navGroups: NavGroup[] = [
         ),
       },
       {
-        label: "PEOPLE 영역",
+        label: "MATE 영역",
         href: "/admin/main/people",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

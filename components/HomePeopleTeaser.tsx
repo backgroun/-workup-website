@@ -12,7 +12,7 @@ export default function HomePeopleTeaser() {
       <div className="px-[15px] md:px-[70px]">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">People</p>
+            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">MATE</p>
             <h2 className="text-2xl font-bold text-[#1A2B4A]">일하는 사람들의 이야기</h2>
           </div>
           <Link href="/people" className="text-xs text-gray-400 hover:text-[#1A2B4A] tracking-wide transition-colors hidden sm:block">
@@ -40,7 +40,7 @@ export default function HomePeopleTeaser() {
             href="/people"
             className="inline-block border border-[#1A2B4A] text-[#1A2B4A] text-xs tracking-widest px-8 py-3 hover:bg-[#1A2B4A] hover:text-white transition-colors"
           >
-            PEOPLE 바로가기 →
+            MATE 바로가기 →
           </Link>
         </div>
       </div>

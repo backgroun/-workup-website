@@ -33,14 +33,19 @@ export default function PeopleGrid({ items }: { items?: Person[] }) {
               >
                 {/* 사진 영역 */}
                 <div className="aspect-[4/3] relative overflow-hidden" style={{ backgroundColor: person.bg }}>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mb-4">
-                      <span className="text-3xl font-bold text-white">{person.initial}</span>
+                  {person.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mb-4">
+                        <span className="text-3xl font-bold text-white">{person.initial}</span>
+                      </div>
+                      <span className="text-xs text-white/50 tracking-widest uppercase">실제 고객 인터뷰</span>
                     </div>
-                    <span className="text-xs text-white/50 tracking-widest uppercase">실제 고객 인터뷰</span>
-                  </div>
+                  )}
                   {/* 직종 배지 */}
-                  <div className="absolute top-4 left-4 bg-[#ff550c] text-white text-xs px-2 py-1 font-semibold">
+                  <div className="absolute top-4 left-4 bg-[#ff550c] text-white text-xs px-2 py-1 font-semibold z-10">
                     {person.job}
                   </div>
                 </div>

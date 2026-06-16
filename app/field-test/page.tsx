@@ -47,16 +47,23 @@ export default async function FieldTestPage() {
               >
                 <div className="grid grid-cols-1 lg:grid-cols-3">
 
-                  {/* 영상 플레이스홀더 */}
-                  <div className="bg-[#1A2B4A] aspect-video lg:aspect-auto flex flex-col items-center justify-center gap-3 p-8">
-                    <div className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white/50 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                  {/* 테스트 이미지 (등록 시) 또는 플레이스홀더 */}
+                  {test.image_url ? (
+                    <div className="bg-[#1A2B4A] aspect-video lg:aspect-auto relative overflow-hidden min-h-[200px]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={test.image_url} alt={test.product} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
-                    <p className="text-white/40 text-xs tracking-widest uppercase text-center">테스트 영상</p>
-                    <p className="text-white/25 text-xs text-center">업로드 예정</p>
-                  </div>
+                  ) : (
+                    <div className="bg-[#1A2B4A] aspect-video lg:aspect-auto flex flex-col items-center justify-center gap-3 p-8">
+                      <div className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white/50 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                      <p className="text-white/40 text-xs tracking-widest uppercase text-center">테스트 이미지</p>
+                      <p className="text-white/25 text-xs text-center">미등록</p>
+                    </div>
+                  )}
 
                   {/* 테스트 정보 */}
                   <div className="p-8 lg:col-span-2">

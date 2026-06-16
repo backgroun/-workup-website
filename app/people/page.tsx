@@ -4,7 +4,7 @@ import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import { getSiteSection } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
-  title: "PEOPLE — 일하는 사람들의 이야기 | WORKUP",
+  title: "MATE — 일하는 사람들의 이야기 | WORKUP",
   description: "워크업과 함께하는 사람들. 매일 현장에서 땀 흘리는 사람들의 이야기.",
 };
 

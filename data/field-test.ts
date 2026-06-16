@@ -12,6 +12,7 @@ export type Test = {
   conditions: string[]; // 테스트 조건
   data: DataPoint[];    // 수치 → 현장 언어
   feedback: string;     // 착용자 피드백
+  image_url?: string;   // 테스트 이미지 (등록 시 플레이스홀더 대신 표시)
 };
 
 export const DEFAULT_TESTS: Test[] = [
