@@ -180,7 +180,7 @@ export default function ProductsGrid() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState(staticProducts);
-  const catParam = searchParams.get("cat");
+  const catParam = searchParams.get("cat") || searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<MainCategory | "전체">(
     catParam && mainCategories.includes(catParam as MainCategory) ? (catParam as MainCategory) : "전체"
   );
