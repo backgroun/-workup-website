@@ -550,7 +550,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
               배너 편집기
               <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 텍스트·버튼 위치 직접 배치</span>
             </p>
-            <BannerTextEditor editing={editing} set={set} sameImage={sameImage} />
+            <BannerTextEditor editing={editing} set={(k, v) => set(k as keyof HeroSlide, v)} sameImage={sameImage} />
           </div>
 
           {/* 저장/취소 */}
