@@ -695,59 +695,35 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
 
 // ── 이미지 위치 조절 (실제 배너 비율 + 줌) ──
 
-const ZOOM_LEVELS = [0.3, 0.5, 0.75, 1.0];
-
 function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
   label: string; imageUrl: string; value: string;
   onChange: (v: string) => void;
   aspect: "pc" | "mobile";
 }) {
-  const [zoom, setZoom] = useState(0);
   const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   const x = parts ? Math.round(parseFloat(parts[1])) : 50;
   const y = parts ? Math.round(parseFloat(parts[2])) : 50;
   const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
 
-  // PC: 1920/680 ≈ 2.82:1   Mobile: 750/695 ≈ 1.08:1
-  const paddingBottom = aspect === "pc" ? "35.4%" : "92.7%";
-
-  const zoomScale = ZOOM_LEVELS[zoom];
-  const zoomLabel = ["30%", "50%", "75%", "100%"][zoom];
+  // 실제 배너 크기의 30%: PC 1920×680 → 576×204, Mobile 750×695 → 225×209
+  const previewW = aspect === "pc" ? 576 : 225;
+  const previewH = aspect === "pc" ? 204 : 209;
 
   return (
     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-slate-600">{label}</p>
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-slate-400 mr-1">배율</span>
-          {ZOOM_LEVELS.map((_, i) => (
-            <button key={i} type="button" onClick={() => setZoom(i)}
-              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${zoom === i ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"}`}>
-              {["30%", "50%", "75%", "100%"][i]}
-            </button>
-          ))}
-        </div>
+        <span className="text-[10px] text-slate-400">실제 크기의 30%</span>
       </div>
 
-      {/* 실제 배너 비율 미리보기 */}
-      <div className="relative w-full rounded overflow-hidden border border-slate-200 bg-slate-800"
-        style={{ paddingBottom, maxWidth: aspect === "pc" ? "280px" : "150px" }}>
-        <div className="absolute inset-0 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl} alt=""
-            className="absolute top-0 left-0 object-cover"
-            style={{
-              width: `${100 / zoomScale}%`,
-              height: `${100 / zoomScale}%`,
-              objectPosition: value,
-              transformOrigin: "top left",
-              transform: `scale(${zoomScale})`,
-            }}
-          />
-          <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-            {x}% / {y}% · {zoomLabel}
-          </div>
+      {/* 30% 고정 사이즈 미리보기 */}
+      <div className="relative rounded overflow-hidden border border-slate-200 bg-slate-800"
+        style={{ width: previewW, height: previewH, maxWidth: "100%" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: value }} />
+        <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+          {x}% / {y}%
         </div>
       </div>
 
@@ -781,12 +757,22 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
 
 // ── 배너 텍스트·버튼 배치 에디터 ──
 
+const FONT_OPTIONS = [
+  { label: "기본 (사이트 기본)", value: "" },
+  { label: "Noto Serif KR (명조)", value: "'Noto Serif KR', serif" },
+  { label: "Georgia (세리프)", value: "Georgia, serif" },
+  { label: "굴림 (고딕)", value: "Gulim, '굴림', sans-serif" },
+  { label: "Impact (임팩트)", value: "Impact, Haettenschweiler, sans-serif" },
+  { label: "Courier New (모노)", value: "'Courier New', monospace" },
+];
+
 function BannerTextEditor({ editing, set, sameImage }: {
   editing: {
     pc_image_url: string; mobile_image_url: string;
     pc_image_position: string; mobile_image_position: string;
     content_x: number; content_y: number;
     season_text: string; title: string; subtitle: string;
+    title_size: number; subtitle_size: number; season_text_size: number; font_family: string;
     btn1_text: string; btn1_link: string; btn1_visible: boolean;
     btn2_text: string; btn2_link: string; btn2_visible: boolean;
   };
@@ -858,13 +844,16 @@ function BannerTextEditor({ editing, set, sameImage }: {
           >
             <div className="bg-black/40 border border-white/40 backdrop-blur-sm rounded px-2.5 py-2 min-w-[100px] max-w-[280px]">
               {editing.season_text && (
-                <p className="text-[9px] font-semibold text-[#ff550c] uppercase tracking-widest mb-1">{editing.season_text}</p>
+                <p style={{ fontSize: `${editing.season_text_size || 11}px`, fontFamily: editing.font_family || undefined }}
+                  className="font-semibold text-[#ff550c] uppercase tracking-widest mb-1">{editing.season_text}</p>
               )}
               {editing.title && (
-                <p className="text-sm font-bold text-white leading-tight mb-1 whitespace-pre-line">{editing.title}</p>
+                <p style={{ fontSize: `${editing.title_size || 28}px`, fontFamily: editing.font_family || undefined }}
+                  className="font-bold text-white leading-tight mb-1 whitespace-pre-line">{editing.title}</p>
               )}
               {editing.subtitle && (
-                <p className="text-[10px] text-gray-300 leading-snug whitespace-pre-line">{editing.subtitle}</p>
+                <p style={{ fontSize: `${editing.subtitle_size || 14}px`, fontFamily: editing.font_family || undefined }}
+                  className="text-gray-300 leading-snug whitespace-pre-line">{editing.subtitle}</p>
               )}
               {(editing.btn1_visible && editing.btn1_text) && (
                 <div className="mt-2 flex gap-1 flex-wrap">
