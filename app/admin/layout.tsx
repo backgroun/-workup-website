@@ -41,24 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto bg-[#f1f5f9]">
-          <style>{`
-            .ac .text-\\[9px\\]  { font-size: 7px !important; }
-            .ac .text-\\[10px\\] { font-size: 8px !important; }
-            .ac .text-\\[11px\\] { font-size: 8px !important; }
-            .ac .text-\\[12px\\], .ac .text-xs   { font-size: 10px !important; }
-            .ac .text-\\[13px\\] { font-size: 10px !important; }
-            .ac .text-\\[14px\\], .ac .text-sm   { font-size: 11px !important; }
-            .ac .text-\\[15px\\] { font-size: 12px !important; }
-            .ac .text-\\[16px\\], .ac .text-base { font-size: 13px !important; }
-            .ac .text-\\[18px\\], .ac .text-lg   { font-size: 14px !important; }
-            .ac .text-\\[20px\\], .ac .text-xl   { font-size: 15px !important; }
-            .ac .text-2xl  { font-size: 19px !important; }
-            .ac .text-3xl  { font-size: 24px !important; }
-            .ac .text-4xl  { font-size: 28px !important; }
-            .ac .text-5xl  { font-size: 38px !important; }
-            .ac { font-size: 13px; }
-          `}</style>
-          <div className="ac p-10 [&_label]:text-[15px] [&_th]:text-[14px]">
+          <div className="p-10" style={{ zoom: 1.3 }}>
             {children}
           </div>
         </main>
