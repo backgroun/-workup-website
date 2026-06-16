@@ -14,12 +14,15 @@ function Section({
   apiPath: string;
   addPlaceholder: string;
 }) {
-  const [items, setItems]     = useState<Item[]>([]);
-  const [newName, setNewName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [items, setItems]       = useState<Item[]>([]);
+  const [newName, setNewName]   = useState("");
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState("");
+  const [editingId, setEditingId]   = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const inputRef   = useRef<HTMLInputElement>(null);
+  const editRef    = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -46,6 +49,32 @@ function Section({
     } else {
       const d = await r.json();
       setError(d.error ?? "오류가 발생했습니다.");
+    }
+    setSaving(false);
+  };
+
+  const startEdit = (item: Item) => {
+    setEditingId(item.id);
+    setEditingName(item.name);
+    setTimeout(() => editRef.current?.focus(), 50);
+  };
+
+  const cancelEdit = () => { setEditingId(null); setEditingName(""); };
+
+  const handleEdit = async (id: number) => {
+    if (!editingName.trim()) return;
+    setSaving(true);
+    const r = await fetch(apiPath, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, name: editingName.trim() }),
+    });
+    if (r.ok) {
+      cancelEdit();
+      await load();
+    } else {
+      const d = await r.json();
+      setError(d.error ?? "수정 중 오류가 발생했습니다.");
     }
     setSaving(false);
   };
@@ -104,14 +133,52 @@ function Section({
         ) : (
           <ul className="divide-y divide-gray-50">
             {items.map(item => (
-              <li key={item.id} className="flex items-center justify-between px-6 py-3.5 hover:bg-gray-50 group">
-                <span className="text-[15px] font-medium text-gray-800">{item.name}</span>
-                <button
-                  onClick={() => handleDelete(item.id, item.name)}
-                  className="text-[14px] text-red-400 hover:text-red-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  삭제
-                </button>
+              <li key={item.id} className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 group">
+                {editingId === item.id ? (
+                  <>
+                    <input
+                      ref={editRef}
+                      value={editingName}
+                      onChange={e => setEditingName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") handleEdit(item.id);
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                      className="flex-1 border border-blue-400 px-3 py-1.5 text-[14px] rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                    />
+                    <button
+                      onClick={() => handleEdit(item.id)}
+                      disabled={saving}
+                      className="px-3 py-1.5 bg-blue-600 text-white text-[13px] font-semibold rounded hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="px-3 py-1.5 border border-gray-200 text-gray-500 text-[13px] rounded hover:bg-gray-100 whitespace-nowrap"
+                    >
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-1 text-[15px] font-medium text-gray-800">{item.name}</span>
+                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="text-[13px] text-blue-500 hover:text-blue-700 font-medium px-2.5 py-1 rounded hover:bg-blue-50 transition-colors"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id, item.name)}
+                        className="text-[13px] text-red-400 hover:text-red-600 font-medium px-2.5 py-1 rounded hover:bg-red-50 transition-colors"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
