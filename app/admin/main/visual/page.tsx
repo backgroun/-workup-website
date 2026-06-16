@@ -723,7 +723,7 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
 
       {/* 실제 배너 비율 미리보기 */}
       <div className="relative w-full rounded overflow-hidden border border-slate-200 bg-slate-800"
-        style={{ paddingBottom }}>
+        style={{ paddingBottom, maxWidth: aspect === "pc" ? "280px" : "150px" }}>
         <div className="absolute inset-0 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
