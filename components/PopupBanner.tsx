@@ -14,6 +14,15 @@ type PopupConfig = {
   bg: string;
 };
 
+const DEFAULT_CFG: PopupConfig = {
+  is_active: true,
+  subtitle: "안는 순간, 시원해지는",
+  title: "여름을 위한\n냉감 멀티쿠션",
+  link: "/products",
+  link_text: "상품 보러가기",
+  bg: "linear-gradient(135deg, #7eb8d4 0%, #a8d8b8 50%, #d4c5a9 100%)",
+};
+
 export default function PopupBanner() {
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
@@ -27,12 +36,20 @@ export default function PopupBanner() {
     fetch("/api/admin/site-settings/popup_banner")
       .then((r) => r.json())
       .then((data) => {
-        if (!data || data.is_active === false) return;
-        setCfg(data);
+        const resolved: PopupConfig = data && typeof data === "object"
+          ? { ...DEFAULT_CFG, ...data }
+          : DEFAULT_CFG;
+        if (resolved.is_active === false) return;
+        setCfg(resolved);
         setMounted(true);
         setTimeout(() => setShown(true), 50);
       })
-      .catch(() => {});
+      .catch(() => {
+        // API 실패 시 기본값으로 표시
+        setCfg(DEFAULT_CFG);
+        setMounted(true);
+        setTimeout(() => setShown(true), 50);
+      });
   }, []);
 
   useEffect(() => {
