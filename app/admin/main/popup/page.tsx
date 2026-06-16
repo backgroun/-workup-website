@@ -248,6 +248,20 @@ export default function PopupManagePage() {
     await saveAll(updated);
   };
 
+  const handleDuplicate = async (item: PopupItem) => {
+    const copy: PopupItem = {
+      ...item,
+      id: crypto.randomUUID(),
+      admin_title: `${item.admin_title || item.title || "팝업"} (복사본)`,
+    };
+    const idx = popups.findIndex(p => p.id === item.id);
+    const next = [...popups];
+    next.splice(idx + 1, 0, copy);           // 원본 바로 뒤에 삽입
+    const updated = next.map((p, i) => ({ ...p, sort_order: i }));
+    setPopups(updated);
+    await saveAll(updated);
+  };
+
   const handleDrop = async (targetIndex: number) => {
     if (dragIndex === null || dragIndex === targetIndex) {
       setDragIndex(null); setDragOver(null); return;
@@ -479,6 +493,10 @@ export default function PopupManagePage() {
                         <button onClick={() => openEdit(item)}
                           className="text-[11px] font-medium text-slate-600 border border-slate-200 px-1.5 py-0.5 hover:bg-slate-100 transition-colors rounded">
                           수정
+                        </button>
+                        <button onClick={() => handleDuplicate(item)} title="복제"
+                          className="text-[11px] font-medium text-blue-500 border border-blue-200 px-1.5 py-0.5 hover:bg-blue-50 transition-colors rounded">
+                          복제
                         </button>
                         <button onClick={() => handleDelete(item.id)}
                           className="text-[11px] font-medium text-red-400 border border-red-200 px-1.5 py-0.5 hover:bg-red-50 transition-colors rounded">

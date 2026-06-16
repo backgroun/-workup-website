@@ -290,6 +290,18 @@ export default function AdminProductsPage() {
     setSelected(new Set()); load();
   };
 
+  const handleDuplicate = async (p: Product) => {
+    const suffix = Date.now().toString(36).slice(-4);
+    const payload = { ...p, id: `${p.id}-copy-${suffix}`, name: `${p.name} (복사본)`, isNew: false };
+    const res = await fetch("/api/admin/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) { showMsg(`"${p.name}" 복제 완료`); load(); }
+    else { const err = await res.json().catch(() => ({})); showMsg(err.error ?? "복제 실패"); }
+  };
+
   const applyMainExpose = async () => {
     if (!selected.size || !exposeTarget.size) return;
     setExposeSaving(true);
@@ -622,6 +634,10 @@ export default function AdminProductsPage() {
                           className="text-[14px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] px-3.5 py-1.5 hover:bg-[#1A2B4A] hover:text-white rounded whitespace-nowrap">
                           수정
                         </Link>
+                        <button onClick={() => handleDuplicate(p)} title="복제"
+                          className="text-[14px] font-semibold text-blue-600 border border-blue-200 px-3.5 py-1.5 hover:bg-blue-50 rounded whitespace-nowrap">
+                          복제
+                        </button>
                         <button onClick={() => {
                           if (!confirm(`"${p.name}"을 삭제하시겠습니까?`)) return;
                           fetch(`/api/admin/products/${p.id}`, { method: "DELETE" }).then(() => { load(); showMsg("삭제됐습니다."); });

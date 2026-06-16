@@ -200,6 +200,26 @@ export default function AdminMainVisualPage() {
     if (res.ok) { flash("삭제됐습니다."); load(); }
   };
 
+  const handleDuplicate = async (slide: HeroSlide) => {
+    const payload = {
+      ...slide,
+      id: crypto.randomUUID(),
+      admin_title: `${slide.admin_title || slide.title || "슬라이드"} (복사본)`,
+      sort_order: slides.length,
+      pc_image_url: slide.pc_image_url || null,
+      mobile_image_url: slide.mobile_image_url || null,
+      scheduled_start: slide.scheduled_start || null,
+      scheduled_end: slide.scheduled_end || null,
+    };
+    const res = await fetch("/api/admin/hero-slides", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) { flash("복제됐습니다."); load(); }
+    else { const err = await res.json().catch(() => ({})); flash(err.error ?? "복제 실패", "err"); }
+  };
+
   const toggleVisible = async (slide: HeroSlide) => {
     const next = !slide.is_visible;
     setSlides((prev) => prev.map((s) => s.id === slide.id ? { ...s, is_visible: next } : s));
@@ -422,6 +442,10 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                   <button onClick={() => openEdit(slide)}
                     className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2 py-1 hover:bg-slate-100 transition-colors rounded">
                     수정
+                  </button>
+                  <button onClick={() => handleDuplicate(slide)} title="복제"
+                    className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2 py-1 hover:bg-blue-50 transition-colors rounded">
+                    복제
                   </button>
                   <button onClick={() => handleDelete(slide.id, slide.admin_title || slide.title)}
                     className="text-[11px] font-medium text-red-400 border border-red-200 px-2 py-1 hover:bg-red-50 transition-colors rounded">
