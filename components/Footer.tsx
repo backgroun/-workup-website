@@ -8,8 +8,8 @@ const navLinks = [
   { label: "고객센터",  href: "#" },
   { label: "공지사항",  href: "#" },
   { label: "1:1문의",   href: "#" },
-  { label: "가맹문의",  href: "/partnership#franchise" },
-  { label: "제휴문의",  href: "/partnership#alliance" },
+  { label: "가맹·창업문의",  href: "/partnership/franchise" },
+  { label: "입점·제휴문의",  href: "/partnership/wholesale" },
 ];
 
 const socialIcons = [

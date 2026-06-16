@@ -62,18 +62,39 @@ function Field({
   );
 }
 
+// ── 문의 제출 헬퍼 ──
+async function submitInquiry(type: "franchise" | "wholesale", payload: FormState) {
+  const res = await fetch("/api/inquiries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, payload }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? "접수에 실패했습니다.");
+}
+
 // ── 가맹 창업 문의 폼 ─────────────────────────────────
 export function FranchiseForm() {
   const init: FormState = { name: "", phone: "", region: "", message: "" };
   const [form, setForm] = useState(init);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true); setError("");
+    try {
+      await submitInquiry("franchise", form);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "접수에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) return <SuccessMessage onReset={() => { setForm(init); setSubmitted(false); }} />;
@@ -86,11 +107,13 @@ export function FranchiseForm() {
       </div>
       <Field label="창업 희망 지역" name="region" placeholder="예) 서울 강남, 경기 수원 등" value={form.region} onChange={handleChange} />
       <Field label="문의 내용" name="message" type="textarea" placeholder="창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요." value={form.message} onChange={handleChange} />
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors"
+        disabled={submitting}
+        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
       >
-        가맹 문의 접수하기 →
+        {submitting ? "접수 중..." : "가맹 문의 접수하기 →"}
       </button>
       <p className="text-xs text-gray-400 text-center">영업일 기준 2일 이내 연락드립니다.</p>
     </form>
@@ -102,13 +125,23 @@ export function WholesaleForm() {
   const init: FormState = { brand: "", manager: "", phone: "", category: "", link: "", message: "" };
   const [form, setForm] = useState(init);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true); setError("");
+    try {
+      await submitInquiry("wholesale", form);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "접수에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) return <SuccessMessage onReset={() => { setForm(init); setSubmitted(false); }} />;
@@ -125,11 +158,13 @@ export function WholesaleForm() {
       </div>
       <Field label="브랜드 소개 링크" name="link" type="url" placeholder="홈페이지, 인스타그램, 카탈로그 URL 등" value={form.link} onChange={handleChange} />
       <Field label="문의 내용" name="message" type="textarea" placeholder="입점을 원하는 이유, 제품 특장점, 희망 조건 등을 자유롭게 적어주세요." value={form.message} onChange={handleChange} />
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors"
+        disabled={submitting}
+        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
       >
-        입점 문의 접수하기 →
+        {submitting ? "접수 중..." : "입점 문의 접수하기 →"}
       </button>
       <p className="text-xs text-gray-400 text-center">영업일 기준 2일 이내 연락드립니다.</p>
     </form>

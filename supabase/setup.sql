@@ -26,3 +26,17 @@ ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "public_read" ON products;
 CREATE POLICY "public_read" ON products FOR SELECT USING (true);
+
+-- ── 가맹·창업 / 입점·제휴 문의 접수 ──
+-- 폼 제출/조회는 서버 API(service_role)를 통해서만 처리한다. RLS만 켜고 공개 정책은 두지 않음.
+CREATE TABLE IF NOT EXISTS inquiries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type TEXT NOT NULL,                       -- 'franchise' | 'wholesale'
+  payload JSONB NOT NULL DEFAULT '{}',      -- 폼 입력값
+  status TEXT NOT NULL DEFAULT 'new',       -- 'new' | 'processing' | 'done'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS inquiries_created_idx ON inquiries (created_at DESC);
+
+ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
