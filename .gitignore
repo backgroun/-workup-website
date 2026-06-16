@@ -1,0 +1,16 @@
+node_modules/
+.pnp
+.pnp.js
+.next/
+out/
+.env
+.env*.local
+.DS_Store
+npm-debug.log*
+data/geocoded.json
+data/build-stores.ps1
+.vercel
+auto-sync.ps1
+start-sync.bat
+.env*
+*.zip

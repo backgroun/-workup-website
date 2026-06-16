@@ -1,0 +1,92 @@
+import { createClient } from "@supabase/supabase-js";
+import type { Product } from "@/data/products";
+
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(url, key);
+}
+
+// DB row (snake_case) → Product (camelCase)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mapFromDb(row: any): Product {
+  return {
+    id: row.id,
+    sku: row.sku ?? undefined,
+    brand: row.brand ?? undefined,
+    manufacturer: row.manufacturer ?? undefined,
+    origin: row.origin ?? undefined,
+    name: row.name,
+    line: row.line,
+    category: row.category,
+    subCategory: row.sub_category,
+    categories: row.categories ?? undefined,
+    status: row.status ?? "판매중",
+    isNew: row.is_new ?? false,
+    tagline: row.tagline ?? "",
+    price: row.price ?? "",
+    consumerPrice: row.consumer_price ?? undefined,
+    supplyPrice: row.supply_price ?? undefined,
+    features: row.features ?? [],
+    featureTags: row.feature_tags ?? [],
+    jobTypes: row.job_types ?? [],
+    jobSites: row.job_sites ?? [],
+    seasons: row.seasons ?? [],
+    promoStart: row.promo_start ?? undefined,
+    promoEnd: row.promo_end ?? undefined,
+    mainExpose: row.main_expose ?? [],
+    fieldTest: row.field_test ?? undefined,
+    wearerQuote: row.wearer_quote ?? undefined,
+    bg: row.bg ?? "bg-[#1A2B4A]",
+    colors: row.colors ?? [],
+    sizes: row.sizes ?? [],
+    imageUrl: row.image_url ?? undefined,
+    subImages: row.sub_images ?? [],
+    detailBlocks: row.detail_blocks ?? [],
+    relatedIds: row.related_ids ?? [],
+    metaTitle: row.meta_title ?? undefined,
+    metaDesc: row.meta_desc ?? undefined,
+    createdAt: row.created_at ?? undefined,
+  };
+}
+
+// Product (camelCase) → DB row (snake_case)
+export function mapToDb(p: Partial<Product>) {
+  return {
+    id: p.id,
+    sku: p.sku ?? null,
+    brand: p.brand ?? null,
+    manufacturer: p.manufacturer ?? null,
+    origin: p.origin ?? null,
+    name: p.name,
+    line: p.line,
+    category: p.category,
+    sub_category: p.subCategory,
+    categories: p.categories ?? null,
+    status: p.status ?? "판매중",
+    is_new: p.isNew ?? false,
+    tagline: p.tagline ?? "",
+    price: p.price ?? "",
+    consumer_price: p.consumerPrice ?? null,
+    supply_price: p.supplyPrice ?? null,
+    features: p.features ?? [],
+    feature_tags: p.featureTags ?? [],
+    job_types: p.jobTypes ?? [],
+    job_sites: p.jobSites ?? [],
+    seasons: p.seasons ?? [],
+    promo_start: p.promoStart ?? null,
+    promo_end: p.promoEnd ?? null,
+    main_expose: p.mainExpose ?? [],
+    field_test: p.fieldTest ?? null,
+    wearer_quote: p.wearerQuote ?? null,
+    bg: p.bg ?? "bg-[#1A2B4A]",
+    colors: p.colors ?? [],
+    sizes: p.sizes ?? [],
+    image_url: p.imageUrl ?? null,
+    sub_images: p.subImages ?? [],
+    detail_blocks: p.detailBlocks ?? [],
+    related_ids: p.relatedIds ?? [],
+    meta_title: p.metaTitle ?? null,
+    meta_desc: p.metaDesc ?? null,
+  };
+}

@@ -1,0 +1,348 @@
+﻿"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useCart } from "@/contexts/CartContext";
+import { stores } from "@/data/stores";
+import type { Product } from "@/data/products";
+
+const SIZES = ["S", "M", "L", "XL", "2XL"];
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDist(km: number) {
+  return km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
+}
+
+type NearStore = { id: number; name: string; address: string; distance: number; lat: number; lng: number };
+
+export default function ProductDetailClient({
+  product,
+  relatedProducts = [],
+  isNewLayout = false,
+}: {
+  product: Product;
+  relatedProducts?: Product[];
+  isNewLayout?: boolean;
+}) {
+  const { addItem } = useCart();
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  const [addedMsg, setAddedMsg] = useState(false);
+
+  const [showStorePanel, setShowStorePanel] = useState(false);
+  const [nearStores, setNearStores] = useState<NearStore[]>([]);
+  const [locStatus, setLocStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [locError, setLocError] = useState("");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!showStorePanel) return;
+    if (locStatus === "success") return;
+    setLocStatus("loading");
+    setLocError("");
+    if (!navigator.geolocation) {
+      setLocStatus("error");
+      setLocError("이 브라우저는 위치 서비스를 지원하지 않습니다.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const coords = { lat, lng };
+        setUserCoords(coords);
+        const nearest = stores
+          .map((s) => ({ ...s, distance: haversine(lat, lng, s.lat, s.lng) }))
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 5);
+        setNearStores(nearest);
+        setLocStatus("success");
+        fetch("/api/route-distance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ origin: coords, destinations: nearest.map((s) => ({ id: s.id, lat: s.lat, lng: s.lng })) }),
+        })
+          .then((r) => r.json())
+          .then(({ results }: { results: { id: number; distance: number }[] }) => {
+            const dm = new Map(results.map((r) => [r.id, r.distance]));
+            setNearStores((prev) =>
+              [...prev].map((s) => ({ ...s, distance: dm.get(s.id) ?? s.distance })).sort((a, b) => a.distance - b.distance)
+            );
+          })
+          .catch(() => {});
+      },
+      (err) => {
+        setLocStatus("error");
+        setLocError(err.code === err.PERMISSION_DENIED ? "위치 접근 권한을 허용해 주세요." : "위치를 가져올 수 없습니다.");
+      },
+      { timeout: 10000 }
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showStorePanel]);
+
+  const openKakao = (s: NearStore) => {
+    const dest = `${encodeURIComponent(s.name)},${s.lat},${s.lng}`;
+    const url = userCoords
+      ? `https://map.kakao.com/link/from/${encodeURIComponent("내 위치")},${userCoords.lat},${userCoords.lng}/to/${dest}`
+      : `https://map.kakao.com/link/to/${dest}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedSize) { alert("사이즈를 선택해 주세요."); return; }
+    addItem({ productId: product.id, name: product.name, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg });
+    setAddedMsg(true);
+    setTimeout(() => setAddedMsg(false), 2500);
+  };
+
+  const StoreList = () => (
+    <>
+      {locStatus === "loading" && (
+        <div className="flex items-center gap-3 py-6 text-sm text-gray-500">
+          <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          위치를 확인하는 중입니다...
+        </div>
+      )}
+      {locStatus === "error" && (
+        <div className="py-4">
+          <p className="text-sm text-red-500 mb-3">{locError}</p>
+          <button onClick={() => { setLocStatus("idle"); setShowStorePanel(false); setTimeout(() => setShowStorePanel(true), 50); }}
+            className="text-xs text-[#1A2B4A] border border-[#1A2B4A] px-4 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors">
+            다시 시도
+          </button>
+        </div>
+      )}
+      {locStatus === "success" && nearStores.length > 0 && (
+        <div className="space-y-3">
+          {nearStores.map((s, i) => (
+            <div key={s.id} className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 last:border-0">
+              <div className="flex items-start gap-3">
+                <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${i === 0 ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"}`}>{i + 1}</span>
+                <div>
+                  <p className="text-sm font-bold text-[#1A2B4A]">{s.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{s.address}</p>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#ff550c]" : "text-gray-500"}`}>{formatDist(s.distance)}</p>
+                <button onClick={() => openKakao(s)} className="text-xs text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">길찾기</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <>
+    <div className="px-6 md:px-10 lg:px-14 py-8 md:py-12 space-y-7">
+
+      {/* 카테고리 + 이름 + 가격 */}
+      <div>
+        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mb-2.5">
+          <span>{product.category}</span>
+          <span className="text-gray-300">›</span>
+          <span>{product.subCategory}</span>
+          <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 tracking-wider">WORKUP {product.line}</span>
+        </div>
+        {product.brand && (
+          <span className="inline-block text-[11px] text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full mb-2">
+            {product.brand}
+          </span>
+        )}
+        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-3">{product.name}</h1>
+        <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{product.price}</p>
+      </div>
+
+      <div className="h-px bg-gray-100" />
+
+      {/* 핵심 가치 3줄 (신규) 또는 기존 소개+특징 */}
+      {isNewLayout && product.coreValues ? (
+        <ul className="space-y-3">
+          {product.coreValues.map((v) => (
+            <li key={v} className="flex items-start gap-3 text-sm text-[#1A2B4A] font-medium leading-relaxed">
+              <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
+              {v}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <>
+          <p className="text-sm text-gray-500 leading-relaxed italic">&ldquo;{product.tagline}&rdquo;</p>
+          <ul className="space-y-2.5">
+            {product.features.map((f) => (
+              <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
+                <span className="w-1 h-1 bg-[#ff550c] rounded-full flex-shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* 필드 테스트 */}
+      {product.fieldTest && (
+        <div className="flex items-start gap-2.5 bg-orange-50 px-4 py-3 border-l-2 border-[#ff550c]">
+          <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
+          <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
+        </div>
+      )}
+
+      <div className="h-px bg-gray-100" />
+
+      {/* 컬러 */}
+      {product.colors.length > 0 && (
+        <div>
+          <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">컬러</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            {product.colors.map((c) => (
+              <button key={c.name} onClick={() => setSelectedColor(c)} title={c.name}
+                className={`w-7 h-7 rounded-full border-2 transition-all ${
+                  selectedColor?.name === c.name ? "border-[#ff550c] scale-110" : "border-transparent ring-1 ring-gray-200 hover:ring-gray-400"
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+            {selectedColor && <span className="text-xs text-gray-500">{selectedColor.name}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* 사이즈 */}
+      <div>
+        <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">사이즈 선택</p>
+        <div className="flex gap-2 flex-wrap">
+          {SIZES.map((s) => (
+            <button key={s} onClick={() => setSelectedSize(s)}
+              className={`min-w-[48px] h-10 px-3 text-sm border transition-colors ${
+                selectedSize === s
+                  ? "bg-[#1A2B4A] text-white border-[#1A2B4A]"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A] hover:text-[#1A2B4A]"
+              }`}>
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 연관 상품 */}
+      {relatedProducts.length > 0 && (
+        <div>
+          <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">연관 상품</p>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+            {relatedProducts.map((rp) => (
+              <Link key={rp.id} href={`/products/${rp.id}`} className="flex-shrink-0 w-[88px] group">
+                <div className={`relative w-[88px] h-[88px] overflow-hidden mb-2 ${rp.bg}`}>
+                  {rp.imageUrl
+                    ? <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="88px" />
+                    : <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[8px]">WORKUP</span>
+                  }
+                </div>
+                <p className="text-[11px] text-gray-600 leading-tight truncate">{rp.name}</p>
+                <p className="text-xs font-semibold text-[#1A2B4A] mt-0.5">{rp.price}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="h-px bg-gray-100" />
+
+      {/* CTA: 피팅 리스트(1) → 매장 찾기(2) */}
+      <div className="space-y-2.5">
+        <button onClick={handleAddToCart}
+          className={`w-full py-4 text-sm font-bold tracking-widest transition-colors ${
+            addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
+          }`}>
+          {addedMsg ? "✓ 피팅 리스트에 담았습니다!" : "피팅 리스트에 담기"}
+        </button>
+
+        {/* 매장 찾기 — 모바일: 바텀시트 / 데스크탑: 인라인 */}
+        <button
+          onClick={() => setShowStorePanel(!showStorePanel)}
+          className="w-full py-3.5 text-sm border border-gray-200 text-gray-700 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex items-center justify-center gap-2">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          가까운 매장 찾기
+        </button>
+      </div>
+
+      {/* 데스크탑 인라인 매장 패널 */}
+      {showStorePanel && (
+        <div className="hidden md:block border border-gray-200 bg-white overflow-hidden">
+          <div className="bg-[#1A2B4A] px-5 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
+              <p className="text-sm font-bold text-white mt-0.5">가까운 매장 5곳</p>
+            </div>
+            <Link href="/store" className="text-gray-300 hover:text-white transition-colors text-xs flex items-center gap-1">
+              전체 매장
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+          </div>
+          <div className="p-5">
+            <StoreList />
+            {locStatus === "success" && (
+              <Link href="/store" className="block text-center text-xs text-gray-400 hover:text-[#1A2B4A] transition-colors pt-3">전체 매장 보기 →</Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 피팅리스트 안내 — 구 레이아웃만 */}
+      {!isNewLayout && (
+        <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
+          <p className="text-xs font-semibold text-[#1A2B4A] mb-1">피팅 리스트란?</p>
+          <p className="text-xs text-gray-500 leading-relaxed">원하는 제품을 미리 담아두고 매장 방문 시 직원에게 보여주세요.</p>
+          <Link href="/cart" className="text-xs text-[#ff550c] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
+        </div>
+      )}
+
+    </div>
+
+    {/* 모바일 바텀시트 매장 패널 */}
+    {showStorePanel && isNewLayout && (
+      <div className="md:hidden">
+        <div className="fixed inset-0 bg-black/50 z-[60]" onClick={() => setShowStorePanel(false)} />
+        <div className="fixed bottom-0 left-0 right-0 z-[61] bg-white rounded-t-2xl max-h-[75vh] flex flex-col">
+          <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+          <div className="px-5 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+            <div>
+              <p className="text-[11px] tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
+              <p className="text-base font-bold text-[#1A2B4A]">가까운 매장 찾기</p>
+            </div>
+            <button onClick={() => setShowStorePanel(false)} className="text-gray-400 hover:text-gray-700 p-1">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-4">
+            <StoreList />
+          </div>
+          <div className="p-4 border-t border-gray-100 flex-shrink-0" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+            <Link href="/store" className="block w-full bg-[#1A2B4A] text-white text-center py-4 font-bold text-sm tracking-widest">
+              전체 매장 바로가기 →
+            </Link>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}

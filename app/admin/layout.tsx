@@ -1,0 +1,68 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import AdminSidebar from "@/components/AdminSidebar";
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const store = await cookies();
+  const token = store.get("wu-auth")?.value;
+  if (token !== (process.env.AUTH_TOKEN ?? "wu-session-ok")) {
+    redirect("/login");
+  }
+  return (
+    <div className="min-h-screen bg-[#f1f5f9] flex flex-col">
+      {/* 상단 헤더 */}
+      <header className="bg-[#0f172a] h-16 flex items-center justify-between px-8 flex-shrink-0 z-20 border-b border-white/5">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-[#1d4ed8] rounded-lg flex items-center justify-center">
+              <span className="text-white text-[13px] font-black tracking-tight">WU</span>
+            </div>
+            <div>
+              <p className="text-white font-bold text-base tracking-wide leading-none">WORKUP</p>
+              <p className="text-slate-500 text-[11px] mt-0.5">Admin Dashboard</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <a
+            href="/"
+            target="_blank"
+            className="flex items-center gap-2 text-slate-400 text-sm hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            사이트 미리보기
+          </a>
+        </div>
+      </header>
+
+      {/* 본문 */}
+      <div className="flex flex-1 overflow-hidden">
+        <AdminSidebar />
+        <main className="flex-1 overflow-y-auto bg-[#f1f5f9]">
+          <style>{`
+            .ac .text-\\[9px\\]  { font-size: 18px !important; }
+            .ac .text-\\[10px\\] { font-size: 20px !important; }
+            .ac .text-\\[11px\\] { font-size: 22px !important; }
+            .ac .text-\\[12px\\], .ac .text-xs   { font-size: 24px !important; }
+            .ac .text-\\[13px\\] { font-size: 26px !important; }
+            .ac .text-\\[14px\\], .ac .text-sm   { font-size: 28px !important; }
+            .ac .text-\\[15px\\] { font-size: 30px !important; }
+            .ac .text-\\[16px\\], .ac .text-base { font-size: 32px !important; }
+            .ac .text-\\[18px\\], .ac .text-lg   { font-size: 36px !important; }
+            .ac .text-\\[20px\\], .ac .text-xl   { font-size: 40px !important; }
+            .ac .text-2xl  { font-size: 48px !important; }
+            .ac .text-3xl  { font-size: 60px !important; }
+            .ac .text-4xl  { font-size: 72px !important; }
+            .ac .text-5xl  { font-size: 96px !important; }
+            .ac { font-size: 32px; }
+          `}</style>
+          <div className="ac p-10 [&_label]:text-[15px] [&_th]:text-[14px]">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,147 @@
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+const navItems = [
+  { label: "PRODUCTS", href: "/products" },
+  { label: "STORE", href: "/store" },
+  { label: "STORY", href: "/story" },
+  { label: "MATE", href: "/people" },
+  { label: "FIELD TEST", href: "/field-test" },
+];
+
+export default function BottomNav() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // 메뉴 열릴 때 body 스크롤 잠금
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
+  return (
+    <>
+      {/* 백드롭 — 네비바(z-60) 아래 */}
+      <div
+        aria-hidden="true"
+        className={`fixed inset-0 z-[58] bg-black/50 transition-opacity duration-300 md:hidden ${
+          menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setMenuOpen(false)}
+      />
+
+      {/*
+        바텀시트
+        - bottom-14 : 하단 네비바(h-14=56px) 바로 위에서 시작
+        - translateY(100%) : 닫힌 상태 → 자신의 높이만큼 아래로 내려가
+                             네비바 뒤로 완전히 숨음
+        - translateY(0)    : 열린 상태 → 네비바 위에 딱 붙어서 노출
+      */}
+      <div
+        className="fixed bottom-14 left-0 right-0 z-[59] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out md:hidden"
+        style={{ transform: menuOpen ? "translateY(0)" : "translateY(110%)" }}
+        aria-modal="true"
+        role="dialog"
+      >
+        {/* 드래그 핸들 */}
+        <div className="flex justify-center pt-3.5 pb-2">
+          <div className="w-9 h-1 bg-gray-300 rounded-full" />
+        </div>
+
+        {/* 시트 내부 헤더 */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+          <span className="text-[11px] font-bold text-[#1A2B4A] tracking-[0.2em]">MENU</span>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="닫기"
+          >
+            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* 메뉴 항목 */}
+        <nav className="px-6 pb-4 pt-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex items-center justify-between py-4 text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] transition-colors tracking-[0.15em] border-b border-gray-100 last:border-0"
+              onClick={() => setMenuOpen(false)}
+            >
+              {item.label}
+              <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+              </svg>
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* 하단 네비게이션 바 */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-200 h-14 md:hidden">
+        <div className="flex items-stretch h-full">
+
+          {/* 메뉴 */}
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              menuOpen ? "text-[#ff550c]" : "text-[#1A2B4A]"
+            }`}
+            aria-label="메뉴"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? (
+              /* 열린 상태: X 아이콘 */
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              /* 닫힌 상태: 햄버거 */
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+            <span className="text-[10px] font-medium">메뉴</span>
+          </button>
+
+          {/* 홈 */}
+          <Link
+            href="/"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A]"
+            aria-label="홈"
+            onClick={() => setMenuOpen(false)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
+            </svg>
+            <span className="text-[10px] font-medium">홈</span>
+          </Link>
+
+          {/* 전체매장 */}
+          <Link
+            href="/store"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A]"
+            aria-label="전체매장"
+            onClick={() => setMenuOpen(false)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5h18" />
+            </svg>
+            <span className="text-[10px] font-medium">전체매장</span>
+          </Link>
+
+        </div>
+      </nav>
+    </>
+  );
+}

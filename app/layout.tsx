@@ -1,0 +1,41 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
+import SideBanner from "@/components/SideBanner";
+import BottomNav from "@/components/BottomNav";
+import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
+import PixelManager from "@/components/PixelManager";
+
+export const metadata: Metadata = {
+  title: "WORKUP — 일하는 사람을 위한 옷",
+  description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ko">
+      <body className="min-h-full flex flex-col">
+        <PixelManager />
+        <CartProvider>
+          <WishlistProvider>
+            <AnnouncementBanner />
+            <Header />
+            <div className="relative flex-1 pb-14 md:pb-0">
+              {children}
+            </div>
+            <SideBanner />
+            <Footer />
+            <BottomNav />
+          </WishlistProvider>
+        </CartProvider>
+      </body>
+    </html>
+  );
+}
