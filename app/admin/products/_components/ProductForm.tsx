@@ -1470,6 +1470,31 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   </div>
                 )}
 
+                {/* 착용 부위 — 착용컷 전용 (장갑·모자·안전용품 등 소품) */}
+                {!["누끼컷", "원단컷"].includes(promptType) && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-600 mb-1.5">
+                      착용 부위 <span className="text-gray-400 font-normal">(장갑·모자·안전용품 등 소품)</span>
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {["기본", "손·장갑", "머리·모자", "발·신발/양말", "허리·벨트", "상체·조끼/가방", "얼굴·고글/마스크"].map(w => (
+                        <button key={w} type="button"
+                          onClick={() => setPromptWornFocus(w)}
+                          className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
+                            promptWornFocus === w
+                              ? "bg-violet-600 text-white border-violet-600"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
+                          }`}>{w}</button>
+                      ))}
+                    </div>
+                    {promptWornFocus !== "기본" && (
+                      <p className="text-[10px] text-violet-500 mt-1.5">
+                        선택한 부위 중심으로 착용컷이 생성됩니다. 제품 단독컷은 <b>누끼컷</b>을 사용하세요.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* 추가 옵션 */}
                 <div>
                   <p className="text-[11px] font-semibold text-gray-600 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(선택 · 복수가능)</span></p>
