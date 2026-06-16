@@ -365,18 +365,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       "대표반신컷": {
         compose:
           "Half-body representative crop — waist-up for tops, mid-thigh-up for bottoms. " +
-          "Product fills ~70–80% of the frame. Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
+          "Product fills ~60–70% of the frame with calm breathing space around the subject. Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
         camera: "Full-frame mirrorless, 85mm f/5.6 portrait lens, eye-level — tack-sharp on the garment fabric",
         light:  "Large octabox key light at 45°, white fill card opposite, subtle rim light for clean subject separation — even, true-to-color commercial lighting",
-        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · 제품 70~80% · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
+        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · 제품 60~70%(상단 여백 확보) · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
       },
       "전신컷": {
         compose:
-          "Full body, head-to-toe, every part visible. Subject height occupies ~85–90% of the 930px vertical frame. " +
-          "Minimal headroom and floor gap, balanced left-right margins, feet near bottom edge.",
+          "Full body, head-to-toe, every part visible. Subject height occupies ~75–82% of the 930px vertical frame, vertically centered. " +
+          "Comfortable breathing room above the head and below the feet (do not crop tight to the top), balanced left-right margins.",
         camera: "Full-frame mirrorless, 50mm f/8 from slightly below eye-level to elongate the silhouette, sharp front-to-back",
         light:  "Two tall softboxes for even head-to-toe illumination, soft fill, gentle floor falloff",
-        kor: "전신컷 — 머리~발끝 전체 · 세로 85~90% · 50mm · 상하 여백 최소 · 좌우 균형",
+        kor: "전신컷 — 머리~발끝 전체 · 세로 75~82% · 50mm · 상하 여백 여유 · 좌우 균형",
       },
       "측면컷": {
         compose:
