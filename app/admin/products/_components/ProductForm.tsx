@@ -823,7 +823,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <label className="block text-xs font-medium text-gray-500 mb-2">
                   카테고리 <span className="text-red-400">*</span>
                   <span className="text-gray-400 font-normal ml-1.5">— 여러 카테고리에 동시 등록 가능, 첫 번째 = 대표</span>
-                  <a href="/admin/categories" target="_blank" rel="noopener" className="ml-2 text-[#1A2B4A] hover:underline">관리 ↗</a>
+                  <a href="/admin/main/categories" target="_blank" rel="noopener" className="ml-2 text-[#1A2B4A] hover:underline">관리 ↗</a>
                 </label>
 
                 {/* 선택된 카테고리 칩 */}
