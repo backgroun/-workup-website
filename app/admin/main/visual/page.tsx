@@ -991,7 +991,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
         ref={containerRef}
         className="relative rounded-lg overflow-hidden bg-slate-900 select-none"
         style={{
-          paddingBottom: mode === "mobile" ? "46.35%" : aspectPad,
+          paddingBottom: aspectPad,
           width: mode === "mobile" ? "50%" : "100%",
           marginInline: mode === "mobile" ? "auto" : undefined,
           containerType: "inline-size",
