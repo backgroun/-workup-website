@@ -55,6 +55,8 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   mobile_image_url: "",
   pc_image_position: "50% 50%",
   mobile_image_position: "50% 50%",
+  pc_image_scale: 1,
+  mobile_image_scale: 1,
   content_x: 5,
   content_y: 35,
   title_size: 28,
