@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 type HeroSlide = {
   id: string;
@@ -22,7 +23,15 @@ type HeroSlide = {
   is_visible: boolean;
   scheduled_start: string | null;
   scheduled_end: string | null;
+  slide_type: string;
   sort_order: number;
+};
+
+type SlideType = "main" | "product";
+
+const SLIDE_TYPE_LABELS: Record<SlideType, string> = {
+  main: "메인 비주얼",
+  product: "상품 비주얼",
 };
 
 const EMPTY: Omit<HeroSlide, "id"> = {
@@ -42,6 +51,7 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   mobile_image_position: "50% 50%",
   content_x: 5,
   content_y: 35,
+  slide_type: "main",
   is_visible: true,
   scheduled_start: null,
   scheduled_end: null,
@@ -59,6 +69,10 @@ function toIsoOrNull(val: string): string | null {
 }
 
 export default function AdminMainVisualPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const slideType = (searchParams.get("type") ?? "main") as SlideType;
+
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [fetchError, setFetchError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,7 +94,7 @@ export default function AdminMainVisualPage() {
     setLoading(true);
     setFetchError(false);
     try {
-      const res = await fetch("/api/admin/hero-slides");
+      const res = await fetch(`/api/admin/hero-slides?type=${slideType}`);
       if (!res.ok) { setFetchError(true); setLoading(false); return; }
       const data = await res.json();
       setSlides(Array.isArray(data) ? data : []);
@@ -90,7 +104,7 @@ export default function AdminMainVisualPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); setEditing(null); }, [slideType]);
 
   const flash = (text: string, type = "ok") => {
     setMsg({ text, type });
@@ -98,7 +112,7 @@ export default function AdminMainVisualPage() {
   };
 
   const openNew = () => {
-    setEditing({ id: "", ...EMPTY, sort_order: slides.length });
+    setEditing({ id: "", ...EMPTY, slide_type: slideType, sort_order: slides.length });
     setIsNew(true);
     setUseSchedule(false);
     setSameImage(false);
