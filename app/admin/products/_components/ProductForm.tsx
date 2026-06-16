@@ -320,6 +320,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       ? `${form.categories[0].main} / ${form.categories[0].sub}`
       : promptClothingType;
 
+    // 하의(바지)인지 자동 감지 — 대표반신컷을 하반신 중심으로 전환하기 위함
+    const catSub = form.categories[0]?.sub ?? "";
+    const isBottom = /하의|팬츠|바지|슬랙스|쇼츠|반바지|조거/.test(`${catSub} ${name}`);
+
     const clothingEng = promptClothingType === "일상복"
       ? "Korean casual everyday wear"
       : "Korean functional workwear";
