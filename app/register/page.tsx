@@ -70,11 +70,11 @@ export default function RegisterPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-3">가입이 완료됐습니다</h2>
           <p className="text-gray-500 text-sm mb-8">워크업 회원이 되신 것을 환영합니다.<br />매장을 방문하시면 더 많은 혜택을 누리실 수 있습니다.</p>
           <div className="flex gap-3">
-            <Link href="/"
+            <Link href="/mypage"
               className="flex-1 py-3 text-center bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
-              홈으로
+              마이페이지
             </Link>
-            <Link href="/site"
+            <Link href="/products"
               className="flex-1 py-3 text-center border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
               제품 보기
             </Link>
@@ -209,7 +209,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-400 mt-6">
           이미 회원이신가요?{" "}
-          <Link href="/login" className="text-[#1A2B4A] font-semibold hover:underline">
+          <Link href="/member/login" className="text-[#1A2B4A] font-semibold hover:underline">
             로그인
           </Link>
         </p>
