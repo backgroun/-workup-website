@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
 import PeopleGrid from "@/components/PeopleGrid";
+import { DEFAULT_PEOPLE, type Person } from "@/data/people";
+import { getSiteSection } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "PEOPLE — 일하는 사람들의 이야기 | WORKUP",
   description: "워크업과 함께하는 사람들. 매일 현장에서 땀 흘리는 사람들의 이야기.",
 };
 
-export default function PeoplePage() {
+export default async function PeoplePage() {
+  const config = await getSiteSection<{ items?: Person[] }>("people_page");
+  const items = config?.items?.length ? config.items : DEFAULT_PEOPLE;
+
   return (
     <main>
-      <PeopleGrid />
+      <PeopleGrid items={items} />
     </main>
   );
 }
