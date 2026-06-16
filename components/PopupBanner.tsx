@@ -5,21 +5,36 @@ import Link from "next/link";
 
 const STORAGE_KEY = "popup_hidden_until";
 
+type PopupConfig = {
+  is_active: boolean;
+  subtitle: string;
+  title: string;
+  link: string;
+  link_text: string;
+  bg: string;
+};
+
 export default function PopupBanner() {
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
   const [hideToday, setHideToday] = useState(false);
+  const [cfg, setCfg] = useState<PopupConfig | null>(null);
 
   useEffect(() => {
     const hiddenUntil = localStorage.getItem(STORAGE_KEY);
     if (hiddenUntil && new Date().getTime() < Number(hiddenUntil)) return;
-    setMounted(true);
-    // 렌더 후 50ms 뒤 슬라이드 인 시작
-    const t = setTimeout(() => setShown(true), 50);
-    return () => clearTimeout(t);
+
+    fetch("/api/admin/site-settings/popup_banner")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data || data.is_active === false) return;
+        setCfg(data);
+        setMounted(true);
+        setTimeout(() => setShown(true), 50);
+      })
+      .catch(() => {});
   }, []);
 
-  // 모바일에서 시트 열릴 때 스크롤 잠금
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isMobile = window.innerWidth < 768;
@@ -38,35 +53,28 @@ export default function PopupBanner() {
       localStorage.setItem(STORAGE_KEY, String(midnight.getTime()));
     }
     setShown(false);
-    // 애니메이션(300ms) 끝난 뒤 DOM에서 제거
     setTimeout(() => setMounted(false), 350);
   }
 
-  if (!mounted) return null;
+  if (!mounted || !cfg) return null;
 
-  /* ── 공통 콘텐츠 ── */
   const banner = (
     <div
       className="relative flex flex-col justify-between p-6"
-      style={{
-        height: 280,
-        background: "linear-gradient(135deg, #7eb8d4 0%, #a8d8b8 50%, #d4c5a9 100%)",
-      }}
+      style={{ height: 280, background: cfg.bg }}
     >
       <div>
-        <p className="text-sm font-normal text-white/80 leading-snug">
-          안는 순간, 시원해지는
-        </p>
-        <p className="mt-1 text-2xl font-bold text-white leading-tight">
-          여름을 위한<br />냉감 멀티쿠션
+        <p className="text-sm font-normal text-white/80 leading-snug">{cfg.subtitle}</p>
+        <p className="mt-1 text-2xl font-bold text-white leading-tight whitespace-pre-line">
+          {cfg.title}
         </p>
       </div>
       <Link
-        href="/products"
+        href={cfg.link}
         className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white"
         onClick={handleClose}
       >
-        상품 보러가기 &gt;
+        {cfg.link_text} &gt;
       </Link>
     </div>
   );
@@ -104,8 +112,6 @@ export default function PopupBanner() {
         {footer}
       </div>
 
-      {/* ── 모바일 바텀시트 (< md) ── */}
-
       {/* 백드롭 */}
       <div
         aria-hidden="true"
@@ -122,39 +128,31 @@ export default function PopupBanner() {
         role="dialog"
         aria-modal="true"
       >
-        {/* 드래그 핸들 */}
         <div className="flex justify-center pt-3.5 pb-1">
           <div className="w-9 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* 이미지 배너 */}
         <div className="px-4 pt-2 pb-0">
           <div
             className="relative flex flex-col justify-between p-5 rounded-2xl overflow-hidden"
-            style={{
-              height: 220,
-              background: "linear-gradient(135deg, #7eb8d4 0%, #a8d8b8 50%, #d4c5a9 100%)",
-            }}
+            style={{ height: 220, background: cfg.bg }}
           >
             <div>
-              <p className="text-xs font-normal text-white/80 leading-snug">
-                안는 순간, 시원해지는
-              </p>
-              <p className="mt-1 text-xl font-bold text-white leading-tight">
-                여름을 위한<br />냉감 멀티쿠션
+              <p className="text-xs font-normal text-white/80 leading-snug">{cfg.subtitle}</p>
+              <p className="mt-1 text-xl font-bold text-white leading-tight whitespace-pre-line">
+                {cfg.title}
               </p>
             </div>
             <Link
-              href="/products"
+              href={cfg.link}
               className="inline-flex items-center gap-1 text-sm font-medium text-white/90"
               onClick={handleClose}
             >
-              상품 보러가기 &gt;
+              {cfg.link_text} &gt;
             </Link>
           </div>
         </div>
 
-        {/* 하단 바 */}
         <div className="flex items-center justify-between px-5 py-4 mt-1">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-500 select-none">
             <input
@@ -165,15 +163,11 @@ export default function PopupBanner() {
             />
             오늘 하루 보지않기
           </label>
-          <button
-            onClick={handleClose}
-            className="text-sm font-medium text-gray-700"
-          >
+          <button onClick={handleClose} className="text-sm font-medium text-gray-700">
             닫기
           </button>
         </div>
 
-        {/* 홈 인디케이터 여백 */}
         <div className="h-5" />
       </div>
     </>

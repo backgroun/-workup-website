@@ -76,7 +76,7 @@ function WhiteBox({
             fontWeight: "bold",
             color: "#1A2B4A",
             lineHeight: 1.3,
-            marginBottom: "30px",
+            marginBottom: "20px",
           }}
         >
           {section.title}
@@ -86,7 +86,7 @@ function WhiteBox({
             fontSize: "13px",
             color: "#6b7280",
             lineHeight: 1.7,
-            marginBottom: "30px",
+            marginBottom: "20px",
           }}
         >
           {section.desc}
