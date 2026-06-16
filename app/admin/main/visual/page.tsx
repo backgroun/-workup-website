@@ -226,7 +226,7 @@ export default function AdminMainVisualPage() {
     }
   };
 
-  const set = (key: keyof HeroSlide, value: string | boolean | number | null) => {
+  const set = (key: keyof HeroSlide, value: string | boolean | number | null | TextLayer[]) => {
     setEditing((prev) => prev ? { ...prev, [key]: value } : prev);
   };
 
