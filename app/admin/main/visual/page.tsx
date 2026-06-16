@@ -1206,106 +1206,102 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
     setExtras((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
 
   return (
-    <div className="space-y-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
-      <div className="flex gap-2 flex-wrap">
-        <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">PC: 1920 × 680px</span>
-        <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">모바일: 750 × 695px</span>
-      </div>
-
-      {/* 이미지 설명 — 생성할 장면을 간략히 묘사 */}
-      <div>
-        <p className="text-xs font-semibold text-slate-600 mb-2">
-          이미지 설명 <span className="font-normal text-slate-400">— 어떤 장면을 만들지 간략히</span>
-        </p>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder="예: 해질녘 도심 옥상에서 바람을 맞으며 서 있는 모델, 멀리 도시 야경"
-          className="w-full border border-slate-200 px-3 py-2 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none"
-        />
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold text-slate-600 mb-2">의류 유형</p>
-        <div className="flex gap-2">
-          {(["작업복", "일상복"] as const).map((t) => (
-            <button key={t} type="button" onClick={() => setClothingType(t)}
-              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${clothingType === t ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold text-slate-600 mb-2">시즌</p>
-        <div className="flex gap-2 flex-wrap">
-          {["봄", "여름", "가을", "겨울", "전천후"].map((s) => (
-            <button key={s} type="button" onClick={() => setSeason(season === s ? "" : s)}
-              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${season === s ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold text-slate-600 mb-2">추가 옵션</p>
-        <div className="flex gap-2 flex-wrap mb-2">
-          {VISUAL_EXTRA_PRESETS.map((p) => (
-            <button key={p} type="button" onClick={() => toggleExtra(p)}
-              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${extras.includes(p) ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-              {p}
-            </button>
-          ))}
-        </div>
-        <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)}
-          placeholder="직접 입력 후 Enter"
-          className="w-full border border-slate-200 px-3 py-1.5 text-xs rounded-lg focus:outline-none focus:border-blue-400"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && customInput.trim()) {
-              e.preventDefault();
-              toggleExtra(customInput.trim());
-              setCustomInput("");
-            }
-          }}
-        />
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold text-slate-600 mb-2">촬영 구도</p>
-        <div className="flex gap-2 flex-wrap">
-          {(Object.keys(VISUAL_SHOT_TYPES) as VisualShotKey[]).map((k) => (
-            <button key={k} type="button" onClick={() => setShotType(k)}
-              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${shotType === k ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-              {VISUAL_SHOT_TYPES[k]}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+      {/* 생성 버튼 (상단) */}
       <button type="button" onClick={generate}
-        className="w-full py-2.5 bg-gradient-to-r from-slate-700 to-slate-900 text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
-        이미지 프롬프트 생성
+        className="w-full py-2.5 mb-4 bg-gradient-to-r from-slate-700 to-slate-900 text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
+        ✨ 이미지 프롬프트 생성
       </button>
 
-      {prompt && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-600">생성된 프롬프트</p>
-            <button type="button" onClick={copy}
-              className={`text-xs px-3 py-1 rounded-lg border transition-colors ${copied ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-              {copied ? "복사됨!" : "복사"}
-            </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* 좌측: 옵션 */}
+        <div className="space-y-3">
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded">PC 1920×680</span>
+            <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded">모바일 750×695</span>
           </div>
-          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5}
-            className="w-full border border-slate-200 px-3 py-2.5 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none bg-white" />
-          {pcImageUrl && (
-            <p className="text-xs text-slate-400">* 생성된 프롬프트와 함께 현재 PC 이미지를 참고 이미지로 활용하세요.</p>
+
+          {/* 이미지 설명 (한 줄) */}
+          <div>
+            <p className="text-xs font-semibold text-slate-600 mb-1.5">이미지 설명 <span className="font-normal text-slate-400">— 장면을 간략히</span></p>
+            <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
+              placeholder="예: 해질녘 도심 옥상, 바람 맞는 모델"
+              className="w-full border border-slate-200 px-3 py-2 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400" />
+          </div>
+
+          {/* 의류 유형 + 시즌 (한 줄) */}
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <div>
+              <p className="text-xs font-semibold text-slate-600 mb-1.5">의류 유형</p>
+              <div className="flex gap-1.5">
+                {(["작업복", "일상복"] as const).map((t) => (
+                  <button key={t} type="button" onClick={() => setClothingType(t)}
+                    className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${clothingType === t ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>{t}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-600 mb-1.5">시즌</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {["봄", "여름", "가을", "겨울", "전천후"].map((s) => (
+                  <button key={s} type="button" onClick={() => setSeason(season === s ? "" : s)}
+                    className={`px-2.5 py-1.5 text-xs rounded-lg border transition-colors ${season === s ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 추가 옵션 */}
+          <div>
+            <p className="text-xs font-semibold text-slate-600 mb-1.5">추가 옵션</p>
+            <div className="flex gap-1.5 flex-wrap mb-2">
+              {VISUAL_EXTRA_PRESETS.map((p) => (
+                <button key={p} type="button" onClick={() => toggleExtra(p)}
+                  className={`px-2.5 py-1 text-[11px] rounded-lg border transition-colors ${extras.includes(p) ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>{p}</button>
+              ))}
+            </div>
+            <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)}
+              placeholder="직접 입력 후 Enter"
+              className="w-full border border-slate-200 px-3 py-1.5 text-xs rounded-lg focus:outline-none focus:border-blue-400"
+              onKeyDown={(e) => { if (e.key === "Enter" && customInput.trim()) { e.preventDefault(); toggleExtra(customInput.trim()); setCustomInput(""); } }} />
+          </div>
+
+          {/* 촬영 구도 (한글) */}
+          <div>
+            <p className="text-xs font-semibold text-slate-600 mb-1.5">촬영 구도</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {(Object.keys(VISUAL_SHOT_TYPES) as VisualShotKey[]).map((k) => (
+                <button key={k} type="button" onClick={() => setShotType(k)}
+                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${shotType === k ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>{VISUAL_SHOT_TYPES[k].ko}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 우측: 생성된 프롬프트 (남는 공간) */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-xs font-semibold text-slate-600">생성된 프롬프트</p>
+            {prompt && (
+              <button type="button" onClick={copy}
+                className={`text-[11px] px-3 py-1 rounded-lg border transition-colors ${copied ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+                {copied ? "복사됨!" : "복사"}
+              </button>
+            )}
+          </div>
+          {prompt ? (
+            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}
+              className="w-full flex-1 min-h-[180px] border border-slate-200 px-3 py-2.5 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none bg-white" />
+          ) : (
+            <div className="w-full flex-1 min-h-[180px] border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-[11px] text-slate-400 px-4 leading-relaxed">
+              왼쪽 옵션을 고르고 위의<br />‘이미지 프롬프트 생성’을 누르면<br />여기에 프롬프트가 표시됩니다.
+            </div>
+          )}
+          {prompt && pcImageUrl && (
+            <p className="text-[10px] text-slate-400 mt-1.5">* 프롬프트와 함께 현재 PC 이미지를 참고 이미지로 활용하세요.</p>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
