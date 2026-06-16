@@ -895,8 +895,24 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
 }) {
   const [mode, setMode] = useState<"pc" | "mobile">("pc");
   const [selId, setSelId] = useState<string | null>(layers[0]?.id ?? null);
+  const [editId, setEditId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef<{ id: string; dx: number; dy: number } | null>(null);
+
+  // 인라인 편집 시작 시 포커스 + 커서를 끝으로
+  useEffect(() => {
+    if (editId && editRef.current) {
+      const el = editRef.current;
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selc = window.getSelection();
+      selc?.removeAllRanges();
+      selc?.addRange(range);
+    }
+  }, [editId]);
 
   const designW = mode === "pc" ? 1920 : 750;
   const aspectPad = mode === "pc" ? "35.4%" : "92.7%";
