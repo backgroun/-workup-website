@@ -231,101 +231,181 @@ export default function AdminCombinedCategoriesPage() {
       {/* 2컬럼 레이아웃 */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 
-        {/* ══ 왼쪽: 카테고리 관리 ══════════════════════════════ */}
+        {/* ══ 왼쪽: 카테고리 구조 ══════════════════════════════ */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">카테고리 구조</h2>
-              <p className="text-xs text-gray-400 mt-0.5">대카테고리 · 하위카테고리 2단계 구조</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {catSaveMsg && (
-                <span className={`text-xs font-medium ${catSaveMsg === "ok" ? "text-green-600" : "text-red-500"}`}>
-                  {catSaveMsg === "ok" ? "저장됐습니다 ✓" : "저장 실패"}
-                </span>
-              )}
-              <button onClick={saveCats} disabled={catSaving}
-                className="px-4 py-2 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded-lg">
-                {catSaving ? "저장 중..." : "저장"}
-              </button>
-            </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">카테고리 구조</h2>
+            <p className="text-xs text-gray-400 mt-0.5">대카테고리 · 하위카테고리 2단계 구조</p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-100">
-              {cats.map((cat, catIdx) => (
-                <div key={catIdx}>
-                  <div className="flex items-center gap-3 px-5 py-3.5 bg-gray-50/60">
-                    <div className="flex gap-1">
-                      <button onClick={() => moveMain(catIdx, -1)} disabled={catIdx === 0}
-                        className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs rounded border border-gray-200 bg-white">↑</button>
-                      <button onClick={() => moveMain(catIdx, 1)} disabled={catIdx === cats.length - 1}
-                        className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs rounded border border-gray-200 bg-white">↓</button>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {/* 브레드크럼 */}
+            <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center gap-1.5">
+              {cats[selectedCatIdx] ? (
+                <>
+                  <span className="font-semibold text-[#1A2B4A]">{cats[selectedCatIdx].name}</span>
+                  <span className="text-gray-300">›</span>
+                  <span className="text-gray-400">소분류 편집</span>
+                </>
+              ) : (
+                <span>대카테고리를 선택하세요</span>
+              )}
+            </div>
+
+            {/* 2단 패널 */}
+            <div className="flex" style={{ height: "280px" }}>
+
+              {/* 왼쪽: 대카테고리 */}
+              <div className="w-1/2 border-r border-gray-100 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  {cats.map((cat, catIdx) => (
+                    <div
+                      key={catIdx}
+                      onClick={() => setSelectedCatIdx(catIdx)}
+                      className={`group flex items-center gap-1.5 px-3 py-2.5 text-sm border-b border-gray-50 last:border-0 cursor-pointer transition-colors ${
+                        selectedCatIdx === catIdx
+                          ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                          : "hover:bg-gray-50 text-gray-700"
+                      }`}
+                    >
+                      {/* 순서 버튼 */}
+                      <div className="flex flex-col gap-0 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); moveMain(catIdx, -1); }}
+                          disabled={catIdx === 0}
+                          className="w-4 h-3.5 flex items-center justify-center text-[9px] text-gray-400 hover:text-gray-700 disabled:opacity-20">▲</button>
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); moveMain(catIdx, 1); }}
+                          disabled={catIdx === cats.length - 1}
+                          className="w-4 h-3.5 flex items-center justify-center text-[9px] text-gray-400 hover:text-gray-700 disabled:opacity-20">▼</button>
+                      </div>
+
+                      {/* 이름 / 인라인 수정 */}
+                      {editingMain === catIdx ? (
+                        <input autoFocus value={editMainVal}
+                          onChange={e => setEditMainVal(e.target.value)}
+                          onBlur={() => commitEditMain(catIdx)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter") commitEditMain(catIdx);
+                            if (e.key === "Escape") setEditingMain(null);
+                          }}
+                          onClick={e => e.stopPropagation()}
+                          className="flex-1 min-w-0 border border-[#1A2B4A] px-1.5 py-0.5 text-sm focus:outline-none rounded" />
+                      ) : (
+                        <span className="flex-1 min-w-0 truncate">{cat.name}</span>
+                      )}
+
+                      {/* 액션 버튼 (hover 시 표시) */}
+                      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); startEditMain(catIdx); }}
+                          className="text-[10px] text-gray-400 hover:text-[#1A2B4A] px-1 py-0.5 border border-gray-200 rounded hover:border-[#1A2B4A] transition-colors">
+                          수정
+                        </button>
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); deleteMainCat(catIdx); }}
+                          className="text-[10px] text-red-400 hover:text-red-600 px-1 py-0.5 border border-red-200 rounded hover:border-red-400 transition-colors">
+                          삭제
+                        </button>
+                      </div>
+
+                      {/* > 화살표 */}
+                      <svg className={`w-4 h-4 flex-shrink-0 ${selectedCatIdx === catIdx ? "text-[#1A2B4A]" : "text-gray-300"}`}
+                        fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
-                    {editingMain === catIdx ? (
-                      <input autoFocus value={editMainVal}
-                        onChange={e => setEditMainVal(e.target.value)}
-                        onBlur={() => commitEditMain(catIdx)}
-                        onKeyDown={e => { if (e.key === "Enter") commitEditMain(catIdx); if (e.key === "Escape") setEditingMain(null); }}
-                        className="flex-1 border border-[#1A2B4A] px-2 py-1 text-sm font-bold text-[#1A2B4A] focus:outline-none rounded-lg" />
-                    ) : (
-                      <button onClick={() => startEditMain(catIdx)}
-                        className="flex-1 text-left text-[14px] font-bold text-gray-800 hover:text-[#ff550c] transition-colors">
-                        {cat.name}
-                        <span className="ml-2 text-[11px] font-normal text-gray-400">클릭하여 수정</span>
-                      </button>
-                    )}
-                    <span className="text-[12px] text-gray-400">{cat.subs.length}개</span>
-                    <button onClick={() => deleteMainCat(catIdx)}
-                      className="px-2.5 py-1 text-[12px] border border-red-200 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                      삭제
+                  ))}
+                </div>
+
+                {/* 대카테고리 추가 */}
+                <div className="border-t border-gray-100 p-2 flex-shrink-0 bg-gray-50/50">
+                  <div className="flex gap-1.5">
+                    <input
+                      value={newMain}
+                      onChange={e => setNewMain(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
+                      placeholder="새 대카테고리"
+                      className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#1A2B4A] rounded"
+                    />
+                    <button type="button" onClick={addMainCat}
+                      className="px-3 py-1.5 bg-[#1A2B4A] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
+                      +
                     </button>
                   </div>
-                  <div className="px-5 py-3">
-                    {cat.subs.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-2.5">
-                        {cat.subs.map((sub, subIdx) => (
-                          <div key={subIdx} className="flex items-center gap-1 border border-gray-200 bg-gray-50 rounded-lg px-2.5 py-1 text-[12px]">
-                            <div className="flex gap-0.5">
-                              <button onClick={() => moveSub(catIdx, subIdx, -1)} disabled={subIdx === 0}
-                                className="text-[9px] text-gray-300 hover:text-gray-600 disabled:opacity-20">◀</button>
-                              <button onClick={() => moveSub(catIdx, subIdx, 1)} disabled={subIdx === cat.subs.length - 1}
-                                className="text-[9px] text-gray-300 hover:text-gray-600 disabled:opacity-20">▶</button>
-                            </div>
-                            <span className="text-gray-700">{sub}</span>
-                            <button onClick={() => deleteSub(catIdx, subIdx)}
-                              className="text-gray-300 hover:text-red-500 text-sm leading-none ml-0.5">×</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <input value={newSubInputs[catIdx] ?? ""}
-                        onChange={e => setNewSubInputs(p => ({ ...p, [catIdx]: e.target.value }))}
-                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSub(catIdx); } }}
-                        placeholder={`"${cat.name}" 하위 카테고리 추가`}
-                        className="flex-1 border border-gray-200 px-3 py-1.5 text-[12px] focus:outline-none focus:border-[#1A2B4A] rounded-lg" />
-                      <button type="button" onClick={() => addSub(catIdx)}
-                        className="px-3 py-1.5 bg-gray-100 text-gray-700 text-[12px] hover:bg-gray-200 transition-colors rounded-lg font-medium">
-                        추가
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-4">
-            <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2">+ 대카테고리 추가</p>
-            <div className="flex gap-2">
-              <input value={newMain} onChange={e => setNewMain(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
-                placeholder="새 대카테고리 이름 (예: 안전용품)"
-                className="flex-1 border border-gray-200 px-3 py-2 text-[12px] focus:outline-none focus:border-[#1A2B4A] rounded-lg" />
-              <button type="button" onClick={addMainCat}
-                className="px-4 py-2 bg-[#1A2B4A] text-white text-[12px] font-semibold hover:bg-[#243d5e] transition-colors rounded-lg">
-                추가
+              {/* 오른쪽: 소카테고리 */}
+              <div className="w-1/2 flex flex-col">
+                {cats[selectedCatIdx] ? (
+                  <>
+                    <div className="flex-1 overflow-y-auto">
+                      {cats[selectedCatIdx].subs.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-xs text-gray-400">소분류가 없습니다.</p>
+                        </div>
+                      ) : (
+                        cats[selectedCatIdx].subs.map((sub, subIdx) => (
+                          <div key={subIdx}
+                            className="group flex items-center px-4 py-2.5 text-sm border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                            <span className="flex-1 text-gray-700">{sub}</span>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              <button type="button"
+                                onClick={() => moveSub(selectedCatIdx, subIdx, -1)}
+                                disabled={subIdx === 0}
+                                className="w-5 h-5 flex items-center justify-center text-[10px] text-gray-400 hover:text-gray-700 disabled:opacity-20">▲</button>
+                              <button type="button"
+                                onClick={() => moveSub(selectedCatIdx, subIdx, 1)}
+                                disabled={subIdx === cats[selectedCatIdx].subs.length - 1}
+                                className="w-5 h-5 flex items-center justify-center text-[10px] text-gray-400 hover:text-gray-700 disabled:opacity-20">▼</button>
+                              <button type="button"
+                                onClick={() => deleteSub(selectedCatIdx, subIdx)}
+                                className="w-5 h-5 flex items-center justify-center text-red-400 hover:text-red-600 text-base leading-none ml-0.5">×</button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* 소카테고리 추가 */}
+                    <div className="border-t border-gray-100 p-2 flex-shrink-0 bg-gray-50/50">
+                      <div className="flex gap-1.5">
+                        <input
+                          value={newSubInputs[selectedCatIdx] ?? ""}
+                          onChange={e => setNewSubInputs(p => ({ ...p, [selectedCatIdx]: e.target.value }))}
+                          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSub(selectedCatIdx); } }}
+                          placeholder={`"${cats[selectedCatIdx].name}" 소분류 추가`}
+                          className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#1A2B4A] rounded"
+                        />
+                        <button type="button" onClick={() => addSub(selectedCatIdx)}
+                          className="px-3 py-1.5 bg-[#1A2B4A] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-xs text-gray-400 text-center px-4">왼쪽에서<br />대카테고리를 선택하세요</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 하단 저장 바 */}
+            <div className="border-t border-gray-200 px-4 py-2.5 flex items-center justify-between bg-gray-50">
+              <p className="text-xs text-gray-400">
+                {cats[selectedCatIdx]
+                  ? `${cats[selectedCatIdx].name} — ${cats[selectedCatIdx].subs.length}개 소분류`
+                  : `총 ${cats.length}개 대카테고리`
+                }
+                {catSaveMsg === "ok" && <span className="ml-2 text-green-600 font-medium">저장됐습니다 ✓</span>}
+                {catSaveMsg === "err" && <span className="ml-2 text-red-500 font-medium">저장 실패</span>}
+              </p>
+              <button onClick={saveCats} disabled={catSaving}
+                className="px-5 py-1.5 text-xs font-semibold bg-[#1A2B4A] text-white hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded">
+                {catSaving ? "저장 중..." : "저장"}
               </button>
             </div>
           </div>
