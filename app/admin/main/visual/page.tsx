@@ -607,8 +607,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
           <p>목록에서 슬라이드를 선택하거나 새 슬라이드를 추가하세요.</p>
         </div>
       )}
-      </div>{/* end right col */}
-      </div>{/* end flex container */}
+      </div>
+      </div>
     </div>
   );
 }
