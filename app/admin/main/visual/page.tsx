@@ -663,3 +663,163 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
     </div>
   );
 }
+
+// ── AI 이미지 프롬프트 빌더 ──
+
+const VISUAL_SHOT_TYPES = {
+  full: "전신 (Full Body)",
+  half: "반신 (Half Body)",
+  bust: "흉상 (Bust Shot)",
+  detail: "디테일 (Detail Shot)",
+  group: "그룹 (Group Shot)",
+} as const;
+type VisualShotKey = keyof typeof VISUAL_SHOT_TYPES;
+
+const VISUAL_SEASON_ENG: Record<string, string> = {
+  봄: "spring season, soft natural light, cherry blossoms",
+  여름: "summer, bright sunshine, outdoor",
+  가을: "autumn, warm golden tones, fall foliage",
+  겨울: "winter, cold crisp atmosphere",
+  전천후: "",
+};
+
+const VISUAL_EXTRA_PRESETS = ["실외 자연광", "실내 스튜디오", "도심 배경", "작업 현장", "캐주얼 분위기", "역동적인 포즈"];
+
+function buildVisualPrompt(
+  clothingType: "작업복" | "일상복",
+  season: string,
+  extras: string[],
+  shotType: VisualShotKey,
+  customInput: string,
+  title?: string,
+  subtitle?: string
+): string {
+  const clothingEng = clothingType === "작업복" ? "professional workwear, functional clothing" : "casual everyday wear";
+  const seasonCtx = VISUAL_SEASON_ENG[season] || "";
+  const allExtras = [...extras, customInput].filter(Boolean).join(", ");
+  const textCtx = [title, subtitle].filter(Boolean).join(" – ");
+  return [
+    `A professional fashion photograph for a Korean apparel brand hero banner, ultra-wide 16:9 format.`,
+    `${VISUAL_SHOT_TYPES[shotType]} shot of a model wearing high-quality ${clothingEng}.`,
+    seasonCtx && `${seasonCtx}.`,
+    allExtras && `${allExtras}.`,
+    textCtx && `Brand message: "${textCtx}".`,
+    `Editorial fashion photography style, clean modern composition, high resolution, suitable for website hero banner.`,
+  ].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
+  title: string; subtitle: string; pcImageUrl?: string;
+}) {
+  const [shotType, setShotType] = useState<VisualShotKey>("full");
+  const [clothingType, setClothingType] = useState<"작업복" | "일상복">("작업복");
+  const [season, setSeason] = useState("");
+  const [extras, setExtras] = useState<string[]>([]);
+  const [customInput, setCustomInput] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const generate = () => {
+    setPrompt(buildVisualPrompt(clothingType, season, extras, shotType, customInput, title, subtitle));
+  };
+
+  const copy = () => {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const toggleExtra = (v: string) =>
+    setExtras((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
+
+  return (
+    <div className="space-y-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
+      <div className="flex gap-2 flex-wrap">
+        <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">PC: 1920 × 680px</span>
+        <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">모바일: 750 × 695px</span>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-slate-600 mb-2">의류 유형</p>
+        <div className="flex gap-2">
+          {(["작업복", "일상복"] as const).map((t) => (
+            <button key={t} type="button" onClick={() => setClothingType(t)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${clothingType === t ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-slate-600 mb-2">시즌</p>
+        <div className="flex gap-2 flex-wrap">
+          {["봄", "여름", "가을", "겨울", "전천후"].map((s) => (
+            <button key={s} type="button" onClick={() => setSeason(season === s ? "" : s)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${season === s ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-slate-600 mb-2">추가 옵션</p>
+        <div className="flex gap-2 flex-wrap mb-2">
+          {VISUAL_EXTRA_PRESETS.map((p) => (
+            <button key={p} type="button" onClick={() => toggleExtra(p)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${extras.includes(p) ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+              {p}
+            </button>
+          ))}
+        </div>
+        <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)}
+          placeholder="직접 입력 후 Enter"
+          className="w-full border border-slate-200 px-3 py-1.5 text-xs rounded-lg focus:outline-none focus:border-blue-400"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && customInput.trim()) {
+              e.preventDefault();
+              toggleExtra(customInput.trim());
+              setCustomInput("");
+            }
+          }}
+        />
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-slate-600 mb-2">촬영 구도</p>
+        <div className="flex gap-2 flex-wrap">
+          {(Object.keys(VISUAL_SHOT_TYPES) as VisualShotKey[]).map((k) => (
+            <button key={k} type="button" onClick={() => setShotType(k)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${shotType === k ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+              {VISUAL_SHOT_TYPES[k]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <button type="button" onClick={generate}
+        className="w-full py-2.5 bg-gradient-to-r from-slate-700 to-slate-900 text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
+        이미지 프롬프트 생성
+      </button>
+
+      {prompt && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-slate-600">생성된 프롬프트</p>
+            <button type="button" onClick={copy}
+              className={`text-xs px-3 py-1 rounded-lg border transition-colors ${copied ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+              {copied ? "복사됨!" : "복사"}
+            </button>
+          </div>
+          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5}
+            className="w-full border border-slate-200 px-3 py-2.5 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none bg-white" />
+          {pcImageUrl && (
+            <p className="text-xs text-slate-400">* 생성된 프롬프트와 함께 현재 PC 이미지를 참고 이미지로 활용하세요.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
