@@ -14,7 +14,7 @@ export default async function LoginPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("wu-auth")?.value;
   const validToken = process.env.AUTH_TOKEN ?? "wu-session-ok";
-  if (token === validToken) redirect("/partnership");
+  if (token === validToken) redirect("/admin");
 
   return (
     <main className="min-h-[calc(100vh-64px)] bg-[#F5F2ED] flex items-center justify-center px-6 py-16">
@@ -24,7 +24,7 @@ export default async function LoginPage() {
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">Members Only</p>
           <h1 className="text-2xl font-bold text-white mb-2">WORKUP 파트너</h1>
           <p className="text-sm text-gray-300 leading-relaxed">
-            가맹·입점 문의는 회원 로그인 후 이용 가능합니다.
+            관리자 및 파트너 전용 로그인입니다.
           </p>
         </div>
 
