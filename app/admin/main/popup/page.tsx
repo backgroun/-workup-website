@@ -6,6 +6,22 @@ import { useState, useEffect, useRef } from "react";
 type BgType = "solid" | "gradient" | "image";
 type LinkType = "url" | "product";
 
+type AiInput = {
+  productName: string;
+  season: string;
+  features: string;
+  mood: string;
+  target: string;
+  style: string;
+};
+
+type AiResult = {
+  imagePrompt: string;
+  subtitle: string;
+  title: string;
+  ctaText: string;
+};
+
 type PopupItem = {
   id: string;
   is_active: boolean;
@@ -87,7 +103,29 @@ function toIsoOrNull(v: string): string | null {
 
 // ── 메인 페이지 ─────────────────────────────────────────────────────────────
 
+const DEFAULT_AI_INPUT: AiInput = {
+  productName: "",
+  season: "여름",
+  features: "",
+  mood: "시원한",
+  target: "",
+  style: "미니멀",
+};
+
+function CopyBtn({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      className="text-xs px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors shrink-0"
+    >
+      {copied ? "복사됨!" : "복사"}
+    </button>
+  );
+}
+
 export default function PopupManagePage() {
+  const [tab, setTab] = useState<"manage" | "ai">("manage");
   const [popups, setPopups]     = useState<PopupItem[]>([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
@@ -98,6 +136,12 @@ export default function PopupManagePage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver,  setDragOver]  = useState<number | null>(null);
+
+  // AI 상태
+  const [aiInput, setAiInput]   = useState<AiInput>(DEFAULT_AI_INPUT);
+  const [aiResult, setAiResult] = useState<AiResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError]   = useState("");
 
   // 로드
   useEffect(() => {
@@ -134,6 +178,36 @@ export default function PopupManagePage() {
   }, []);
 
   const flash = (text: string) => { setToast(text); setTimeout(() => setToast(""), 2500); };
+
+  const handleAiGenerate = async () => {
+    if (!aiInput.productName.trim()) { setAiError("제품명을 입력해주세요."); return; }
+    setAiError(""); setAiLoading(true); setAiResult(null);
+    try {
+      const res = await fetch("/api/admin/popup/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aiInput),
+      });
+      const data = await res.json();
+      if (data.error) setAiError(data.error);
+      else setAiResult(data);
+    } catch { setAiError("생성 중 오류가 발생했습니다."); }
+    finally { setAiLoading(false); }
+  };
+
+  const applyAiToNewPopup = () => {
+    if (!aiResult) return;
+    setEditing({
+      id: crypto.randomUUID(),
+      ...EMPTY,
+      sort_order: popups.length,
+      subtitle: aiResult.subtitle,
+      title: aiResult.title,
+      link_text: aiResult.ctaText,
+    });
+    setIsNew(true);
+    setTab("manage");
+  };
 
   const saveAll = async (list: PopupItem[]) => {
     setSaving(true);
@@ -209,24 +283,148 @@ export default function PopupManagePage() {
   return (
     <div>
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">팝업 배너 관리</h1>
           <p className="mt-1 text-sm text-gray-500">메인 페이지에 표시되는 팝업 배너를 관리합니다.</p>
         </div>
         <div className="flex items-center gap-3">
           {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
-          <button onClick={openNew}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            팝업 추가
-          </button>
+          {tab === "manage" && (
+            <button onClick={openNew}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              팝업 추가
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="flex gap-6 items-start">
+      {/* 탭 */}
+      <div className="flex gap-1 border-b border-gray-200 mb-6">
+        {([["manage", "팝업 관리"], ["ai", "✨ AI 생성기"]] as const).map(([t, label]) => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              tab === t ? "border-slate-800 text-slate-900" : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── AI 생성기 탭 ── */}
+      {tab === "ai" && (
+        <div className="max-w-2xl space-y-6">
+          <p className="text-sm text-gray-500">제품 정보를 입력하면 Claude AI가 이미지 프롬프트와 팝업 문구를 생성합니다.</p>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <h2 className="font-semibold text-gray-800">제품 정보 입력</h2>
+
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">제품명 / 종류 *</label>
+              <input type="text" value={aiInput.productName}
+                onChange={e => setAiInput(a => ({ ...a, productName: e.target.value }))}
+                placeholder="예: 냉감 멀티쿠션, 방수 작업복, 리플렉티브 재킷"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">계절 / 테마</label>
+                <select value={aiInput.season} onChange={e => setAiInput(a => ({ ...a, season: e.target.value }))}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
+                  {["봄", "여름", "가을", "겨울", "사계절"].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">분위기</label>
+                <select value={aiInput.mood} onChange={e => setAiInput(a => ({ ...a, mood: e.target.value }))}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
+                  {["시원한", "따뜻한", "세련된", "활동적인", "고급스러운", "편안한"].map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">핵심 특징</label>
+              <textarea value={aiInput.features}
+                onChange={e => setAiInput(a => ({ ...a, features: e.target.value }))}
+                placeholder="예: 냉감 소재, 빠른 건조, 신축성 좋음, 현장 착용 가능"
+                rows={2}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 resize-none" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">타겟 고객</label>
+                <input type="text" value={aiInput.target}
+                  onChange={e => setAiInput(a => ({ ...a, target: e.target.value }))}
+                  placeholder="예: 현장 작업자, 30-40대 남성"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">스타일 방향</label>
+                <select value={aiInput.style} onChange={e => setAiInput(a => ({ ...a, style: e.target.value }))}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
+                  {["미니멀", "자연적", "도시적", "아웃도어", "스포티", "클래식"].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {aiError && <p className="text-xs text-red-500">{aiError}</p>}
+
+            <button onClick={handleAiGenerate} disabled={aiLoading}
+              className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+              {aiLoading
+                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />생성 중...</>
+                : "✨ AI로 생성하기"}
+            </button>
+          </div>
+
+          {aiResult && (
+            <div className="space-y-4">
+              {/* 이미지 프롬프트 */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold text-gray-800">이미지 프롬프트</h2>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Midjourney / DALL-E</span>
+                </div>
+                <div className="relative bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 leading-relaxed pr-16">{aiResult.imagePrompt}</p>
+                  <div className="absolute top-3 right-3"><CopyBtn text={aiResult.imagePrompt} /></div>
+                </div>
+              </div>
+
+              {/* 팝업 문구 */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+                <h2 className="font-semibold text-gray-800">팝업 문구</h2>
+                <div className="space-y-2">
+                  {[
+                    { label: "소제목", value: aiResult.subtitle },
+                    { label: "타이틀", value: aiResult.title },
+                    { label: "버튼",   value: aiResult.ctaText },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+                      <span className="text-xs text-gray-400 w-12 shrink-0 pt-0.5">{label}</span>
+                      <span className="text-sm text-gray-800 flex-1 whitespace-pre-line">{value}</span>
+                      <CopyBtn text={value} />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={applyAiToNewPopup}
+                  className="w-full py-2.5 rounded-xl border-2 border-slate-800 text-slate-800 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors">
+                  이 문구로 새 팝업 만들기 →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── 팝업 관리 탭 ── */}
+      {tab === "manage" && <div className="flex gap-6 items-start">
 
         {/* ── 왼쪽: 팝업 목록 ── */}
         <div className="w-[280px] flex-shrink-0 sticky top-6">
@@ -652,7 +850,7 @@ export default function PopupManagePage() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
