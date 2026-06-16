@@ -15,6 +15,8 @@ type HeroSlide = {
   btn2_visible: boolean;
   pc_image_url: string;
   mobile_image_url: string;
+  pc_image_position: string;
+  mobile_image_position: string;
   is_visible: boolean;
   scheduled_start: string | null;
   scheduled_end: string | null;
@@ -34,6 +36,8 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   btn2_visible: false,
   pc_image_url: "",
   mobile_image_url: "",
+  pc_image_position: "50% 50%",
+  mobile_image_position: "50% 50%",
   is_visible: true,
   scheduled_start: null,
   scheduled_end: null,

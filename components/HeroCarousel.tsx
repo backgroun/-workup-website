@@ -14,6 +14,8 @@ type HeroSlide = {
   btn2_visible: boolean;
   pc_image_url: string | null;
   mobile_image_url: string | null;
+  pc_image_position: string | null;
+  mobile_image_position: string | null;
   is_visible: boolean;
   sort_order: number;
 };
@@ -68,19 +70,24 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               key={slide.id}
               className="flex-shrink-0 w-full h-full relative flex flex-col justify-center"
             >
-              {/* 배경 이미지 — 오버레이 없이 원본 그대로 */}
+              {/* 배경 이미지 — PC/모바일 각각 objectPosition 적용 */}
               {pcImage && (
-                <picture className="absolute inset-0 w-full h-full">
-                  {mobileImage && mobileImage !== pcImage && (
-                    <source media="(max-width: 767px)" srcSet={mobileImage} />
-                  )}
+                <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={pcImage}
                     alt=""
-                    className="w-full h-full object-cover object-center"
+                    className="absolute inset-0 w-full h-full object-cover hidden md:block"
+                    style={{ objectPosition: slide.pc_image_position || "50% 50%" }}
                   />
-                </picture>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={mobileImage || pcImage}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover md:hidden"
+                    style={{ objectPosition: slide.mobile_image_position || "50% 50%" }}
+                  />
+                </>
               )}
 
               {/* 이미지 없는 슬라이드 — 우측 어두운 액센트 */}
