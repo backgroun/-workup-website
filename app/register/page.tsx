@@ -135,6 +135,11 @@ export default function RegisterPage() {
             <input
               type="email" value={form.email} onChange={e => set("email", e.target.value)}
               placeholder="example@email.com"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
             />
           </div>
