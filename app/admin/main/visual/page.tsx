@@ -224,10 +224,10 @@ export default function AdminMainVisualPage() {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">메인 비주얼</h1>
-          <p className="text-base text-gray-400 mt-1">메인 페이지 히어로 슬라이드 관리 <span className="font-semibold text-gray-600">({slides.length} / 10개)</span></p>
+          <h1 className="text-3xl font-bold text-gray-900">슬라이딩 메뉴</h1>
+          <p className="text-base text-gray-400 mt-1">히어로 슬라이드 관리 <span className="font-semibold text-gray-600">({slides.length} / 10개)</span></p>
         </div>
         <button
           onClick={openNew}
@@ -239,6 +239,23 @@ export default function AdminMainVisualPage() {
           </svg>
           슬라이드 추가
         </button>
+      </div>
+
+      {/* 슬라이딩 메뉴 타입 탭 */}
+      <div className="flex gap-1 mb-6 bg-slate-100 rounded-xl p-1 w-fit">
+        {(Object.entries(SLIDE_TYPE_LABELS) as [SlideType, string][]).map(([type, label]) => (
+          <button
+            key={type}
+            onClick={() => { router.push(`/admin/main/visual${type === "main" ? "" : `?type=${type}`}`); }}
+            className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+              slideType === type
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* 피드백 */}

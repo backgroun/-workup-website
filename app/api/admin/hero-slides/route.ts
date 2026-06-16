@@ -7,11 +7,14 @@ async function isAuthed() {
   return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get("type") ?? "main";
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("hero_slides")
     .select("*")
+    .eq("slide_type", type)
     .order("sort_order", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data ?? []);

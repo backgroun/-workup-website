@@ -29,6 +29,21 @@ export async function POST(req: Request) {
   return NextResponse.json(data, { status: 201 });
 }
 
+export async function PUT(req: Request) {
+  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id, name } = await req.json();
+  if (!name?.trim()) return NextResponse.json({ error: "브랜드명을 입력하세요." }, { status: 400 });
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("brands")
+    .update({ name: name.trim() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
