@@ -32,6 +32,7 @@ type HeroSlide = {
   mobile_image_position?: string | null;
   pc_image_scale?: number | null;
   mobile_image_scale?: number | null;
+  text_layers?: TextLayer[] | null;
   content_x?: number | null;
   content_y?: number | null;
   is_visible: boolean;
@@ -83,10 +84,13 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           const pcImage = slide.pc_image_url;
           const mobileImage = slide.mobile_image_url || pcImage;
 
+          const layers = slide.text_layers ?? [];
+
           return (
             <div
               key={slide.id}
               className="flex-shrink-0 w-full h-full relative flex flex-col justify-center"
+              style={{ containerType: "inline-size" }}
             >
               {/* 배경 이미지 — PC/모바일 각각 objectPosition 적용 */}
               {pcImage && (
@@ -119,6 +123,38 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               {/* 이미지 없는 슬라이드 — 우측 어두운 액센트 */}
               {!pcImage && (
                 <div className="absolute right-0 top-0 h-full w-1/3 bg-[#152238] hidden lg:block" />
+              )}
+
+              {/* 자유 배치 텍스트 개체 (PC/모바일 각각 좌표·크기) */}
+              {layers.length > 0 && (
+                <>
+                  <div className="hidden md:block">
+                    {layers.map((l) => (
+                      <div key={l.id} className="absolute z-[2]" style={{
+                        left: `${l.pc_x}%`, top: `${l.pc_y}%`,
+                        fontFamily: l.font_family || undefined, color: l.color,
+                        fontWeight: l.weight, textAlign: l.align,
+                        letterSpacing: `${l.letter_spacing}px`, lineHeight: l.line_height,
+                        fontSize: `${(l.pc_size / 1920 * 100).toFixed(3)}cqw`,
+                        transform: `scaleX(${l.scale_x})`, transformOrigin: "left top",
+                        whiteSpace: "pre-wrap",
+                      }}>{l.text}</div>
+                    ))}
+                  </div>
+                  <div className="md:hidden">
+                    {layers.map((l) => (
+                      <div key={l.id} className="absolute z-[2]" style={{
+                        left: `${l.mobile_x}%`, top: `${l.mobile_y}%`,
+                        fontFamily: l.font_family || undefined, color: l.color,
+                        fontWeight: l.weight, textAlign: l.align,
+                        letterSpacing: `${l.letter_spacing}px`, lineHeight: l.line_height,
+                        fontSize: `${(l.mobile_size / 750 * 100).toFixed(3)}cqw`,
+                        transform: `scaleX(${l.scale_x})`, transformOrigin: "left top",
+                        whiteSpace: "pre-wrap",
+                      }}>{l.text}</div>
+                    ))}
+                  </div>
+                </>
               )}
 
               {/* 텍스트 컨텐츠 — content_x/content_y 기반 절대 위치 */}
