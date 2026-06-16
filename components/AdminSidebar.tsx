@@ -98,16 +98,7 @@ const navGroups: NavGroup[] = [
           </svg>
         ),
       },
-      {
-        label: "메인진열관리",
-        href: "/admin/products/main-expose",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-        ),
-      },
-      {
+{
         label: "Excel 업로드",
         href: "/admin/products/import",
         icon: (
