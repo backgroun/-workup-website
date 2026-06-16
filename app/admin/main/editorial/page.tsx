@@ -728,6 +728,109 @@ const PROMPT_SEASON_EN: Record<string, string> = {
   "전천후": "all-season year-round wear",
 };
 
+// 추가 옵션 → 영문 매핑 (제품 폼과 통일)
+const ED_DESCRIPTOR: Record<string, string> = {
+  "남성": "male", "여성": "female", "한국인": "Korean", "서양인": "Western",
+};
+const ED_MOOD: Record<string, string> = {
+  "캐주얼": "relaxed, approachable casual mood",
+  "프로페셔널": "confident, professional working mood",
+};
+
+// 기획 장면(배경) 프리셋 → 영문 환경 묘사
+const SCENE_PRESETS = ["산업·현장", "도심·거리", "카페·실내", "자연·아웃도어", "스튜디오 연출"];
+const SCENE_EN: Record<string, string> = {
+  "산업·현장": "an authentic industrial / construction / logistics worksite — real machinery, structures and work context",
+  "도심·거리": "a contemporary urban city street — buildings, sidewalks, modern city-lifestyle backdrop",
+  "카페·실내": "a warm indoor lifestyle space such as a café or interior — relaxed everyday setting",
+  "자연·아웃도어": "an open natural outdoor landscape (mountains, fields, trail) — fresh air, natural scenery",
+  "스튜디오 연출": "an art-directed studio set with an intentional colored / set-design backdrop and dramatic studio lighting (NOT a plain catalog backdrop)",
+};
+
+// 샷별 카메라/렌즈 (에디토리얼)
+const SHOT_CAM: Record<ShotKey, string> = {
+  full:   "35mm environmental wide lens, full subject within the scene, focus deep enough to read the location",
+  upper:  "50mm lens, waist-up, subject prominent with the environment softly behind",
+  lower:  "50mm lens angled toward the lower body, bottoms in focus with the ground / location visible",
+  detail: "90mm lens, tight close-up on fabric / hardware with creamy background bokeh",
+  group:  "35mm lens, several models staged together within the scene, balanced group composition",
+};
+
+// 기획(에디토리얼) 공통 프롬프트 코어 — 배경·무드가 살아있는 시네마틱
+function buildEditorialPrompt(opts: {
+  kind: "hero" | "banner";
+  theme: string; desc: string; shotType: ShotKey;
+  clothingType: "작업복" | "일상복";
+  season: string; extras: string[]; scene: string; imageUrl?: string;
+}): string {
+  const { kind, theme, desc, shotType, clothingType, season, extras, scene, imageUrl } = opts;
+  if (!theme) return "";
+
+  const clothingEn = clothingType === "일상복" ? "Korean casual everyday wear" : "Korean functional workwear";
+  const shotLabel = SHOT_TYPES.find((s) => s.key === shotType)?.label ?? "";
+  const shotEn = SHOT_TYPES.find((s) => s.key === shotType)?.en ?? SHOT_TYPES[0].en;
+  const shotCam = SHOT_CAM[shotType] ?? SHOT_CAM.full;
+  const seasonEn = season ? (PROMPT_SEASON_EN[season] ?? season) : "";
+
+  const descriptors = extras.filter((e) => e in ED_DESCRIPTOR).map((e) => ED_DESCRIPTOR[e]);
+  const moods = extras.filter((e) => e in ED_MOOD).map((e) => ED_MOOD[e]);
+  const customExtras = extras.filter((e) => !(e in ED_DESCRIPTOR) && !(e in ED_MOOD));
+  const isGroup = shotType === "group";
+  const modelNoun = isGroup ? "models" : "model";
+  const modelDesc = descriptors.length
+    ? `${descriptors.join(" ")} ${modelNoun}`
+    : (isGroup ? "a few natural, authentic real-worker-type models" : "a natural, authentic real-worker-type model");
+  const moodLine = [...moods, ...customExtras].join(", ");
+
+  const sceneEn = scene && SCENE_EN[scene]
+    ? SCENE_EN[scene]
+    : "a tasteful real-world editorial environment that fits the theme and season — NOT a plain studio catalog backdrop";
+
+  const composition = kind === "hero"
+    ? `${shotEn}. WIDE editorial framing for a 3:4 portrait (950×1280px): camera set back, generous negative space around the subject, subject occupies ~50–60% of the frame height, centered. This image is also cropped to 8:9 (top-aligned) on desktop — keep critical elements away from the bottom edge.`
+    : `${shotEn}. Vertical 8:9 section framing (440×495px): subject and environment balanced, with a clear focal point that still reads at a small thumbnail size.`;
+  const output = kind === "hero"
+    ? "3:4 portrait, 950 × 1280px (also used as an 8:9 center-top crop on desktop)"
+    : "8:9 vertical, 440 × 495px";
+
+  const refBlock = imageUrl
+    ? `\n\n[REFERENCE IMAGE]\n- Match the uploaded product exactly — same garment style, color palette, fabric texture, prints and design details.`
+    : "";
+
+  return (
+    `[GENERATION DIRECTIVE]\n` +
+    `Generate ONE single photorealistic cinematic editorial image. No collage, grid, card-news, multi-panel layout, or any text inside the image.\n\n` +
+    `[CONCEPT]\n` +
+    `- Brand: WORKUP — ${clothingEn}\n` +
+    `- Theme: "${theme}"\n` +
+    (desc.trim() ? `- Story: ${desc.trim().slice(0, 160)}\n` : "") +
+    `\n[SCENE & ENVIRONMENT]\n` +
+    `- Set in ${sceneEn}\n` +
+    (seasonEn ? `- Season mood: ${seasonEn}\n` : "") +
+    `\n[WARDROBE & SUBJECT]\n` +
+    `- ${modelDesc} wearing the ${clothingEn} from the theme, styled naturally\n` +
+    (moodLine ? `- Mood / styling: ${moodLine}\n` : "") +
+    `\n[COMPOSITION — ${shotLabel}]\n- ${composition}\n` +
+    `\n[CAMERA & LENS]\n- ${shotCam}\n` +
+    `\n[LIGHTING & MOOD]\n- Natural directional light (daylight / golden-hour feel), cinematic atmosphere and depth — premium commercial editorial quality\n` +
+    `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n` +
+    `\n[COLOR & FIDELITY]\n- Preserve the EXACT product colors, prints, logos and fabric; natural true-to-life editorial color grade, no color cast\n` +
+    `\n[OUTPUT]\n- ${output}, high-resolution, sharp fabric texture` +
+    refBlock +
+    `\n\n[NEGATIVE PROMPT]\n` +
+    `text, typography, caption, watermark, added graphic logo overlay, collage, grid, split-screen, multi-panel, border, frame, ` +
+    `deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, mutated anatomy, twisted joints, plastic skin, over-retouched, uncanny face, ` +
+    `distorted product, warped proportions, wrong colors, color cast, oversaturated, blurry, low-resolution, jpeg artifacts` +
+    `\n\n── 한글 참고 ──\n` +
+    `테마: ${theme}\n` +
+    (desc.trim() ? `설명: ${desc.trim().slice(0, 160)}\n` : "") +
+    `의류유형: ${clothingType}` + (season ? ` · 시즌: ${season}` : "") + (scene ? ` · 장면: ${scene}` : "") + `\n` +
+    (extras.length ? `추가 옵션: ${extras.join(", ")}\n` : "") +
+    `구도: ${shotLabel} · ${kind === "hero" ? "3:4(950×1280) → PC 8:9 크롭" : "8:9(440×495)"}` +
+    (imageUrl ? `\n참고 이미지: 업로드 제품과 동일하게` : "")
+  );
+}
+
 // 단일 이미지 프롬프트 (모바일 3:4 생성, PC에서 8:9 center-top 크롭으로 공용 사용)
 function buildHeroPrompt(
   title: string, subtitle: string, desc: string, heroSub: string,
@@ -735,20 +838,11 @@ function buildHeroPrompt(
   clothingType: "작업복" | "일상복",
   season: string,
   extras: string[],
+  scene: string,
   imageUrl?: string
 ): string {
   const theme = [title, subtitle, heroSub].filter(Boolean).join(" · ");
-  if (!theme) return "";
-  const shotEn = SHOT_TYPES.find((s) => s.key === shotType)?.en ?? SHOT_TYPES[0].en;
-  const ctx = desc.trim() ? ` ${desc.trim().slice(0, 150)}` : "";
-  const clothingEn = clothingType === "일상복" ? "casual everyday wear" : "workwear";
-  const seasonCtx = season ? ` Season context: ${PROMPT_SEASON_EN[season] ?? season}.` : "";
-  const extrasCtx = extras.length > 0 ? ` Additional requirements: ${extras.join(", ")}.` : "";
-  const refText = imageUrl
-    ? ` Reference the uploaded product image exactly — match the clothing style, color palette, fabric texture, and design details from the reference image.`
-    : "";
-  const compositionGuide = ` WIDE COMPOSITION (3:4 portrait, 950×1280px): camera positioned far from subject — full body with generous space on all sides, as if photographed from 5–8 meters away. Subject occupies no more than 50–60% of frame height. Keep the subject centered horizontally and vertically. Avoid tight/close-up framing. This image is also displayed cropped to 8:9 on desktop (top-aligned), so no critical elements near the bottom edge.`;
-  return `[이미지 생성 프롬프트] Professional ${clothingEn} editorial photography, Korean brand WORKUP. Theme: "${theme}".${ctx}${seasonCtx}${extrasCtx} ${shotEn}.${compositionGuide}${refText} Outdoor/industrial work environment, natural daylight, high-end commercial photography, sharp fabric texture, 4K quality. No text, no letters, no typography, no watermark, no logo in the image.`;
+  return buildEditorialPrompt({ kind: "hero", theme, desc, shotType, clothingType, season, extras, scene, imageUrl });
 }
 
 function buildBannerPrompt(
@@ -756,18 +850,10 @@ function buildBannerPrompt(
   clothingType: "작업복" | "일상복",
   season: string,
   extras: string[],
+  scene: string,
   imageUrl?: string
 ): string {
-  if (!title.trim()) return "";
-  const shotEn = SHOT_TYPES.find((s) => s.key === shotType)?.en ?? SHOT_TYPES[0].en;
-  const ctx = desc.trim() ? ` ${desc.trim().slice(0, 120)}` : "";
-  const clothingEn = clothingType === "일상복" ? "casual everyday lifestyle" : "workwear product lifestyle";
-  const seasonCtx = season ? ` Season: ${PROMPT_SEASON_EN[season] ?? season}.` : "";
-  const extrasCtx = extras.length > 0 ? ` Additional: ${extras.join(", ")}.` : "";
-  const refText = imageUrl
-    ? ` Reference the uploaded product image exactly — match the clothing style, color palette, fabric texture, and design details from the reference image.`
-    : "";
-  return `[이미지 생성 프롬프트] ${clothingEn} photography, Korean brand WORKUP. Section: "${title}".${ctx}${seasonCtx}${extrasCtx} ${shotEn}.${refText} Clean studio or on-site background, natural side lighting, premium fabric detail, 4K commercial photography. No text, no letters, no typography, no watermark, no logo in the image.`;
+  return buildEditorialPrompt({ kind: "banner", theme: title.trim(), desc, shotType, clothingType, season, extras, scene, imageUrl });
 }
 
 function PromptBox({
