@@ -1,6 +1,20 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
+type TextLayer = {
+  id: string;
+  text: string;
+  font_family: string;
+  color: string;
+  weight: number;
+  align: "left" | "center" | "right";
+  letter_spacing: number;
+  scale_x: number;
+  line_height: number;
+  pc_x: number; pc_y: number; pc_size: number;
+  mobile_x: number; mobile_y: number; mobile_size: number;
+};
+
 type HeroSlide = {
   id: string;
   season_text: string;

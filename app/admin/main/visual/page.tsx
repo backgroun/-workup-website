@@ -341,7 +341,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS subtitle_size INTEGER DEFAULT 1
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS season_text_size INTEGER DEFAULT 11;
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS pc_image_scale NUMERIC DEFAULT 1;
-ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_scale NUMERIC DEFAULT 1;`}</pre>
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_scale NUMERIC DEFAULT 1;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]'::jsonb;`}</pre>
         </div>
       )}
 
@@ -624,11 +625,29 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_scale NUMERIC DEFA
             </div>
           </div>
 
-          {/* 4. 배너 편집기 — 텍스트·버튼 배치 */}
+          {/* 4. 자유 배치 텍스트 캔버스 */}
           <div className="pb-6 border-b border-gray-100">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-              배너 편집기
-              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 텍스트·버튼 위치 직접 배치</span>
+              텍스트 캔버스
+              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 여러 텍스트를 드래그로 자유 배치 · 폰트·색·자간·장평</span>
+            </p>
+            <TextCanvasEditor
+              layers={editing.text_layers ?? []}
+              onChange={(next) => set("text_layers", next)}
+              pcImage={editing.pc_image_url}
+              mobileImage={editing.mobile_image_url || editing.pc_image_url}
+              pcPos={editing.pc_image_position || "50% 50%"}
+              mobilePos={editing.mobile_image_position || "50% 50%"}
+              pcScale={editing.pc_image_scale ?? 1}
+              mobileScale={editing.mobile_image_scale ?? 1}
+            />
+          </div>
+
+          {/* 5. 배너 편집기 — 타이틀·버튼 (기존/하위호환) */}
+          <div className="pb-6 border-b border-gray-100">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+              타이틀·버튼 (기본)
+              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 버튼 CTA 및 기본 텍스트. 캔버스를 쓰면 타이틀/부제는 비워두세요</span>
             </p>
             <BannerTextEditor editing={editing} set={(k, v) => set(k as keyof HeroSlide, v)} sameImage={sameImage} />
           </div>
