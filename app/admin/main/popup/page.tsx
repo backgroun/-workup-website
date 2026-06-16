@@ -143,6 +143,12 @@ export default function PopupManagePage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError]   = useState("");
 
+  // AI 이미지 생성 상태
+  const [imgUrl, setImgUrl]         = useState("");
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError, setImgError]     = useState("");
+  const [imgRatio, setImgRatio]     = useState<"square" | "wide" | "tall">("wide");
+
   // 로드
   useEffect(() => {
     fetch("/api/admin/site-settings/popup_banner")
@@ -182,6 +188,7 @@ export default function PopupManagePage() {
   const handleAiGenerate = async () => {
     if (!aiInput.productName.trim()) { setAiError("제품명을 입력해주세요."); return; }
     setAiError(""); setAiLoading(true); setAiResult(null);
+    setImgUrl(""); setImgError("");   // 새 생성 시 이전 이미지 초기화
     try {
       const res = await fetch("/api/admin/popup/generate", {
         method: "POST",
@@ -195,6 +202,22 @@ export default function PopupManagePage() {
     finally { setAiLoading(false); }
   };
 
+  const handleGenImage = async () => {
+    if (!aiResult?.imagePrompt) return;
+    setImgError(""); setImgLoading(true); setImgUrl("");
+    try {
+      const res = await fetch("/api/admin/popup/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiResult.imagePrompt, size: imgRatio }),
+      });
+      const data = await res.json().catch(() => ({ error: `서버 오류 (${res.status})` }));
+      if (!res.ok || data.error) setImgError(data.error ?? `이미지 생성 실패 (${res.status})`);
+      else setImgUrl(data.url);
+    } catch { setImgError("이미지 생성 중 오류가 발생했습니다."); }
+    finally { setImgLoading(false); }
+  };
+
   const applyAiToNewPopup = () => {
     if (!aiResult) return;
     setEditing({
@@ -204,6 +227,8 @@ export default function PopupManagePage() {
       subtitle: aiResult.subtitle,
       title: aiResult.title,
       link_text: aiResult.ctaText,
+      // 생성된 이미지가 있으면 배경 이미지로 적용
+      ...(imgUrl ? { bg_type: "image" as BgType, bg_image_url: imgUrl } : {}),
     });
     setIsNew(true);
     setTab("manage");
@@ -389,11 +414,53 @@ export default function PopupManagePage() {
               <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="font-semibold text-gray-800">이미지 프롬프트</h2>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Midjourney / DALL-E</span>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">DALL·E 3</span>
                 </div>
                 <div className="relative bg-gray-50 rounded-lg p-4">
                   <p className="text-sm text-gray-700 leading-relaxed pr-16">{aiResult.imagePrompt}</p>
                   <div className="absolute top-3 right-3"><CopyBtn text={aiResult.imagePrompt} /></div>
+                </div>
+
+                {/* 이미지 직접 생성 */}
+                <div className="pt-2 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">비율</span>
+                      <div className="flex gap-1 bg-slate-100 rounded-lg p-0.5">
+                        {([["wide", "가로"], ["square", "정사각"], ["tall", "세로"]] as const).map(([r, label]) => (
+                          <button key={r} type="button" onClick={() => setImgRatio(r)}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                              imgRatio === r ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            }`}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={handleGenImage} disabled={imgLoading}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 disabled:opacity-50 transition-colors flex items-center gap-1.5">
+                      {imgLoading
+                        ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />이미지 생성 중...</>
+                        : "🎨 이 프롬프트로 이미지 생성"}
+                    </button>
+                  </div>
+
+                  {imgError && <p className="text-xs text-red-500">{imgError}</p>}
+                  {imgLoading && (
+                    <p className="text-xs text-gray-400">DALL·E가 이미지를 그리는 중입니다. 10~20초 정도 걸립니다…</p>
+                  )}
+
+                  {imgUrl && (
+                    <div className="space-y-2">
+                      <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imgUrl} alt="AI 생성 이미지" className="w-full max-h-72 object-contain" />
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        Cloudinary에 저장됨 · 아래 버튼으로 이 이미지를 팝업 배경으로 바로 사용할 수 있습니다.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -415,7 +482,7 @@ export default function PopupManagePage() {
                 </div>
                 <button onClick={applyAiToNewPopup}
                   className="w-full py-2.5 rounded-xl border-2 border-slate-800 text-slate-800 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors">
-                  이 문구로 새 팝업 만들기 →
+                  {imgUrl ? "이미지 + 문구로 새 팝업 만들기 →" : "이 문구로 새 팝업 만들기 →"}
                 </button>
               </div>
             </div>
