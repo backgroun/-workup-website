@@ -991,7 +991,7 @@ function HeroPromptBox({ prompt, refImageUrl }: { prompt: string; refImageUrl?: 
 }
 
 // ── 공통 프롬프트 빌더 ────────────────────────────────────
-const PROMPT_EXTRA_PRESETS = ["남성 모델", "여성 모델", "한국인 모델", "동양인 모델", "캐주얼 무드", "프로페셔널 무드", "야외 현장", "스튜디오"];
+const PROMPT_EXTRA_PRESETS = ["남성", "여성", "한국인", "서양인", "캐주얼", "프로페셔널"];
 
 function PromptBuilder({
   buildFn,
@@ -1000,7 +1000,7 @@ function PromptBuilder({
   ratioLabel,
   refImageUrl,
 }: {
-  buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복", season: string, extras: string[]) => string;
+  buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복", season: string, extras: string[], scene: string) => string;
   isHero?: boolean;
   sizeLabel?: string;
   ratioLabel?: string;
@@ -1009,6 +1009,7 @@ function PromptBuilder({
   const [shotType, setShotType]           = useState<ShotKey>("full");
   const [clothingType, setClothingType]   = useState<"작업복" | "일상복">("작업복");
   const [season, setSeason]               = useState("");
+  const [scene, setScene]                 = useState("");
   const [extras, setExtras]               = useState<string[]>([]);
   const [customInput, setCustomInput]     = useState("");
   const [prompt, setPrompt]               = useState("");
@@ -1018,7 +1019,7 @@ function PromptBuilder({
   const resetPrompt = () => setShowPrompt(false);
 
   const generate = () => {
-    const p = buildFn(shotType, clothingType, season, extras);
+    const p = buildFn(shotType, clothingType, season, extras, scene);
     if (p) { setPrompt(p); setShowPrompt(true); }
   };
 
@@ -1061,6 +1062,20 @@ function PromptBuilder({
                 }`}>{s}</button>
             ))}
           </div>
+        </div>
+
+        {/* 장면(배경) — 기획 이미지는 배경이 핵심 */}
+        <div>
+          <p className="text-[11px] font-medium text-gray-500 mb-1.5">장면 / 배경 <span className="text-gray-400 font-normal">(선택)</span></p>
+          <div className="flex gap-1.5 flex-wrap">
+            {SCENE_PRESETS.map(s => (
+              <button key={s} type="button" onClick={() => { setScene(scene === s ? "" : s); resetPrompt(); }}
+                className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
+                  scene === s ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
+                }`}>{s}</button>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1">미선택 시 테마·시즌에 맞는 배경이 자동 적용됩니다.</p>
         </div>
 
         {/* 추가 옵션 */}
