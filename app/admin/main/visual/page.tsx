@@ -799,13 +799,20 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
 
 // ── 배너 텍스트·버튼 배치 에디터 ──
 
+// 무료 웹폰트 라이브러리 (한글+영문) — app/layout.tsx 에서 로드됨
 const FONT_OPTIONS = [
   { label: "기본 (사이트 기본)", value: "" },
-  { label: "Noto Serif KR (명조)", value: "'Noto Serif KR', serif" },
-  { label: "Georgia (세리프)", value: "Georgia, serif" },
-  { label: "굴림 (고딕)", value: "Gulim, '굴림', sans-serif" },
-  { label: "Impact (임팩트)", value: "Impact, Haettenschweiler, sans-serif" },
-  { label: "Courier New (모노)", value: "'Courier New', monospace" },
+  { label: "Pretendard (프리텐다드)", value: "'Pretendard', sans-serif" },
+  { label: "본고딕 Noto Sans KR", value: "'Noto Sans KR', sans-serif" },
+  { label: "본명조 Noto Serif KR", value: "'Noto Serif KR', serif" },
+  { label: "검은고딕 Black Han Sans", value: "'Black Han Sans', sans-serif" },
+  { label: "주아체 Jua", value: "'Jua', sans-serif" },
+  { label: "도현체 Do Hyeon", value: "'Do Hyeon', sans-serif" },
+  { label: "나눔손글씨 펜 Nanum Pen", value: "'Nanum Pen Script', cursive" },
+  { label: "Montserrat (영문)", value: "'Montserrat', sans-serif" },
+  { label: "Playfair Display (영문 세리프)", value: "'Playfair Display', serif" },
+  { label: "Oswald (영문 콘덴스드)", value: "'Oswald', sans-serif" },
+  { label: "Bebas Neue (영문 디스플레이)", value: "'Bebas Neue', sans-serif" },
 ];
 
 function BannerTextEditor({ editing, set, sameImage }: {
