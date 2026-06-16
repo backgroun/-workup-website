@@ -697,37 +697,75 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
   );
 }
 
-// ── 이미지 위치 조절 (실제 배너 비율 + 줌) ──
+// ── 이미지 위치 조절 (실제 배너 비율 + 줌 확대/축소) ──
 
 function ImagePositionPicker({ label, imageUrl, value, onChange, aspect }: {
   label: string; imageUrl: string; value: string;
   onChange: (v: string) => void;
   aspect: "pc" | "mobile";
 }) {
+  const [zoom, setZoom] = useState(1); // 1.0 = 실제 크기의 30%
+
   const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   const x = parts ? Math.round(parseFloat(parts[1])) : 50;
   const y = parts ? Math.round(parseFloat(parts[2])) : 50;
   const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
 
-  // 실제 배너 크기의 30%: PC 1920×680 → 576×204, Mobile 750×695 → 225×209
-  const previewW = aspect === "pc" ? 576 : 225;
-  const previewH = aspect === "pc" ? 204 : 209;
+  // 기본(30%) × zoom 배율: PC 1920×680 → 576×204, Mobile 750×695 → 225×209
+  const baseW = aspect === "pc" ? 576 : 225;
+  const baseH = aspect === "pc" ? 204 : 209;
+  const previewW = Math.round(baseW * zoom);
+  const previewH = Math.round(baseH * zoom);
+  const pct = Math.round(zoom * 30);
+
+  const zoomOut = () => setZoom((z) => Math.max(0.5, parseFloat((z - 0.25).toFixed(2))));
+  const zoomIn  = () => setZoom((z) => Math.min(2.0, parseFloat((z + 0.25).toFixed(2))));
 
   return (
     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-slate-600">{label}</p>
-        <span className="text-[10px] text-slate-400">실제 크기의 30%</span>
+        {/* 확대/축소 컨트롤 */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-400">실제 크기의 {pct}%</span>
+          <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoom <= 0.5}
+              title="축소"
+              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors text-base font-bold leading-none"
+            >−</button>
+            <span className="px-1.5 text-[11px] text-slate-700 font-semibold select-none min-w-[30px] text-center">
+              {pct}%
+            </span>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoom >= 2.0}
+              title="확대"
+              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors text-base font-bold leading-none"
+            >+</button>
+          </div>
+        </div>
       </div>
 
-      {/* 30% 고정 사이즈 미리보기 */}
-      <div className="relative rounded overflow-hidden border border-slate-200 bg-slate-800"
-        style={{ width: previewW, height: previewH, maxWidth: "100%" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: value }} />
-        <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-          {x}% / {y}%
+      {/* 확대/축소 가능한 미리보기 (가로 스크롤 허용) */}
+      <div className="overflow-auto rounded">
+        <div
+          className="relative rounded overflow-hidden border border-slate-200 bg-slate-800 flex-shrink-0"
+          style={{ width: previewW, height: previewH }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: value }}
+          />
+          <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
+            {x}% / {y}%
+          </div>
         </div>
       </div>
 
