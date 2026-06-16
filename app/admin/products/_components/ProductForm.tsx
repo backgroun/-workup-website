@@ -460,12 +460,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     };
     const wornFocus = needsModel ? WORN_FOCUS[promptWornFocus] : undefined;
     const accessoryMode = !!wornFocus;
-    const headInFrame = !wornFocus || wornFocus.head;
+    // 하의 + 대표반신컷 → 상반신이 아니라 하반신(다리·바지) 중심으로 전환
+    const bottomHalfBody = !wornFocus && isBottom && promptType === "대표반신컷";
+    const headInFrame = wornFocus ? wornFocus.head : !bottomHalfBody;
     const composeText = wornFocus
       ? `${wornFocus.eng} Shown from a ${ANGLE_NOTE[promptType]}. The worn item is the hero of the shot — fill the frame with it, never render it small or distant.`
+      : bottomHalfBody
+      ? "Lower-body representative crop for PANTS / BOTTOMS — frame from the waist / hip DOWN to mid-calf, with the trousers filling ~60–70% of the frame as the clear hero. The pants and legs are the subject, NOT the upper body — crop above the waist so the torso and head stay out of frame. FIXED, REPEATABLE SCALE every time: pants fill the frame, do not zoom out, do not switch to an upper-body / torso shot. Natural standing pose with a slight stance to show the leg line and taper."
       : shot.compose;
     const cameraText = wornFocus
       ? "Full-frame mirrorless, 90mm at close focusing distance, f/5.6 — tack-sharp on the worn item with gentle background falloff"
+      : bottomHalfBody
+      ? "Full-frame mirrorless, 85mm f/5.6, framed low on the lower body — tack-sharp on the trouser fabric, seams and taper"
       : shot.camera;
 
     // ── 모델·스타일링 블록 (착용컷 전용) ──
@@ -497,7 +503,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
       (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
       (seasonContext ? `- Season styling: ${seasonContext}\n` : "") +
-      `\n[COMPOSITION — ${promptType}${accessoryMode ? " · " + promptWornFocus : ""}]\n- ${composeText}\n` +
+      `\n[COMPOSITION — ${promptType}${accessoryMode ? " · " + promptWornFocus : bottomHalfBody ? " · 하의" : ""}]\n- ${composeText}\n` +
       HEADROOM_BLOCK +
       `\n[CAMERA & LENS]\n- ${cameraText}\n` +
       `\n[LIGHTING]\n- ${shot.light}` +
@@ -515,15 +521,17 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       "collage, grid, split-screen, multi-panel, card-news layout, border, frame, " +
       "distorted product shape, warped proportions, wrong colors, color cast, oversaturated, " +
       "blurry, low-resolution, jpeg artifacts, noise, cropped product";
-    const NEG_MODEL =
+    const NEG_MODEL_ANATOMY =
       ", deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, " +
-      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face, " +
-      "head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight, " +
-      "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
+      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face";
+    const NEG_MODEL_FRAMING = bottomHalfBody
+      ? ", upper-body-focused, torso-dominant, shoulders-focused, jacket or top as main subject, pants cropped out, pants too small, legs cut off at thigh, face close-up, head close-up"
+      : ", head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight, " +
+        "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
     const NEG_PRODUCT =
       ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
     const NEGATIVE =
-      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL : NEG_PRODUCT);
+      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL_ANATOMY + NEG_MODEL_FRAMING : NEG_PRODUCT);
 
     // ── Midjourney 파라미터 (참고) ──
     const MJ_PARAMS =
