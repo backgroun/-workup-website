@@ -42,21 +42,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto bg-[#f1f5f9]">
           <style>{`
-            .ac .text-\\[9px\\]  { font-size: 18px !important; }
-            .ac .text-\\[10px\\] { font-size: 20px !important; }
-            .ac .text-\\[11px\\] { font-size: 22px !important; }
-            .ac .text-\\[12px\\], .ac .text-xs   { font-size: 24px !important; }
-            .ac .text-\\[13px\\] { font-size: 26px !important; }
-            .ac .text-\\[14px\\], .ac .text-sm   { font-size: 28px !important; }
-            .ac .text-\\[15px\\] { font-size: 30px !important; }
-            .ac .text-\\[16px\\], .ac .text-base { font-size: 32px !important; }
-            .ac .text-\\[18px\\], .ac .text-lg   { font-size: 36px !important; }
-            .ac .text-\\[20px\\], .ac .text-xl   { font-size: 40px !important; }
-            .ac .text-2xl  { font-size: 48px !important; }
-            .ac .text-3xl  { font-size: 60px !important; }
-            .ac .text-4xl  { font-size: 72px !important; }
-            .ac .text-5xl  { font-size: 96px !important; }
-            .ac { font-size: 32px; }
+            .ac .text-\\[9px\\]  { font-size: 13px !important; }
+            .ac .text-\\[10px\\] { font-size: 14px !important; }
+            .ac .text-\\[11px\\] { font-size: 15px !important; }
+            .ac .text-\\[12px\\], .ac .text-xs   { font-size: 17px !important; }
+            .ac .text-\\[13px\\] { font-size: 18px !important; }
+            .ac .text-\\[14px\\], .ac .text-sm   { font-size: 20px !important; }
+            .ac .text-\\[15px\\] { font-size: 21px !important; }
+            .ac .text-\\[16px\\], .ac .text-base { font-size: 22px !important; }
+            .ac .text-\\[18px\\], .ac .text-lg   { font-size: 25px !important; }
+            .ac .text-\\[20px\\], .ac .text-xl   { font-size: 28px !important; }
+            .ac .text-2xl  { font-size: 34px !important; }
+            .ac .text-3xl  { font-size: 42px !important; }
+            .ac .text-4xl  { font-size: 50px !important; }
+            .ac .text-5xl  { font-size: 67px !important; }
+            .ac { font-size: 22px; }
           `}</style>
           <div className="ac p-10 [&_label]:text-[15px] [&_th]:text-[14px]">
             {children}
