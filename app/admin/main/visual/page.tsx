@@ -753,74 +753,61 @@ function ImagePositionPicker({ label, imageUrl, value, onChange, scale, onScaleC
   const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
   const x = parts ? Math.round(parseFloat(parts[1])) : 50;
   const y = parts ? Math.round(parseFloat(parts[2])) : 50;
-  const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
-
-  // 고정 미리보기 박스 — 실제 배너 비율(PC 1920×680 / Mobile 750×695)
-  const previewW = aspect === "pc" ? 560 : 225;
-  const previewH = aspect === "pc" ? 198 : 209;
   const s = scale || 1;
   const pct = Math.round(s * 100);
+  const aspectPad = aspect === "pc" ? "35.4%" : "92.7%";
+
+  const boxRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const setFromEvent = (e: React.MouseEvent) => {
+    if (!boxRef.current) return;
+    const rect = boxRef.current.getBoundingClientRect();
+    const nx = Math.round(Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)));
+    const ny = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)));
+    onChange(`${nx}% ${ny}%`);
+  };
 
   return (
-    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
       <p className="text-xs font-semibold text-slate-600">{label}</p>
 
-      {/* 고정 박스 안에서 내부 이미지만 확대/축소·이동 */}
+      {/* 드래그로 위치 조정 (가변 폭) */}
       <div
-        className="relative rounded overflow-hidden border border-slate-200 bg-slate-800 mx-auto"
-        style={{ width: previewW, height: previewH }}
+        ref={boxRef}
+        className="relative w-full rounded overflow-hidden border border-slate-200 bg-slate-800 cursor-move select-none"
+        style={{ paddingBottom: aspectPad }}
+        onMouseDown={(e) => { dragging.current = true; setFromEvent(e); }}
+        onMouseMove={(e) => { if (dragging.current) setFromEvent(e); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ objectPosition: value, transform: `scale(${s})`, transformOrigin: value }}
         />
+        <div className="absolute top-1.5 left-1.5 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
+          드래그로 위치 이동
+        </div>
         <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
           크기 {pct}% · {x}/{y}
         </div>
       </div>
 
-      <div className="space-y-2">
-        {/* 이미지 크기 (자유 확대/축소) */}
-        <div>
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span className="font-semibold text-slate-600">이미지 크기 (확대/축소)</span>
-            <span className="font-medium">{pct}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="range" min={0.5} max={3} step={0.01} value={s}
-              onChange={(e) => onScaleChange(parseFloat(e.target.value))}
-              className="flex-1 accent-blue-600 h-1.5" />
-            <input type="number" min={50} max={300} step={1} value={pct}
-              onChange={(e) => {
-                const v = parseInt(e.target.value || "100", 10);
-                onScaleChange(Math.min(3, Math.max(0.5, v / 100)));
-              }}
-              className="w-16 border border-slate-200 rounded px-2 py-1 text-[11px] text-right" />
-            <button type="button" onClick={() => onScaleChange(1)}
-              className="text-[10px] text-slate-400 hover:text-slate-600 whitespace-nowrap">초기화</button>
-          </div>
-          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
-            <span>축소(50%)</span><span>확대(300%)</span>
-          </div>
+      {/* 이미지 크기 (자유 확대/축소) */}
+      <div>
+        <div className="flex justify-between text-xs text-slate-500 mb-1">
+          <span className="font-semibold text-slate-600">이미지 크기</span>
+          <span className="font-medium">{pct}%</span>
         </div>
-        <div>
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>가로 위치</span><span className="font-medium">{x}%</span>
-          </div>
-          <input type="range" min={0} max={100} value={x}
-            onChange={(e) => update(parseInt(e.target.value), y)}
-            className="w-full accent-slate-700 h-1.5" />
-        </div>
-        <div>
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>세로 위치</span><span className="font-medium">{y}%</span>
-          </div>
-          <input type="range" min={0} max={100} value={y}
-            onChange={(e) => update(x, parseInt(e.target.value))}
-            className="w-full accent-slate-700 h-1.5" />
+        <div className="flex items-center gap-2">
+          <input type="range" min={0.5} max={3} step={0.01} value={s}
+            onChange={(e) => onScaleChange(parseFloat(e.target.value))}
+            className="flex-1 accent-blue-600 h-1.5" />
+          <button type="button" onClick={() => onScaleChange(1)}
+            className="text-[10px] text-slate-400 hover:text-slate-600 whitespace-nowrap">초기화</button>
         </div>
       </div>
     </div>
