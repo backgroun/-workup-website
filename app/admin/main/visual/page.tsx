@@ -315,7 +315,11 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS pc_image_position TEXT DEFAULT 
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_position TEXT DEFAULT '50% 50%';
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS content_x NUMERIC DEFAULT 5;
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS content_y NUMERIC DEFAULT 35;
-ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS slide_type TEXT DEFAULT 'main';`}</pre>
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS slide_type TEXT DEFAULT 'main';
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS title_size INTEGER DEFAULT 28;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS subtitle_size INTEGER DEFAULT 14;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS season_text_size INTEGER DEFAULT 11;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';`}</pre>
         </div>
       )}
 
@@ -900,6 +904,50 @@ function BannerTextEditor({ editing, set, sameImage }: {
           rows={2}
           className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
           placeholder="워크업은 일하는 사람 편에서 만든 옷입니다." />
+      </div>
+
+      {/* 텍스트 스타일 */}
+      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+        <p className="text-xs font-semibold text-slate-600">텍스트 스타일</p>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">폰트</label>
+          <select value={editing.font_family || ""}
+            onChange={e => set("font_family", e.target.value)}
+            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded bg-white">
+            {FONT_OPTIONS.map(f => (
+              <option key={f.value} value={f.value} style={{ fontFamily: f.value || undefined }}>{f.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">시즌 크기</label>
+            <div className="flex items-center gap-1">
+              <input type="number" min={8} max={40} value={editing.season_text_size || 11}
+                onChange={e => set("season_text_size", Number(e.target.value))}
+                className="w-full border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A2B4A] rounded text-center" />
+              <span className="text-[11px] text-slate-400 flex-shrink-0">px</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">타이틀 크기</label>
+            <div className="flex items-center gap-1">
+              <input type="number" min={12} max={120} value={editing.title_size || 28}
+                onChange={e => set("title_size", Number(e.target.value))}
+                className="w-full border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A2B4A] rounded text-center" />
+              <span className="text-[11px] text-slate-400 flex-shrink-0">px</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">서브 크기</label>
+            <div className="flex items-center gap-1">
+              <input type="number" min={8} max={60} value={editing.subtitle_size || 14}
+                onChange={e => set("subtitle_size", Number(e.target.value))}
+                className="w-full border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A2B4A] rounded text-center" />
+              <span className="text-[11px] text-slate-400 flex-shrink-0">px</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 버튼 입력 */}
