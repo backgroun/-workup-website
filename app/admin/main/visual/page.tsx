@@ -1036,6 +1036,18 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
               </div>
             );
           })}
+
+          {/* 페이지 넘김(좌우 화살표) 영역 — PC 전용. 이 안쪽엔 텍스트가 가려지므로 배치 금지 */}
+          {mode === "pc" && (
+            <>
+              <div className="absolute inset-y-0 left-0 w-[9%] bg-black/35 border-r border-dashed border-white/50 pointer-events-none flex items-center justify-center">
+                <span className="text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl] rotate-180">넘김 영역</span>
+              </div>
+              <div className="absolute inset-y-0 right-0 w-[9%] bg-black/35 border-l border-dashed border-white/50 pointer-events-none flex items-center justify-center">
+                <span className="text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl]">넘김 영역</span>
+              </div>
+            </>
+          )}
           <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
             더블클릭해 바로 입력 · 드래그로 이동
           </div>
