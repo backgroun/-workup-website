@@ -270,7 +270,8 @@ export default function AdminMainVisualPage() {
         <div className="mb-6 p-5 bg-amber-50 border border-amber-200 rounded-xl">
           <p className="text-sm font-semibold text-amber-800 mb-2">⚠ hero_slides 테이블이 설정되지 않았습니다.</p>
           <p className="text-xs text-amber-700 mb-3">Supabase SQL Editor에서 실행하세요:</p>
-          <pre className="text-xs bg-white p-3 border border-amber-200 rounded overflow-x-auto text-gray-700 whitespace-pre-wrap">{`CREATE TABLE IF NOT EXISTS hero_slides (
+          <pre className="text-xs bg-white p-3 border border-amber-200 rounded overflow-x-auto text-gray-700 whitespace-pre-wrap">{`-- 신규 생성 시
+CREATE TABLE IF NOT EXISTS hero_slides (
   id TEXT PRIMARY KEY,
   admin_title TEXT NOT NULL DEFAULT '',
   season_text TEXT NOT NULL DEFAULT '',
@@ -284,6 +285,11 @@ export default function AdminMainVisualPage() {
   btn2_visible BOOLEAN NOT NULL DEFAULT FALSE,
   pc_image_url TEXT,
   mobile_image_url TEXT,
+  pc_image_position TEXT DEFAULT '50% 50%',
+  mobile_image_position TEXT DEFAULT '50% 50%',
+  content_x NUMERIC DEFAULT 5,
+  content_y NUMERIC DEFAULT 35,
+  slide_type TEXT DEFAULT 'main',
   is_visible BOOLEAN NOT NULL DEFAULT TRUE,
   scheduled_start TIMESTAMPTZ,
   scheduled_end TIMESTAMPTZ,
@@ -294,8 +300,14 @@ export default function AdminMainVisualPage() {
 ALTER TABLE hero_slides ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "public_read" ON hero_slides;
 CREATE POLICY "public_read" ON hero_slides FOR SELECT USING (true);
--- 기존 테이블 업데이트
-ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAULT '';`}</pre>
+
+-- 기존 테이블에 컬럼 추가 (이미 테이블이 있는 경우)
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAULT '';
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS pc_image_position TEXT DEFAULT '50% 50%';
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_position TEXT DEFAULT '50% 50%';
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS content_x NUMERIC DEFAULT 5;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS content_y NUMERIC DEFAULT 35;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS slide_type TEXT DEFAULT 'main';`}</pre>
         </div>
       )}
 
