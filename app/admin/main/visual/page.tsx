@@ -62,6 +62,7 @@ export default function AdminMainVisualPage() {
   const [sameImage, setSameImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
+  const [promptOpen, setPromptOpen] = useState(false);
   const [uploading, setUploading] = useState<"pc" | "mobile" | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
@@ -97,6 +98,7 @@ export default function AdminMainVisualPage() {
     setTextOpen(false);
     setBtnOpen(false);
     setSameImage(false);
+    setPromptOpen(false);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
@@ -107,6 +109,7 @@ export default function AdminMainVisualPage() {
     setTextOpen(!!(slide.season_text || slide.title || slide.subtitle));
     setBtnOpen(!!(slide.btn1_text || slide.btn2_text));
     setSameImage(!!(slide.pc_image_url && slide.pc_image_url === slide.mobile_image_url));
+    setPromptOpen(false);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
@@ -415,6 +418,30 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
                 onUpload={(file) => uploadImage(file, "mobile")}
                 inputRef={mobileRef}
               />
+            )}
+          </div>
+
+          {/* AI 이미지 프롬프트 */}
+          <div className="pb-6 border-b border-gray-100">
+            <button
+              type="button"
+              onClick={() => setPromptOpen((v) => !v)}
+              className="w-full flex items-center justify-between group"
+            >
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                AI 이미지 프롬프트
+                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
+              </span>
+              <span className={`text-gray-400 transition-transform text-sm ${promptOpen ? "rotate-180" : ""}`}>▼</span>
+            </button>
+            {promptOpen && (
+              <div className="mt-4">
+                <VisualPromptBuilder
+                  title={editing.title}
+                  subtitle={editing.subtitle}
+                  pcImageUrl={editing.pc_image_url || undefined}
+                />
+              </div>
             )}
           </div>
 
