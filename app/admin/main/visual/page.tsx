@@ -20,6 +20,10 @@ type HeroSlide = {
   mobile_image_position: string;
   content_x: number;
   content_y: number;
+  title_size: number;
+  subtitle_size: number;
+  season_text_size: number;
+  font_family: string;
   is_visible: boolean;
   scheduled_start: string | null;
   scheduled_end: string | null;
@@ -51,6 +55,10 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   mobile_image_position: "50% 50%",
   content_x: 5,
   content_y: 35,
+  title_size: 28,
+  subtitle_size: 14,
+  season_text_size: 11,
+  font_family: "",
   slide_type: "main",
   is_visible: true,
   scheduled_start: null,
