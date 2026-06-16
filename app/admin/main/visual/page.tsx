@@ -885,7 +885,8 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
   }, [editId]);
 
   const designW = mode === "pc" ? 1920 : 750;
-  const aspectPad = mode === "pc" ? "35.4%" : "92.7%";
+  // aspect-ratio 사용 (paddingBottom % 은 부모 너비 기준이라 maxWidth와 충돌함)
+  const aspectRatio = mode === "pc" ? "1920 / 680" : "750 / 695";
   const bg = mode === "pc" ? pcImage : (mobileImage || pcImage);
   const bgPos = mode === "pc" ? pcPos : mobilePos;
   const bgScale = mode === "pc" ? pcScale : mobileScale;
@@ -954,7 +955,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
         ref={containerRef}
         className="relative rounded-lg overflow-hidden bg-slate-900 select-none"
         style={{
-          paddingBottom: aspectPad,
+          aspectRatio,
           width: "100%",
           // 실제 이미지(PC 1920 / 모바일 750)보다 작게: 큰 화면에서도 적당한 편집 크기 유지
           maxWidth: mode === "mobile" ? 300 : 720,
@@ -984,7 +985,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
                 suppressContentEditableWarning
                 onMouseDown={(e) => { if (isEditing) { e.stopPropagation(); return; } onLayerMouseDown(e, l); }}
                 onDoubleClick={(e) => { e.stopPropagation(); setSelId(l.id); setEditId(l.id); }}
-                onBlur={(e) => { if (isEditing) { patch(l.id, { text: e.currentTarget.textContent ?? "" }); setEditId(null); } }}
+                onBlur={(e) => { patch(l.id, { text: e.currentTarget.textContent ?? "" }); setEditId((cur) => (cur === l.id ? null : cur)); }}
                 onKeyDown={(e) => { if (isEditing && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
                 className={`absolute outline-offset-2 ${isEditing ? "cursor-text outline-dashed outline-2 outline-blue-300" : "cursor-move"} ${l.id === selId && !isEditing ? "outline outline-2 outline-blue-400" : ""}`}
                 style={{
@@ -1043,9 +1044,21 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
       {sel && (
         <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold text-slate-600">선택한 텍스트 스타일</p>
+            <p className="text-[11px] font-semibold text-slate-600">선택한 텍스트</p>
             <button type="button" onClick={() => { setSelId(sel.id); setEditId(sel.id); }}
               className="text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100">이미지에서 직접 편집 ✎</button>
+          </div>
+
+          {/* 텍스트 내용 직접 입력 (확실하게 반영) */}
+          <div>
+            <label className="block text-[11px] text-slate-500 mb-1">텍스트 내용 (줄바꿈: Enter)</label>
+            <textarea
+              value={sel.text}
+              onChange={(e) => patch(sel.id, { text: e.target.value })}
+              rows={2}
+              placeholder="여기에 문구를 입력하세요"
+              className="w-full border border-gray-200 px-2.5 py-2 text-sm rounded bg-white focus:outline-none focus:border-[#1A2B4A] resize-none"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
