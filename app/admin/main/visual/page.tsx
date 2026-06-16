@@ -64,7 +64,7 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   subtitle: "",
   btn1_text: "",
   btn1_link: "/",
-  btn1_visible: true,
+  btn1_visible: false,
   btn2_text: "",
   btn2_link: "/",
   btn2_visible: false,
@@ -654,15 +654,6 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
             />
           </div>
 
-          {/* 5. 버튼 (CTA) */}
-          <div className="pb-6 border-b border-gray-100">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-              버튼 (CTA)
-              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 배너 하단 버튼 링크 (선택)</span>
-            </p>
-            <BannerTextEditor editing={editing} set={(k, v) => set(k as keyof HeroSlide, v)} />
-          </div>
-
           {/* 저장/취소 */}
           <div className="flex items-center gap-3 pt-2">
             <button onClick={handleSave} disabled={saving}
@@ -845,51 +836,6 @@ const FONT_OPTIONS = [
   { label: "Bebas Neue (영문 디스플레이)", value: "'Bebas Neue', sans-serif" },
 ];
 
-function BannerTextEditor({ editing, set }: {
-  editing: {
-    btn1_text: string; btn1_link: string; btn1_visible: boolean;
-    btn2_text: string; btn2_link: string; btn2_visible: boolean;
-  };
-  set: (key: string, value: string | boolean | number | null) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">버튼1 텍스트</label>
-          <input type="text" value={editing.btn1_text} onChange={(e) => set("btn1_text", e.target.value)}
-            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="컬렉션 보기" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">링크</label>
-          <input type="text" value={editing.btn1_link} onChange={(e) => set("btn1_link", e.target.value)}
-            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/products" />
-        </div>
-        <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
-          <input type="checkbox" checked={editing.btn1_visible} onChange={(e) => set("btn1_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
-          <span className="text-xs text-gray-600">노출</span>
-        </label>
-      </div>
-      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">버튼2 텍스트</label>
-          <input type="text" value={editing.btn2_text} onChange={(e) => set("btn2_text", e.target.value)}
-            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="브랜드 스토리" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">링크</label>
-          <input type="text" value={editing.btn2_link} onChange={(e) => set("btn2_link", e.target.value)}
-            className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/story" />
-        </div>
-        <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
-          <input type="checkbox" checked={editing.btn2_visible} onChange={(e) => set("btn2_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
-          <span className="text-xs text-gray-600">노출</span>
-        </label>
-      </div>
-    </div>
-  );
-}
-
 // ── 자유 배치 텍스트 캔버스 (다중 텍스트 개체) ──
 
 function newTextLayer(): TextLayer {
@@ -1003,13 +949,15 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
         </button>
       </div>
 
-      {/* 캔버스 미리보기 (모바일은 50% 폭으로 표시) */}
+      {/* 캔버스 미리보기 (실제 노출 이미지보다 작게 표시 — 비율은 동일) */}
       <div
         ref={containerRef}
         className="relative rounded-lg overflow-hidden bg-slate-900 select-none"
         style={{
           paddingBottom: aspectPad,
-          width: mode === "mobile" ? "50%" : "100%",
+          width: "100%",
+          // 실제 이미지(PC 1920 / 모바일 750)보다 작게: 큰 화면에서도 적당한 편집 크기 유지
+          maxWidth: mode === "mobile" ? 300 : 720,
           marginInline: mode === "mobile" ? "auto" : undefined,
           containerType: "inline-size",
         }}
@@ -1213,6 +1161,7 @@ const VISUAL_SEASON_ENG: Record<string, string> = {
 const VISUAL_EXTRA_PRESETS = ["실외 자연광", "실내 스튜디오", "도심 배경", "작업 현장", "캐주얼 분위기", "역동적인 포즈"];
 
 function buildVisualPrompt(
+  target: "pc" | "mobile",
   clothingType: "작업복" | "일상복",
   season: string,
   extras: string[],
@@ -1227,20 +1176,26 @@ function buildVisualPrompt(
   const allExtras = [...extras, customInput].filter(Boolean).join(", ");
   const textCtx = [title, subtitle].filter(Boolean).join(" – ");
   const descCtx = description.trim();
+  // 실제 노출 비율 반영 (PC 1920×680 ≈ 2.8:1 / 모바일 750×695 ≈ 1:1)
+  const formatCtx = target === "pc"
+    ? `Ultra-wide horizontal hero banner, exact aspect ratio 1920:680 (about 2.8:1), cinematic wide composition with the model placed to one side and open negative space on the other for text overlay. Target resolution 1920×680px.`
+    : `Near-square vertical mobile hero banner, exact aspect ratio 750:695 (about 1:1), centered composition with clear negative space at top or bottom for text overlay. Target resolution 750×695px.`;
   return [
-    `A professional fashion photograph for a Korean apparel brand hero banner, ultra-wide 16:9 format.`,
+    `A professional fashion photograph for a Korean apparel brand hero banner.`,
+    formatCtx,
     descCtx && `Scene: ${descCtx}.`,
     `${VISUAL_SHOT_TYPES[shotType].en} shot of a model wearing high-quality ${clothingEng}.`,
     seasonCtx && `${seasonCtx}.`,
     allExtras && `${allExtras}.`,
     textCtx && `Brand message: "${textCtx}".`,
-    `Editorial fashion photography style, clean modern composition, high resolution, suitable for website hero banner.`,
+    `Editorial fashion photography style, clean modern composition, high resolution.`,
   ].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 }
 
 function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
   title: string; subtitle: string; pcImageUrl?: string;
 }) {
+  const [target, setTarget] = useState<"pc" | "mobile">("pc");
   const [shotType, setShotType] = useState<VisualShotKey>("full");
   const [clothingType, setClothingType] = useState<"작업복" | "일상복">("작업복");
   const [season, setSeason] = useState("");
@@ -1251,7 +1206,7 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
   const [copied, setCopied] = useState(false);
 
   const generate = () => {
-    setPrompt(buildVisualPrompt(clothingType, season, extras, shotType, customInput, description, title, subtitle));
+    setPrompt(buildVisualPrompt(target, clothingType, season, extras, shotType, customInput, description, title, subtitle));
   };
 
   const copy = () => {
@@ -1275,9 +1230,18 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 좌측: 옵션 */}
         <div className="space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded">PC 1920×680</span>
-            <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded">모바일 750×695</span>
+          <div>
+            <p className="text-[11px] font-semibold text-slate-500 mb-1.5">생성 대상 (비율이 프롬프트에 반영됩니다)</p>
+            <div className="flex gap-2 flex-wrap">
+              <button type="button" onClick={() => setTarget("pc")}
+                className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${target === "pc" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+                PC 1920×680 (2.8:1)
+              </button>
+              <button type="button" onClick={() => setTarget("mobile")}
+                className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${target === "mobile" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+                모바일 750×695 (1:1)
+              </button>
+            </div>
           </div>
 
           {/* 이미지 설명 (한 줄) */}
