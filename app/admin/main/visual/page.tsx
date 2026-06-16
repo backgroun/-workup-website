@@ -392,6 +392,30 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
             </Field>
           </div>
 
+          {/* AI 이미지 프롬프트 */}
+          <div className="pb-6 border-b border-gray-100">
+            <button
+              type="button"
+              onClick={() => setPromptOpen((v) => !v)}
+              className="w-full flex items-center justify-between group"
+            >
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                AI 이미지 프롬프트
+                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
+              </span>
+              <span className={`text-gray-400 transition-transform text-sm ${promptOpen ? "rotate-180" : ""}`}>▼</span>
+            </button>
+            {promptOpen && (
+              <div className="mt-4">
+                <VisualPromptBuilder
+                  title={editing.title}
+                  subtitle={editing.subtitle}
+                  pcImageUrl={editing.pc_image_url || undefined}
+                />
+              </div>
+            )}
+          </div>
+
           {/* 2. 이미지 */}
           <div className="pb-6 border-b border-gray-100 space-y-5">
             <div className="flex items-center justify-between">
@@ -457,30 +481,6 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
                 value={editing.mobile_image_position || "50% 50%"}
                 onChange={(v) => set("mobile_image_position", v)}
               />
-            )}
-          </div>
-
-          {/* AI 이미지 프롬프트 */}
-          <div className="pb-6 border-b border-gray-100">
-            <button
-              type="button"
-              onClick={() => setPromptOpen((v) => !v)}
-              className="w-full flex items-center justify-between group"
-            >
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                AI 이미지 프롬프트
-                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
-              </span>
-              <span className={`text-gray-400 transition-transform text-sm ${promptOpen ? "rotate-180" : ""}`}>▼</span>
-            </button>
-            {promptOpen && (
-              <div className="mt-4">
-                <VisualPromptBuilder
-                  title={editing.title}
-                  subtitle={editing.subtitle}
-                  pcImageUrl={editing.pc_image_url || undefined}
-                />
-              </div>
             )}
           </div>
 
