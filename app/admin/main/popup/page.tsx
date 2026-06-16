@@ -187,7 +187,7 @@ export default function PopupManagePage() {
     await saveAll(updated);
   };
 
-  const set = <K extends keyof PopupItem>(key: K, val: PopupItem[K]) =>
+  const set = <K extends keyof PopupItem,>(key: K, val: PopupItem[K]) =>
     setEditing(prev => prev ? { ...prev, [key]: val } : prev);
 
   const uploadBgImage = async (file: File) => {
