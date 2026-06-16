@@ -12,6 +12,8 @@ type TextLayer = {
   letter_spacing: number;               // 자간 (px)
   scale_x: number;                      // 장평 (가로 비율, 1 = 기본)
   line_height: number;
+  opacity: number;                      // 투명도 (0~1)
+  bg_color: string;                     // 텍스트 배경색 ("" = 없음)
   pc_x: number; pc_y: number; pc_size: number;          // PC 좌표·크기
   mobile_x: number; mobile_y: number; mobile_size: number; // 모바일 좌표·크기
 };
@@ -877,6 +879,8 @@ function newTextLayer(): TextLayer {
     letter_spacing: 0,
     scale_x: 1,
     line_height: 1.2,
+    opacity: 1,
+    bg_color: "",
     pc_x: 8, pc_y: 40, pc_size: 64,
     mobile_x: 8, mobile_y: 40, mobile_size: 40,
   };
