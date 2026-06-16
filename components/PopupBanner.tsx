@@ -1,69 +1,142 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+
+// ── 타입 ──────────────────────────────────────────────────────────────────────
+
+type BgType = "solid" | "gradient" | "image";
+type LinkType = "url" | "product";
+
+type PopupItem = {
+  id: string;
+  is_active: boolean;
+  admin_title?: string;
+  subtitle: string;
+  title: string;
+  link_type?: LinkType;
+  link: string;
+  link_text: string;
+  bg_type?: BgType;
+  bg_solid?: string;
+  bg_gradient_from?: string;
+  bg_gradient_to?: string;
+  bg_gradient_angle?: number;
+  bg_image_url?: string;
+  scheduled_start?: string | null;
+  scheduled_end?: string | null;
+  sort_order?: number;
+};
+
+// ── 상수 / 헬퍼 ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "popup_hidden_until";
 
-type PopupConfig = {
-  is_active: boolean;
-  subtitle: string;
-  title: string;
-  link: string;
-  link_text: string;
-  bg: string;
-};
-
-const DEFAULT_CFG: PopupConfig = {
+const DEFAULT_POPUP: PopupItem = {
+  id: "__default__",
   is_active: true,
   subtitle: "안는 순간, 시원해지는",
   title: "여름을 위한\n냉감 멀티쿠션",
   link: "/products",
   link_text: "상품 보러가기",
-  bg: "linear-gradient(135deg, #7eb8d4 0%, #a8d8b8 50%, #d4c5a9 100%)",
+  bg_type: "gradient",
+  bg_solid: "#1A2B4A",
+  bg_gradient_from: "#7eb8d4",
+  bg_gradient_to: "#a8d8b8",
+  bg_gradient_angle: 135,
+  bg_image_url: "",
 };
 
+function computeBg(item: PopupItem): string {
+  const type = item.bg_type ?? (
+    item.bg_image_url ? "image" : "gradient"
+  );
+  if (type === "solid") return item.bg_solid || "#1A2B4A";
+  if (type === "gradient") {
+    const from  = item.bg_gradient_from  || "#7eb8d4";
+    const to    = item.bg_gradient_to    || "#a8d8b8";
+    const angle = item.bg_gradient_angle ?? 135;
+    return `linear-gradient(${angle}deg, ${from}, ${to})`;
+  }
+  if (type === "image" && item.bg_image_url)
+    return `url('${item.bg_image_url}') center/cover no-repeat`;
+  // 구형 단일 팝업 포맷 fallback
+  return item.bg_solid || "#1A2B4A";
+}
+
+function isVisible(item: PopupItem): boolean {
+  if (!item.is_active) return false;
+  const now = new Date().toISOString();
+  if (item.scheduled_start && item.scheduled_start > now) return false;
+  if (item.scheduled_end   && item.scheduled_end   < now) return false;
+  return true;
+}
+
+// ── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
+
 export default function PopupBanner() {
+  const [popups, setPopups]   = useState<PopupItem[]>([]);
+  const [idx, setIdx]         = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [shown, setShown] = useState(false);
+  const [shown, setShown]     = useState(false);
   const [hideToday, setHideToday] = useState(false);
-  const [cfg, setCfg] = useState<PopupConfig | null>(null);
 
   useEffect(() => {
     const hiddenUntil = localStorage.getItem(STORAGE_KEY);
     if (hiddenUntil && new Date().getTime() < Number(hiddenUntil)) return;
 
     fetch("/api/admin/site-settings/popup_banner")
-      .then((r) => r.json())
-      .then((data) => {
-        const resolved: PopupConfig = data && typeof data === "object"
-          ? { ...DEFAULT_CFG, ...data }
-          : DEFAULT_CFG;
-        if (resolved.is_active === false) return;
-        setCfg(resolved);
+      .then(r => r.json())
+      .then((data: { popups?: PopupItem[] } | Record<string, unknown> | null) => {
+        let list: PopupItem[] = [];
+
+        if (data && "popups" in data && Array.isArray(data.popups)) {
+          // 새 포맷: { popups: [] }
+          list = (data.popups as PopupItem[]).filter(isVisible);
+        } else if (data && typeof data === "object" && ("title" in data || "subtitle" in data)) {
+          // 구형 단일 포맷 — 호환 처리
+          const d = data as Record<string, unknown>;
+          const legacy: PopupItem = {
+            ...DEFAULT_POPUP,
+            is_active: (d.is_active as boolean) ?? true,
+            subtitle:  (d.subtitle as string)   || DEFAULT_POPUP.subtitle,
+            title:     (d.title as string)       || DEFAULT_POPUP.title,
+            link:      (d.link as string)        || DEFAULT_POPUP.link,
+            link_text: (d.link_text as string)   || DEFAULT_POPUP.link_text,
+            bg_type:   "gradient",
+          };
+          if (d.bg && typeof d.bg === "string") {
+            // 구형 bg 문자열 → 그대로 bg_image_url 혹은 gradient로 재활용
+            legacy.bg_solid = (d.bg as string);
+          }
+          list = isVisible(legacy) ? [legacy] : [];
+        }
+
+        if (list.length === 0) return;
+
+        // sort_order 기준 정렬
+        list.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        setPopups(list);
         setMounted(true);
         setTimeout(() => setShown(true), 50);
       })
       .catch(() => {
-        // API 실패 시 기본값으로 표시
-        setCfg(DEFAULT_CFG);
+        if (!isVisible(DEFAULT_POPUP)) return;
+        setPopups([DEFAULT_POPUP]);
         setMounted(true);
         setTimeout(() => setShown(true), 50);
       });
   }, []);
 
+  // 모바일 body scroll lock
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isMobile = window.innerWidth < 768;
-    if (isMobile && shown) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = (isMobile && shown) ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [shown]);
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     if (hideToday) {
       const midnight = new Date();
       midnight.setHours(23, 59, 59, 999);
@@ -71,65 +144,100 @@ export default function PopupBanner() {
     }
     setShown(false);
     setTimeout(() => setMounted(false), 350);
+  }, [hideToday]);
+
+  const prev = () => setIdx(i => (i - 1 + popups.length) % popups.length);
+  const next = () => setIdx(i => (i + 1) % popups.length);
+
+  if (!mounted || popups.length === 0) return null;
+
+  const current = popups[idx];
+  const multi   = popups.length > 1;
+
+  // ── 공통 콘텐츠 렌더러 ──────────────────────────────────────────────────────
+
+  function BannerContent({ height, textSizeClass }: { height: number; textSizeClass: string }) {
+    return (
+      <div className="relative flex flex-col justify-between p-5 overflow-hidden"
+        style={{ height, background: computeBg(current) }}>
+        {/* 텍스트 */}
+        <div>
+          <p className="text-xs text-white/80 leading-snug">{current.subtitle}</p>
+          <p className={`mt-1 font-bold text-white leading-tight whitespace-pre-line ${textSizeClass}`}>
+            {current.title}
+          </p>
+        </div>
+        <Link href={current.link} onClick={handleClose}
+          className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white">
+          {current.link_text} &gt;
+        </Link>
+
+        {/* 다중 팝업 화살표 */}
+        {multi && (
+          <>
+            <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="이전 팝업"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="다음 팝업"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+    );
   }
 
-  if (!mounted || !cfg) return null;
-
-  const banner = (
-    <div
-      className="relative flex flex-col justify-between p-6"
-      style={{ height: 280, background: cfg.bg }}
-    >
-      <div>
-        <p className="text-sm font-normal text-white/80 leading-snug">{cfg.subtitle}</p>
-        <p className="mt-1 text-2xl font-bold text-white leading-tight whitespace-pre-line">
-          {cfg.title}
-        </p>
+  function Footer() {
+    return (
+      <div className="bg-white px-5 py-3 border-t border-gray-100">
+        {/* 점 인디케이터 */}
+        {multi && (
+          <div className="flex justify-center gap-1.5 pb-2">
+            {popups.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`rounded-full transition-all ${i === idx ? "w-4 h-1.5 bg-gray-700" : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"}`}
+                aria-label={`${i + 1}번째 팝업`} />
+            ))}
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-500 select-none">
+            <input type="checkbox" checked={hideToday}
+              onChange={e => setHideToday(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 accent-gray-600" />
+            오늘 하루 보지않기
+          </label>
+          <button onClick={handleClose} className="text-sm font-medium text-gray-700 hover:text-gray-900">
+            닫기
+          </button>
+        </div>
       </div>
-      <Link
-        href={cfg.link}
-        className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white"
-        onClick={handleClose}
-      >
-        {cfg.link_text} &gt;
-      </Link>
-    </div>
-  );
-
-  const footer = (
-    <div className="flex items-center justify-between bg-white px-5 py-3.5 border-t border-gray-100">
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-500 select-none">
-        <input
-          type="checkbox"
-          checked={hideToday}
-          onChange={(e) => setHideToday(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 accent-gray-600"
-        />
-        오늘 하루 보지않기
-      </label>
-      <button
-        onClick={handleClose}
-        className="text-sm font-medium text-gray-700 hover:text-gray-900"
-      >
-        닫기
-      </button>
-    </div>
-  );
+    );
+  }
 
   return (
     <>
-      {/* ── PC 팝업 (md+) ── */}
+      {/* ── PC 팝업 (md+) ──────────────────────────────────────────────────── */}
       <div
-        className={`hidden md:block fixed bottom-6 right-6 z-50 shadow-2xl transition-all duration-300 ${
+        className={`hidden md:block fixed bottom-6 right-6 z-50 shadow-2xl transition-all duration-300 overflow-hidden ${
           shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3 pointer-events-none"
         }`}
         style={{ width: 380 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="팝업 배너"
       >
-        {banner}
-        {footer}
+        <BannerContent height={280} textSizeClass="text-2xl" />
+        <Footer />
       </div>
 
-      {/* 백드롭 */}
+      {/* ── 모바일 백드롭 ──────────────────────────────────────────────────── */}
       <div
         aria-hidden="true"
         className={`md:hidden fixed inset-0 z-[64] bg-black/50 transition-opacity duration-300 ${
@@ -138,9 +246,9 @@ export default function PopupBanner() {
         onClick={handleClose}
       />
 
-      {/* 시트 본체 */}
+      {/* ── 모바일 바텀시트 ────────────────────────────────────────────────── */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[65] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[65] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out overflow-hidden"
         style={{ transform: shown ? "translateY(0)" : "translateY(110%)" }}
         role="dialog"
         aria-modal="true"
@@ -148,43 +256,14 @@ export default function PopupBanner() {
         <div className="flex justify-center pt-3.5 pb-1">
           <div className="w-9 h-1 bg-gray-300 rounded-full" />
         </div>
-
         <div className="px-4 pt-2 pb-0">
-          <div
-            className="relative flex flex-col justify-between p-5 rounded-2xl overflow-hidden"
-            style={{ height: 220, background: cfg.bg }}
-          >
-            <div>
-              <p className="text-xs font-normal text-white/80 leading-snug">{cfg.subtitle}</p>
-              <p className="mt-1 text-xl font-bold text-white leading-tight whitespace-pre-line">
-                {cfg.title}
-              </p>
-            </div>
-            <Link
-              href={cfg.link}
-              className="inline-flex items-center gap-1 text-sm font-medium text-white/90"
-              onClick={handleClose}
-            >
-              {cfg.link_text} &gt;
-            </Link>
+          <div className="rounded-2xl overflow-hidden">
+            <BannerContent height={220} textSizeClass="text-xl" />
           </div>
         </div>
-
-        <div className="flex items-center justify-between px-5 py-4 mt-1">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-500 select-none">
-            <input
-              type="checkbox"
-              checked={hideToday}
-              onChange={(e) => setHideToday(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 accent-gray-600"
-            />
-            오늘 하루 보지않기
-          </label>
-          <button onClick={handleClose} className="text-sm font-medium text-gray-700">
-            닫기
-          </button>
+        <div className="mt-1">
+          <Footer />
         </div>
-
         <div className="h-5" />
       </div>
     </>
