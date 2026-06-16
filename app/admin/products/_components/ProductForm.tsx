@@ -369,7 +369,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           "Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
         camera: "Full-frame mirrorless, 85mm f/5.6 portrait lens, eye-level — tack-sharp on the garment fabric",
         light:  "Large octabox key light at 45°, white fill card opposite, subtle rim light for clean subject separation — even, true-to-color commercial lighting",
-        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · 제품 60~70%(상단 여백 확보) · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
+        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · [고정] 어깨너비 화면 48~56%·엉덩이선 크롭(매번 같은 크기로 프레임 채움, 작게 금지) · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
       },
       "전신컷": {
         compose:
@@ -428,10 +428,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
     // ── 헤드룸 / 여백 (착용컷 전용 — 썸네일에서 답답하지 않게) ──
     const HEADROOM_BLOCK = needsModel
-      ? `\n[FRAMING & HEADROOM]\n` +
-        `- Leave clear, comfortable empty headroom above the head — the top of the head sits roughly 10–15% down from the top edge, and must NEVER touch or crowd the top\n` +
-        `- Keep the subject slightly smaller in the frame with calm negative space around it, so it reads cleanly as a thumbnail — not cramped, not oversized\n` +
-        `- Vertically center the subject with balanced breathing room top and bottom\n`
+      ? `\n[FRAMING & HEADROOM — identical scale every time]\n` +
+        `- Small, consistent headroom: the top of the head sits ~8–12% down from the top edge — never touching the top, but do NOT add excessive empty space\n` +
+        `- The model must FILL the frame at the SAME size every time — centered, with only modest, even side margins\n` +
+        `- Do NOT zoom out, do NOT render the subject small, distant, or surrounded by large empty areas — consistency of subject scale is critical\n`
       : "";
 
     // ── 긍정 프롬프트 ──
@@ -463,7 +463,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const NEG_MODEL =
       ", deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, " +
       "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face, " +
-      "head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight";
+      "head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight, " +
+      "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
     const NEG_PRODUCT =
       ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
     const NEGATIVE =
