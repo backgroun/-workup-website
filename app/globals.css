@@ -38,3 +38,21 @@ html {
 .animate-marquee2 {
   animation: marquee2 28s linear infinite;
 }
+
+/* 어드민 페이지 타이틀 축소 */
+.admin-content h1 {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  margin-bottom: 0;
+}
+.admin-content h1 + p {
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
+  color: #9ca3af;
+}
+.admin-content > div > div:first-child,
+.admin-content > .space-y-6 > div:first-child,
+.admin-content > .max-w-xl > div:first-child,
+.admin-content > .max-w-4xl > div:first-child {
+  margin-bottom: 0.875rem;
+}
