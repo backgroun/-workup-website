@@ -112,6 +112,45 @@ const DEFAULT_AI_INPUT: AiInput = {
   style: "미니멀",
 };
 
+// ── 템플릿 기반 생성 (API 불필요, 무료) ──
+const MOOD_SUBTITLE: Record<string, string> = {
+  시원한: "안는 순간, 시원해지는",
+  따뜻한: "포근하게 감싸는",
+  세련된: "감각을 완성하는",
+  활동적인: "움직임이 자유로운",
+  고급스러운: "특별한 하루를 위한",
+  편안한: "온종일 편안한",
+};
+const MOOD_ENG: Record<string, string> = {
+  시원한: "cool and refreshing", 따뜻한: "warm and cozy", 세련된: "sophisticated and sleek",
+  활동적인: "dynamic and active", 고급스러운: "luxurious and premium", 편안한: "comfortable and relaxed",
+};
+const SEASON_ENG: Record<string, string> = {
+  봄: "spring, soft natural light", 여름: "summer, bright and airy", 가을: "autumn, warm golden tones",
+  겨울: "winter, cozy atmosphere", 사계절: "all-season, versatile",
+};
+const STYLE_ENG: Record<string, string> = {
+  미니멀: "minimal clean composition", 자연적: "natural organic feel", 도시적: "urban modern look",
+  아웃도어: "outdoor adventurous setting", 스포티: "sporty energetic vibe", 클래식: "classic timeless style",
+};
+
+function buildPopupResult(input: AiInput): AiResult {
+  const { productName, season, features, mood, target, style } = input;
+  const subtitle = MOOD_SUBTITLE[mood] ?? `${season}을 위한`;
+  const title = `${season} 필수템\n${productName}`;
+  const ctaText = "지금 보러가기";
+  const imagePrompt = [
+    `A professional product advertisement photo for "${productName}", a Korean lifestyle/workwear brand popup banner.`,
+    SEASON_ENG[season] && `${SEASON_ENG[season]}.`,
+    MOOD_ENG[mood] && `${MOOD_ENG[mood]} mood.`,
+    STYLE_ENG[style] && `${STYLE_ENG[style]}.`,
+    features.trim() && `Key features: ${features.trim()}.`,
+    target.trim() && `Target audience: ${target.trim()}.`,
+    `Clean composition with clear negative space for text overlay, vertical or square banner format, high resolution, commercial photography.`,
+  ].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+  return { imagePrompt, subtitle, title, ctaText };
+}
+
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -140,7 +179,6 @@ export default function PopupManagePage() {
   // AI 상태
   const [aiInput, setAiInput]   = useState<AiInput>(DEFAULT_AI_INPUT);
   const [aiResult, setAiResult] = useState<AiResult | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError]   = useState("");
 
   // 로드
@@ -179,20 +217,10 @@ export default function PopupManagePage() {
 
   const flash = (text: string) => { setToast(text); setTimeout(() => setToast(""), 2500); };
 
-  const handleAiGenerate = async () => {
+  const handleAiGenerate = () => {
     if (!aiInput.productName.trim()) { setAiError("제품명을 입력해주세요."); return; }
-    setAiError(""); setAiLoading(true); setAiResult(null);
-    try {
-      const res = await fetch("/api/admin/popup/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aiInput),
-      });
-      const data = await res.json().catch(() => ({ error: `서버 오류 (${res.status})` }));
-      if (!res.ok || data.error) setAiError(data.error ?? `생성 실패 (${res.status})`);
-      else setAiResult(data);
-    } catch { setAiError("생성 중 오류가 발생했습니다. (네트워크 확인)"); }
-    finally { setAiLoading(false); }
+    setAiError("");
+    setAiResult(buildPopupResult(aiInput));
   };
 
   const applyAiToNewPopup = () => {
@@ -331,7 +359,7 @@ export default function PopupManagePage() {
       {/* ── AI 생성기 탭 ── */}
       {tab === "ai" && (
         <div className="max-w-2xl space-y-6">
-          <p className="text-sm text-gray-500">제품 정보를 입력하면 AI가 이미지 프롬프트와 팝업 문구를 생성합니다.</p>
+          <p className="text-sm text-gray-500">제품 정보를 입력하면 팝업 문구와 이미지 프롬프트를 생성합니다. <span className="text-gray-400">(무료 · API 불필요)</span></p>
 
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <h2 className="font-semibold text-gray-800">제품 정보 입력</h2>
@@ -389,11 +417,9 @@ export default function PopupManagePage() {
 
             {aiError && <p className="text-xs text-red-500">{aiError}</p>}
 
-            <button onClick={handleAiGenerate} disabled={aiLoading}
-              className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-              {aiLoading
-                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />생성 중...</>
-                : "✨ AI로 생성하기"}
+            <button onClick={handleAiGenerate}
+              className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
+              ✨ 문구·이미지 태그 생성
             </button>
           </div>
 
