@@ -10,6 +10,13 @@ async function isAuthed() {
 export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다. Vercel 환경변수를 확인해주세요." },
+      { status: 500 }
+    );
+  }
+
   const { productName, season, features, mood, target, style } = await req.json();
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -47,13 +54,19 @@ Midjourney 또는 DALL-E에서 사용할 수 있는 상업용 제품 광고 이�
   "ctaText": "..."
 }`;
 
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const text = message.content[0].type === "text" ? message.content[0].text : "";
+  let text = "";
+  try {
+    const message = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
+    });
+    text = message.content[0].type === "text" ? message.content[0].text : "";
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[popup/generate] Claude API error:", e);
+    return NextResponse.json({ error: `AI 호출 실패: ${msg}` }, { status: 500 });
+  }
 
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);

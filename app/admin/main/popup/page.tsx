@@ -188,10 +188,10 @@ export default function PopupManagePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(aiInput),
       });
-      const data = await res.json();
-      if (data.error) setAiError(data.error);
+      const data = await res.json().catch(() => ({ error: `서버 오류 (${res.status})` }));
+      if (!res.ok || data.error) setAiError(data.error ?? `생성 실패 (${res.status})`);
       else setAiResult(data);
-    } catch { setAiError("생성 중 오류가 발생했습니다."); }
+    } catch { setAiError("생성 중 오류가 발생했습니다. (네트워크 확인)"); }
     finally { setAiLoading(false); }
   };
 
