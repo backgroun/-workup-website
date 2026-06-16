@@ -178,7 +178,10 @@ function FilterDropdown({
 
 export default function ProductsGrid() {
   const [products, setProducts] = useState(staticProducts);
-  const [activeCategory, setActiveCategory] = useState<MainCategory | "전체">("전체");
+  const catParam = searchParams.get("cat");
+  const [activeCategory, setActiveCategory] = useState<MainCategory | "전체">(
+    catParam && mainCategories.includes(catParam as MainCategory) ? (catParam as MainCategory) : "전체"
+  );
   const [activeSubCategory, setActiveSubCategory] = useState<SubCategory | "전체">("전체");
   const [sortBy, setSortBy] = useState<SortOption>("신상품순");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);

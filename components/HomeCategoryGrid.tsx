@@ -22,12 +22,12 @@ const FALLBACK: QuickCategoriesConfig = {
   is_section_visible: true,
   display_count: 6,
   items: [
-    { id: "1", name: "공용",  emoji: "👥", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
-    { id: "2", name: "남성",  emoji: "👔", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
-    { id: "3", name: "여성",  emoji: "👗", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
-    { id: "4", name: "소품",  emoji: "🎒", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
-    { id: "5", name: "현장",  emoji: "⛏️", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
-    { id: "6", name: "일상",  emoji: "👕", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
+    { id: "1", name: "공용",  emoji: "👥", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=공용", open_in_new_tab: false, is_visible: true },
+    { id: "2", name: "남성",  emoji: "👔", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=남성", open_in_new_tab: false, is_visible: true },
+    { id: "3", name: "여성",  emoji: "👗", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=여성", open_in_new_tab: false, is_visible: true },
+    { id: "4", name: "소품",  emoji: "🎒", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=소품", open_in_new_tab: false, is_visible: true },
+    { id: "5", name: "현장",  emoji: "⛏️", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=현장", open_in_new_tab: false, is_visible: true },
+    { id: "6", name: "일상",  emoji: "👕", icon_url: "", bg_color: "#f0f0f0", link: "/products?cat=일상", open_in_new_tab: false, is_visible: true },
   ],
 };
 
