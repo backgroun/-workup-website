@@ -233,6 +233,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [promptClothingType, setPromptClothingType] = useState<"작업복" | "일상복">("작업복");
   const [promptSeason, setPromptSeason] = useState<string>("");
   const [promptModelAge, setPromptModelAge] = useState<string>("");
+  const [promptWornFocus, setPromptWornFocus] = useState<string>("기본");
   const [promptExtras, setPromptExtras] = useState<string[]>([]);
   const [promptCustomInput, setPromptCustomInput] = useState<string>("");
 
