@@ -11,6 +11,8 @@ type TextLayer = {
   letter_spacing: number;
   scale_x: number;
   line_height: number;
+  opacity?: number;
+  bg_color?: string;
   pc_x: number; pc_y: number; pc_size: number;
   mobile_x: number; mobile_y: number; mobile_size: number;
 };
