@@ -470,6 +470,58 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
             </Field>
           </div>
 
+          {/* 노출 설정 (상단) */}
+          <div className="pb-6 border-b border-gray-100 space-y-4">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 설정</p>
+            <div className="flex items-center gap-6 flex-wrap">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={editing.is_visible}
+                  onChange={(e) => set("is_visible", e.target.checked)}
+                  className="w-4 h-4 accent-[#1A2B4A]"
+                />
+                <span className="text-sm text-gray-700">노출 여부</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useSchedule}
+                  onChange={(e) => {
+                    setUseSchedule(e.target.checked);
+                    if (!e.target.checked) {
+                      set("scheduled_start", null);
+                      set("scheduled_end", null);
+                    }
+                  }}
+                  className="w-4 h-4 accent-[#1A2B4A]"
+                />
+                <span className="text-sm text-gray-700">예약 노출</span>
+                <span className="text-xs text-gray-400">설정 기간에만 자동 노출/숨김</span>
+              </label>
+            </div>
+            {useSchedule && (
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="노출 시작일">
+                  <input
+                    type="datetime-local"
+                    value={editing.scheduled_start ? editing.scheduled_start.slice(0, 16) : ""}
+                    onChange={(e) => set("scheduled_start", toIsoOrNull(e.target.value))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                  />
+                </Field>
+                <Field label="노출 종료일">
+                  <input
+                    type="datetime-local"
+                    value={editing.scheduled_end ? editing.scheduled_end.slice(0, 16) : ""}
+                    onChange={(e) => set("scheduled_end", toIsoOrNull(e.target.value))}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                  />
+                </Field>
+              </div>
+            )}
+          </div>
+
           {/* AI 이미지 프롬프트 */}
           <div className="pb-6 border-b border-gray-100">
             <button
@@ -571,61 +623,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
             )}
           </div>
 
-          {/* 3. 노출 설정 */}
-          <div className="pb-6 border-b border-gray-100 space-y-4">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 설정</p>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editing.is_visible}
-                onChange={(e) => set("is_visible", e.target.checked)}
-                className="w-4 h-4 accent-[#1A2B4A]"
-              />
-              <span className="text-sm text-gray-700">노출 여부</span>
-            </label>
-
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer mb-3">
-                <input
-                  type="checkbox"
-                  checked={useSchedule}
-                  onChange={(e) => {
-                    setUseSchedule(e.target.checked);
-                    if (!e.target.checked) {
-                      set("scheduled_start", null);
-                      set("scheduled_end", null);
-                    }
-                  }}
-                  className="w-4 h-4 accent-[#1A2B4A]"
-                />
-                <span className="text-sm text-gray-700">예약 노출</span>
-                <span className="text-xs text-gray-400">설정한 기간에만 자동 노출/숨김</span>
-              </label>
-              {useSchedule && (
-                <div className="grid grid-cols-2 gap-4 pl-6">
-                  <Field label="노출 시작일">
-                    <input
-                      type="datetime-local"
-                      value={editing.scheduled_start ? editing.scheduled_start.slice(0, 16) : ""}
-                      onChange={(e) => set("scheduled_start", toIsoOrNull(e.target.value))}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
-                    />
-                  </Field>
-                  <Field label="노출 종료일">
-                    <input
-                      type="datetime-local"
-                      value={editing.scheduled_end ? editing.scheduled_end.slice(0, 16) : ""}
-                      onChange={(e) => set("scheduled_end", toIsoOrNull(e.target.value))}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
-                    />
-                  </Field>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 4. 자유 배치 텍스트 캔버스 */}
+          {/* 자유 배치 텍스트 캔버스 */}
           <div className="pb-6 border-b border-gray-100">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
               텍스트 캔버스
