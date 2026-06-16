@@ -363,7 +363,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     // ── 배경 ──
     const background = (needsModel && onLocation)
       ? "Realistic on-location worksite environment (construction / industrial / field), softly out of focus with a shallow depth of field so the product stays razor-sharp"
-      : "Solid #EDEDED seamless studio backdrop — no gradients, no props, no patterns, no cast shadows on the backdrop";
+      : "STRICT plain solid #EDEDED light-gray seamless studio backdrop ONLY. The ENTIRE background must be one flat #EDEDED color — absolutely NO scenery, NO environment, NO location, NO real-world setting, NO props, NO furniture, NO gradients, NO patterns, NO texture, NO cast shadows on the backdrop. This is a strict e-commerce thumbnail rule — the background color must stay identical across every product.";
 
     // ── 샷별 구도 · 카메라/렌즈 · 라이팅 ──
     const SHOT: Record<PromptTypeKey, { compose: string; camera: string; light: string; kor: string }> = {
@@ -498,7 +498,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     // ── 긍정 프롬프트 ──
     const POSITIVE =
       `[GENERATION DIRECTIVE]\n` +
-      `Generate ONE single photorealistic image only. No collage, grid, card-news, or multi-panel composition.\n\n` +
+      `Generate ONE single photorealistic image only. No collage, grid, card-news, or multi-panel composition.` +
+      (onLocation ? "" : ` The background MUST be a plain solid #EDEDED studio backdrop — NEVER a real-world scene, room, or outdoor/worksite environment.`) +
+      `\n\n` +
       `[SUBJECT]\n` +
       `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
       (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
