@@ -18,6 +18,8 @@ type HeroSlide = {
   mobile_image_url: string;
   pc_image_position: string;
   mobile_image_position: string;
+  pc_image_scale: number;
+  mobile_image_scale: number;
   content_x: number;
   content_y: number;
   title_size: number;
@@ -1061,6 +1063,7 @@ function buildVisualPrompt(
   extras: string[],
   shotType: VisualShotKey,
   customInput: string,
+  description: string,
   title?: string,
   subtitle?: string
 ): string {
@@ -1068,8 +1071,10 @@ function buildVisualPrompt(
   const seasonCtx = VISUAL_SEASON_ENG[season] || "";
   const allExtras = [...extras, customInput].filter(Boolean).join(", ");
   const textCtx = [title, subtitle].filter(Boolean).join(" – ");
+  const descCtx = description.trim();
   return [
     `A professional fashion photograph for a Korean apparel brand hero banner, ultra-wide 16:9 format.`,
+    descCtx && `Scene: ${descCtx}.`,
     `${VISUAL_SHOT_TYPES[shotType]} shot of a model wearing high-quality ${clothingEng}.`,
     seasonCtx && `${seasonCtx}.`,
     allExtras && `${allExtras}.`,
@@ -1086,11 +1091,12 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
   const [season, setSeason] = useState("");
   const [extras, setExtras] = useState<string[]>([]);
   const [customInput, setCustomInput] = useState("");
+  const [description, setDescription] = useState("");
   const [prompt, setPrompt] = useState("");
   const [copied, setCopied] = useState(false);
 
   const generate = () => {
-    setPrompt(buildVisualPrompt(clothingType, season, extras, shotType, customInput, title, subtitle));
+    setPrompt(buildVisualPrompt(clothingType, season, extras, shotType, customInput, description, title, subtitle));
   };
 
   const copy = () => {
@@ -1108,6 +1114,20 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
       <div className="flex gap-2 flex-wrap">
         <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">PC: 1920 × 680px</span>
         <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded">모바일: 750 × 695px</span>
+      </div>
+
+      {/* 이미지 설명 — 생성할 장면을 간략히 묘사 */}
+      <div>
+        <p className="text-xs font-semibold text-slate-600 mb-2">
+          이미지 설명 <span className="font-normal text-slate-400">— 어떤 장면을 만들지 간략히</span>
+        </p>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          placeholder="예: 해질녘 도심 옥상에서 바람을 맞으며 서 있는 모델, 멀리 도시 야경"
+          className="w-full border border-slate-200 px-3 py-2 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none"
+        />
       </div>
 
       <div>
