@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Oxanium } from "next/font/google";
@@ -21,14 +21,24 @@ const popularTerms = [
   "카고 팬츠", "방풍 자켓", "쿨링 티셔츠", "안전조끼", "롤업 셔츠", "멀티포켓",
 ];
 
+type MemberSession = { name: string; grade: string } | null;
+
 export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
   const { count } = useCart();
   const router = useRouter();
   const pathname = usePathname();
   // 모바일 상품 상세 페이지에서는 MobileProductNav가 대신 담당
   const hideOnMobile = /^\/products\/[^/]+$/.test(pathname ?? "");
+
+  useEffect(() => {
+    fetch("/api/member/me")
+      .then(r => r.json())
+      .then(data => setMemberSession(data ?? null))
+      .catch(() => setMemberSession(null));
+  }, [pathname]);
 
   const handleSearch = (query: string) => {
     const q = query.trim();
@@ -89,12 +99,20 @@ export default function Header() {
               )}
             </Link>
 
-            {/* 회원가입 */}
-            <Link href="/register" className="p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors" aria-label="회원가입">
+            {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 회원가입 */}
+            <Link
+              href={memberSession ? "/mypage" : "/register"}
+              className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+              aria-label={memberSession ? "마이페이지" : "회원가입"}
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
               </svg>
+              {/* 로그인 상태 표시 점 */}
+              {memberSession && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ff550c] rounded-full" />
+              )}
             </Link>
 
           </div>
