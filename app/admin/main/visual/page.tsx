@@ -398,12 +398,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                 onDragOver={(e) => { e.preventDefault(); setDragOver(i); }}
                 onDrop={() => handleDrop(i)}
                 onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
-                className={`flex items-center gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${
+                className={`flex items-start gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${
                   editing?.id === slide.id ? "bg-blue-50" : "hover:bg-slate-50"
                 } ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}
               >
                 {/* 드래그 핸들 */}
-                <svg className="w-3 h-3 text-slate-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-slate-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 6a1 1 0 100-2 1 1 0 000 2zM16 6a1 1 0 100-2 1 1 0 000 2zM8 12a1 1 0 100-2 1 1 0 000 2zM16 12a1 1 0 100-2 1 1 0 000 2zM8 18a1 1 0 100-2 1 1 0 000 2zM16 18a1 1 0 100-2 1 1 0 000 2z" />
                 </svg>
 
@@ -419,38 +419,42 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                   )}
                 </div>
 
-                {/* 제목 */}
+                {/* 제목 + 토글, 그 아래 액션 버튼 */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-800 truncate">
-                    {slide.admin_title || slide.title || "(제목 없음)"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="flex-1 min-w-0 text-xs font-semibold text-slate-800 truncate">
+                      {slide.admin_title || slide.title || "(제목 없음)"}
+                    </p>
+                    <button
+                      onClick={() => toggleVisible(slide)}
+                      title={slide.is_visible ? "노출 중" : "숨김"}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${slide.is_visible ? "bg-blue-500" : "bg-slate-200"}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${slide.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+
                   {(slide.scheduled_start || slide.scheduled_end) && (
                     <p className="text-[10px] text-slate-400 mt-0.5 truncate">
                       {fmtDate(slide.scheduled_start) ?? "∞"} ~ {fmtDate(slide.scheduled_end) ?? "∞"}
                     </p>
                   )}
-                </div>
 
-                {/* 노출 토글 + 수정/삭제 */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button
-                    onClick={() => toggleVisible(slide)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${slide.is_visible ? "bg-blue-500" : "bg-slate-200"}`}
-                  >
-                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${slide.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
-                  </button>
-                  <button onClick={() => openEdit(slide)}
-                    className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2 py-1 hover:bg-slate-100 transition-colors rounded">
-                    수정
-                  </button>
-                  <button onClick={() => handleDuplicate(slide)} title="복제"
-                    className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2 py-1 hover:bg-blue-50 transition-colors rounded">
-                    복제
-                  </button>
-                  <button onClick={() => handleDelete(slide.id, slide.admin_title || slide.title)}
-                    className="text-[11px] font-medium text-red-400 border border-red-200 px-2 py-1 hover:bg-red-50 transition-colors rounded">
-                    삭제
-                  </button>
+                  {/* 수정 · 복제 · 삭제 */}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <button onClick={() => openEdit(slide)}
+                      className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">
+                      수정
+                    </button>
+                    <button onClick={() => handleDuplicate(slide)} title="복제"
+                      className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">
+                      복제
+                    </button>
+                    <button onClick={() => handleDelete(slide.id, slide.admin_title || slide.title)}
+                      className="text-[11px] font-medium text-red-400 border border-red-200 px-2.5 py-1 hover:bg-red-50 transition-colors rounded">
+                      삭제
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
