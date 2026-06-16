@@ -347,10 +347,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       "프로페셔널 무드": "confident, professional working mood",
       "스튜디오": "clean studio styling",
     };
-    const onLocation  = promptExtras.includes("야외 현장");
     const descriptors = promptExtras.filter((e) => e in DESCRIPTOR).map((e) => DESCRIPTOR[e]);
     const moods       = promptExtras.filter((e) => e in MOOD).map((e) => MOOD[e]);
-    const customExtras = promptExtras.filter((e) => !(e in DESCRIPTOR) && !(e in MOOD) && e !== "야외 현장");
+    const customExtras = promptExtras.filter((e) => !(e in DESCRIPTOR) && !(e in MOOD));
     const ageEng      = promptModelAge ? `in their ${promptModelAge.replace("대", "")}s` : "";
 
     const needsModel = !["누끼컷", "원단컷"].includes(promptType);
