@@ -40,6 +40,8 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   mobile_image_url: "",
   pc_image_position: "50% 50%",
   mobile_image_position: "50% 50%",
+  content_x: 5,
+  content_y: 35,
   is_visible: true,
   scheduled_start: null,
   scheduled_end: null,
@@ -63,8 +65,6 @@ export default function AdminMainVisualPage() {
   const [editing, setEditing] = useState<HeroSlide | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [useSchedule, setUseSchedule] = useState(false);
-  const [textOpen, setTextOpen] = useState(false);
-  const [btnOpen, setBtnOpen] = useState(false);
   const [sameImage, setSameImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
@@ -101,8 +101,6 @@ export default function AdminMainVisualPage() {
     setEditing({ id: "", ...EMPTY, sort_order: slides.length });
     setIsNew(true);
     setUseSchedule(false);
-    setTextOpen(false);
-    setBtnOpen(false);
     setSameImage(false);
     setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
@@ -112,8 +110,6 @@ export default function AdminMainVisualPage() {
     setEditing({ ...slide });
     setIsNew(false);
     setUseSchedule(!!(slide.scheduled_start || slide.scheduled_end));
-    setTextOpen(!!(slide.season_text || slide.title || slide.subtitle));
-    setBtnOpen(!!(slide.btn1_text || slide.btn2_text));
     setSameImage(!!(slide.pc_image_url && slide.pc_image_url === slide.mobile_image_url));
     setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
@@ -545,86 +541,13 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
             </div>
           </div>
 
-          {/* 4. 텍스트 (접기/펼치기) */}
+          {/* 4. 배너 편집기 — 텍스트·버튼 배치 */}
           <div className="pb-6 border-b border-gray-100">
-            <button
-              type="button"
-              onClick={() => setTextOpen((v) => !v)}
-              className="w-full flex items-center justify-between group"
-            >
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                텍스트
-                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
-              </span>
-              <span className={`text-gray-400 transition-transform text-sm ${textOpen ? "rotate-180" : ""}`}>▼</span>
-            </button>
-            {textOpen && (
-              <div className="space-y-4 mt-4">
-                <Field label="시즌 문구" optional>
-                  <input type="text" value={editing.season_text} onChange={(e) => set("season_text", e.target.value)}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
-                    placeholder="2026 Summer Collection" />
-                </Field>
-                <Field label="메인 타이틀" optional>
-                  <input type="text" value={editing.title} onChange={(e) => set("title", e.target.value)}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
-                    placeholder="일하는 사람이 제일 멋있다." />
-                </Field>
-                <Field label="서브 문구" optional>
-                  <textarea value={editing.subtitle} onChange={(e) => set("subtitle", e.target.value)}
-                    rows={2}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
-                    placeholder="워크업은 일하는 사람 편에서 만든 옷입니다." />
-                </Field>
-              </div>
-            )}
-          </div>
-
-          {/* 5. 버튼 (접기/펼치기) */}
-          <div className="pb-6 border-b border-gray-100">
-            <button
-              type="button"
-              onClick={() => setBtnOpen((v) => !v)}
-              className="w-full flex items-center justify-between group"
-            >
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                버튼
-                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
-              </span>
-              <span className={`text-gray-400 transition-transform text-sm ${btnOpen ? "rotate-180" : ""}`}>▼</span>
-            </button>
-            {btnOpen && (
-              <div className="space-y-4 mt-4">
-                <div className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
-                  <Field label="버튼1 텍스트" optional>
-                    <input type="text" value={editing.btn1_text} onChange={(e) => set("btn1_text", e.target.value)}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="컬렉션 보기" />
-                  </Field>
-                  <Field label="버튼1 링크">
-                    <input type="text" value={editing.btn1_link} onChange={(e) => set("btn1_link", e.target.value)}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/products" />
-                  </Field>
-                  <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
-                    <input type="checkbox" checked={editing.btn1_visible} onChange={(e) => set("btn1_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
-                    <span className="text-xs text-gray-600">노출</span>
-                  </label>
-                </div>
-                <div className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
-                  <Field label="버튼2 텍스트" optional>
-                    <input type="text" value={editing.btn2_text} onChange={(e) => set("btn2_text", e.target.value)}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="브랜드 스토리" />
-                  </Field>
-                  <Field label="버튼2 링크">
-                    <input type="text" value={editing.btn2_link} onChange={(e) => set("btn2_link", e.target.value)}
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" placeholder="/story" />
-                  </Field>
-                  <label className="flex items-center gap-1.5 pb-2 cursor-pointer whitespace-nowrap">
-                    <input type="checkbox" checked={editing.btn2_visible} onChange={(e) => set("btn2_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
-                    <span className="text-xs text-gray-600">노출</span>
-                  </label>
-                </div>
-              </div>
-            )}
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+              배너 편집기
+              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 텍스트·버튼 위치 직접 배치</span>
+            </p>
+            <BannerTextEditor editing={editing} set={set} sameImage={sameImage} />
           </div>
 
           {/* 저장/취소 */}
