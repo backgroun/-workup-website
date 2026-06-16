@@ -38,6 +38,18 @@ function newId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+function parseLinkMain(link: string): string {
+  try { return new URL(link, "http://x").searchParams.get("category") ?? ""; } catch { return ""; }
+}
+function parseLinkSub(link: string): string {
+  try { return new URL(link, "http://x").searchParams.get("sub") ?? ""; } catch { return ""; }
+}
+function buildLink(main: string, sub: string): string {
+  if (!main) return "/products";
+  if (!sub) return `/products?category=${encodeURIComponent(main)}`;
+  return `/products?category=${encodeURIComponent(main)}&sub=${encodeURIComponent(sub)}`;
+}
+
 export default function AdminMainCategoriesPage() {
   const [config, setConfig] = useState<QuickCategoriesConfig>(DEFAULT_CONFIG);
   const [loading, setLoading] = useState(true);
@@ -48,6 +60,7 @@ export default function AdminMainCategoriesPage() {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadErr, setUploadErr] = useState<Record<string, string>>({});
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [catData, setCatData] = useState<{ name: string; subs: string[] }[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/site-settings/quick_categories")
@@ -59,6 +72,15 @@ export default function AdminMainCategoriesPage() {
         if (data && data.items) setConfig(data as QuickCategoriesConfig);
       })
       .finally(() => setLoading(false));
+
+    fetch("/api/admin/site-settings/categories")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.categories && Array.isArray(data.categories)) {
+          setCatData(data.categories);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   async function save(cfg: QuickCategoriesConfig) {
@@ -323,16 +345,35 @@ export default function AdminMainCategoriesPage() {
                         />
                       </div>
 
-                      {/* 연결 링크 */}
+                      {/* 연결 카테고리 */}
                       <div className="col-span-2">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">연결 링크</label>
-                        <input
-                          type="text"
-                          value={item.link}
-                          onChange={(e) => updateItem(item.id, { link: e.target.value })}
-                          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
-                          placeholder="예: /products?category=남성"
-                        />
+                        <label className="block text-xs font-medium text-gray-600 mb-2">연결 카테고리</label>
+                        <div className="flex gap-2">
+                          <select
+                            value={parseLinkMain(item.link)}
+                            onChange={(e) => updateItem(item.id, { link: buildLink(e.target.value, "") })}
+                            className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                          >
+                            <option value="">전체 제품</option>
+                            {catData.map((c) => (
+                              <option key={c.name} value={c.name}>{c.name}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={parseLinkSub(item.link)}
+                            onChange={(e) => updateItem(item.id, { link: buildLink(parseLinkMain(item.link), e.target.value) })}
+                            disabled={!parseLinkMain(item.link)}
+                            className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <option value="">하위 전체</option>
+                            {(catData.find(c => c.name === parseLinkMain(item.link))?.subs ?? []).map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-1.5">
+                          → <span className="font-mono">{item.link}</span>
+                        </p>
                       </div>
 
                       {/* 아이콘 이미지 */}
