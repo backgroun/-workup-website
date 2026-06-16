@@ -411,16 +411,43 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
               onUpload={(file) => uploadImage(file, "pc")}
               inputRef={pcRef}
             />
+            {editing.pc_image_url && (
+              <ImagePositionPicker
+                label="PC 이미지 위치"
+                imageUrl={editing.pc_image_url}
+                value={editing.pc_image_position || "50% 50%"}
+                onChange={(v) => set("pc_image_position", v)}
+              />
+            )}
 
             {!sameImage && (
-              <ImageField
-                label="모바일 이미지"
-                hint="권장: 750 × 695px · JPG/PNG · 1MB 이하 · 미입력 시 PC 이미지로 대체"
-                value={editing.mobile_image_url}
-                onChange={(v) => set("mobile_image_url", v)}
-                uploading={uploading === "mobile"}
-                onUpload={(file) => uploadImage(file, "mobile")}
-                inputRef={mobileRef}
+              <>
+                <ImageField
+                  label="모바일 이미지"
+                  hint="권장: 750 × 695px · JPG/PNG · 1MB 이하 · 미입력 시 PC 이미지로 대체"
+                  value={editing.mobile_image_url}
+                  onChange={(v) => set("mobile_image_url", v)}
+                  uploading={uploading === "mobile"}
+                  onUpload={(file) => uploadImage(file, "mobile")}
+                  inputRef={mobileRef}
+                />
+                {(editing.mobile_image_url || editing.pc_image_url) && (
+                  <ImagePositionPicker
+                    label="모바일 이미지 위치"
+                    imageUrl={editing.mobile_image_url || editing.pc_image_url}
+                    value={editing.mobile_image_position || "50% 50%"}
+                    onChange={(v) => set("mobile_image_position", v)}
+                  />
+                )}
+              </>
+            )}
+
+            {sameImage && editing.pc_image_url && (
+              <ImagePositionPicker
+                label="모바일 표시 위치 (PC와 별도 조정)"
+                imageUrl={editing.pc_image_url}
+                value={editing.mobile_image_position || "50% 50%"}
+                onChange={(v) => set("mobile_image_position", v)}
               />
             )}
           </div>
@@ -664,6 +691,57 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
         // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt="" className="h-20 object-cover border border-gray-100 rounded" />
       )}
+    </div>
+  );
+}
+
+// ── 이미지 위치 조절 ──
+
+function ImagePositionPicker({ label, imageUrl, value, onChange }: {
+  label: string; imageUrl: string; value: string;
+  onChange: (v: string) => void;
+}) {
+  const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
+  const x = parts ? Math.round(parseFloat(parts[1])) : 50;
+  const y = parts ? Math.round(parseFloat(parts[2])) : 50;
+
+  const update = (nx: number, ny: number) => onChange(`${nx}% ${ny}%`);
+
+  return (
+    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+      <p className="text-xs font-semibold text-slate-600">{label}</p>
+      <div className="relative w-full h-28 rounded overflow-hidden border border-slate-200 bg-slate-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt="" className="w-full h-full object-cover"
+          style={{ objectPosition: value }} />
+        <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+          {x}% / {y}%
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div>
+          <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <span>가로 위치</span><span className="font-medium">{x}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={x}
+            onChange={(e) => update(parseInt(e.target.value), y)}
+            className="w-full accent-slate-700 h-1.5" />
+          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>왼쪽</span><span>오른쪽</span>
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <span>세로 위치</span><span className="font-medium">{y}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={y}
+            onChange={(e) => update(x, parseInt(e.target.value))}
+            className="w-full accent-slate-700 h-1.5" />
+          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>위</span><span>아래</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
