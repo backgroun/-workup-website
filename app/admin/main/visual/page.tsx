@@ -102,7 +102,7 @@ export default function AdminMainVisualPage() {
     setTextOpen(false);
     setBtnOpen(false);
     setSameImage(false);
-    setPromptOpen(false);
+    setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
@@ -113,7 +113,7 @@ export default function AdminMainVisualPage() {
     setTextOpen(!!(slide.season_text || slide.title || slide.subtitle));
     setBtnOpen(!!(slide.btn1_text || slide.btn2_text));
     setSameImage(!!(slide.pc_image_url && slide.pc_image_url === slide.mobile_image_url));
-    setPromptOpen(false);
+    setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
@@ -363,11 +363,19 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS admin_title TEXT NOT NULL DEFAU
             <h2 className="text-base font-semibold text-white">
               {isNew ? "새 슬라이드 추가" : "슬라이드 수정"}
             </h2>
-            <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+                {saving ? (
+                  <><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />저장 중...</>
+                ) : "저장"}
+              </button>
+              <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-white transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="p-6 space-y-6">
 
