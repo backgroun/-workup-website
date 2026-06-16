@@ -538,7 +538,7 @@ export default function AdminProductsPage() {
                     </td>
 
                     {/* 상품명 */}
-                    <td className="px-5 py-4 min-w-[220px]">
+                    <td className="px-5 py-4 min-w-[300px]">
                       <div className="flex items-center gap-3">
                         <div className="relative w-[52px] h-[52px] flex-shrink-0 rounded-lg overflow-hidden border border-gray-100">
                           {p.imageUrl ? (
