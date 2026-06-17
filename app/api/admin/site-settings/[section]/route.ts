@@ -8,11 +8,18 @@ async function isAuthed() {
   return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
 }
 
+// 공개 GET이 막혀선 안 되는 섹션(팝업·기획전·카테고리 등은 클라이언트에서 조회)과 달리,
+// 민감 정보가 담긴 섹션은 관리자만 읽을 수 있게 한다.
+const SENSITIVE_SECTIONS = new Set(["notifications"]);
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ section: string }> }
 ) {
   const { section } = await params;
+  if (SENSITIVE_SECTIONS.has(section) && !(await isAuthed())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("site_settings")

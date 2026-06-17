@@ -1,5 +1,11 @@
 import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
+import { getSiteSection } from "@/lib/site-settings";
+import { normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
+
+function typeLabelOf(type: string): string {
+  return type === "wholesale" ? "입점·제휴" : type === "support" ? "고객 1:1" : "가맹·창업";
+}
 
 // 공개 엔드포인트: 가맹·창업 / 입점·제휴 문의 폼 제출을 저장한다.
 export async function POST(req: Request) {
@@ -28,7 +34,8 @@ export async function POST(req: Request) {
   if (!phone) {
     return NextResponse.json({ error: "연락처를 입력해주세요." }, { status: 400 });
   }
-  if (phone.replace(/\D/g, "").length < 8) {
+  const phoneDigits = phone.replace(/\D/g, "").length;
+  if (phoneDigits < 8 || phoneDigits > 15) {
     return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
   }
 
@@ -41,25 +48,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도하시거나 전화로 문의해 주세요." }, { status: 500 });
     }
 
-    // 구글시트(Apps Script 웹앱)에도 누적 — 응답 후 비차단으로 전송(after), 2.5초 타임아웃.
-    // 시트가 느리거나 실패해도 사용자 접수 응답을 막거나 실패시키지 않는다.
+    // 구글시트(Apps Script 웹앱)에 누적 + 담당자 이메일 발송(설정 시).
+    // 응답 후 비차단으로 전송(after) — 시트/메일이 느리거나 실패해도 접수 자체는 정상 처리한다.
     const webhook = process.env.GOOGLE_SHEET_WEBHOOK_URL;
     if (webhook) {
+      // 담당자 이메일 설정을 요청 컨텍스트에서 미리 읽어 클로저에 담는다(after 내부 동적 API 회피).
+      const notif = normalizeNotifications(await getSiteSection<NotificationConfig>("notifications"));
+      const notifyEmail = notif.email_enabled ? notif.manager_email.trim() : "";
+      const outgoing = {
+        type,
+        type_label: typeLabelOf(type),
+        ...payload,
+        submitted_at: new Date().toISOString(),
+        notify_email: notifyEmail, // Apps Script가 이 값으로 담당자 메일 발송
+      };
       after(async () => {
         const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 2500);
+        const t = setTimeout(() => ctrl.abort(), 8000); // Apps Script 콜드스타트 여유
         try {
-          await fetch(webhook, {
+          const res = await fetch(webhook, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, ...payload, submitted_at: new Date().toISOString() }),
+            body: JSON.stringify(outgoing),
             signal: ctrl.signal,
             redirect: "follow",
           });
-        } catch { /* 시트 기록 실패는 접수 자체를 막지 않음 */ } finally {
+          console.log(`[inquiries] webhook 전송 완료 status=${res.status} email=${notifyEmail ? "on" : "off"}`);
+        } catch (e) {
+          console.error("[inquiries] webhook 전송 실패:", e instanceof Error ? e.message : String(e));
+        } finally {
           clearTimeout(t);
         }
       });
+    } else {
+      console.warn("[inquiries] GOOGLE_SHEET_WEBHOOK_URL 미설정 — 시트/이메일 전송을 건너뜁니다.");
     }
 
     return NextResponse.json({ ok: true });

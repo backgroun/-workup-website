@@ -37,6 +37,15 @@ function str(v: unknown, fallback: string): string {
   return typeof v === "string" ? v : fallback;
 }
 
+// 외부 링크/이미지 URL은 http(s)만 허용 (javascript:/data: 등 XSS 스킴 차단). 빈 값은 그대로 허용.
+const HTTP_URL_RE = /^https?:\/\//i;
+export function safeUrl(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const u = v.trim();
+  if (!u) return "";
+  return HTTP_URL_RE.test(u) ? u : "";
+}
+
 export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): FooterConfig {
   const c = raw ?? {};
   return {
@@ -48,9 +57,9 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
     cs_phone: str(c.cs_phone, DEFAULT_FOOTER.cs_phone),
     cs_hours_weekday: str(c.cs_hours_weekday, DEFAULT_FOOTER.cs_hours_weekday),
     cs_hours_weekend: str(c.cs_hours_weekend, DEFAULT_FOOTER.cs_hours_weekend),
-    instagram_url: str(c.instagram_url, ""),
-    youtube_url: str(c.youtube_url, ""),
-    kakao_url: str(c.kakao_url, ""),
+    instagram_url: safeUrl(c.instagram_url),
+    youtube_url: safeUrl(c.youtube_url),
+    kakao_url: safeUrl(c.kakao_url),
     copyright: str(c.copyright, DEFAULT_FOOTER.copyright),
   };
 }
@@ -72,7 +81,7 @@ export const DEFAULT_SUPPORT: SupportConfig = {
 export function normalizeSupport(raw: Partial<SupportConfig> | null | undefined): SupportConfig {
   const c = raw ?? {};
   return {
-    guide_image_url: str(c.guide_image_url, ""),
+    guide_image_url: safeUrl(c.guide_image_url),
     intro_title: str(c.intro_title, DEFAULT_SUPPORT.intro_title),
     intro_desc: str(c.intro_desc, DEFAULT_SUPPORT.intro_desc),
   };
@@ -81,6 +90,25 @@ export function normalizeSupport(raw: Partial<SupportConfig> | null | undefined)
 // 1:1 문의 구분 (사용자 선택 고정값)
 export const SUPPORT_CATEGORIES = ["제품·사이즈", "매장·방문", "교환·반품·AS", "기타"] as const;
 export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
+
+// ── 문의 알림 (담당자 이메일) ───────────────────────────────────────────────
+export type NotificationConfig = {
+  email_enabled: boolean;   // 접수 시 담당자 이메일 발송 여부
+  manager_email: string;    // 받는 담당자 이메일
+};
+
+export const DEFAULT_NOTIFICATIONS: NotificationConfig = {
+  email_enabled: false,
+  manager_email: "",
+};
+
+export function normalizeNotifications(raw: Partial<NotificationConfig> | null | undefined): NotificationConfig {
+  const c = raw ?? {};
+  return {
+    email_enabled: typeof c.email_enabled === "boolean" ? c.email_enabled : false,
+    manager_email: str(c.manager_email, ""),
+  };
+}
 
 // ── 약관 / 개인정보처리방침 ─────────────────────────────────────────────────
 export type LegalConfig = { content: string };

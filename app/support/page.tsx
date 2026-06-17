@@ -33,7 +33,7 @@ export default async function SupportPage() {
 
       <div className="bg-[#F5F2ED] py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+          <div className="grid lg:grid-cols-2 gap-6 lg:items-stretch">
 
             {/* 좌: 안내 이미지 + 고객센터 정보 */}
             <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">

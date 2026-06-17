@@ -60,6 +60,9 @@ const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "�
 export default function AdminProductsPage() {
   // ─ 데이터 ────────────────────────────────────────────────────────────────
   const [products, setProducts] = useState<Product[]>([]);
+  // 인라인 수정 시 최신 products 스냅샷을 PUT 하기 위한 ref (경합으로 인한 필드 손실 완화)
+  const productsRef = useRef<Product[]>([]);
+  productsRef.current = products;
   const [loading, setLoading] = useState(true);
   const [tableError, setTableError] = useState(false);
   const [apiErrMsg, setApiErrMsg] = useState("");
@@ -90,7 +93,7 @@ export default function AdminProductsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최신순");
   const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
-  const [page, setPage]         = useState<number>(V.page ?? 1);
+  const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
 
   // ─ 메인진열 수정 모달 ──────────────────────────────────────────────────
   const [exposeModal, setExposeModal]     = useState(false);
@@ -158,7 +161,7 @@ export default function AdminProductsPage() {
 
   // 인라인 수정 — 전체 제품을 PUT (기존 일괄작업과 동일 방식), 낙관적 갱신.
   const updateProduct = async (id: string, patch: Partial<Product>) => {
-    const target = products.find(p => p.id === id);
+    const target = productsRef.current.find(p => p.id === id);
     if (!target) return;
     const updated = { ...target, ...patch };
     setProducts(prev => prev.map(p => p.id === id ? updated : p));
@@ -572,7 +575,7 @@ export default function AdminProductsPage() {
           </div>
 
           {/* ── 테이블 (자체 스크롤 영역 + 열 헤더 sticky 고정) ── */}
-          <div className="overflow-auto max-h-[58vh]">
+          <div className="overflow-auto max-h-[58vh]" style={{ scrollbarGutter: "stable" }}>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-20 shadow-sm">
                 <tr>
@@ -660,7 +663,7 @@ export default function AdminProductsPage() {
                         onChange={(e) => updateProduct(p.id, { status: e.target.value as Product["status"] })}
                         title="클릭하여 상태 변경"
                         className={`text-[12px] font-bold rounded-full pl-2.5 pr-6 py-1 border-0 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-blue-300 ${STATUS_COLOR[p.status ?? "판매중"] ?? "bg-gray-100 text-gray-500"}`}
-                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
+                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23444' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
                       >
                         {SORTABLE_STATUSES.map((s) => <option key={s} value={s} className="bg-white text-gray-700">{s}</option>)}
                       </select>
@@ -878,7 +881,7 @@ function InlineText({ value, onSave, display, inputClassName }: {
   if (!editing) {
     return (
       <span onClick={() => { setV(value); setEditing(true); }} title="클릭하여 수정"
-        className="cursor-text hover:bg-yellow-50 rounded inline-block w-full">
+        className="cursor-text hover:bg-yellow-50 rounded block w-full">
         {display}
       </span>
     );

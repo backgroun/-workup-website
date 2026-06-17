@@ -4,6 +4,7 @@ import {
   DEFAULT_PARTNERSHIP, INQUIRY_STATUS_LABEL,
   type PartnershipConfig, type PartnerInfo, type Inquiry, type InquiryStatus, type InquiryType,
 } from "@/data/partnership";
+import { DEFAULT_NOTIFICATIONS, normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
 
 const FIELD_LABELS: Record<string, string> = {
   name: "이름", phone: "연락처", region: "창업 희망 지역", message: "문의 내용",
@@ -29,9 +30,47 @@ function fmtDate(iso: string) {
 }
 
 export default function AdminInquiriesPage() {
-  const [tab, setTab] = useState<"list" | "content">("list");
+  const [tab, setTab] = useState<"list" | "content" | "notify">("list");
   const [toast, setToast] = useState("");
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
+
+  // ── 알림 설정 (담당자 이메일 + 웹훅 테스트) ──
+  const [notif, setNotif] = useState<NotificationConfig>(DEFAULT_NOTIFICATIONS);
+  const [loadingNotif, setLoadingNotif] = useState(true);
+  const [savingNotif, setSavingNotif] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/site-settings/notifications")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setNotif(normalizeNotifications(d)))
+      .catch(() => setNotif(DEFAULT_NOTIFICATIONS))
+      .finally(() => setLoadingNotif(false));
+  }, []);
+
+  const saveNotif = async () => {
+    setSavingNotif(true);
+    try {
+      const r = await fetch("/api/admin/site-settings/notifications", {
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(notif),
+      });
+      flash(r.ok ? "알림 설정을 저장했습니다." : "저장에 실패했습니다.");
+    } finally { setSavingNotif(false); }
+  };
+
+  const testWebhook = async () => {
+    setTesting(true); setTestResult("");
+    try {
+      const r = await fetch("/api/admin/inquiries/test-webhook", { method: "POST" });
+      const d = await r.json();
+      if (!d.configured) setTestResult("❌ 미설정: " + (d.error ?? ""));
+      else if (d.ok) setTestResult(`✅ 전송 성공 (HTTP ${d.status})` + (d.notifyEmail ? ` · 이메일: ${d.notifyEmail}` : " · 이메일 발송 꺼짐") + " — 시트의 [테스트] 행" + (d.notifyEmail ? "과 담당자 메일" : "") + " 도착 여부를 확인하세요.");
+      else setTestResult(`❌ 전송 실패 (HTTP ${d.status ?? "-"}) ${d.error ?? d.body ?? ""}`);
+    } catch (e) {
+      setTestResult("❌ 요청 실패: " + (e instanceof Error ? e.message : String(e)));
+    } finally { setTesting(false); }
+  };
 
   // ── 접수 내역 ──
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -107,7 +146,7 @@ export default function AdminInquiriesPage() {
 
       {/* 탭 */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {([["list", "접수 내역"], ["content", "안내 문구"]] as const).map(([t, label]) => (
+        {([["list", "접수 내역"], ["content", "안내 문구"], ["notify", "알림 설정"]] as const).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-slate-800 text-slate-900" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
             {label}{t === "list" && inquiries.length > 0 ? ` (${inquiries.length})` : ""}
@@ -157,7 +196,7 @@ export default function AdminInquiriesPage() {
                   <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
                     {Object.entries(q.payload).filter(([, v]) => String(v).trim()).map(([k, v]) => (
                       <div key={k} className="flex gap-2 text-sm">
-                        <span className="text-slate-400 w-24 shrink-0">{FIELD_LABELS[k] ?? k}</span>
+                        <span className="text-slate-400 w-24 shrink-0">{(q.type as string) === "support" && k === "subject" ? "문의 구분" : (FIELD_LABELS[k] ?? k)}</span>
                         <span className="text-slate-800 flex-1 break-words">{String(v)}</span>
                       </div>
                     ))}
@@ -215,6 +254,56 @@ export default function AdminInquiriesPage() {
               className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors">
               {savingContent ? "저장 중..." : "안내 문구 저장"}
             </button>
+          </div>
+        )
+      )}
+
+      {/* ── 알림 설정 ── */}
+      {tab === "notify" && (
+        loadingNotif ? (
+          <div className="py-12 text-center text-slate-400 text-sm">불러오는 중...</div>
+        ) : (
+          <div className="max-w-2xl space-y-6">
+            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <h2 className="font-semibold text-gray-800">담당자 이메일 알림</h2>
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input type="checkbox" checked={notif.email_enabled}
+                  onChange={e => setNotif(n => ({ ...n, email_enabled: e.target.checked }))}
+                  className="w-4 h-4 accent-blue-600" />
+                <span className="text-sm font-medium text-gray-700">문의 접수 시 담당자 이메일로 발송</span>
+              </label>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5">담당자 이메일</label>
+                <input type="email" value={notif.manager_email}
+                  onChange={e => setNotif(n => ({ ...n, manager_email: e.target.value }))}
+                  placeholder="manager@example.com"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                <p className="text-[11px] text-gray-400 mt-1">가맹·창업 / 입점·제휴 / 1:1 문의가 접수되면 이 주소로 메일이 발송됩니다.</p>
+              </div>
+              <button onClick={saveNotif} disabled={savingNotif}
+                className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                {savingNotif ? "저장 중..." : "알림 설정 저장"}
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+              <h2 className="font-semibold text-gray-800">구글시트 · 이메일 연동 테스트</h2>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                버튼을 누르면 실제 연동 경로(Apps Script 웹훅)로 <b>테스트 1건</b>을 즉시 전송합니다.
+                구글시트에 <b>[테스트]</b> 행이 추가되고(설정 시) 담당자 메일이 도착하면 정상입니다.
+              </p>
+              <button onClick={testWebhook} disabled={testing}
+                className="px-5 py-2.5 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 disabled:opacity-50">
+                {testing ? "전송 중..." : "테스트 전송"}
+              </button>
+              {testResult && (
+                <p className={`text-sm mt-1 break-words ${testResult.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>{testResult}</p>
+              )}
+              <div className="text-[11px] text-gray-400 leading-relaxed border-t border-gray-100 pt-3 mt-1 space-y-0.5">
+                <p>· 시트 기록과 이메일 발송은 구글 Apps Script 웹앱 <b>하나</b>로 함께 처리됩니다(별도 메일 서비스 불필요).</p>
+                <p>· 설정 방법: 저장소 <span className="font-mono">docs/google-sheet-setup.md</span> 참고 · Vercel 환경변수 <span className="font-mono">GOOGLE_SHEET_WEBHOOK_URL</span> 필요.</p>
+              </div>
+            </div>
           </div>
         )
       )}
