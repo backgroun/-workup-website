@@ -259,6 +259,7 @@ export default function AdminMainVisualPage() {
 
   // 동영상 직접 업로드(브라우저 → Cloudinary, resource_type video) — 대용량 우회
   const uploadVideo = async (file: File, field: "pc" | "mobile") => {
+    if (file.size > 100 * 1024 * 1024) { flash("동영상이 너무 큽니다 (100MB 이하 · 짧고 압축된 영상 권장)", "err"); return; }
     setUploading(field);
     try {
       const sig = await fetch("/api/admin/cloudinary-sign", {
