@@ -53,12 +53,11 @@ type HeroSlide = {
   sort_order: number;
 };
 
-type SlideType = "main" | "product" | "video";
+type SlideType = "main" | "product";
 
 const SLIDE_TYPE_LABELS: Record<SlideType, string> = {
   main: "메인 비주얼",
   product: "상품 비주얼",
-  video: "동영상",
 };
 
 const EMPTY: Omit<HeroSlide, "id"> = {
@@ -116,6 +115,7 @@ export default function AdminMainVisualPage() {
   const [isNew, setIsNew] = useState(false);
   const [useSchedule, setUseSchedule] = useState(false);
   const [sameImage, setSameImage] = useState(true);
+  const [mediaTab, setMediaTab] = useState<"image" | "video">("image"); // 슬라이드 미디어 모드(이미지/동영상)
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [promptOpen, setPromptOpen] = useState(false);
@@ -152,6 +152,7 @@ export default function AdminMainVisualPage() {
     setIsNew(true);
     setUseSchedule(false);
     setSameImage(true);
+    setMediaTab("image");
     setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
@@ -161,6 +162,7 @@ export default function AdminMainVisualPage() {
     setIsNew(false);
     setUseSchedule(!!(slide.scheduled_start || slide.scheduled_end));
     setSameImage(!!(slide.pc_image_url && slide.pc_image_url === slide.mobile_image_url));
+    setMediaTab(slide.pc_video_url ? "video" : "image");
     setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
@@ -176,12 +178,11 @@ export default function AdminMainVisualPage() {
       // 빈 문자열 → null 변환 (TIMESTAMPTZ 오류 방지)
       scheduled_start: useSchedule ? (editing.scheduled_start || null) : null,
       scheduled_end: useSchedule ? (editing.scheduled_end || null) : null,
-      // 빈 문자열 이미지 URL → null
-      pc_image_url: editing.pc_image_url || null,
-      mobile_image_url: sameImage ? (editing.pc_image_url || null) : (editing.mobile_image_url || null),
-      // 동영상 URL → null
-      pc_video_url: editing.pc_video_url || null,
-      mobile_video_url: editing.mobile_video_url || null,
+      // 미디어 모드에 따라 한쪽만 저장 (이미지 모드면 동영상 null, 동영상 모드면 이미지 null)
+      pc_image_url: mediaTab === "video" ? null : (editing.pc_image_url || null),
+      mobile_image_url: mediaTab === "video" ? null : (sameImage ? (editing.pc_image_url || null) : (editing.mobile_image_url || null)),
+      pc_video_url: mediaTab === "video" ? (editing.pc_video_url || null) : null,
+      mobile_video_url: mediaTab === "video" ? (editing.mobile_video_url || null) : null,
     };
 
     const url = isNew ? "/api/admin/hero-slides" : `/api/admin/hero-slides/${editing.id}`;
@@ -502,9 +503,18 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
       {editing ? (
         <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-6 py-4 bg-slate-800 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-white">
-              {isNew ? "새 슬라이드 추가" : "슬라이드 수정"}
-            </h2>
+            <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
+              {(["image", "video"] as const).map((m) => (
+                <button key={m} onClick={() => setMediaTab(m)}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                    mediaTab === m
+                      ? (m === "video" ? "bg-[#ff550c] text-white" : "bg-white text-slate-800")
+                      : "text-white/60 hover:text-white"
+                  }`}>
+                  {m === "image" ? "이미지 슬라이드" : "동영상 슬라이드"}{isNew ? " 추가" : ""}
+                </button>
+              ))}
+            </div>
             <div className="flex items-center gap-3">
               <button onClick={handleSave} disabled={saving}
                 className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
@@ -593,7 +603,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           </div>
 
           {/* 동영상 (동영상 슬라이드 전용) */}
-          {editing.slide_type === "video" && (
+          {mediaTab === "video" && (
             <div className="pb-6 border-b border-gray-100 space-y-4">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">동영상 (PC · 모바일)</p>
               <p className="text-xs text-slate-400 -mt-2">권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다.</p>
@@ -603,7 +613,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           )}
 
           {/* AI 이미지 프롬프트 (이미지 슬라이드 전용) */}
-          {editing.slide_type !== "video" && (
+          {mediaTab !== "video" && (
           <div className="pb-6 border-b border-gray-100">
             <button
               type="button"
@@ -629,7 +639,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           )}
 
           {/* 2. 이미지 (이미지 슬라이드 전용) */}
-          {editing.slide_type !== "video" && (
+          {mediaTab !== "video" && (
           <div className="pb-6 border-b border-gray-100 space-y-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">이미지</p>

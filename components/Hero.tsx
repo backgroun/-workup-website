@@ -32,10 +32,12 @@ async function getActiveSlides(slideType: string): Promise<HeroSlide[]> {
   try {
     const supabase = createAdminClient();
     const now = new Date().toISOString();
-    // 홈 메인 슬라이더는 이미지(main) + 동영상(video) 슬라이드를 함께 노출한다.
-    const base = supabase.from("hero_slides").select("*").eq("is_visible", true);
-    const filtered = slideType === "main" ? base.in("slide_type", ["main", "video"]) : base.eq("slide_type", slideType);
-    const { data } = await filtered.order("sort_order", { ascending: true });
+    const { data } = await supabase
+      .from("hero_slides")
+      .select("*")
+      .eq("is_visible", true)
+      .eq("slide_type", slideType)
+      .order("sort_order", { ascending: true });
     if (!data || data.length === 0) return [];
     return data.filter((s: HeroSlide) => {
       if (s.scheduled_start && s.scheduled_start > now) return false;
