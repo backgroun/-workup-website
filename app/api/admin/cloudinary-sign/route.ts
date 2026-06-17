@@ -10,14 +10,16 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST() {
+export async function POST(req: Request) {
   const store = await cookies();
   if (store.get("wu-auth")?.value !== (process.env.AUTH_TOKEN ?? "wu-session-ok")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // folder 를 호출 측에서 지정 가능(기본 brands). 동영상은 workup/videos 로 업로드.
+  const body = await req.json().catch(() => ({}));
+  const folder = typeof body?.folder === "string" && body.folder ? body.folder : "workup/brands";
   const timestamp = Math.round(Date.now() / 1000);
-  const folder = "workup/brands";
   // 서명 대상 파라미터(folder, timestamp)는 클라이언트 업로드 시 그대로 전송해야 한다.
   const signature = cloudinary.utils.api_sign_request(
     { timestamp, folder },

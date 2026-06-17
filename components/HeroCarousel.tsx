@@ -31,6 +31,8 @@ type HeroSlide = {
   btn2_visible: boolean;
   pc_image_url: string | null;
   mobile_image_url: string | null;
+  pc_video_url?: string | null;
+  mobile_video_url?: string | null;
   pc_image_position?: string | null;
   mobile_image_position?: string | null;
   pc_image_scale?: number | null;
@@ -86,6 +88,8 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         {slides.map((slide) => {
           const pcImage = slide.pc_image_url;
           const mobileImage = slide.mobile_image_url || pcImage;
+          const pcVideo = slide.pc_video_url;
+          const mobileVideo = slide.mobile_video_url || pcVideo;
 
           const layers = slide.text_layers ?? [];
 
@@ -95,8 +99,21 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               className="flex-shrink-0 w-full h-full relative flex flex-col justify-center"
               style={{ containerType: "inline-size" }}
             >
-              {/* 배경 이미지 — PC/모바일 각각 objectPosition 적용 */}
-              {pcImage && (
+              {/* 배경 — 동영상 슬라이드 우선, 없으면 이미지, 둘 다 없으면 액센트 */}
+              {pcVideo ? (
+                <>
+                  <video
+                    src={pcVideo}
+                    autoPlay muted loop playsInline preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover hidden md:block"
+                  />
+                  <video
+                    src={mobileVideo || pcVideo}
+                    autoPlay muted loop playsInline preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover md:hidden"
+                  />
+                </>
+              ) : pcImage ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -121,10 +138,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     }}
                   />
                 </>
-              )}
-
-              {/* 이미지 없는 슬라이드 — 우측 어두운 액센트 */}
-              {!pcImage && (
+              ) : (
                 <div className="absolute right-0 top-0 h-full w-1/3 bg-[#152238] hidden lg:block" />
               )}
 

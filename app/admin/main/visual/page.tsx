@@ -33,6 +33,8 @@ type HeroSlide = {
   btn2_visible: boolean;
   pc_image_url: string;
   mobile_image_url: string;
+  pc_video_url: string;
+  mobile_video_url: string;
   pc_image_position: string;
   mobile_image_position: string;
   pc_image_scale: number;
@@ -51,11 +53,12 @@ type HeroSlide = {
   sort_order: number;
 };
 
-type SlideType = "main" | "product";
+type SlideType = "main" | "product" | "video";
 
 const SLIDE_TYPE_LABELS: Record<SlideType, string> = {
   main: "메인 비주얼",
   product: "상품 비주얼",
+  video: "동영상",
 };
 
 const EMPTY: Omit<HeroSlide, "id"> = {
@@ -71,6 +74,8 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   btn2_visible: false,
   pc_image_url: "",
   mobile_image_url: "",
+  pc_video_url: "",
+  mobile_video_url: "",
   pc_image_position: "50% 50%",
   mobile_image_position: "50% 50%",
   pc_image_scale: 1,
@@ -174,6 +179,9 @@ export default function AdminMainVisualPage() {
       // 빈 문자열 이미지 URL → null
       pc_image_url: editing.pc_image_url || null,
       mobile_image_url: sameImage ? (editing.pc_image_url || null) : (editing.mobile_image_url || null),
+      // 동영상 URL → null
+      pc_video_url: editing.pc_video_url || null,
+      mobile_video_url: editing.mobile_video_url || null,
     };
 
     const url = isNew ? "/api/admin/hero-slides" : `/api/admin/hero-slides/${editing.id}`;
@@ -246,6 +254,30 @@ export default function AdminMainVisualPage() {
     } else {
       const err = await res.json().catch(() => ({}));
       flash(`업로드 실패: ${err.error ?? res.status}`, "err");
+    }
+  };
+
+  // 동영상 직접 업로드(브라우저 → Cloudinary, resource_type video) — 대용량 우회
+  const uploadVideo = async (file: File, field: "pc" | "mobile") => {
+    setUploading(field);
+    try {
+      const sig = await fetch("/api/admin/cloudinary-sign", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "workup/videos" }),
+      }).then((r) => r.json());
+      if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)", "err"); setUploading(null); return; }
+      const form = new FormData();
+      form.append("file", file);
+      form.append("api_key", sig.apiKey);
+      form.append("timestamp", String(sig.timestamp));
+      form.append("folder", sig.folder);
+      form.append("signature", sig.signature);
+      const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, { method: "POST", body: form }).then((r) => r.json());
+      if (up.error) { flash(`업로드 실패: ${up.error.message ?? ""}`, "err"); return; }
+      setEditing((prev) => prev ? { ...prev, [field === "pc" ? "pc_video_url" : "mobile_video_url"]: up.secure_url } : prev);
+    } catch {
+      flash("업로드 실패 (네트워크/용량 확인)", "err");
+    } finally {
+      setUploading(null);
     }
   };
 
@@ -559,7 +591,18 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
             />
           </div>
 
-          {/* AI 이미지 프롬프트 */}
+          {/* 동영상 (동영상 슬라이드 전용) */}
+          {editing.slide_type === "video" && (
+            <div className="pb-6 border-b border-gray-100 space-y-4">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">동영상 (PC · 모바일)</p>
+              <p className="text-xs text-slate-400 -mt-2">권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다.</p>
+              <VideoField label="PC 동영상" value={editing.pc_video_url} uploading={uploading === "pc"} onUpload={(f) => uploadVideo(f, "pc")} onClear={() => set("pc_video_url", "")} />
+              <VideoField label="모바일 동영상 (선택)" value={editing.mobile_video_url} uploading={uploading === "mobile"} onUpload={(f) => uploadVideo(f, "mobile")} onClear={() => set("mobile_video_url", "")} />
+            </div>
+          )}
+
+          {/* AI 이미지 프롬프트 (이미지 슬라이드 전용) */}
+          {editing.slide_type !== "video" && (
           <div className="pb-6 border-b border-gray-100">
             <button
               type="button"
@@ -582,8 +625,10 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               </div>
             )}
           </div>
+          )}
 
-          {/* 2. 이미지 */}
+          {/* 2. 이미지 (이미지 슬라이드 전용) */}
+          {editing.slide_type !== "video" && (
           <div className="pb-6 border-b border-gray-100 space-y-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">이미지</p>
@@ -646,6 +691,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               </div>
             )}
           </div>
+          )}
 
           {/* 자유 배치 텍스트 캔버스 */}
           <div className="pb-6 border-b border-gray-100">
@@ -752,6 +798,31 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
       {value && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt="" className="h-20 object-cover border border-gray-100 rounded" />
+      )}
+    </div>
+  );
+}
+
+// ── 동영상 업로드 필드 (직접 Cloudinary 업로드) ──
+
+function VideoField({ label, value, uploading, onUpload, onClear }: {
+  label: string; value: string; uploading: boolean; onUpload: (f: File) => void; onClear: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-slate-700">{label}</label>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => ref.current?.click()} disabled={uploading}
+          className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 rounded-lg">
+          {uploading ? "업로드 중..." : value ? "동영상 교체" : "동영상 선택"}
+        </button>
+        {value && <button type="button" onClick={onClear} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50 rounded-lg">제거</button>}
+      </div>
+      <input ref={ref} type="file" accept="video/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ""; }} />
+      {value && (
+        <video src={value} muted loop autoPlay playsInline className="w-48 rounded border border-gray-100" />
       )}
     </div>
   );
