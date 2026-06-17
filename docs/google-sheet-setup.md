@@ -10,8 +10,15 @@
 
 ---
 
-## 1) 시트 헤더 행(선택, 권장)
-첫 행에 컬럼명을 넣어두면 보기 좋습니다:
+## 1) 탭(시트) 구성 — 1개도, 유형별 여러 개도 OK
+- **1개 탭**만 두면 모든 문의가 그 탭에 쌓입니다.
+- **유형별로 나누고 싶으면** 탭 이름에 키워드를 넣어 두세요. 아래 코드가 자동으로 알맞은 탭에 기록합니다(없으면 새 탭을 만듭니다).
+  - 가맹·창업 → 이름에 `가맹` 또는 `franchise` 포함 탭
+  - 입점·제휴 → 이름에 `제휴`·`입점` 또는 `partnership` 포함 탭
+  - 고객 1:1 → 이름에 `고객`·`1:1` 또는 `support` 포함 탭 (없으면 `고객문의(support)` 자동 생성)
+  - → 지금처럼 **가맹(franchise)`, `제휴(partnership)` 2개 탭이면 정상 동작합니다.**
+
+각 탭 첫 행 헤더(권장):
 
 | 접수시각 | 유형 | 이름 | 연락처 | 지역/품목/구분 | 브랜드 | 링크 | 내용 |
 |---|---|---|---|---|---|---|---|
@@ -23,39 +30,33 @@
 ```javascript
 function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('문의') || ss.getSheets()[0];
   var d = {};
   try { d = JSON.parse(e.postData.contents); } catch (err) {}
 
+  var type = d.type || 'franchise';
   var typeLabel = d.type_label ||
-    (d.type === 'wholesale' ? '입점·제휴' : d.type === 'support' ? '고객 1:1' : '가맹·창업');
+    (type === 'wholesale' ? '입점·제휴' : type === 'support' ? '고객 1:1' : '가맹·창업');
   var name = d.name || d.manager || '';
   var extra = d.region || d.category || d.subject || '';   // 지역 / 취급품목 / 문의구분
 
-  // 1) 시트 기록
+  // 유형에 맞는 탭 선택(없으면 자동 생성) + 헤더 자동 추가
+  var sheet = pickSheet(ss, type);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['접수시각','유형','이름','연락처','지역/품목/구분','브랜드','링크','내용']);
+  }
   sheet.appendRow([
     d.submitted_at || new Date(),
-    typeLabel,
-    name,
-    d.phone || '',
-    extra,
-    d.brand || '',
-    d.link || '',
-    d.message || ''
+    typeLabel, name, d.phone || '', extra, d.brand || '', d.link || '', d.message || ''
   ]);
 
-  // 2) 담당자 이메일 발송 (notify_email 이 있을 때만)
+  // 담당자 이메일 발송 (notify_email 이 있을 때만)
   if (d.notify_email) {
     try {
       var subject = '[워크업 문의] ' + typeLabel + ' - ' + (name || '이름없음');
-      var lines = [
-        '유형: ' + typeLabel,
-        '이름: ' + name,
-        '연락처: ' + (d.phone || '')
-      ];
-      if (extra)    lines.push('지역/품목/구분: ' + extra);
-      if (d.brand)  lines.push('브랜드: ' + d.brand);
-      if (d.link)   lines.push('링크: ' + d.link);
+      var lines = ['유형: ' + typeLabel, '이름: ' + name, '연락처: ' + (d.phone || '')];
+      if (extra)   lines.push('지역/품목/구분: ' + extra);
+      if (d.brand) lines.push('브랜드: ' + d.brand);
+      if (d.link)  lines.push('링크: ' + d.link);
       lines.push('내용: ' + (d.message || ''));
       lines.push('접수시각: ' + (d.submitted_at || ''));
       MailApp.sendEmail(d.notify_email, subject, lines.join('\n'));
@@ -65,6 +66,24 @@ function doPost(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// 유형에 맞는 탭을 이름 키워드로 찾고, 없으면 새 탭을 만든다.
+function pickSheet(ss, type) {
+  var keys = type === 'wholesale' ? ['partnership', '제휴', '입점']
+           : type === 'support'   ? ['support', '고객', '1:1']
+           :                        ['franchise', '가맹', '창업'];
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var nm = sheets[i].getName().toLowerCase();
+    for (var j = 0; j < keys.length; j++) {
+      if (nm.indexOf(keys[j].toLowerCase()) !== -1) return sheets[i];
+    }
+  }
+  var newName = type === 'wholesale' ? '제휴(partnership)'
+              : type === 'support'   ? '고객문의(support)'
+              :                        '가맹(franchise)';
+  return ss.insertSheet(newName);
 }
 ```
 
@@ -93,11 +112,19 @@ function doPost(e) {
 
 ---
 
+### ⚠️ 테스트에서 "HTTP 401" + docs.google.com HTML 이 나올 때 (가장 흔함)
+URL은 맞지만 **웹앱 액세스 권한이 '모든 사용자'가 아니어서** 구글이 로그인 페이지를 돌려준 것입니다. 다음으로 고칩니다:
+1. Apps Script 편집기 → 오른쪽 위 **배포 → 배포 관리**
+2. 현재 배포의 **연필(편집)** 클릭
+3. **액세스 권한 → "모든 사용자"** 로 변경 *(주의: "Google 계정이 있는 모든 사용자"가 아니라 그냥 "모든 사용자")*
+4. **버전: 새 버전** 선택 → **배포**
+5. (URL은 그대로 유지됩니다) 관리자 **알림 설정 → 테스트 전송** 다시 → "전송 성공" 확인
+
 ### 참고 / 문제 해결
 - **수집이 안 될 때**: 알림 설정 → 테스트 전송 결과를 보세요.
   - "미설정" → Vercel에 `GOOGLE_SHEET_WEBHOOK_URL` 등록 후 재배포.
-  - "HTTP 401/403" → 웹앱 액세스 권한이 **모든 사용자**인지 확인.
-  - "HTTP 302/200인데 행이 없음" → Apps Script 시트 이름 확인, 또는 코드 수정 후 **재배포** 누락.
+  - "HTTP 401/403" → 위 ⚠️ 항목(액세스 권한 '모든 사용자').
+  - "HTTP 302/200인데 행이 없음" → 코드 수정 후 **새 버전 배포** 누락, 또는 탭 키워드 불일치.
 - 시트/메일 전송이 실패해도 **문의 접수(Supabase 저장)는 정상 처리**됩니다. 보조 누적/알림용입니다.
 - **코드를 수정하면 반드시** "배포 → 배포 관리 → 편집(연필) → 새 버전 → 배포" 로 재배포해야 반영됩니다.
 - 이메일은 본인 구글 계정으로 발송됩니다(일반 Gmail 1일 약 100통, Workspace 약 1,500통 한도).
