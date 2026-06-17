@@ -50,14 +50,39 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [current, setCurrent] = useState(0);
   const total = slides.length;
   const touchStartX = useRef<number | null>(null);
+  // 슬라이드별 동영상 엘리먼트(PC/모바일) 보관 — 현재 슬라이드 영상만 처음부터 재생.
+  const videoMap = useRef<Record<number, { pc: HTMLVideoElement | null; mobile: HTMLVideoElement | null }>>({});
+  const endedHandledRef = useRef(false);
 
-  // 자동 슬라이드 — 동영상 슬라이드는 자동으로 넘기지 않는다(끝까지 재생 + 수동 넘김만).
+  // 자동 슬라이드(이미지). 동영상 슬라이드는 타이머로 넘기지 않고, 영상이 1회 재생되면 onEnded 로 넘어간다.
   useEffect(() => {
     if (total <= 1) return;
     if (slides[current]?.pc_video_url) return;
     const t = setTimeout(() => setCurrent((c) => (c + 1) % total), AUTO_INTERVAL);
     return () => clearTimeout(t);
   }, [current, total, slides]);
+
+  // 현재 슬라이드가 동영상이면 처음부터 재생, 나머지 영상은 일시정지.
+  useEffect(() => {
+    endedHandledRef.current = false;
+    Object.entries(videoMap.current).forEach(([k, v]) => {
+      const isCur = Number(k) === current;
+      [v.pc, v.mobile].forEach((el) => {
+        if (!el) return;
+        try {
+          if (isCur) { el.currentTime = 0; const p = el.play(); if (p) p.catch(() => {}); }
+          else el.pause();
+        } catch { /* noop */ }
+      });
+    });
+  }, [current]);
+
+  // 동영상 1회 재생 완료 → 다음 슬라이드로 (PC/모바일 중복 호출 방지).
+  const onVideoEnd = (idx: number) => {
+    if (idx !== current || endedHandledRef.current) return;
+    endedHandledRef.current = true;
+    setCurrent((c) => (c + 1) % total);
+  };
 
   const navigate = (dir: 1 | -1) => {
     setCurrent((c) => (c + dir + total) % total);
@@ -86,7 +111,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         className="absolute inset-0 flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
-        {slides.map((slide) => {
+        {slides.map((slide, idx) => {
           const pcImage = slide.pc_image_url;
           const mobileImage = slide.mobile_image_url || pcImage;
           const pcVideo = slide.pc_video_url;
@@ -104,8 +129,11 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               {pcVideo ? (
                 <>
                   <video
+                    ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).pc = el; }}
                     src={pcVideo}
-                    autoPlay muted loop playsInline preload="metadata"
+                    autoPlay muted playsInline preload="metadata"
+                    loop={total <= 1}
+                    onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
                       objectPosition: slide.pc_image_position || "50% 50%",
@@ -114,8 +142,11 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     }}
                   />
                   <video
+                    ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).mobile = el; }}
                     src={mobileVideo || pcVideo}
-                    autoPlay muted loop playsInline preload="metadata"
+                    autoPlay muted playsInline preload="metadata"
+                    loop={total <= 1}
+                    onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{
                       objectPosition: slide.mobile_image_position || "50% 50%",

@@ -721,6 +721,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               onChange={(next) => set("text_layers", next)}
               pcImage={editing.pc_image_url}
               mobileImage={editing.mobile_image_url || editing.pc_image_url}
+              pcVideo={editing.pc_video_url}
+              mobileVideo={editing.mobile_video_url || editing.pc_video_url}
               pcPos={editing.pc_image_position || "50% 50%"}
               mobilePos={editing.mobile_image_position || "50% 50%"}
               pcScale={editing.pc_image_scale ?? 1}
@@ -1016,10 +1018,11 @@ function newTextLayer(): TextLayer {
   };
 }
 
-function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobilePos, pcScale, mobileScale }: {
+function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mobileVideo, pcPos, mobilePos, pcScale, mobileScale }: {
   layers: TextLayer[];
   onChange: (next: TextLayer[]) => void;
   pcImage: string; mobileImage: string;
+  pcVideo: string; mobileVideo: string;
   pcPos: string; mobilePos: string;
   pcScale: number; mobileScale: number;
 }) {
@@ -1048,6 +1051,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
   // aspect-ratio 사용 (paddingBottom % 은 부모 너비 기준이라 maxWidth와 충돌함)
   const aspectRatio = mode === "pc" ? "1920 / 680" : "750 / 695";
   const bg = mode === "pc" ? pcImage : (mobileImage || pcImage);
+  const bgVideo = mode === "pc" ? pcVideo : (mobileVideo || pcVideo);
   const bgPos = mode === "pc" ? pcPos : mobilePos;
   const bgScale = mode === "pc" ? pcScale : mobileScale;
 
@@ -1131,8 +1135,12 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcPos, mobil
             // eslint-disable-next-line @next/next/no-img-element
             <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover"
               style={{ objectPosition: bgPos, transform: `scale(${bgScale || 1})`, transformOrigin: bgPos }} />
+          ) : bgVideo ? (
+            <video src={bgVideo} muted loop autoPlay playsInline
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{ objectPosition: bgPos, transform: `scale(${bgScale || 1})`, transformOrigin: bgPos }} />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs">이미지를 먼저 등록하세요</div>
+            <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs">이미지 또는 동영상을 먼저 등록하세요</div>
           )}
           {layers.map((l) => {
             const { x, y, size } = getXY(l);
