@@ -27,6 +27,19 @@ export async function POST(req: Request) {
     const supabase = createAdminClient();
     const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // 구글시트(Apps Script 웹앱)에도 누적 — 설정돼 있을 때만, 실패해도 접수는 성공 처리.
+    const webhook = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+    if (webhook) {
+      try {
+        await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, ...payload, submitted_at: new Date().toISOString() }),
+        });
+      } catch { /* 시트 기록 실패는 접수 자체를 막지 않음 */ }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
