@@ -12,15 +12,6 @@ export default function PartnershipLayout({ info, panelBg, boardType, children }
 }) {
   return (
     <main>
-      {/* 히어로 */}
-      <div className="bg-[#1A2B4A] py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">PARTNERSHIP</p>
-          <h1 className="text-4xl font-bold text-white mb-4">{info.hero_title}</h1>
-          <p className="text-gray-300 text-sm leading-relaxed max-w-xl">{info.hero_desc}</p>
-        </div>
-      </div>
-
       <div className="bg-[#F5F2ED] py-16">
         <div className="max-w-6xl mx-auto px-6 space-y-8">
           <div className="grid lg:grid-cols-2 gap-6 items-stretch">
