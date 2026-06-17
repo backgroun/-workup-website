@@ -1,9 +1,13 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Product, MainExpose } from "@/data/products";
 import { mainCategories, subCategoriesByMain } from "@/data/products";
+
+// 수정 페이지 왕복 시 목록 뷰(페이지/필터/스크롤)를 복원하기 위한 세션 키
+const VIEW_KEY = "admin-products-view";
+const SORTABLE_STATUSES = ["판매중", "예약판매", "품절", "판매중지", "진열대기"];
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 type SearchType = "상품명" | "상품코드" | "브랜드" | "제조사";
@@ -62,21 +66,31 @@ export default function AdminProductsPage() {
   const [msg, setMsg] = useState("");
   const [seeding, setSeeding] = useState(false);
 
+  // ─ 목록 뷰 상태 복원 (수정 후 돌아왔을 때 같은 페이지/필터/스크롤 유지) ─
+  const savedView = useRef<Record<string, unknown> | undefined>(undefined);
+  if (savedView.current === undefined) {
+    try { savedView.current = JSON.parse((typeof window !== "undefined" ? sessionStorage.getItem(VIEW_KEY) : null) || "{}"); }
+    catch { savedView.current = {}; }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const V = savedView.current as Record<string, any>;
+  const pendingScroll = useRef<number | null>(typeof V.scrollTop === "number" ? V.scrollTop : null);
+
   // ─ 검색 & 필터 ─────────────────────────────────────────────────────────
-  const [searchType, setSearchType]   = useState<SearchType>("상품명");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [applied, setApplied]         = useState({ type: "상품명" as SearchType, query: "" });
-  const [datePreset, setDatePreset]   = useState<DatePreset>("전체");
-  const [dateStart, setDateStart]     = useState("");
-  const [dateEnd, setDateEnd]         = useState("");
-  const [displayFilter, setDisplayFilter] = useState<DisplayFilter>("전체");
-  const [statusFilter, setStatusFilter]   = useState("전체");
+  const [searchType, setSearchType]   = useState<SearchType>(V.searchType ?? "상품명");
+  const [searchQuery, setSearchQuery] = useState<string>(V.searchQuery ?? "");
+  const [applied, setApplied]         = useState<{ type: SearchType; query: string }>(V.applied ?? { type: "상품명", query: "" });
+  const [datePreset, setDatePreset]   = useState<DatePreset>(V.datePreset ?? "전체");
+  const [dateStart, setDateStart]     = useState<string>(V.dateStart ?? "");
+  const [dateEnd, setDateEnd]         = useState<string>(V.dateEnd ?? "");
+  const [displayFilter, setDisplayFilter] = useState<DisplayFilter>(V.displayFilter ?? "전체");
+  const [statusFilter, setStatusFilter]   = useState<string>(V.statusFilter ?? "전체");
 
   // ─ 선택 & 정렬 ─────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy]     = useState<SortBy>("최신순");
-  const [perPage, setPerPage]   = useState(20);
-  const [page, setPage]         = useState(1);
+  const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최신순");
+  const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
+  const [page, setPage]         = useState<number>(V.page ?? 1);
 
   // ─ 메인진열 수정 모달 ──────────────────────────────────────────────────
   const [exposeModal, setExposeModal]     = useState(false);
@@ -122,6 +136,40 @@ export default function AdminProductsPage() {
       .then(d => { if (Array.isArray(d) && d.length) setCatList(d); })
       .catch(() => {});
   }, []);
+
+  // 뷰 상태를 세션에 저장 (수정 페이지에서 돌아오면 같은 페이지/필터로 복원)
+  useEffect(() => {
+    try {
+      const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}");
+      sessionStorage.setItem(VIEW_KEY, JSON.stringify({
+        ...prev, searchType, searchQuery, applied, datePreset, dateStart, dateEnd,
+        displayFilter, statusFilter, sortBy, perPage, page,
+      }));
+    } catch { /* noop */ }
+  }, [searchType, searchQuery, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, sortBy, perPage, page]);
+
+  // 로드 완료 후 저장된 스크롤 위치 복원 (1회)
+  useEffect(() => {
+    if (loading || pendingScroll.current == null) return;
+    const sc = document.querySelector("main");
+    if (sc) sc.scrollTop = pendingScroll.current;
+    pendingScroll.current = null;
+  }, [loading]);
+
+  // 인라인 수정 — 전체 제품을 PUT (기존 일괄작업과 동일 방식), 낙관적 갱신.
+  const updateProduct = async (id: string, patch: Partial<Product>) => {
+    const target = products.find(p => p.id === id);
+    if (!target) return;
+    const updated = { ...target, ...patch };
+    setProducts(prev => prev.map(p => p.id === id ? updated : p));
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); showMsg(`저장 실패: ${e.error ?? res.status}`); load(); }
+      else showMsg("저장됐습니다.");
+    } catch { showMsg("저장 실패: 네트워크 오류"); load(); }
+  };
 
   const getProductCats = (p: Product): CatEntry[] => {
     const raw = (p as Record<string, unknown>).categories as CatEntry[] | undefined;
@@ -238,6 +286,9 @@ export default function AdminProductsPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated  = filtered.slice((page - 1) * perPage, page * perPage);
+
+  // 복원된 page가 범위를 벗어나면 보정
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
 
   const handleSearch = () => {
     setApplied({ type: searchType, query: searchQuery });
@@ -466,10 +517,10 @@ export default function AdminProductsPage() {
           불러오는 중...
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
 
           {/* ── 일괄 작업 바 ────────────────────────────────────────────── */}
-          <div className="px-5 py-3 border-b border-gray-200 bg-gray-50 space-y-2">
+          <div className="px-5 py-3 border-b border-gray-200 bg-gray-50 space-y-2 rounded-t-xl">
             {/* 1행: 일괄 액션 버튼 */}
             <div className="flex items-center gap-2 flex-wrap">
               {selected.size > 0 && (
@@ -520,10 +571,10 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          {/* ── 테이블 ────────────────────────────────────────────────────── */}
-          <div className="overflow-x-auto">
+          {/* ── 테이블 (자체 스크롤 영역 + 열 헤더 sticky 고정) ── */}
+          <div className="overflow-auto max-h-[58vh]">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-20 shadow-sm">
                 <tr>
                   <th className="px-4 py-4 w-10">
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
@@ -549,22 +600,29 @@ export default function AdminProductsPage() {
                         className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                     </td>
 
-                    {/* 상품명 */}
-                    <td className="px-5 py-4 min-w-[300px]">
+                    {/* 상품명 (인라인 수정 · 한 줄) */}
+                    <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="relative w-[52px] h-[52px] flex-shrink-0 rounded-lg overflow-hidden border border-gray-100">
+                        <div className="relative w-[44px] h-[44px] flex-shrink-0 rounded-lg overflow-hidden border border-gray-100">
                           {p.imageUrl ? (
-                            <Image src={p.imageUrl} alt={p.name} fill className="object-cover" sizes="52px" />
+                            <Image src={p.imageUrl} alt={p.name} fill className="object-cover" sizes="44px" />
                           ) : (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                               <span className="text-gray-300 text-[10px]">없음</span>
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-[16px] text-gray-900 leading-tight">{p.name}</p>
-                          {p.brand && <p className="text-[13px] text-[#1A2B4A] font-semibold mt-0.5">{p.brand}</p>}
-                          <p className="text-[13px] text-gray-400 font-mono mt-0.5">{p.sku || p.id}</p>
+                        <div className="min-w-0 w-[230px]">
+                          <InlineText
+                            value={p.name}
+                            onSave={(v) => v && updateProduct(p.id, { name: v })}
+                            display={<span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>}
+                            inputClassName="w-full border border-blue-300 rounded px-1.5 py-1 text-[14px] font-semibold text-gray-900 focus:outline-none"
+                          />
+                          <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                            {p.brand && <span className="text-[12px] text-[#1A2B4A] font-semibold truncate flex-shrink-0">{p.brand}</span>}
+                            <span className="text-[12px] text-gray-400 font-mono truncate">{p.sku || p.id}</span>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -582,19 +640,30 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
 
-                    {/* 가격 */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <p className="text-[15px] font-bold text-gray-800">{p.price}</p>
+                    {/* 가격 (인라인 수정) */}
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      <InlineText
+                        value={p.price ?? ""}
+                        onSave={(v) => updateProduct(p.id, { price: v })}
+                        display={<span className="block text-[14px] font-bold text-gray-800">{p.price || <span className="text-gray-300 font-normal">가격 입력</span>}</span>}
+                        inputClassName="w-[110px] border border-blue-300 rounded px-1.5 py-1 text-[14px] font-bold text-gray-800 focus:outline-none"
+                      />
                       {p.consumerPrice && (
-                        <p className="text-[13px] text-gray-400 line-through">{p.consumerPrice}</p>
+                        <p className="text-[12px] text-gray-400 line-through">{p.consumerPrice}</p>
                       )}
                     </td>
 
-                    {/* 판매 상태 */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 text-[13px] font-bold rounded-full ${STATUS_COLOR[p.status ?? "판매중"] ?? "bg-gray-100 text-gray-500"}`}>
-                        {p.status ?? "판매중"}
-                      </span>
+                    {/* 판매 상태 (인라인 수정) */}
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      <select
+                        value={p.status ?? "판매중"}
+                        onChange={(e) => updateProduct(p.id, { status: e.target.value as Product["status"] })}
+                        title="클릭하여 상태 변경"
+                        className={`text-[12px] font-bold rounded-full pl-2.5 pr-6 py-1 border-0 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-blue-300 ${STATUS_COLOR[p.status ?? "판매중"] ?? "bg-gray-100 text-gray-500"}`}
+                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
+                      >
+                        {SORTABLE_STATUSES.map((s) => <option key={s} value={s} className="bg-white text-gray-700">{s}</option>)}
+                      </select>
                     </td>
 
                     {/* 메인 노출 */}
@@ -631,6 +700,7 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2 justify-end">
                         <Link href={`/admin/products/${p.id}/edit`}
+                          onClick={() => { try { const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}"); const sc = document.querySelector("main"); sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...prev, scrollTop: sc ? sc.scrollTop : 0 })); } catch { /* noop */ } }}
                           className="text-[14px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] px-3.5 py-1.5 hover:bg-[#1A2B4A] hover:text-white rounded whitespace-nowrap">
                           수정
                         </Link>
@@ -790,5 +860,41 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// ── 인라인 텍스트 편집 (클릭 → 입력, Enter/포커스 해제 시 저장, Esc 취소) ──
+function InlineText({ value, onSave, display, inputClassName }: {
+  value: string;
+  onSave: (v: string) => void;
+  display: React.ReactNode;
+  inputClassName?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [v, setV] = useState(value);
+  const skip = useRef(false);
+  useEffect(() => { setV(value); }, [value]);
+
+  if (!editing) {
+    return (
+      <span onClick={() => { setV(value); setEditing(true); }} title="클릭하여 수정"
+        className="cursor-text hover:bg-yellow-50 rounded inline-block w-full">
+        {display}
+      </span>
+    );
+  }
+  return (
+    <input
+      autoFocus
+      value={v}
+      onChange={(e) => setV(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onBlur={() => { setEditing(false); if (!skip.current && v.trim() !== (value ?? "").trim()) onSave(v.trim()); skip.current = false; }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+        else if (e.key === "Escape") { skip.current = true; setV(value); e.currentTarget.blur(); }
+      }}
+      className={inputClassName}
+    />
   );
 }
