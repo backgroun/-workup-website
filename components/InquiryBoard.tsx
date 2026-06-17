@@ -51,7 +51,7 @@ export default function InquiryBoard() {
       timerRef.current = window.setTimeout(() => {
         const it = makeDummy();
         setItems((prev) => [it, ...prev].slice(0, 40));
-        setTotal((t) => t + 1);
+        // 카운트는 실제 DB 값 유지(무한 증가 방지) — 드립은 행 애니메이션으로만 '활발함' 표현.
         setNewId(it.id);
         window.setTimeout(() => setNewId((cur) => (cur === it.id ? null : cur)), 1000);
         schedule();

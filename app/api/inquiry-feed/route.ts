@@ -32,7 +32,7 @@ export async function GET() {
     });
 
     const items = [...realItems, ...dummyItems]
-      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
       .slice(0, 120);
 
     return NextResponse.json({ items, total: (dummyCount ?? 0) + (realCount ?? 0) });

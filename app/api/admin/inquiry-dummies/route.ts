@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 export async function DELETE() {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
-  const { error } = await supabase.from("inquiry_dummies").delete().neq("id", "");
+  const { error } = await supabase.from("inquiry_dummies").delete().not("id", "is", null);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
