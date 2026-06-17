@@ -15,10 +15,6 @@ export default function AnnouncementBanner() {
             카탈로그
           </Link>
           <span className="text-white/40 text-[10px]">|</span>
-          <Link href="/brands" className="text-[11px] font-bold text-white hover:opacity-60 transition-opacity whitespace-nowrap">
-            브랜드
-          </Link>
-          <span className="text-white/40 text-[10px]">|</span>
           <Link href="/partnership" className="text-[11px] font-bold text-white hover:opacity-60 transition-opacity whitespace-nowrap">
             가맹/제휴문의
           </Link>
