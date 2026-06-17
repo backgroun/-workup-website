@@ -27,6 +27,15 @@ const navGroups: NavGroup[] = [
         ),
       },
       {
+        label: "푸터·약관",
+        href: "/admin/main/footer",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 15h18" />
+          </svg>
+        ),
+      },
+      {
         label: "슬라이딩 메뉴",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

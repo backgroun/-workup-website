@@ -8,7 +8,12 @@ import {
 const FIELD_LABELS: Record<string, string> = {
   name: "이름", phone: "연락처", region: "창업 희망 지역", message: "문의 내용",
   brand: "브랜드명", manager: "담당자명", category: "취급 품목", link: "브랜드 링크",
+  subject: "문의 구분",
 };
+
+// 문의 유형 라벨/배지 (가맹·입점 + 고객 1:1)
+const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "고객 1:1" };
+const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#1A2B4A] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white" };
 
 const STATUS_STYLE: Record<InquiryStatus, string> = {
   new: "bg-green-100 text-green-700",
@@ -31,7 +36,7 @@ export default function AdminInquiriesPage() {
   // ── 접수 내역 ──
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loadingList, setLoadingList] = useState(true);
-  const [filter, setFilter] = useState<"all" | InquiryType>("all");
+  const [filter, setFilter] = useState<string>("all");
 
   const loadInquiries = () => {
     setLoadingList(true);
@@ -57,7 +62,7 @@ export default function AdminInquiriesPage() {
     flash("삭제됐습니다.");
   };
 
-  const filtered = filter === "all" ? inquiries : inquiries.filter(q => q.type === filter);
+  const filtered = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
 
   // ── 안내 문구 ──
   const [config, setConfig] = useState<PartnershipConfig>(DEFAULT_PARTNERSHIP);
@@ -95,7 +100,7 @@ export default function AdminInquiriesPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">문의 관리</h1>
-          <p className="mt-1 text-sm text-gray-500">가맹·창업 / 입점·제휴 문의 접수 내역과 안내 문구를 관리합니다.</p>
+          <p className="mt-1 text-sm text-gray-500">가맹·창업 / 입점·제휴 / 고객 1:1 문의 접수 내역과 안내 문구를 관리합니다.</p>
         </div>
         {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
       </div>
@@ -114,7 +119,7 @@ export default function AdminInquiriesPage() {
       {tab === "list" && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            {([["all", "전체"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"]] as const).map(([f, label]) => (
+            {([["all", "전체"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"], ["support", "고객 1:1"]] as const).map(([f, label]) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
                 {label}
@@ -135,8 +140,8 @@ export default function AdminInquiriesPage() {
                 <div key={q.id} className="bg-white rounded-xl border border-slate-200 p-5">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${q.type === "franchise" ? "bg-[#1A2B4A] text-white" : "bg-[#2d4f72] text-white"}`}>
-                        {q.type === "franchise" ? "가맹·창업" : "입점·제휴"}
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${TYPE_BADGE[q.type] ?? "bg-gray-500 text-white"}`}>
+                        {TYPE_LABEL[q.type] ?? q.type}
                       </span>
                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${STATUS_STYLE[q.status]}`}>{INQUIRY_STATUS_LABEL[q.status]}</span>
                       <span className="text-xs text-slate-400">{fmtDate(q.created_at)}</span>
