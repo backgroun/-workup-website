@@ -36,7 +36,7 @@ export default function AdminInquiryBoardPage() {
   };
   const loadDummy = async () => {
     try {
-      const res = await fetch("/api/admin/inquiry-dummies");
+      const res = await fetch(`/api/admin/inquiry-dummies?type=${dummyType}`);
       const data = await res.json();
       setDummies(Array.isArray(data.items) ? data.items : []);
       setDummyTotal(typeof data.total === "number" ? data.total : 0);
@@ -44,7 +44,9 @@ export default function AdminInquiryBoardPage() {
     setDummyLoaded(true);
   };
 
-  useEffect(() => { loadReal(); loadDummy(); }, []);
+  useEffect(() => { loadReal(); }, []);
+  // 유형이 바뀌면 해당 유형 더미만 다시 불러온다.
+  useEffect(() => { loadDummy(); }, [dummyType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addDummy = async (count: number, historical = false, type?: string) => {
     setBusy(true);
@@ -58,11 +60,26 @@ export default function AdminInquiryBoardPage() {
     } finally { setBusy(false); }
   };
   const clearDummy = async () => {
-    if (!confirm("더미 데이터를 전부 삭제할까요? (실제 문의는 영향 없음)")) return;
+    if (!confirm("모든 유형의 더미를 전부 삭제할까요? (실제 문의는 영향 없음)")) return;
     setBusy(true);
     try {
       const res = await fetch("/api/admin/inquiry-dummies", { method: "DELETE" });
       if (res.ok) { flash("더미를 전부 삭제했습니다."); loadDummy(); }
+    } finally { setBusy(false); }
+  };
+  const clearDummyType = async () => {
+    if (!confirm(`${typeLabel(dummyType)} 더미를 전부 삭제할까요?`)) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/admin/inquiry-dummies?type=${dummyType}`, { method: "DELETE" });
+      if (res.ok) { flash(`${typeLabel(dummyType)} 더미를 삭제했습니다.`); loadDummy(); }
+    } finally { setBusy(false); }
+  };
+  const deleteDummy = async (id: string) => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/admin/inquiry-dummies?id=${id}`, { method: "DELETE" });
+      if (res.ok) { setDummies((prev) => prev.filter((x) => x.id !== id)); setDummyTotal((n) => Math.max(0, n - 1)); }
     } finally { setBusy(false); }
   };
 
@@ -121,11 +138,11 @@ export default function AdminInquiryBoardPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-sm font-semibold text-slate-700">더미 데이터 (보여주기용)</h2>
-              <span className="text-sm text-slate-500">현재 <b className="text-[#ff550c]">{dummyTotal.toLocaleString()}</b>개</span>
+              <span className="text-sm text-slate-500">{typeLabel(dummyType)} <b className="text-[#ff550c]">{dummyTotal.toLocaleString()}</b>개</span>
             </div>
             <p className="text-xs text-slate-400 mb-4">공개 페이지 리스트를 활발해 보이게 하는 가짜 데이터입니다. 방문자에게는 ‘더미’ 표시가 보이지 않습니다. <b className="text-slate-600">유형별로 1300개씩 채워주세요</b> — 가맹/입점 페이지가 각각 자기 유형만 표시합니다.</p>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs text-slate-500">추가할 유형</span>
+              <span className="text-xs text-slate-500">유형 (보기·추가·삭제 공통)</span>
               {(["franchise", "wholesale"] as const).map((t) => (
                 <button key={t} onClick={() => setDummyType(t)}
                   className={`text-xs px-3 py-1 rounded-lg border transition-colors ${dummyType === t ? "border-blue-400 text-blue-600 bg-blue-50" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
@@ -137,23 +154,25 @@ export default function AdminInquiryBoardPage() {
               <button disabled={busy} onClick={() => addDummy(1, false, dummyType)} className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">랜덤 1개 추가</button>
               <button disabled={busy} onClick={() => addDummy(100, true, dummyType)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">+100개</button>
               <button disabled={busy} onClick={() => addDummy(1300, true, dummyType)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">1300개 채우기</button>
-              <button disabled={busy} onClick={clearDummy} className="px-4 py-2 text-sm font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 ml-auto">전체 삭제</button>
+              <button disabled={busy} onClick={clearDummyType} className="px-4 py-2 text-sm font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 ml-auto">이 유형 삭제</button>
+              <button disabled={busy} onClick={clearDummy} className="px-4 py-2 text-sm font-medium border border-red-200 text-red-400 rounded-lg hover:bg-red-50 disabled:opacity-50">전체 삭제</button>
             </div>
             {busy && <p className="text-xs text-slate-400 mt-3">처리 중...</p>}
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-100"><h3 className="text-sm font-semibold text-slate-700">최근 더미 (50개)</h3></div>
+            <div className="px-5 py-3 border-b border-slate-100"><h3 className="text-sm font-semibold text-slate-700">최근 {typeLabel(dummyType)} 더미 (50개)</h3></div>
             {!dummyLoaded ? <div className="py-12 text-center text-sm text-slate-400">불러오는 중...</div>
               : dummies.length === 0 ? <div className="py-12 text-center text-sm text-slate-400">더미가 없습니다. 위 버튼으로 추가하세요.</div>
               : (
                 <ul className="divide-y divide-slate-50">
                   {dummies.map((d) => (
-                    <li key={d.id} className="flex items-center gap-3 px-5 py-2 text-xs">
+                    <li key={d.id} className="flex items-center gap-3 px-5 py-2 text-xs hover:bg-slate-50">
                       <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${d.type === "wholesale" ? "bg-blue-50 text-blue-500" : "bg-orange-50 text-[#ff550c]"}`}>{d.type === "wholesale" ? "입점" : "가맹"}</span>
                       <span className="text-slate-700 flex-1 truncate">{d.content}</span>
                       <span className="text-slate-500 w-16 truncate">{d.name}</span>
-                      <span className="text-slate-300 w-32 text-right">{fmt(d.created_at)}</span>
+                      <span className="text-slate-300 w-28 text-right">{fmt(d.created_at)}</span>
+                      <button onClick={() => deleteDummy(d.id)} disabled={busy} title="삭제" className="text-red-400 hover:text-red-600 disabled:opacity-40 text-sm px-1 flex-shrink-0">✕</button>
                     </li>
                   ))}
                 </ul>

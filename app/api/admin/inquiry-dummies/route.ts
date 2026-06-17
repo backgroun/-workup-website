@@ -11,13 +11,18 @@ function connectedProjectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/^https?:\/\//, "").split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
 }
 
-// 더미 목록 + 총 개수 (관리자)
-export async function GET() {
+// 더미 목록 + 총 개수 (관리자). ?type= 으로 유형별 조회.
+export async function GET(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
+  const { searchParams } = new URL(req.url);
+  const tp = searchParams.get("type");
+  const t = tp === "franchise" || tp === "wholesale" ? tp : null;
+  const lq = supabase.from("inquiry_dummies").select("*").order("created_at", { ascending: false }).limit(50);
+  const cq = supabase.from("inquiry_dummies").select("*", { count: "exact", head: true });
   const [{ data, error }, { count }] = await Promise.all([
-    supabase.from("inquiry_dummies").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("inquiry_dummies").select("*", { count: "exact", head: true }),
+    t ? lq.eq("type", t) : lq,
+    t ? cq.eq("type", t) : cq,
   ]);
   if (error) return NextResponse.json({ error: error.message, project: connectedProjectRef() }, { status: 500 });
   return NextResponse.json({ items: data ?? [], total: count ?? 0 });
@@ -46,11 +51,17 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, added: n });
 }
 
-// 더미 전체 삭제 (관리자)
-export async function DELETE() {
+// 더미 삭제 (관리자). ?id= 개별 / ?type= 유형 전체 / 없으면 전부.
+export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
-  const { error } = await supabase.from("inquiry_dummies").delete().not("id", "is", null);
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  const tp = searchParams.get("type");
+  const t = tp === "franchise" || tp === "wholesale" ? tp : null;
+  const base = supabase.from("inquiry_dummies").delete();
+  const q = id ? base.eq("id", id) : t ? base.eq("type", t) : base.not("id", "is", null);
+  const { error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
