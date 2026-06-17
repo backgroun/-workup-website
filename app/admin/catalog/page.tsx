@@ -224,9 +224,11 @@ export default function AdminCatalogPage() {
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
+GRANT ALL ON TABLE catalog_pages TO anon, authenticated, service_role;
 ALTER TABLE catalog_pages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "public_read" ON catalog_pages;
-CREATE POLICY "public_read" ON catalog_pages FOR SELECT USING (true);`}</pre>
+CREATE POLICY "public_read" ON catalog_pages FOR SELECT USING (true);
+NOTIFY pgrst, 'reload schema';`}</pre>
         </div>
       )}
 
