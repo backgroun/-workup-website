@@ -122,7 +122,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           return (
             <div
               key={slide.id}
-              className="flex-shrink-0 w-full h-full relative flex flex-col justify-center"
+              className="flex-shrink-0 w-full h-full relative flex flex-col justify-center overflow-hidden"
               style={{ containerType: "inline-size" }}
             >
               {/* 배경 — 동영상 슬라이드 우선, 없으면 이미지, 둘 다 없으면 액센트 */}
