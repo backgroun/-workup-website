@@ -20,7 +20,8 @@ export async function GET() {
   const { data, error } = await supabase
     .from("catalog_pages")
     .select("*")
-    .order("sort_order", { ascending: true });
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
   if (error) {
     // 실제 에러 메시지 + 연결 프로젝트를 함께 반환해 원인 진단을 돕는다.
     return NextResponse.json(

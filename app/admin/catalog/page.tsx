@@ -23,6 +23,8 @@ export default function AdminCatalogPage() {
   const [dragOver, setDragOver] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  // 종류 전환 시 종류별 입력 내용 보관 → 왕복해도 복원(데이터 유실 방지)
+  const dataCacheRef = useRef<Partial<Record<CatalogPageType, CatalogPageData>>>({});
 
   const load = async () => {
     setLoading(true);
@@ -53,12 +55,14 @@ export default function AdminCatalogPage() {
   };
 
   const openNew = () => {
+    dataCacheRef.current = {};
     setEditing({ id: "", ...EMPTY_CATALOG_PAGE, sort_order: pages.length });
     setIsNew(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   const openEdit = (page: CatalogPage) => {
+    dataCacheRef.current = {};
     // 구버전 행 방어: page_type/data 누락 시 기본값
     setEditing({ ...page, page_type: page.page_type ?? "image", data: page.data ?? {} });
     setIsNew(false);
@@ -69,7 +73,11 @@ export default function AdminCatalogPage() {
     setEditing((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
   const setType = (type: CatalogPageType) =>
-    setEditing((prev) => (prev ? { ...prev, page_type: type, data: type === prev.page_type ? prev.data : emptyDataFor(type) } : prev));
+    setEditing((prev) => {
+      if (!prev || prev.page_type === type) return prev;
+      dataCacheRef.current[prev.page_type] = prev.data; // 현재 종류 내용 보관
+      return { ...prev, page_type: type, data: dataCacheRef.current[type] ?? emptyDataFor(type) };
+    });
   const setData = (patch: Partial<CatalogPageData>) =>
     setEditing((prev) => (prev ? { ...prev, data: { ...(prev.data ?? {}), ...patch } } : prev));
   const updItems = (fn: (a: ContentsItem[]) => ContentsItem[]) =>
@@ -78,10 +86,14 @@ export default function AdminCatalogPage() {
   const handleSave = async () => {
     if (!editing) return;
     if (editing.page_type === "image" && !editing.image_url) { flash("페이지 이미지를 등록하세요.", "err"); return; }
+    if (editing.page_type === "cover" && !editing.data?.brand?.trim()) { flash("표지 브랜드명을 입력하세요.", "err"); return; }
+    if (editing.page_type === "divider" && !editing.data?.title?.trim()) { flash("구분 페이지 제목을 입력하세요.", "err"); return; }
+    if (editing.page_type === "contents" && !(editing.data?.items ?? []).some((it) => it.name.trim())) { flash("목차 항목을 1개 이상 입력하세요.", "err"); return; }
     setSaving(true);
 
     const id = isNew ? crypto.randomUUID() : editing.id;
-    const payload = { ...editing, id, image_url: editing.image_url || null };
+    const payload: Record<string, unknown> = { ...editing, id, image_url: editing.image_url || null };
+    delete payload.created_at; delete payload.updated_at; // 서버 관리 컬럼 제외
 
     const url = isNew ? "/api/admin/catalog" : `/api/admin/catalog/${editing.id}`;
     const method = isNew ? "POST" : "PUT";
@@ -98,13 +110,14 @@ export default function AdminCatalogPage() {
   };
 
   const handleDuplicate = async (page: CatalogPage) => {
-    const payload = {
+    const payload: Record<string, unknown> = {
       ...page,
       id: crypto.randomUUID(),
       admin_title: `${page.admin_title || page.title || "페이지"} (복사본)`,
       sort_order: pages.length,
       image_url: page.image_url || null,
     };
+    delete payload.created_at; delete payload.updated_at;
     const res = await fetch("/api/admin/catalog", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     if (res.ok) { flash("복제됐습니다."); load(); }
     else { const err = await res.json().catch(() => ({})); flash(err.error ?? "복제 실패", "err"); }

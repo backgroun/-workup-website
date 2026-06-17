@@ -20,7 +20,8 @@ async function getVisiblePages(): Promise<CatalogPage[]> {
       .from("catalog_pages")
       .select("*")
       .eq("is_visible", true)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true });
     return (data as CatalogPage[]) ?? [];
   } catch {
     return [];
