@@ -134,7 +134,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     autoPlay muted playsInline preload="metadata"
                     loop={total <= 1}
                     onEnded={() => onVideoEnd(idx)}
-                    className="absolute -inset-px object-cover hidden md:block"
+                    className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
                       objectPosition: slide.pc_image_position || "50% 50%",
                       transform: `scale(${slide.pc_image_scale || 1})`,
@@ -147,7 +147,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     autoPlay muted playsInline preload="metadata"
                     loop={total <= 1}
                     onEnded={() => onVideoEnd(idx)}
-                    className="absolute -inset-px object-cover md:hidden"
+                    className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{
                       objectPosition: slide.mobile_image_position || "50% 50%",
                       transform: `scale(${slide.mobile_image_scale || 1})`,
@@ -161,7 +161,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   <img
                     src={pcImage}
                     alt=""
-                    className="absolute -inset-px object-cover hidden md:block"
+                    className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
                       objectPosition: slide.pc_image_position || "50% 50%",
                       transform: `scale(${slide.pc_image_scale || 1})`,
@@ -172,7 +172,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   <img
                     src={mobileImage || pcImage}
                     alt=""
-                    className="absolute -inset-px object-cover md:hidden"
+                    className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{
                       objectPosition: slide.mobile_image_position || "50% 50%",
                       transform: `scale(${slide.mobile_image_scale || 1})`,
