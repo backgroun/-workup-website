@@ -125,8 +125,18 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               ))}
             </Book>
           ) : total === 0 ? (
-            // 페이지 변환 불가(또는 페이지수 0) → 원본 PDF 임베드
-            <iframe src={selected.pdf_url} className="w-full h-full bg-white rounded" title={selected.brand_name} />
+            // 페이지 변환 불가(또는 페이지수 0) → 원본 PDF 임베드, 없으면 안내
+            selected.pdf_url ? (
+              <iframe src={selected.pdf_url} className="w-full h-full bg-white rounded" title={selected.brand_name} />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center px-6 gap-4">
+                <p className="text-white/60 text-sm">미리보기를 준비 중입니다.</p>
+                <div className="flex gap-3">
+                  <a href="/products" className="bg-[#ff550c] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</a>
+                  <a href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#1A2B4A] transition-colors">매장 찾기</a>
+                </div>
+              </div>
+            )
           ) : null}
         </div>
 

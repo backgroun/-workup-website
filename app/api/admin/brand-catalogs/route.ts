@@ -12,8 +12,9 @@ function connectedProjectRef() {
     .replace(/^https?:\/\//, "").split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
 }
 
-// 브랜드 카탈로그 전체 조회 (순서대로)
+// 브랜드 카탈로그 전체 조회 (순서대로) — 관리자 전용(숨긴 항목 포함하므로 인증 필요)
 export async function GET() {
+  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("brand_catalogs")
