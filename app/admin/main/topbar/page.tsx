@@ -11,7 +11,7 @@ import {
   type TopbarIconName,
 } from "@/lib/topbar";
 
-const oxanium = Oxanium({ subsets: ["latin"], weight: ["600"] });
+const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 const COLOR_PRESETS = ["#ff550c", "#1A2B4A", "#0f172a", "#111827", "#2d4f72", "#16a34a", "#dc2626", "#ffffff"];
 
@@ -59,15 +59,24 @@ function ColorInput({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
+const FONT_WEIGHT_OPTIONS = [
+  { value: 400, label: "보통 (400)" },
+  { value: 500, label: "중간 (500)" },
+  { value: 600, label: "세미볼드 (600)" },
+  { value: 700, label: "볼드 (700)" },
+  { value: 800, label: "굵게 (800)" },
+];
+
 // ── 미리보기 바 ──
 function TopbarPreview({ cfg, narrow }: { cfg: TopbarConfig; narrow?: boolean }) {
   const iconPx = Math.max(11, Math.round(cfg.height * 0.4));
+  const textStyle = { fontSize: cfg.font_size, fontWeight: cfg.font_weight, letterSpacing: `${cfg.letter_spacing}em` };
   return (
     <div className="flex items-center w-full overflow-hidden" style={{ height: cfg.height, backgroundColor: cfg.bg_color, color: cfg.text_color }}>
       <div className={`${narrow ? "px-3" : "px-6"} w-full flex items-center justify-between gap-3`}>
         <div className="flex items-center gap-1.5 min-w-0">
           {cfg.left_icon !== "none" && <TopbarIcon name={cfg.left_icon} style={{ width: iconPx, height: iconPx }} className="flex-shrink-0" />}
-          <span className={`${oxanium.className} ${narrow ? "text-[9px]" : "text-[11px]"} font-semibold tracking-[0.14em] whitespace-nowrap truncate`}>
+          <span className={`${oxanium.className} whitespace-nowrap truncate`} style={textStyle}>
             {cfg.left_text || "(좌측 문구)"}
           </span>
         </div>
@@ -75,7 +84,7 @@ function TopbarPreview({ cfg, narrow }: { cfg: TopbarConfig; narrow?: boolean })
           {cfg.items.map((it, idx) => (
             <Fragment key={it.id}>
               {idx > 0 && <span className="text-[10px] opacity-40">|</span>}
-              <span className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap">
+              <span className="flex items-center gap-1 whitespace-nowrap" style={textStyle}>
                 {it.icon !== "none" && <TopbarIcon name={it.icon} style={{ width: iconPx, height: iconPx }} />}
                 {it.label || "(텍스트)"}
               </span>
@@ -205,6 +214,51 @@ export default function TopbarManagePage() {
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-2">글자 · 아이콘 색</label>
               <ColorInput value={cfg.text_color} onChange={(v) => set("text_color", v)} />
+            </div>
+          </div>
+
+          {/* 텍스트 스타일 */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">텍스트</p>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium text-gray-700">글자 크기</label>
+                <span className="text-sm font-mono text-slate-500">{cfg.font_size}px</span>
+              </div>
+              <input type="range" min={9} max={24} value={cfg.font_size}
+                onChange={(e) => set("font_size", Number(e.target.value))}
+                className="w-full accent-blue-600 h-1.5" />
+              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                <span>9px</span><span>24px</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">굵기</label>
+              <div className="flex flex-wrap gap-1.5">
+                {FONT_WEIGHT_OPTIONS.map((o) => (
+                  <button key={o.value} type="button"
+                    onClick={() => set("font_weight", o.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors border ${cfg.font_weight === o.value ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"}`}
+                    style={{ fontWeight: o.value }}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium text-gray-700">자간 (Letter Spacing)</label>
+                <span className="text-sm font-mono text-slate-500">{cfg.letter_spacing.toFixed(2)}em</span>
+              </div>
+              <input type="range" min={0} max={0.5} step={0.01} value={cfg.letter_spacing}
+                onChange={(e) => set("letter_spacing", parseFloat(e.target.value))}
+                className="w-full accent-blue-600 h-1.5" />
+              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                <span>0em (좁게)</span><span>0.5em (넓게)</span>
+              </div>
             </div>
           </div>
 

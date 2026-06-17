@@ -32,6 +32,9 @@ export type TopbarConfig = {
   height: number;         // px (24~80)
   bg_color: string;       // 배경색 hex
   text_color: string;     // 글자·아이콘 색 hex
+  font_size: number;      // 글자 크기 px (9~24)
+  font_weight: number;    // 굵기 (100~900)
+  letter_spacing: number; // 자간 em (0~0.5)
   left_text: string;      // 좌측 문구(브랜드 슬로건)
   left_icon: TopbarIconName;
   left_link: string;      // 좌측 문구 클릭 시 이동(빈 값이면 링크 없음)
@@ -44,6 +47,9 @@ export const DEFAULT_TOPBAR: TopbarConfig = {
   height: 36,
   bg_color: "#ff550c",
   text_color: "#ffffff",
+  font_size: 11,
+  font_weight: 600,
+  letter_spacing: 0.14,
   left_text: "EVERY WORKER EVERY WEAR",
   left_icon: "none",
   left_link: "",
@@ -78,6 +84,12 @@ function clampNum(v: unknown, min: number, max: number, fallback: number): numbe
   const n = Number(v);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, Math.round(n)));
+}
+
+function clampFloat(v: unknown, min: number, max: number, fallback: number): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
 }
 
 function safeIcon(v: unknown): TopbarIconName {
@@ -117,6 +129,9 @@ export function normalizeTopbar(raw: Partial<TopbarConfig> | null | undefined): 
     height: clampNum(c.height, 24, 80, DEFAULT_TOPBAR.height),
     bg_color: typeof c.bg_color === "string" && c.bg_color ? c.bg_color : DEFAULT_TOPBAR.bg_color,
     text_color: typeof c.text_color === "string" && c.text_color ? c.text_color : DEFAULT_TOPBAR.text_color,
+    font_size: clampNum(c.font_size, 9, 24, DEFAULT_TOPBAR.font_size),
+    font_weight: clampNum(c.font_weight, 100, 900, DEFAULT_TOPBAR.font_weight),
+    letter_spacing: clampFloat(c.letter_spacing, 0, 0.5, DEFAULT_TOPBAR.letter_spacing),
     left_text: typeof c.left_text === "string" ? c.left_text : DEFAULT_TOPBAR.left_text,
     left_icon: safeIcon(c.left_icon),
     left_link: safeHref(c.left_link),
