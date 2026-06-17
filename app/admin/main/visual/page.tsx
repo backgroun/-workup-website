@@ -609,6 +609,12 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               <p className="text-xs text-slate-400 -mt-2">권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다.</p>
               <VideoField label="PC 동영상" value={editing.pc_video_url} uploading={uploading === "pc"} onUpload={(f) => uploadVideo(f, "pc")} onClear={() => set("pc_video_url", "")} />
               <VideoField label="모바일 동영상 (선택)" value={editing.mobile_video_url} uploading={uploading === "mobile"} onUpload={(f) => uploadVideo(f, "mobile")} onClear={() => set("mobile_video_url", "")} />
+              {(editing.pc_video_url || editing.mobile_video_url) && (
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <VideoPositionPicker label="PC 위치·크기" videoUrl={editing.pc_video_url || editing.mobile_video_url} value={editing.pc_image_position || "50% 50%"} onChange={(v) => set("pc_image_position", v)} scale={editing.pc_image_scale ?? 1} onScaleChange={(v) => set("pc_image_scale", v)} aspect="pc" />
+                  <VideoPositionPicker label="모바일 위치·크기" videoUrl={editing.mobile_video_url || editing.pc_video_url} value={editing.mobile_image_position || "50% 50%"} onChange={(v) => set("mobile_image_position", v)} scale={editing.mobile_image_scale ?? 1} onScaleChange={(v) => set("mobile_image_scale", v)} aspect="mobile" />
+                </div>
+              )}
             </div>
           )}
 
@@ -835,6 +841,67 @@ function VideoField({ label, value, uploading, onUpload, onClear }: {
       {value && (
         <video src={value} muted loop autoPlay playsInline className="w-48 rounded border border-gray-100" />
       )}
+    </div>
+  );
+}
+
+// ── 동영상 위치 조절 (모바일 노출 뷰에 맞게 위치·크기 드래그) ──
+
+function VideoPositionPicker({ label, videoUrl, value, onChange, scale, onScaleChange, aspect }: {
+  label: string; videoUrl: string; value: string;
+  onChange: (v: string) => void;
+  scale: number; onScaleChange: (v: number) => void;
+  aspect: "pc" | "mobile";
+}) {
+  const parts = value.match(/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
+  const x = parts ? Math.round(parseFloat(parts[1])) : 50;
+  const y = parts ? Math.round(parseFloat(parts[2])) : 50;
+  const s = scale || 1;
+  const pct = Math.round(s * 100);
+  const aspectPad = aspect === "pc" ? "35.4%" : "92.7%";
+
+  const boxRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const setFromEvent = (e: React.MouseEvent) => {
+    if (!boxRef.current) return;
+    const rect = boxRef.current.getBoundingClientRect();
+    const nx = Math.round(Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)));
+    const ny = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)));
+    onChange(`${nx}% ${ny}%`);
+  };
+
+  return (
+    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+      <p className="text-xs font-semibold text-slate-600">{label}</p>
+      <div
+        ref={boxRef}
+        className="relative w-full rounded overflow-hidden border border-slate-200 bg-slate-800 cursor-move select-none"
+        style={{ paddingBottom: aspectPad }}
+        onMouseDown={(e) => { dragging.current = true; setFromEvent(e); }}
+        onMouseMove={(e) => { if (dragging.current) setFromEvent(e); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+      >
+        <video
+          src={videoUrl}
+          muted loop autoPlay playsInline
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ objectPosition: value, transform: `scale(${s})`, transformOrigin: value }}
+        />
+        <div className="absolute top-1.5 left-1.5 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">드래그로 위치 이동</div>
+        <div className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none">크기 {pct}% · {x}/{y}</div>
+      </div>
+      <div>
+        <div className="flex justify-between text-xs text-slate-500 mb-1">
+          <span className="font-semibold text-slate-600">영상 크기</span>
+          <span className="font-medium">{pct}%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <input type="range" min={0.5} max={3} step={0.01} value={s}
+            onChange={(e) => onScaleChange(parseFloat(e.target.value))} className="flex-1 accent-blue-600 h-1.5" />
+          <button type="button" onClick={() => onScaleChange(1)} className="text-[10px] text-slate-400 hover:text-slate-600 whitespace-nowrap">초기화</button>
+        </div>
+      </div>
     </div>
   );
 }

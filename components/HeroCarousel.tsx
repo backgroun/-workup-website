@@ -51,12 +51,13 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const total = slides.length;
   const touchStartX = useRef<number | null>(null);
 
-  // 자동 슬라이드 — current 변경 시마다 타이머 리셋
+  // 자동 슬라이드 — 동영상 슬라이드는 자동으로 넘기지 않는다(끝까지 재생 + 수동 넘김만).
   useEffect(() => {
     if (total <= 1) return;
+    if (slides[current]?.pc_video_url) return;
     const t = setTimeout(() => setCurrent((c) => (c + 1) % total), AUTO_INTERVAL);
     return () => clearTimeout(t);
-  }, [current, total]);
+  }, [current, total, slides]);
 
   const navigate = (dir: 1 | -1) => {
     setCurrent((c) => (c + dir + total) % total);
@@ -106,11 +107,21 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     src={pcVideo}
                     autoPlay muted loop playsInline preload="metadata"
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
+                    style={{
+                      objectPosition: slide.pc_image_position || "50% 50%",
+                      transform: `scale(${slide.pc_image_scale || 1})`,
+                      transformOrigin: slide.pc_image_position || "50% 50%",
+                    }}
                   />
                   <video
                     src={mobileVideo || pcVideo}
                     autoPlay muted loop playsInline preload="metadata"
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
+                    style={{
+                      objectPosition: slide.mobile_image_position || "50% 50%",
+                      transform: `scale(${slide.mobile_image_scale || 1})`,
+                      transformOrigin: slide.mobile_image_position || "50% 50%",
+                    }}
                   />
                 </>
               ) : pcImage ? (
