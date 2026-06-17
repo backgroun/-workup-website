@@ -13,20 +13,33 @@ export async function POST(req: Request) {
   const type = body.type;
   const payload = body.payload ?? {};
 
-  if (type !== "franchise" && type !== "wholesale") {
+  // 허용 유형: 가맹·창업 / 입점·제휴 / 고객(1:1)
+  if (type !== "franchise" && type !== "wholesale" && type !== "support") {
     return NextResponse.json({ error: "문의 유형이 올바르지 않습니다." }, { status: 400 });
   }
 
-  // 필수값 최소 검증 (연락처)
+  // 페이로드 크기 제한 (대용량 페이로드 방지)
+  if (JSON.stringify(payload).length > 8000) {
+    return NextResponse.json({ error: "문의 내용이 너무 깁니다. 줄여서 다시 시도해주세요." }, { status: 400 });
+  }
+
+  // 필수값 최소 검증 (연락처) — 자릿수만 관대하게 확인
   const phone = String((payload as Record<string, unknown>).phone ?? "").trim();
   if (!phone) {
     return NextResponse.json({ error: "연락처를 입력해주세요." }, { status: 400 });
+  }
+  if (phone.replace(/\D/g, "").length < 8) {
+    return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
   }
 
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new" });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      // DB 오류 원인은 서버 로그로만 남기고, 고객에게는 일반 안내 문구만 노출(내부 정보 비노출).
+      console.error("[inquiries] insert 실패:", error.message);
+      return NextResponse.json({ error: "접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도하시거나 전화로 문의해 주세요." }, { status: 500 });
+    }
 
     // 구글시트(Apps Script 웹앱)에도 누적 — 응답 후 비차단으로 전송(after), 2.5초 타임아웃.
     // 시트가 느리거나 실패해도 사용자 접수 응답을 막거나 실패시키지 않는다.
@@ -52,6 +65,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[inquiries] 처리 오류:", msg);
+    return NextResponse.json({ error: "접수 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요." }, { status: 500 });
   }
 }

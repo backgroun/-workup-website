@@ -8,19 +8,25 @@ import BottomNav from "@/components/BottomNav";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import PixelManager from "@/components/PixelManager";
+import { getTopbarConfig } from "@/lib/topbar-server";
+import type { CSSProperties } from "react";
 
 export const metadata: Metadata = {
   title: "WORKUP — 일하는 사람을 위한 옷",
   description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const topbar = await getTopbarConfig();
+  // 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조하는 탑바 높이(꺼져 있으면 0).
+  const htmlStyle = { "--wu-topbar-h": `${topbar.enabled ? topbar.height : 0}px` } as CSSProperties;
+
   return (
-    <html lang="ko">
+    <html lang="ko" style={htmlStyle}>
       <body className="min-h-full flex flex-col">
         {/* 웹폰트 라이브러리 (한글+영문) — 슬라이딩 메뉴 텍스트 캔버스용 · 실제 사용 시에만 폰트 파일 다운로드 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,7 +39,7 @@ export default function RootLayout({
         <PixelManager />
         <CartProvider>
           <WishlistProvider>
-            <AnnouncementBanner />
+            <AnnouncementBanner config={topbar} />
             <Header />
             <div className="relative flex-1 pb-14 md:pb-0">
               {children}

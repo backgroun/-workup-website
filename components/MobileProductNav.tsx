@@ -8,7 +8,7 @@ export default function MobileProductNav() {
   const { count } = useCart();
 
   return (
-    <div className="md:hidden sticky top-9 z-50 bg-white border-b border-gray-200 flex items-center justify-between px-5 h-12">
+    <div className="md:hidden sticky z-50 bg-white border-b border-gray-200 flex items-center justify-between px-5 h-12" style={{ top: "var(--wu-topbar-h, 36px)" }}>
       <div className="flex items-center gap-5">
         <button onClick={() => router.back()} className="text-gray-700 hover:text-[#1A2B4A] transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

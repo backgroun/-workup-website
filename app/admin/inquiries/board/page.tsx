@@ -161,7 +161,7 @@ export default function AdminInquiryBoardPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-100"><h3 className="text-sm font-semibold text-slate-700">최근 {typeLabel(dummyType)} 더미 (50개)</h3></div>
+            <div className="px-5 py-3 border-b border-slate-100"><h3 className="text-sm font-semibold text-slate-700">최근 {typeLabel(dummyType)} 더미 <span className="text-slate-400 font-normal">({dummies.length}건 표시 · 최신 50건까지)</span></h3></div>
             {!dummyLoaded ? <div className="py-12 text-center text-sm text-slate-400">불러오는 중...</div>
               : dummies.length === 0 ? <div className="py-12 text-center text-sm text-slate-400">더미가 없습니다. 위 버튼으로 추가하세요.</div>
               : (
