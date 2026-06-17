@@ -19,18 +19,17 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// 더미용 마스킹 이름 (예: 김**, 윤수*, 신*)
+// 더미용 마스킹 이름 — 앞 두 글자 공개, 마지막만 * (예: 김영*, 이서*)
 export function randomMaskedName(): string {
-  const s = pick(SURNAMES);
-  return Math.random() < 0.5 ? `${s}${pick(GIVEN)}*` : `${s}*`;
+  return `${pick(SURNAMES)}${pick(GIVEN)}*`;
 }
 
-// 실제 이름을 표시용으로 마스킹 (홍길동 → 홍**)
+// 실제 이름 마스킹 — 마지막 한 글자만 * (홍길동 → 홍길*, 박민 → 박*)
 export function maskName(name: string): string {
   const n = (name || "").trim();
   if (!n) return "익명";
   if (n.length <= 1) return n;
-  return n[0] + "*".repeat(Math.min(2, n.length - 1));
+  return n.slice(0, -1) + "*";
 }
 
 // 유형별 일반 문구 (실제 문의 내용은 노출하지 않고 이 문구로 대체 — 개인정보 보호)
