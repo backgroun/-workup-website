@@ -5,11 +5,6 @@ import { makeDummy, type FeedItem } from "@/data/inquiryDummy";
 // 가맹/제휴 페이지 우측 '문의 현황' 보드.
 // 통합 피드(더미 + 마스킹된 실제)를 불러오고, 새 문의가 위에서 떨어지는 드립 애니메이션으로 활발해 보이게 한다.
 
-const NOTICES = [
-  "[필독] 상담 운영 시간 안내",
-  "[필독] 문의 접수 절차 안내",
-];
-
 function fmtDate(iso: string): string {
   const t = new Date(iso).getTime();
   if (Number.isNaN(t)) return "";
@@ -45,7 +40,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
       .then((r) => r.json())
       .then((d) => {
         if (!alive) return;
-        setItems(Array.isArray(d.items) ? d.items.slice(0, 20) : []);
+        setItems(Array.isArray(d.items) ? d.items.slice(0, 120) : []);
         setTotal(typeof d.total === "number" ? d.total : 0);
         setLoaded(true);
       })
@@ -62,7 +57,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
       first = false;
       timerRef.current = window.setTimeout(() => {
         const it = makeDummy({ type });
-        setItems((prev) => [it, ...prev].slice(0, 40));
+        setItems((prev) => [it, ...prev].slice(0, 120));
         setNewId(it.id);
         window.setTimeout(() => setNewId((cur) => (cur === it.id ? null : cur)), 1300);
         schedule();
@@ -91,34 +86,24 @@ export default function InquiryBoard({ type }: { type?: string }) {
       </div>
 
       {/* 컬럼 헤더 */}
-      <div className="grid grid-cols-[48px_1fr_70px_64px] px-5 py-2 text-[10px] font-medium text-gray-400 border-b border-gray-100 tracking-wider flex-shrink-0 bg-gray-50/50">
-        <span>NO.</span><span>제목</span><span className="text-center">작성자</span><span className="text-right">날짜</span>
+      <div className="grid grid-cols-[1fr_70px_64px] px-5 py-2 text-[10px] font-medium text-gray-400 border-b border-gray-100 tracking-wider flex-shrink-0 bg-gray-50/50">
+        <span>제목</span><span className="text-center">작성자</span><span className="text-right">날짜</span>
       </div>
 
-      {/* 목록 */}
-      <div className="flex-1 overflow-hidden">
-        {NOTICES.map((n, i) => (
-          <div key={`notice-${i}`} className="grid grid-cols-[48px_1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 bg-amber-50/50">
-            <span className="text-amber-500 text-[12px]">📌</span>
-            <span className="font-semibold text-[#1A2B4A] truncate">{n}</span>
-            <span className="text-center text-gray-400">관리자</span>
-            <span className="text-right text-gray-400">공지</span>
-          </div>
-        ))}
-
+      {/* 목록 (전체 스크롤) */}
+      <div className="flex-1 overflow-y-auto">
         {!loaded ? (
           <div className="py-12 text-center text-xs text-gray-300">불러오는 중...</div>
         ) : (
-          items.map((it, idx) => {
+          items.map((it) => {
             const today = isToday(it.created_at);
             return (
               <div
                 key={it.id}
-                className={`grid grid-cols-[48px_1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 border-l-2 transition-colors hover:bg-slate-50/70 ${
+                className={`grid grid-cols-[1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 border-l-2 transition-colors hover:bg-slate-50/70 ${
                   it.id === newId ? "inq-new" : ""
                 } ${today ? "bg-[#fff7f1] border-l-[#ff550c]" : "border-l-transparent"}`}
               >
-                <span className="text-gray-400 tabular-nums">{Math.max(1, total - idx).toLocaleString()}</span>
                 <span className="text-[#1A2B4A] truncate flex items-center gap-1.5 min-w-0">
                   {today && <span className="flex-shrink-0 text-[9px] font-bold text-white bg-[#ff550c] rounded px-1 leading-tight py-0.5">NEW</span>}
                   <span className="truncate">{it.content}</span>
