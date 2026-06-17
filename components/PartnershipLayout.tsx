@@ -51,8 +51,12 @@ export default function PartnershipLayout({ info, panelBg, boardType, children }
               </div>
             </div>
 
-            {/* 우: 실시간 문의 현황 (이 페이지 유형만) */}
-            <InquiryBoard type={boardType} />
+            {/* 우: 실시간 문의 현황 — 데스크톱은 좌측 칼럼 높이에 맞춰 내부 스크롤, 모바일은 고정 높이 */}
+            <div className="relative h-[600px] lg:h-auto">
+              <div className="h-full lg:absolute lg:inset-0">
+                <InquiryBoard type={boardType} />
+              </div>
+            </div>
           </div>
 
           {/* 페이지 간 이동 */}

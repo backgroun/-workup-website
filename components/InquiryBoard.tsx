@@ -68,7 +68,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
   }, [loaded, type]);
 
   return (
-    <div className="bg-white border border-gray-200 h-full min-h-[480px] flex flex-col overflow-hidden">
+    <div className="bg-white border border-gray-200 h-full flex flex-col overflow-hidden">
       <style>{`@keyframes inq-drop{0%{opacity:0;transform:translateY(-14px)}60%{background:rgba(255,85,12,.10)}100%{opacity:1;transform:translateY(0)}}.inq-new{animation:inq-drop 1s ease-out}`}</style>
 
       {/* 헤더 */}
