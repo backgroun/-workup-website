@@ -7,6 +7,7 @@ export default function AdminCatalogPage() {
   const [pages, setPages] = useState<CatalogPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [fetchErrMsg, setFetchErrMsg] = useState("");
   const [editing, setEditing] = useState<CatalogPage | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -22,10 +23,17 @@ export default function AdminCatalogPage() {
     setFetchError(false);
     try {
       const res = await fetch("/api/admin/catalog");
-      if (!res.ok) { setFetchError(true); setLoading(false); return; }
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        setFetchErrMsg(`${e.error ?? `HTTP ${res.status}`}${e.project ? ` · 연결된 프로젝트: ${e.project}` : ""}`);
+        setFetchError(true);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       setPages(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      setFetchErrMsg(err instanceof Error ? err.message : String(err));
       setFetchError(true);
     }
     setLoading(false);
@@ -196,8 +204,13 @@ export default function AdminCatalogPage() {
       {/* Supabase 미설정 안내 */}
       {!loading && fetchError && (
         <div className="mb-6 p-5 bg-amber-50 border border-amber-200 rounded-xl">
-          <p className="text-sm font-semibold text-amber-800 mb-2">⚠ catalog_pages 테이블이 설정되지 않았습니다.</p>
-          <p className="text-xs text-amber-700 mb-3">Supabase SQL Editor에서 아래 SQL을 1회 실행하세요. (파일: supabase/migrate_add_catalog_pages.sql)</p>
+          <p className="text-sm font-semibold text-amber-800 mb-2">⚠ catalog_pages 테이블을 읽지 못했습니다.</p>
+          {fetchErrMsg && (
+            <div className="mb-3 px-3 py-2 bg-white border border-red-200 rounded text-xs text-red-600 font-mono break-all">
+              실제 에러: {fetchErrMsg}
+            </div>
+          )}
+          <p className="text-xs text-amber-700 mb-3">위 “연결된 프로젝트”에 아래 SQL을 1회 실행하세요. (파일: supabase/migrate_add_catalog_pages.sql)</p>
           <pre className="text-xs bg-white p-3 border border-amber-200 rounded overflow-x-auto text-gray-700 whitespace-pre-wrap">{`CREATE TABLE IF NOT EXISTS catalog_pages (
   id          TEXT PRIMARY KEY,
   admin_title TEXT NOT NULL DEFAULT '',
