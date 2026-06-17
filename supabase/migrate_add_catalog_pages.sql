@@ -3,17 +3,22 @@
 -- Supabase SQL Editor에서 1회 실행.
 CREATE TABLE IF NOT EXISTS catalog_pages (
   id          TEXT PRIMARY KEY,
+  page_type   TEXT NOT NULL DEFAULT 'image',  -- image | cover | contents | divider
   admin_title TEXT NOT NULL DEFAULT '',
   image_url   TEXT,
   title       TEXT NOT NULL DEFAULT '',
   description TEXT NOT NULL DEFAULT '',
   link_url    TEXT NOT NULL DEFAULT '',
   link_label  TEXT NOT NULL DEFAULT '',
+  data        JSONB NOT NULL DEFAULT '{}'::jsonb,  -- cover/contents/divider 내용
   is_visible  BOOLEAN NOT NULL DEFAULT TRUE,
   sort_order  INTEGER NOT NULL DEFAULT 0,
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
+-- 기존 테이블에 컬럼 추가 (이미 catalog_pages 가 있을 때)
+ALTER TABLE catalog_pages ADD COLUMN IF NOT EXISTS page_type TEXT NOT NULL DEFAULT 'image';
+ALTER TABLE catalog_pages ADD COLUMN IF NOT EXISTS data JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 -- 앱이 사용하는 역할에 테이블 권한 부여 (이 단계가 없으면 "permission denied for table" 발생)
 GRANT ALL ON TABLE catalog_pages TO anon, authenticated, service_role;
