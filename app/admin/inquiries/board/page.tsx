@@ -17,6 +17,7 @@ export default function AdminInquiryBoardPage() {
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [busy, setBusy] = useState(false);
   const [dummyType, setDummyType] = useState<"franchise" | "wholesale">("franchise");
+  const [range, setRange] = useState({ start: "2024-03-03", end: "2026-06-17", count: 1350, maxPerDay: 5, clearFirst: true });
 
   const [reals, setReals] = useState<Real[]>([]);
   const [realLoaded, setRealLoaded] = useState(false);
@@ -57,6 +58,19 @@ export default function AdminInquiryBoardPage() {
       const data = await res.json();
       if (res.ok) { flash(`${data.added}개 추가됐습니다.`); loadDummy(); }
       else flash(data.error ?? "추가 실패", "err");
+    } finally { setBusy(false); }
+  };
+  const generateRange = async () => {
+    if (!confirm(`${typeLabel(dummyType)} 더미를 ${range.clearFirst ? "전부 삭제하고 " : ""}${range.start} ~ ${range.end} 기간에 하루 최대 ${range.maxPerDay}건으로 총 ${range.count.toLocaleString()}개 생성할까요?`)) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/inquiry-dummies", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "range", type: dummyType, start: range.start, end: range.end, count: range.count, maxPerDay: range.maxPerDay, clearFirst: range.clearFirst }),
+      });
+      const data = await res.json();
+      if (res.ok) { flash(`${data.added.toLocaleString()}개 생성됐습니다.`); loadDummy(); }
+      else flash(data.error ?? "생성 실패", "err");
     } finally { setBusy(false); }
   };
   const clearDummy = async () => {
@@ -158,6 +172,38 @@ export default function AdminInquiryBoardPage() {
               <button disabled={busy} onClick={clearDummy} className="px-4 py-2 text-sm font-medium border border-red-200 text-red-400 rounded-lg hover:bg-red-50 disabled:opacity-50">전체 삭제</button>
             </div>
             {busy && <p className="text-xs text-slate-400 mt-3">처리 중...</p>}
+          </div>
+
+          {/* 기간 분산 생성 */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 className="text-sm font-semibold text-slate-700 mb-1">기간 분산 생성 — {typeLabel(dummyType)}</h2>
+            <p className="text-xs text-slate-400 mb-4">시작일~종료일 사이에 <b className="text-slate-600">하루 최대 N건</b>으로 랜덤 분산해 자연스럽게 쌓습니다. 위 ‘유형’에서 고른 유형으로 생성됩니다.</p>
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="text-xs text-slate-500">시작일
+                <input type="date" value={range.start} onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))}
+                  className="block mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              </label>
+              <label className="text-xs text-slate-500">종료일
+                <input type="date" value={range.end} onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))}
+                  className="block mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              </label>
+              <label className="text-xs text-slate-500">총 개수
+                <input type="number" min={1} value={range.count} onChange={(e) => setRange((r) => ({ ...r, count: Number(e.target.value) }))}
+                  className="block mt-1 w-28 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              </label>
+              <label className="text-xs text-slate-500">하루 최대
+                <input type="number" min={1} max={50} value={range.maxPerDay} onChange={(e) => setRange((r) => ({ ...r, maxPerDay: Number(e.target.value) }))}
+                  className="block mt-1 w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm" />
+              </label>
+            </div>
+            <label className="flex items-center gap-2 mt-3 cursor-pointer select-none">
+              <input type="checkbox" checked={range.clearFirst} onChange={(e) => setRange((r) => ({ ...r, clearFirst: e.target.checked }))} className="w-4 h-4 accent-blue-600" />
+              <span className="text-xs text-slate-600">생성 전 <b>{typeLabel(dummyType)}</b> 기존 더미 전부 삭제</span>
+            </label>
+            <button disabled={busy} onClick={generateRange}
+              className="mt-4 px-5 py-2.5 text-sm font-semibold bg-[#ff550c] text-white rounded-lg hover:bg-[#e04500] disabled:opacity-50">
+              기간 분산 생성
+            </button>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
