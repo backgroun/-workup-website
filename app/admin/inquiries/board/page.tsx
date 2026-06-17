@@ -16,6 +16,7 @@ export default function AdminInquiryBoardPage() {
   const [tab, setTab] = useState<"real" | "dummy">("real");
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [busy, setBusy] = useState(false);
+  const [dummyType, setDummyType] = useState<"franchise" | "wholesale">("franchise");
 
   const [reals, setReals] = useState<Real[]>([]);
   const [realLoaded, setRealLoaded] = useState(false);
@@ -45,11 +46,11 @@ export default function AdminInquiryBoardPage() {
 
   useEffect(() => { loadReal(); loadDummy(); }, []);
 
-  const addDummy = async (count: number, historical = false) => {
+  const addDummy = async (count: number, historical = false, type?: string) => {
     setBusy(true);
     try {
       const res = await fetch("/api/admin/inquiry-dummies", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ count, historical }),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ count, historical, type }),
       });
       const data = await res.json();
       if (res.ok) { flash(`${data.added}개 추가됐습니다.`); loadDummy(); }
@@ -122,11 +123,20 @@ export default function AdminInquiryBoardPage() {
               <h2 className="text-sm font-semibold text-slate-700">더미 데이터 (보여주기용)</h2>
               <span className="text-sm text-slate-500">현재 <b className="text-[#ff550c]">{dummyTotal.toLocaleString()}</b>개</span>
             </div>
-            <p className="text-xs text-slate-400 mb-4">공개 페이지 리스트를 활발해 보이게 하는 가짜 데이터입니다. 방문자에게는 ‘더미’ 표시가 보이지 않습니다.</p>
+            <p className="text-xs text-slate-400 mb-4">공개 페이지 리스트를 활발해 보이게 하는 가짜 데이터입니다. 방문자에게는 ‘더미’ 표시가 보이지 않습니다. <b className="text-slate-600">유형별로 1300개씩 채워주세요</b> — 가맹/입점 페이지가 각각 자기 유형만 표시합니다.</p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-slate-500">추가할 유형</span>
+              {(["franchise", "wholesale"] as const).map((t) => (
+                <button key={t} onClick={() => setDummyType(t)}
+                  className={`text-xs px-3 py-1 rounded-lg border transition-colors ${dummyType === t ? "border-blue-400 text-blue-600 bg-blue-50" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                  {t === "franchise" ? "가맹·창업" : "입점·제휴"}
+                </button>
+              ))}
+            </div>
             <div className="flex flex-wrap gap-2">
-              <button disabled={busy} onClick={() => addDummy(1)} className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">랜덤 1개 추가</button>
-              <button disabled={busy} onClick={() => addDummy(100, true)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">+100개</button>
-              <button disabled={busy} onClick={() => addDummy(1000, true)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">1000개 채우기</button>
+              <button disabled={busy} onClick={() => addDummy(1, false, dummyType)} className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">랜덤 1개 추가</button>
+              <button disabled={busy} onClick={() => addDummy(100, true, dummyType)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">+100개</button>
+              <button disabled={busy} onClick={() => addDummy(1300, true, dummyType)} className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 disabled:opacity-50">1300개 채우기</button>
               <button disabled={busy} onClick={clearDummy} className="px-4 py-2 text-sm font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 ml-auto">전체 삭제</button>
             </div>
             {busy && <p className="text-xs text-slate-400 mt-3">처리 중...</p>}

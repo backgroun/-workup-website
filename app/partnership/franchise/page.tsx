@@ -14,7 +14,7 @@ export default async function FranchisePage() {
   const info = config?.franchise ?? DEFAULT_PARTNERSHIP.franchise;
 
   return (
-    <PartnershipLayout info={info} panelBg="#1A2B4A">
+    <PartnershipLayout info={info} panelBg="#1A2B4A" boardType="franchise">
       <FranchiseForm />
     </PartnershipLayout>
   );

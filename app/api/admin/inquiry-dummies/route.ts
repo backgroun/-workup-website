@@ -28,15 +28,16 @@ export async function GET() {
 export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const n = Math.min(Math.max(1, Number(body.count) || 1), 1000);
+  const n = Math.min(Math.max(1, Number(body.count) || 1), 2000);
   const historical = !!body.historical;
+  const type = body.type === "franchise" || body.type === "wholesale" ? body.type : undefined;
   const now = Date.now();
 
   const rows = Array.from({ length: n }, (_, i) => {
     const created = historical
       ? new Date(now - Math.floor(Math.random() * 180 * 86400 * 1000))
       : new Date(now - i * 53); // 살짝 stagger → 순서 안정
-    return makeDummy(created);
+    return makeDummy({ createdAt: created, type });
   });
 
   const supabase = createAdminClient();

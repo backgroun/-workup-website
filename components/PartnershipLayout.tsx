@@ -4,9 +4,10 @@ import InquiryBoard from "./InquiryBoard";
 
 // 가맹·창업 / 입점·제휴 문의 페이지 공통 레이아웃 (서버 컴포넌트, 폼은 children으로 주입)
 // 좌: 소개 패널 + 문의 폼(세로 스택) / 우: 실시간 문의 현황 보드
-export default function PartnershipLayout({ info, panelBg, children }: {
+export default function PartnershipLayout({ info, panelBg, boardType, children }: {
   info: PartnerInfo;
   panelBg: string;
+  boardType?: string;        // "franchise" | "wholesale" — 우측 보드를 해당 유형만 표시
   children: React.ReactNode;
 }) {
   return (
@@ -50,8 +51,8 @@ export default function PartnershipLayout({ info, panelBg, children }: {
               </div>
             </div>
 
-            {/* 우: 실시간 문의 현황 */}
-            <InquiryBoard />
+            {/* 우: 실시간 문의 현황 (이 페이지 유형만) */}
+            <InquiryBoard type={boardType} />
           </div>
 
           {/* 페이지 간 이동 */}

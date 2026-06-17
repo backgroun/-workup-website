@@ -14,7 +14,7 @@ export default async function WholesalePage() {
   const info = config?.wholesale ?? DEFAULT_PARTNERSHIP.wholesale;
 
   return (
-    <PartnershipLayout info={info} panelBg="#2d4f72">
+    <PartnershipLayout info={info} panelBg="#2d4f72" boardType="wholesale">
       <WholesaleForm />
     </PartnershipLayout>
   );

@@ -5,16 +5,24 @@ import { maskName, genericContent, type FeedItem } from "@/data/inquiryDummy";
 
 // 공개 엔드포인트: 우측 '문의 현황' 리스트용 통합 피드(더미 + 마스킹된 실제).
 // 실제 문의는 이름만 마스킹하고 내용은 일반 문구로 대체해 개인정보를 노출하지 않는다.
-export async function GET() {
+export async function GET(req: Request) {
   noStore();
   try {
     const supabase = createAdminClient();
+    const { searchParams } = new URL(req.url);
+    const tp = searchParams.get("type");
+    const t = tp === "franchise" || tp === "wholesale" ? tp : null; // 유형 필터(가맹/입점)
+
+    const dq = supabase.from("inquiry_dummies").select("id,type,name,content,created_at").order("created_at", { ascending: false }).limit(120);
+    const rq = supabase.from("inquiries").select("id,type,payload,created_at").order("created_at", { ascending: false }).limit(40);
+    const dc = supabase.from("inquiry_dummies").select("*", { count: "exact", head: true });
+    const rc = supabase.from("inquiries").select("*", { count: "exact", head: true });
 
     const [{ data: dummies }, { data: reals }, { count: dummyCount }, { count: realCount }] = await Promise.all([
-      supabase.from("inquiry_dummies").select("id,type,name,content,created_at").order("created_at", { ascending: false }).limit(120),
-      supabase.from("inquiries").select("id,type,payload,created_at").order("created_at", { ascending: false }).limit(40),
-      supabase.from("inquiry_dummies").select("*", { count: "exact", head: true }),
-      supabase.from("inquiries").select("*", { count: "exact", head: true }),
+      t ? dq.eq("type", t) : dq,
+      t ? rq.eq("type", t) : rq,
+      t ? dc.eq("type", t) : dc,
+      t ? rc.eq("type", t) : rc,
     ]);
 
     const dummyItems: FeedItem[] = (dummies ?? []).map((d) => ({

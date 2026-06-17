@@ -22,7 +22,7 @@ function fmtDate(iso: string): string {
   return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
 }
 
-export default function InquiryBoard() {
+export default function InquiryBoard({ type }: { type?: string }) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [total, setTotal] = useState(0);
   const [newId, setNewId] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function InquiryBoard() {
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/inquiry-feed")
+    fetch(`/api/inquiry-feed${type ? `?type=${type}` : ""}`)
       .then((r) => r.json())
       .then((d) => {
         if (!alive) return;
@@ -41,25 +41,28 @@ export default function InquiryBoard() {
       })
       .catch(() => setLoaded(true));
     return () => { alive = false; };
-  }, []);
+  }, [type]);
 
-  // 실시간 드립 (화면 표시용 — 새 문의가 위로 올라오는 효과)
+  // 새 문의가 위로 올라오는 효과 — 현실적인 느린 페이스.
+  // 첫 등장은 방문 30~70초 안에 1번(살아있는 느낌), 이후는 하루 ~10개 페이스(약 2~3시간 간격).
   useEffect(() => {
     if (!loaded) return;
+    let first = true;
     const schedule = () => {
-      const delay = 5000 + Math.random() * 5000;
+      const delay = first ? 30000 + Math.random() * 40000 : 7_200_000 + Math.random() * 3_600_000;
+      first = false;
       timerRef.current = window.setTimeout(() => {
-        const it = makeDummy();
+        const it = makeDummy({ type });
         setItems((prev) => [it, ...prev].slice(0, 40));
-        // 카운트는 실제 DB 값 유지(무한 증가 방지) — 드립은 행 애니메이션으로만 '활발함' 표현.
+        // 카운트는 실제 DB 값 유지(무한 증가 방지) — 드립은 행 애니메이션으로만 표현.
         setNewId(it.id);
-        window.setTimeout(() => setNewId((cur) => (cur === it.id ? null : cur)), 1000);
+        window.setTimeout(() => setNewId((cur) => (cur === it.id ? null : cur)), 1200);
         schedule();
       }, delay);
     };
     schedule();
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [loaded]);
+  }, [loaded, type]);
 
   return (
     <div className="bg-white border border-gray-200 h-full min-h-[480px] flex flex-col overflow-hidden">

@@ -38,14 +38,14 @@ export function genericContent(type: string): string {
   return pick(type === "wholesale" ? WHOLESALE_CONTENT : FRANCHISE_CONTENT);
 }
 
-// 더미 1건 생성. createdAt 미지정 시 '지금'.
-export function makeDummy(createdAt?: Date): FeedItem {
-  const type = Math.random() < 0.5 ? "franchise" : "wholesale";
+// 더미 1건 생성. createdAt 미지정 시 '지금', type 미지정 시 랜덤.
+export function makeDummy(opts: { createdAt?: Date; type?: string } = {}): FeedItem {
+  const type = opts.type === "franchise" || opts.type === "wholesale" ? opts.type : (Math.random() < 0.5 ? "franchise" : "wholesale");
   return {
     id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `d_${Math.random().toString(36).slice(2)}_${Math.floor(Math.random() * 1e9)}`,
     type,
     name: randomMaskedName(),
     content: genericContent(type),
-    created_at: (createdAt ?? new Date()).toISOString(),
+    created_at: (opts.createdAt ?? new Date()).toISOString(),
   };
 }
