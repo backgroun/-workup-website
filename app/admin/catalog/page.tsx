@@ -369,6 +369,17 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         <Field label="하단 코드"><input type="text" value={d.code ?? ""} onChange={(e) => setData({ code: e.target.value })} placeholder="Cat. WU-2026-SS-001" className={INPUT} /></Field>
                         <ColorField label="배경색" value={d.bg ?? "#1A2B4A"} onChange={(v) => setData({ bg: v })} />
                       </div>
+                      <Field label="배경 이미지 (선택)" hint="표지 전체에 이미지가 깔리고 그 위에 글자가 표시됩니다. 비우면 배경색만.">
+                        <div className="space-y-2">
+                          <input type="text" value={editing.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://... (URL 직접 입력)" className={INPUT} />
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400">또는 파일 업로드</span>
+                            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 rounded-lg">{uploading ? "업로드 중..." : "파일 선택"}</button>
+                            {editing.image_url && <button type="button" onClick={() => set("image_url", "")} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-lg">제거</button>}
+                          </div>
+                          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f); e.target.value = ""; }} />
+                        </div>
+                      </Field>
                     </>
                   )}
 
@@ -407,6 +418,17 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         <Field label="개수 문구"><input type="text" value={d.count ?? ""} onChange={(e) => setData({ count: e.target.value })} placeholder="5개 제품" className={INPUT} /></Field>
                         <ColorField label="배경색" value={d.bg ?? "#1A2B4A"} onChange={(v) => setData({ bg: v })} />
                       </div>
+                      <Field label="배경 이미지 (선택)" hint="구분 페이지 전체에 이미지가 깔립니다. 비우면 배경색만.">
+                        <div className="space-y-2">
+                          <input type="text" value={editing.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://... (URL 직접 입력)" className={INPUT} />
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400">또는 파일 업로드</span>
+                            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 rounded-lg">{uploading ? "업로드 중..." : "파일 선택"}</button>
+                            {editing.image_url && <button type="button" onClick={() => set("image_url", "")} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-lg">제거</button>}
+                          </div>
+                          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f); e.target.value = ""; }} />
+                        </div>
+                      </Field>
                     </>
                   )}
                 </div>

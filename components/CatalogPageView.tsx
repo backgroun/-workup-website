@@ -12,18 +12,25 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   // ── 표지 ──
   if (type === "cover") {
     return (
-      <div className="w-full h-full flex flex-col justify-between" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
-        <div>
+      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
+        {page.image_url && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={page.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/30" />
+          </>
+        )}
+        <div className="relative">
           {d.eyebrow && <p className="text-[9px] tracking-[0.2em] text-[#ff550c] uppercase">{d.eyebrow}</p>}
-          {d.season && <p className="text-[8px] tracking-[0.15em] text-gray-500 uppercase mt-0.5">{d.season}</p>}
+          {d.season && <p className="text-[8px] tracking-[0.15em] text-gray-300 uppercase mt-0.5">{d.season}</p>}
         </div>
-        <div>
+        <div className="relative">
           <h1 className="text-4xl font-black text-white tracking-tight leading-none">{d.brand || "WORKUP"}</h1>
           {d.badge && <p className="text-lg font-bold text-[#ff550c] tracking-widest mt-1">{d.badge}</p>}
-          {d.note && <p className="text-[9px] text-gray-500 mt-2 tracking-widest">{d.note}</p>}
+          {d.note && <p className="text-[9px] text-gray-300 mt-2 tracking-widest">{d.note}</p>}
         </div>
-        <div>
-          {d.code && <p className="text-[7px] text-gray-700 tracking-widest">{d.code}</p>}
+        <div className="relative">
+          {d.code && <p className="text-[7px] text-gray-400 tracking-widest">{d.code}</p>}
         </div>
       </div>
     );
@@ -58,15 +65,22 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   // ── 카테고리 구분 ──
   if (type === "divider") {
     return (
-      <div className="w-full h-full flex flex-col justify-between" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
-        {d.eyebrow && <p className="text-[8px] tracking-[0.15em] text-white/40 uppercase">{d.eyebrow}</p>}
-        <div>
+      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
+        {page.image_url && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={page.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/35" />
+          </>
+        )}
+        {d.eyebrow && <p className="relative text-[8px] tracking-[0.15em] text-white/50 uppercase">{d.eyebrow}</p>}
+        <div className="relative">
           {d.no && <div className="text-6xl font-black text-white/10 leading-none select-none mb-2">{d.no}</div>}
           <h2 className="text-3xl font-bold text-white">{d.title}</h2>
-          {d.desc && <p className="text-[10px] text-gray-400 mt-2 leading-relaxed whitespace-pre-line">{d.desc}</p>}
+          {d.desc && <p className="text-[10px] text-gray-300 mt-2 leading-relaxed whitespace-pre-line">{d.desc}</p>}
           {d.count && <p className="text-[9px] text-[#ff550c] mt-3">{d.count}</p>}
         </div>
-        <div />
+        <div className="relative" />
       </div>
     );
   }
