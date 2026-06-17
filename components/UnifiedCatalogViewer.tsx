@@ -1,5 +1,6 @@
 "use client";
 import { forwardRef, useRef, useState, useEffect } from "react";
+import Link from "next/link";
 import HTMLFlipBook from "react-pageflip";
 import type { CatalogPage } from "@/data/catalog";
 import CatalogPageView from "./CatalogPageView";
@@ -62,7 +63,8 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
   const showSidebar = brands.length > 0;
 
   return (
-    <div className="bg-[#0d1826] flex flex-col md:flex-row" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+    <div className="bg-[#0d1826] flex flex-col" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+      <div className="flex flex-col md:flex-row flex-1 min-h-0">
       {/* 메인 뷰어 */}
       <div className="flex-1 min-w-0 flex flex-col order-2 md:order-1">
         <div className="flex items-center justify-between px-4 py-1.5 flex-shrink-0 h-7">
@@ -129,6 +131,18 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           </div>
         </aside>
       )}
+      </div>
+
+      {/* 하단 — 메인 페이지로 이동 */}
+      <div className="flex-shrink-0 border-t border-white/10 flex items-center justify-center py-2.5 px-4">
+        <Link href="/"
+          className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs tracking-widest border border-white/20 hover:border-[#ff550c] rounded-full px-6 py-2 transition-colors">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          메인으로
+        </Link>
+      </div>
     </div>
   );
 }
