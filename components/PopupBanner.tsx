@@ -26,6 +26,12 @@ type PopupItem = {
   bg_image_url_mobile?: string;
   bg_image_position?: string;         // "50% 50%" 형식, object-position 에 그대로 사용
   bg_image_position_mobile?: string;
+  bg_image_scale?: number;            // 1 = 원본, >1 = 확대
+  bg_image_scale_mobile?: number;
+  text_color?: string;
+  text_align?: "left" | "center" | "right";
+  text_position?: "split" | "top" | "center" | "bottom";
+  text_scale?: number;
   scheduled_start?: string | null;
   scheduled_end?: string | null;
   sort_order?: number;
@@ -34,6 +40,10 @@ type PopupItem = {
 // ── 상수 / 헬퍼 ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "popup_hidden_until";
+
+// 텍스트 배치 매핑 (flex)
+const TEXT_V_JUSTIFY: Record<string, string> = { split: "space-between", top: "flex-start", center: "center", bottom: "flex-end" };
+const TEXT_H_ALIGN:   Record<string, string> = { left: "flex-start", center: "center", right: "flex-end" };
 
 const DEFAULT_POPUP: PopupItem = {
   id: "__default__",
@@ -160,33 +170,49 @@ export default function PopupBanner() {
 
   // ── 공통 콘텐츠 렌더러 ──────────────────────────────────────────────────────
 
-  function BannerContent({ height, textSizeClass, device }: { height: number; textSizeClass: string; device: "pc" | "mobile" }) {
+  function BannerContent({ height, titleRem, device }: { height: number; titleRem: number; device: "pc" | "mobile" }) {
     const isImageBg = (current.bg_type ?? (current.bg_image_url ? "image" : "gradient")) === "image";
+    const useMobileImg = device === "mobile" && !!current.bg_image_url_mobile;
     const bgImageUrl = isImageBg
-      ? ((device === "mobile" && current.bg_image_url_mobile) ? current.bg_image_url_mobile : current.bg_image_url)
+      ? (useMobileImg ? current.bg_image_url_mobile : current.bg_image_url)
       : undefined;
     const bgImagePos = device === "mobile"
       ? (current.bg_image_position_mobile || current.bg_image_position || "50% 50%")
       : (current.bg_image_position || "50% 50%");
+    const bgScale = useMobileImg
+      ? (current.bg_image_scale_mobile ?? 1)
+      : (current.bg_image_scale ?? 1);
+
+    // 텍스트 스타일
+    const textScale = current.text_scale ?? 1;
+    const textColor = current.text_color || "#ffffff";
 
     return (
-      <div className="relative flex flex-col justify-between p-5 overflow-hidden"
-        style={{ height, background: isImageBg ? (bgImageUrl ? undefined : (current.bg_solid || "#1A2B4A")) : computeBg(current, device) }}>
-        {/* 이미지 배경 — object-position으로 위치 반영 */}
+      <div className="relative flex flex-col p-5 overflow-hidden"
+        style={{
+          height,
+          background: isImageBg ? (bgImageUrl ? undefined : (current.bg_solid || "#1A2B4A")) : computeBg(current, device),
+          justifyContent: TEXT_V_JUSTIFY[current.text_position ?? "split"],
+          alignItems: TEXT_H_ALIGN[current.text_align ?? "left"],
+          textAlign: current.text_align ?? "left",
+          color: textColor,
+        }}>
+        {/* 이미지 배경 — object-position으로 위치 반영, scale로 확대 */}
         {isImageBg && bgImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            style={{ objectPosition: bgImagePos }} />
+            style={{ objectPosition: bgImagePos, transform: bgScale !== 1 ? `scale(${bgScale})` : undefined, transformOrigin: bgImagePos }} />
         )}
         {/* 텍스트 */}
         <div className="relative z-10">
-          <p className="text-xs text-white/80 leading-snug">{current.subtitle}</p>
-          <p className={`mt-1 font-bold text-white leading-tight whitespace-pre-line ${textSizeClass}`}>
+          <p className="leading-snug opacity-80" style={{ fontSize: `${0.75 * textScale}rem` }}>{current.subtitle}</p>
+          <p className="mt-1 font-bold leading-tight whitespace-pre-line" style={{ fontSize: `${titleRem * textScale}rem` }}>
             {current.title}
           </p>
         </div>
         <Link href={current.link} onClick={handleClose}
-          className="relative z-10 inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white">
+          className="relative z-10 inline-flex items-center gap-1 font-medium opacity-90 hover:opacity-100 mt-2"
+          style={{ fontSize: `${0.875 * textScale}rem` }}>
           {current.link_text} &gt;
         </Link>
 
@@ -251,7 +277,7 @@ export default function PopupBanner() {
         aria-modal="true"
         aria-label="팝업 배너"
       >
-        <BannerContent height={280} textSizeClass="text-2xl" device="pc" />
+        <BannerContent height={280} titleRem={1.5} device="pc" />
         <Footer />
       </div>
 
@@ -276,7 +302,7 @@ export default function PopupBanner() {
         </div>
         <div className="px-4 pt-2 pb-0">
           <div className="rounded-2xl overflow-hidden">
-            <BannerContent height={220} textSizeClass="text-xl" device="mobile" />
+            <BannerContent height={220} titleRem={1.25} device="mobile" />
           </div>
         </div>
         <div className="mt-1">

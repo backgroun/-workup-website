@@ -54,6 +54,78 @@ html {
   animation: marquee2 28s linear infinite;
 }
 
+/* 가까운 매장 찾기 CTA — 오프라인 방문 유도 핵심 버튼
+   기본: #ff550c 아웃라인 / 호버·터치: 오렌지 채움 스윕 + 핀 바운스 + 리프트 */
+.store-cta {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1.5px solid #ff550c;
+  color: #ff550c;
+  background: transparent;
+  transition: color 0.35s ease, box-shadow 0.35s ease, transform 0.18s ease;
+}
+.store-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #ff550c;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.store-cta:hover,
+.store-cta:focus-visible {
+  color: #fff;
+  box-shadow: 0 10px 22px -8px rgba(255, 85, 12, 0.55);
+}
+.store-cta:hover::before,
+.store-cta:focus-visible::before,
+.store-cta:active::before {
+  transform: scaleX(1);
+}
+/* 터치(모바일): 누르는 순간 채움 + 살짝 눌리는 피드백 */
+.store-cta:active {
+  color: #fff;
+  transform: scale(0.98);
+}
+.store-cta svg {
+  transition: transform 0.3s ease;
+}
+.store-cta:hover svg,
+.store-cta:focus-visible svg,
+.store-cta:active svg {
+  animation: store-pin-bounce 0.6s ease;
+}
+@keyframes store-pin-bounce {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-4px); }
+  55%  { transform: translateY(0); }
+  75%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+/* 모션 최소화 선호 사용자: 애니메이션 없이 색상만 즉시 전환 */
+@media (prefers-reduced-motion: reduce) {
+  .store-cta,
+  .store-cta::before,
+  .store-cta svg {
+    transition: none;
+    animation: none;
+  }
+  .store-cta:hover,
+  .store-cta:focus-visible,
+  .store-cta:active {
+    background: #ff550c;
+    color: #fff;
+  }
+  .store-cta:hover::before,
+  .store-cta:focus-visible::before,
+  .store-cta:active::before {
+    transform: scaleX(1);
+  }
+}
+
 /* 어드민 페이지 타이틀 축소 */
 .admin-content h1 {
   font-size: 1.125rem;

@@ -211,26 +211,6 @@ export default function AdminStoryPage() {
               <input type="text" value={hero.sub} onChange={(e) => setHeroField("sub", e.target.value)}
                 className={INPUT} placeholder="워크업이 왜 존재하는가" />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="높이 (px)">
-                <input type="number" value={hero.height} min={280}
-                  onChange={(e) => setHeroField("height", Number(e.target.value))}
-                  onBlur={(e) => setHeroField("height", Math.min(2000, Math.max(280, Number(e.target.value) || 580)))}
-                  className={INPUT} />
-              </Field>
-              <div className="flex items-end gap-4 pb-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={hero.showWatermark}
-                    onChange={(e) => setHeroField("showWatermark", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
-                  <span className="text-sm text-gray-700">WU 워터마크</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="color" value={hero.bg} onChange={(e) => setHeroField("bg", e.target.value)}
-                    className="w-9 h-8 rounded border border-gray-200 cursor-pointer p-0.5" />
-                  <span className="text-xs text-gray-500">배경색</span>
-                </label>
-              </div>
-            </div>
           </div>
           {/* 히어로 미리보기 */}
           <div className="w-full lg:w-[300px] flex-shrink-0">

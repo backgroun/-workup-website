@@ -40,6 +40,12 @@ type PopupItem = {
   bg_image_url_mobile: string;
   bg_image_position: string;         // "50% 50%"
   bg_image_position_mobile: string;  // "" = PC 위치 사용
+  bg_image_scale: number;            // 1 = 원본, >1 = 확대
+  bg_image_scale_mobile: number;
+  text_color: string;                // 팝업 텍스트 색상
+  text_align: "left" | "center" | "right";
+  text_position: "split" | "top" | "center" | "bottom";
+  text_scale: number;                // 1 = 기본 크기
   scheduled_start: string | null;
   scheduled_end: string | null;
   sort_order: number;
@@ -49,6 +55,10 @@ type PopupItem = {
 
 const ANGLE_ARROWS = ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"];
 const ANGLE_DEGS   = [0, 45, 90, 135, 180, 225, 270, 315];
+
+// 텍스트 배치 매핑 (flex)
+const TEXT_V_JUSTIFY: Record<string, string> = { split: "space-between", top: "flex-start", center: "center", bottom: "flex-end" };
+const TEXT_H_ALIGN:   Record<string, string> = { left: "flex-start", center: "center", right: "flex-end" };
 
 const GRADIENT_PRESETS = [
   { label: "여름 바다",      from: "#7eb8d4", to: "#a8d8b8", angle: 135 },
@@ -64,7 +74,7 @@ const EMPTY: Omit<PopupItem, "id"> = {
   admin_title: "",
   subtitle: "",
   title: "",
-  link_type: "url",
+  link_type: "product",
   link: "/products",
   link_text: "상품 보러가기",
   bg_type: "gradient",
@@ -76,6 +86,12 @@ const EMPTY: Omit<PopupItem, "id"> = {
   bg_image_url_mobile: "",
   bg_image_position: "50% 50%",
   bg_image_position_mobile: "",
+  bg_image_scale: 1,
+  bg_image_scale_mobile: 1,
+  text_color: "#ffffff",
+  text_align: "left",
+  text_position: "split",
+  text_scale: 1,
   scheduled_start: null,
   scheduled_end: null,
   sort_order: 0,
@@ -186,6 +202,7 @@ export default function PopupManagePage() {
   const fileRefMobile = useRef<HTMLInputElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver,  setDragOver]  = useState<number | null>(null);
+  const [separateImg, setSeparateImg] = useState(false);  // PC·모바일 이미지 분리 등록 여부 (false = 공동 사용)
 
   // AI 상태
   const [aiInput, setAiInput]   = useState<AiInput>(DEFAULT_AI_INPUT);
@@ -198,11 +215,13 @@ export default function PopupManagePage() {
       .then(r => r.json())
       .then((data: { popups?: PopupItem[] } | Record<string, unknown> | null) => {
         if (data && "popups" in data && Array.isArray(data.popups)) {
-          setPopups(data.popups as PopupItem[]);
+          // 기존 저장 데이터에 신규 필드가 없을 수 있으므로 기본값으로 채운다.
+          setPopups((data.popups as PopupItem[]).map(p => ({ ...EMPTY, ...p })));
         } else if (data && typeof data === "object" && ("title" in data || "subtitle" in data)) {
           // 이전 단일 팝업 포맷 → 마이그레이션
           const d = data as Record<string, unknown>;
           setPopups([{
+            ...EMPTY,
             id: crypto.randomUUID(),
             is_active: (d.is_active as boolean) ?? true,
             admin_title: "기존 팝업",
@@ -211,18 +230,6 @@ export default function PopupManagePage() {
             link_type: "url",
             link: (d.link as string) || "/products",
             link_text: (d.link_text as string) || "상품 보러가기",
-            bg_type: "gradient",
-            bg_solid: "#1A2B4A",
-            bg_gradient_from: "#7eb8d4",
-            bg_gradient_to: "#a8d8b8",
-            bg_gradient_angle: 135,
-            bg_image_url: "",
-            bg_image_url_mobile: "",
-            bg_image_position: "50% 50%",
-            bg_image_position_mobile: "",
-            scheduled_start: null,
-            scheduled_end: null,
-            sort_order: 0,
           }]);
         }
       })
@@ -247,6 +254,7 @@ export default function PopupManagePage() {
       title: aiResult.title,
       link_text: aiResult.ctaText,
     });
+    setSeparateImg(false);
     setIsNew(true);
   };
 
@@ -267,10 +275,15 @@ export default function PopupManagePage() {
 
   const openNew = () => {
     setEditing({ id: crypto.randomUUID(), ...EMPTY, sort_order: popups.length });
+    setSeparateImg(false);
     setIsNew(true);
   };
 
-  const openEdit = (item: PopupItem) => { setEditing({ ...item }); setIsNew(false); };
+  const openEdit = (item: PopupItem) => {
+    setEditing({ ...EMPTY, ...item });          // 신규 필드 기본값 보강
+    setSeparateImg(!!item.bg_image_url_mobile); // 모바일 이미지가 있으면 분리 모드
+    setIsNew(false);
+  };
 
   const handleSave = async () => {
     if (!editing) return;
@@ -698,33 +711,72 @@ export default function PopupManagePage() {
 
                   {/* 이미지 */}
                   {editing.bg_type === "image" && (
-                    <div className="grid grid-cols-2 gap-4 items-start">
-                      <PopupImagePicker
-                        label="PC 이미지"
-                        sizeHint="권장: 760 × 560px"
-                        sizeColor="blue"
-                        imageUrl={editing.bg_image_url}
-                        position={editing.bg_image_position || "50% 50%"}
-                        onImageChange={(url) => set("bg_image_url", url)}
-                        onPositionChange={(pos) => set("bg_image_position", pos)}
-                        uploading={uploading}
-                        onUpload={uploadBgImage}
-                        aspect="pc"
-                      />
-                      <PopupImagePicker
-                        label="모바일 이미지"
-                        subLabel="비우면 PC 이미지 사용"
-                        sizeHint="권장: 750 × 440px"
-                        sizeColor="orange"
-                        imageUrl={editing.bg_image_url_mobile}
-                        position={editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%"}
-                        onImageChange={(url) => set("bg_image_url_mobile", url)}
-                        onPositionChange={(pos) => set("bg_image_position_mobile", pos)}
-                        uploading={uploadingMobile}
-                        onUpload={uploadBgImageMobile}
-                        aspect="mobile"
-                        placeholder="(비우면 PC 이미지 및 위치 사용)"
-                      />
+                    <div className="space-y-4">
+                      {/* PC·모바일 공동 사용 토글 (기본 체크) */}
+                      <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+                        <input type="checkbox" checked={!separateImg}
+                          onChange={e => {
+                            const shared = e.target.checked;
+                            setSeparateImg(!shared);
+                            if (shared) {
+                              // 공동 사용으로 전환 → 모바일 전용 값 초기화
+                              set("bg_image_url_mobile", "");
+                              set("bg_image_position_mobile", "");
+                              set("bg_image_scale_mobile", 1);
+                            }
+                          }}
+                          className="w-4 h-4 accent-blue-600" />
+                        <span className="text-sm font-medium text-gray-700">PC·모바일 이미지 공동 사용</span>
+                        <span className="text-[11px] text-slate-400">체크 해제 시 모바일 이미지 분리 등록</span>
+                      </label>
+
+                      {!separateImg ? (
+                        <PopupImagePicker
+                          label="이미지 (PC·모바일 공용)"
+                          sizeHint="권장: 760 × 560px"
+                          sizeColor="blue"
+                          imageUrl={editing.bg_image_url}
+                          position={editing.bg_image_position || "50% 50%"}
+                          scale={editing.bg_image_scale ?? 1}
+                          onImageChange={(url) => set("bg_image_url", url)}
+                          onPositionChange={(pos) => set("bg_image_position", pos)}
+                          onScaleChange={(s) => set("bg_image_scale", s)}
+                          uploading={uploading}
+                          onUpload={uploadBgImage}
+                          aspect="pc"
+                        />
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4 items-start">
+                          <PopupImagePicker
+                            label="PC 이미지"
+                            sizeHint="권장: 760 × 560px"
+                            sizeColor="blue"
+                            imageUrl={editing.bg_image_url}
+                            position={editing.bg_image_position || "50% 50%"}
+                            scale={editing.bg_image_scale ?? 1}
+                            onImageChange={(url) => set("bg_image_url", url)}
+                            onPositionChange={(pos) => set("bg_image_position", pos)}
+                            onScaleChange={(s) => set("bg_image_scale", s)}
+                            uploading={uploading}
+                            onUpload={uploadBgImage}
+                            aspect="pc"
+                          />
+                          <PopupImagePicker
+                            label="모바일 이미지"
+                            sizeHint="권장: 750 × 440px"
+                            sizeColor="orange"
+                            imageUrl={editing.bg_image_url_mobile}
+                            position={editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%"}
+                            scale={editing.bg_image_scale_mobile ?? 1}
+                            onImageChange={(url) => set("bg_image_url_mobile", url)}
+                            onPositionChange={(pos) => set("bg_image_position_mobile", pos)}
+                            onScaleChange={(s) => set("bg_image_scale_mobile", s)}
+                            uploading={uploadingMobile}
+                            onUpload={uploadBgImageMobile}
+                            aspect="mobile"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -747,7 +799,64 @@ export default function PopupManagePage() {
                         rows={2}
                         placeholder={"여름을 위한\n냉감 멀티쿠션"}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
-                      <p className="text-[11px] text-gray-400 mt-0.5">줄바꿈: 엔터 키</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3-2. 텍스트 스타일 */}
+                <div className="pb-5 border-b border-slate-100 space-y-4">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">텍스트 스타일</p>
+                  <div className="grid grid-cols-2 gap-4 items-start">
+                    {/* 텍스트 색상 */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">텍스트 색상</label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={editing.text_color || "#ffffff"}
+                          onChange={e => set("text_color", e.target.value)}
+                          className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
+                        <input type="text" value={editing.text_color || "#ffffff"}
+                          onChange={e => set("text_color", e.target.value)}
+                          className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
+                        <button type="button" onClick={() => set("text_color", "#ffffff")}
+                          title="흰색" className="w-8 h-8 rounded border border-gray-200 bg-white shrink-0" />
+                        <button type="button" onClick={() => set("text_color", "#1A2B4A")}
+                          title="남색" className="w-8 h-8 rounded border border-gray-200 shrink-0" style={{ background: "#1A2B4A" }} />
+                      </div>
+                    </div>
+                    {/* 텍스트 크기 */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        텍스트 크기 <span className="font-mono text-gray-400">{Math.round((editing.text_scale ?? 1) * 100)}%</span>
+                      </label>
+                      <input type="range" min={0.7} max={1.6} step={0.05} value={editing.text_scale ?? 1}
+                        onChange={e => set("text_scale", Number(e.target.value))}
+                        className="w-full accent-slate-700 h-1.5 mt-2.5" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 items-start">
+                    {/* 가로 정렬 */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">가로 정렬</label>
+                      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+                        {([["left", "왼쪽"], ["center", "가운데"], ["right", "오른쪽"]] as const).map(([v, l]) => (
+                          <button key={v} type="button" onClick={() => set("text_align", v)}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                              (editing.text_align ?? "left") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            }`}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* 세로 위치 */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">세로 위치</label>
+                      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+                        {([["split", "상하 분리"], ["top", "상단"], ["center", "중앙"], ["bottom", "하단"]] as const).map(([v, l]) => (
+                          <button key={v} type="button" onClick={() => set("text_position", v)}
+                            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                              (editing.text_position ?? "split") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            }`}>{l}</button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -755,20 +864,23 @@ export default function PopupManagePage() {
                 {/* 4. 링크 설정 */}
                 <div className="pb-5 border-b border-slate-100 space-y-4">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">링크 설정</p>
+                  {/* 링크 유형: 제품 선택 | URL */}
+                  <div className="flex gap-5">
+                    {(["product", "url"] as LinkType[]).map(t => (
+                      <label key={t} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" checked={editing.link_type === t}
+                          onChange={() => set("link_type", t)}
+                          className="accent-blue-600" />
+                        <span className="text-sm text-gray-700">{t === "product" ? "제품 선택" : "URL"}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* 링크 입력 | 버튼 텍스트 (입력박스 동일 크기) */}
                   <div className="grid grid-cols-2 gap-4 items-start">
-                    {/* 왼쪽: 링크 */}
-                    <div className="space-y-2.5">
-                      <div className="flex gap-4">
-                        {(["url", "product"] as LinkType[]).map(t => (
-                          <label key={t} className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" checked={editing.link_type === t}
-                              onChange={() => set("link_type", t)}
-                              className="accent-blue-600" />
-                            <span className="text-sm text-gray-700">{t === "url" ? "URL 직접 입력" : "제품 선택"}</span>
-                          </label>
-                        ))}
-                      </div>
-
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        {editing.link_type === "url" ? "URL 주소" : "제품 선택"}
+                      </label>
                       {editing.link_type === "url" ? (
                         <input type="text" value={editing.link}
                           onChange={e => set("link", e.target.value)}
@@ -785,8 +897,6 @@ export default function PopupManagePage() {
                         />
                       )}
                     </div>
-
-                    {/* 오른쪽: 버튼 텍스트 */}
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">버튼 텍스트</label>
                       <input type="text" value={editing.link_text}
@@ -803,7 +913,7 @@ export default function PopupManagePage() {
                     {/* 왼쪽: 라벨 */}
                     <div className="w-28 shrink-0">
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 기간</p>
-                      <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">미설정 시 항상 노출됩니다.</p>
+                      <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">미설정 시 상시 노출</p>
                     </div>
                     {/* 오른쪽: 시작 / 종료 */}
                     <div className="flex-1 grid grid-cols-2 gap-4">
@@ -841,20 +951,27 @@ export default function PopupManagePage() {
                     <div>
                       <p className="text-xs font-medium text-gray-400 mb-2">PC 팝업 <span className="text-gray-300 font-mono text-[10px]">380 × 280px</span></p>
                       <div className="shadow-xl overflow-hidden" style={{ width: 280 }}>
-                        <div className="relative flex flex-col justify-between p-5 overflow-hidden"
-                          style={{ height: 200, background: editing.bg_type === "image" ? (editing.bg_image_url ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "pc") }}>
+                        <div className="relative flex flex-col p-5 overflow-hidden"
+                          style={{
+                            height: 200,
+                            background: editing.bg_type === "image" ? (editing.bg_image_url ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "pc"),
+                            justifyContent: TEXT_V_JUSTIFY[editing.text_position ?? "split"],
+                            alignItems: TEXT_H_ALIGN[editing.text_align ?? "left"],
+                            textAlign: editing.text_align ?? "left",
+                            color: editing.text_color || "#ffffff",
+                          }}>
                           {editing.bg_type === "image" && editing.bg_image_url && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={editing.bg_image_url} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                              style={{ objectPosition: editing.bg_image_position || "50% 50%" }} />
+                              style={{ objectPosition: editing.bg_image_position || "50% 50%", transform: (editing.bg_image_scale ?? 1) !== 1 ? `scale(${editing.bg_image_scale})` : undefined, transformOrigin: editing.bg_image_position || "50% 50%" }} />
                           )}
                           <div className="relative z-10">
-                            <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
-                            <p className="mt-1 text-lg font-bold text-white leading-tight whitespace-pre-line">
+                            <p className="leading-snug opacity-80" style={{ fontSize: `${0.75 * (editing.text_scale ?? 1)}rem` }}>{editing.subtitle || "서브 문구"}</p>
+                            <p className="mt-1 font-bold leading-tight whitespace-pre-line" style={{ fontSize: `${1.125 * (editing.text_scale ?? 1)}rem` }}>
                               {editing.title || "메인 제목"}
                             </p>
                           </div>
-                          <p className="relative z-10 text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
+                          <p className="relative z-10 opacity-90 mt-2" style={{ fontSize: `${0.75 * (editing.text_scale ?? 1)}rem` }}>{editing.link_text || "링크 텍스트"} &gt;</p>
                         </div>
                         <div className="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-100">
                           <span className="text-xs text-gray-500">오늘 하루 보지않기</span>
@@ -876,21 +993,31 @@ export default function PopupManagePage() {
                             const mPos = editing.bg_image_url_mobile
                               ? (editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%")
                               : (editing.bg_image_position || "50% 50%");
+                            const mScale = editing.bg_image_url_mobile
+                              ? (editing.bg_image_scale_mobile ?? 1)
+                              : (editing.bg_image_scale ?? 1);
                             return (
-                              <div className="relative flex flex-col justify-between p-4 rounded-xl overflow-hidden"
-                                style={{ height: 150, background: editing.bg_type === "image" ? (mUrl ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "mobile") }}>
+                              <div className="relative flex flex-col p-4 rounded-xl overflow-hidden"
+                                style={{
+                                  height: 150,
+                                  background: editing.bg_type === "image" ? (mUrl ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "mobile"),
+                                  justifyContent: TEXT_V_JUSTIFY[editing.text_position ?? "split"],
+                                  alignItems: TEXT_H_ALIGN[editing.text_align ?? "left"],
+                                  textAlign: editing.text_align ?? "left",
+                                  color: editing.text_color || "#ffffff",
+                                }}>
                                 {editing.bg_type === "image" && mUrl && (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img src={mUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                                    style={{ objectPosition: mPos }} />
+                                    style={{ objectPosition: mPos, transform: mScale !== 1 ? `scale(${mScale})` : undefined, transformOrigin: mPos }} />
                                 )}
                                 <div className="relative z-10">
-                                  <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
-                                  <p className="mt-1 text-base font-bold text-white leading-tight whitespace-pre-line">
+                                  <p className="leading-snug opacity-80" style={{ fontSize: `${0.75 * (editing.text_scale ?? 1)}rem` }}>{editing.subtitle || "서브 문구"}</p>
+                                  <p className="mt-1 font-bold leading-tight whitespace-pre-line" style={{ fontSize: `${1 * (editing.text_scale ?? 1)}rem` }}>
                                     {editing.title || "메인 제목"}
                                   </p>
                                 </div>
-                                <p className="relative z-10 text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
+                                <p className="relative z-10 opacity-90 mt-2" style={{ fontSize: `${0.75 * (editing.text_scale ?? 1)}rem` }}>{editing.link_text || "링크 텍스트"} &gt;</p>
                               </div>
                             );
                           })()}
@@ -941,8 +1068,10 @@ type PopupImagePickerProps = {
   sizeColor: "blue" | "orange";
   imageUrl: string;
   position: string;
+  scale: number;
   onImageChange: (url: string) => void;
   onPositionChange: (pos: string) => void;
+  onScaleChange: (s: number) => void;
   uploading: boolean;
   onUpload: (file: File) => Promise<void>;
   aspect: "pc" | "mobile";
@@ -951,8 +1080,8 @@ type PopupImagePickerProps = {
 
 function PopupImagePicker({
   label, subLabel, sizeHint, sizeColor,
-  imageUrl, position,
-  onImageChange, onPositionChange,
+  imageUrl, position, scale,
+  onImageChange, onPositionChange, onScaleChange,
   uploading, onUpload, aspect, placeholder,
 }: PopupImagePickerProps) {
   const fileRef    = useRef<HTMLInputElement>(null);
@@ -1033,7 +1162,7 @@ function PopupImagePicker({
               src={imageUrl}
               alt=""
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              style={{ objectPosition: position }}
+              style={{ objectPosition: position, transform: (scale ?? 1) !== 1 ? `scale(${scale})` : undefined, transformOrigin: position }}
             />
             <div className="absolute inset-0 bg-black/5 pointer-events-none" />
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none">
@@ -1062,6 +1191,17 @@ function PopupImagePicker({
         )}
       </div>
 
+      {/* 확대 슬라이더 */}
+      {imageUrl && (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-slate-500 shrink-0">확대</span>
+          <input type="range" min={1} max={2.5} step={0.05} value={scale ?? 1}
+            onChange={e => onScaleChange(Number(e.target.value))}
+            className="flex-1 accent-slate-700 h-1.5" />
+          <span className="text-[10px] font-mono text-slate-400 w-9 text-right shrink-0">{Math.round((scale ?? 1) * 100)}%</span>
+        </div>
+      )}
+
       {/* 버튼 행 */}
       <div className="flex items-center gap-2 flex-wrap">
         <button
@@ -1084,10 +1224,10 @@ function PopupImagePicker({
           <>
             <button
               type="button"
-              onClick={() => onPositionChange("50% 50%")}
+              onClick={() => { onPositionChange("50% 50%"); onScaleChange(1); }}
               className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 transition-colors"
             >
-              위치 초기화
+              위치·확대 초기화
             </button>
             <button
               type="button"
@@ -1167,11 +1307,6 @@ function ProductSearch({ currentLink, onSelect }: {
         placeholder="제품명 검색..."
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
       />
-      {currentId && (
-        <p className="text-xs text-gray-500 mt-1">
-          선택됨: <span className="font-medium text-blue-600">{currentLink}</span>
-        </p>
-      )}
       {open && (
         <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto mt-1">
           {!fetched ? (

@@ -445,12 +445,14 @@ function ImageField({
   value,
   onChange,
   compact = false,
+  aspectRatio,
 }: {
   label: string;
   hint: string;
   value: string;
   onChange: (url: string) => void;
   compact?: boolean;
+  aspectRatio?: string;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -491,7 +493,7 @@ function ImageField({
             value ? "border-gray-200 hover:border-gray-300" :
                     "border-dashed border-gray-300 hover:border-[#1A2B4A]"
           }`}
-          style={{ aspectRatio: "3/4" }}
+          style={{ aspectRatio: aspectRatio ?? "3/4" }}
         >
           <input ref={ref} type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
@@ -912,47 +914,54 @@ function BannerEditor({ banner, label, onChange, products }: {
         refImageUrl={banner.image_url || undefined}
       />
 
-      {/* 연결상품 3개 탭 */}
-      <div>
-        {/* 탭 바 — 좌측 정렬, 자연 너비 */}
-        <div className="flex border border-gray-200 rounded-t-xl overflow-hidden">
-          {[0, 1, 2].map((i) => (
-            <button
-              key={i}
-              onClick={() => setItemTab(i)}
-              className={`px-5 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 text-left whitespace-nowrap ${
-                itemTab === i
-                  ? "bg-[#1A2B4A] text-white"
-                  : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-              }`}
-            >
-              상품{i + 1}
-              {items3[i].name && (
-                <span className={`ml-1.5 text-[10px] font-normal ${itemTab === i ? "text-white/70" : "text-gray-400"}`}>
-                  · {items3[i].name}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-        {/* 탭 콘텐츠 */}
-        <div className="border border-t-0 border-gray-200 rounded-b-xl p-4">
-          <SlotItemEditor
-            key={itemTab}
-            item={items3[itemTab]}
-            onChange={(patch) => updateItem(itemTab, patch)}
-            products={products}
+      {/* 섹션 이미지 + 연결상품 탭 — 한 줄 배치 */}
+      <div className="flex gap-4 items-start">
+        {/* 좌: 섹션 이미지 — 8:9 비율 (440×495px 실제 노출 비율) */}
+        <div className="flex-shrink-0" style={{ width: "160px" }}>
+          <ImageField
+            label="섹션 이미지"
+            hint="440 × 495px"
+            value={banner.image_url}
+            onChange={(url) => onChange({ image_url: url })}
+            compact
+            aspectRatio="8/9"
           />
         </div>
-      </div>
 
-      {/* 섹션 이미지 — 하단 */}
-      <ImageField
-        label="섹션 이미지"
-        hint="권장: 440 × 495px (세로형)"
-        value={banner.image_url}
-        onChange={(url) => onChange({ image_url: url })}
-      />
+        {/* 우: 연결상품 3개 탭 */}
+        <div className="flex-1 min-w-0">
+          {/* 탭 바 — 좌측 정렬, 자연 너비 */}
+          <div className="flex border border-gray-200 rounded-t-xl overflow-hidden">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                onClick={() => setItemTab(i)}
+                className={`px-5 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 text-left whitespace-nowrap ${
+                  itemTab === i
+                    ? "bg-[#1A2B4A] text-white"
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                }`}
+              >
+                상품{i + 1}
+                {items3[i].name && (
+                  <span className={`ml-1.5 text-[10px] font-normal ${itemTab === i ? "text-white/70" : "text-gray-400"}`}>
+                    · {items3[i].name}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          {/* 탭 콘텐츠 */}
+          <div className="border border-t-0 border-gray-200 rounded-b-xl p-4">
+            <SlotItemEditor
+              key={itemTab}
+              item={items3[itemTab]}
+              onChange={(patch) => updateItem(itemTab, patch)}
+              products={products}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
