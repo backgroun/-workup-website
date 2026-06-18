@@ -430,7 +430,7 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {msg &&<div className="px-5 py-3.5 bg-green-50 border border-green-200 text-green-700 text-base rounded-lg">{msg}</div>}
+      {msg && <div className="px-5 py-3.5 bg-green-50 border border-green-200 text-green-700 text-base rounded-lg">{msg}</div>}
 
       {!loading && tableError && (
         <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
