@@ -187,7 +187,7 @@ export default function ProductDetailClient({
             )}
             {product.sku && (
               <span className="text-xs text-gray-400 tracking-wider">
-                제품번호 · <span className="text-gray-500">#{product.sku}</span>
+                제품번호 · <span className="text-gray-500">{product.sku}</span>
               </span>
             )}
           </div>
