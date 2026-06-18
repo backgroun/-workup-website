@@ -1,5 +1,6 @@
 "use client";
 import { useState, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -42,7 +43,14 @@ function LoginContent() {
         {/* 로고 */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <p className="text-2xl font-black tracking-[0.15em] text-[#1A2B4A]">WORKUP</p>
+            <Image
+              src="/images/logo_black.png"
+              alt="WORKUP"
+              width={140}
+              height={20}
+              className="h-5 w-auto mx-auto"
+              priority
+            />
           </Link>
           <h1 className="text-xl font-bold text-gray-900 mt-4">로그인</h1>
           <p className="text-sm text-gray-400 mt-1">워크업 회원 전용 로그인</p>

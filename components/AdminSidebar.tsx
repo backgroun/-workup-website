@@ -142,6 +142,15 @@ const navGroups: NavGroup[] = [
         ),
       },
       {
+        label: "헤더 메뉴",
+        href: "/admin/main/menu",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        ),
+      },
+      {
         label: "푸터·약관",
         href: "/admin/main/footer",
         icon: (

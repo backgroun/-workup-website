@@ -868,6 +868,298 @@ function SlotItemEditor({ item, onChange, products }: {
   );
 }
 
+// ── 서브 컴포넌트: 기획전 합성기 ───────────────────────────
+// 모델컷/착용컷 3장을 캔버스로 픽셀 그대로 한 배너(440×495)에 합성 → 의류 변형 0%
+type ComposeLayout = "duoV" | "duoH" | "vtri" | "htri" | "main2" | "quad";
+const COMPOSE_LAYOUTS = [
+  { key: "duoV",  label: "2분할 세로", panels: 2, desc: "2컬럼" },
+  { key: "duoH",  label: "2분할 가로", panels: 2, desc: "2로우" },
+  { key: "vtri",  label: "세로 3분할", panels: 3, desc: "3컬럼 트립틱 (전신컷에 적합)" },
+  { key: "htri",  label: "가로 3분할", panels: 3, desc: "3로우 (가로 크롭)" },
+  { key: "main2", label: "메인 + 2",   panels: 3, desc: "좌측 큰 컷 + 우측 작은 2컷" },
+  { key: "quad",  label: "4분할",      panels: 4, desc: "2×2 그리드" },
+] as const;
+
+type ComposeSlot = { url: string; img: HTMLImageElement | null; fx: number; fy: number };
+
+function composePanelCount(layout: ComposeLayout): number {
+  return COMPOSE_LAYOUTS.find((l) => l.key === layout)?.panels ?? 3;
+}
+
+function composePanels(layout: ComposeLayout, W: number, H: number, g: number) {
+  switch (layout) {
+    case "duoV": { const pw = (W - g) / 2; return [0, 1].map((i) => ({ x: i * (pw + g), y: 0, w: pw, h: H })); }
+    case "duoH": { const ph = (H - g) / 2; return [0, 1].map((i) => ({ x: 0, y: i * (ph + g), w: W, h: ph })); }
+    case "vtri": { const pw = (W - 2 * g) / 3; return [0, 1, 2].map((i) => ({ x: i * (pw + g), y: 0, w: pw, h: H })); }
+    case "htri": { const ph = (H - 2 * g) / 3; return [0, 1, 2].map((i) => ({ x: 0, y: i * (ph + g), w: W, h: ph })); }
+    case "quad": {
+      const pw = (W - g) / 2, ph = (H - g) / 2;
+      return ([[0, 0], [1, 0], [0, 1], [1, 1]] as const).map(([cx, cy]) => ({ x: cx * (pw + g), y: cy * (ph + g), w: pw, h: ph }));
+    }
+    default: {
+      const lw = Math.round((W - g) * 0.58), rw = W - g - lw, rh = (H - g) / 2;
+      return [
+        { x: 0, y: 0, w: lw, h: H },
+        { x: lw + g, y: 0, w: rw, h: rh },
+        { x: lw + g, y: rh + g, w: rw, h: rh },
+      ];
+    }
+  }
+}
+
+function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function drawCover(
+  ctx: CanvasRenderingContext2D, img: HTMLImageElement,
+  dx: number, dy: number, dw: number, dh: number, fx: number, fy: number
+) {
+  const ir = img.width / img.height, pr = dw / dh;
+  let sw: number, sh: number, sx: number, sy: number;
+  if (ir > pr) { sh = img.height; sw = sh * pr; sx = (img.width - sw) * fx; sy = 0; }
+  else { sw = img.width; sh = sw / pr; sx = 0; sy = (img.height - sh) * fy; }
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
+
+function BannerComposer({ items, onApply }: {
+  items: ProductItem[];
+  onApply: (url: string) => void;
+}) {
+  const [open, setOpen]     = useState(false);
+  const [layout, setLayout] = useState<ComposeLayout>("vtri");
+  const [gap, setGap]       = useState(6);
+  const [bg, setBg]         = useState("#ffffff");
+  const [slots, setSlots]   = useState<ComposeSlot[]>([
+    { url: "", img: null, fx: 0.5, fy: 0.5 },
+    { url: "", img: null, fx: 0.5, fy: 0.5 },
+    { url: "", img: null, fx: 0.5, fy: 0.5 },
+    { url: "", img: null, fx: 0.5, fy: 0.5 },
+  ]);
+  const [radius, setRadius]           = useState(0);
+  const [border, setBorder]           = useState(0);
+  const [borderColor, setBorderColor] = useState("#ffffff");
+  const [vignette, setVignette]       = useState(0);
+  const [busy, setBusy]     = useState(false);
+  const [err, setErr]       = useState("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // 언마운트 시 살아있는 blob URL 정리 (누수 방지)
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+  useEffect(() => () => {
+    slotsRef.current.forEach((s) => { if (s.url.startsWith("blob:")) URL.revokeObjectURL(s.url); });
+  }, []);
+
+  const W = 880, H = 990; // 440×495 @2x
+
+  useEffect(() => {
+    const c = canvasRef.current; if (!c) return;
+    c.width = W; c.height = H;
+    const ctx = c.getContext("2d"); if (!ctx) return;
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    // 라운드는 패널이 떨어져 있을 때만 의미 — gap=0이면 경계에 흰 노치가 생기므로 비활성
+    const effRadius = gap > 0 ? radius : 0;
+    composePanels(layout, W, H, gap).forEach((p, i) => {
+      const s = slots[i];
+      ctx.save();
+      if (effRadius > 0) { roundRectPath(ctx, p.x, p.y, p.w, p.h, effRadius); ctx.clip(); }
+      if (s?.img) {
+        drawCover(ctx, s.img, p.x, p.y, p.w, p.h, s.fx, s.fy);
+        if (vignette > 0) {
+          const cx = p.x + p.w / 2, cy = p.y + p.h / 2, rad = Math.max(p.w, p.h) / 2;
+          const grd = ctx.createRadialGradient(cx, cy, rad * 0.55, cx, cy, rad);
+          grd.addColorStop(0, "rgba(0,0,0,0)");
+          grd.addColorStop(1, `rgba(0,0,0,${(0.55 * vignette).toFixed(3)})`);
+          ctx.fillStyle = grd; ctx.fillRect(p.x, p.y, p.w, p.h);
+        }
+      } else {
+        ctx.fillStyle = "#e5e7eb"; ctx.fillRect(p.x, p.y, p.w, p.h);
+      }
+      ctx.restore();
+      if (border > 0) {
+        ctx.save();
+        ctx.lineWidth = border; ctx.strokeStyle = borderColor;
+        const bx = p.x + border / 2, by = p.y + border / 2, bw = p.w - border, bh = p.h - border;
+        if (effRadius > 0) roundRectPath(ctx, bx, by, bw, bh, Math.max(0, effRadius - border / 2));
+        else { ctx.beginPath(); ctx.rect(bx, by, bw, bh); }
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
+  }, [slots, layout, gap, bg, radius, border, borderColor, vignette]);
+
+  function setSlot(idx: number, patch: Partial<ComposeSlot>) {
+    setSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
+  }
+  function loadFile(idx: number, file: File) {
+    setErr("");
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => setSlots((prev) => prev.map((s, i) => {
+      if (i !== idx) return s;
+      if (s.url.startsWith("blob:")) URL.revokeObjectURL(s.url); // 직전 blob 해제
+      return { ...s, url, img };
+    }));
+    img.onerror = () => { URL.revokeObjectURL(url); setErr("이미지를 불러오지 못했습니다."); };
+    img.src = url;
+  }
+  function loadProductCut(idx: number, src: string) {
+    setErr("");
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => setSlot(idx, { url: src, img });
+    img.onerror = () => setErr("제품 이미지를 불러오지 못했습니다 — 파일로 업로드해 주세요.");
+    img.src = src;
+  }
+
+  async function apply() {
+    const c = canvasRef.current; if (!c) return;
+    setBusy(true); setErr("");
+    try {
+      const blob: Blob = await new Promise((res, rej) =>
+        c.toBlob((b) => (b ? res(b) : rej(new Error("export failed"))), "image/jpeg", 0.92));
+      const file = new File([blob], "showcase-composed.jpg", { type: "image/jpeg" });
+      const url = await uploadImage(file);
+      onApply(url);
+    } catch (e) {
+      const name = (e as { name?: string })?.name ?? "";
+      const msg = e instanceof Error ? e.message : "";
+      const tainted = name === "SecurityError" || /tainted|security|insecure/i.test(msg);
+      setErr(tainted
+        ? "교차 출처 이미지로 내보내기 실패 — 각 칸을 ‘파일 업로드’로 올려 주세요."
+        : "합성 이미지 생성에 실패했습니다.");
+    } finally { setBusy(false); }
+  }
+
+  const panelCount = composePanelCount(layout);
+  const filled = slots.slice(0, panelCount).filter((s) => s.img).length;
+  const hiddenFilled = slots.slice(panelCount).filter((s) => s.img).length;
+
+  return (
+    <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl overflow-hidden">
+      <button type="button" onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 text-left">
+        <span className="text-[12px] font-bold text-emerald-700">🧩 기획전 합성기 — 모델컷을 한 배너로 (생성형 X · 옷 100% 유지)</span>
+        <span className="text-[11px] text-emerald-600">{open ? "접기 ▲" : "열기 ▼"}</span>
+      </button>
+
+      {open && (
+        <div className="px-3 pb-3 space-y-3">
+          <p className="text-[10px] text-emerald-700 leading-relaxed bg-white/70 rounded-lg p-2 border border-emerald-100">
+            각 칸에 그 제품의 <b>모델컷·착용컷</b>을 올리면, 생성형이 아니라 <b>픽셀 그대로 합성</b>하므로 의류가 절대 바뀌지 않습니다.
+            완성본은 그대로 <b>섹션 이미지</b>로 적용됩니다.
+          </p>
+
+          {/* 레이아웃 */}
+          <div className="flex flex-wrap gap-1.5">
+            {COMPOSE_LAYOUTS.map((l) => (
+              <button key={l.key} type="button" onClick={() => setLayout(l.key)} title={l.desc}
+                className={`text-[11px] px-2.5 py-1 rounded-full border font-medium transition-colors ${
+                  layout === l.key ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400"
+                }`}>{l.label}</button>
+            ))}
+          </div>
+
+          <div className="flex gap-3 items-start">
+            {/* 미리보기 */}
+            <div className="flex-shrink-0">
+              <canvas ref={canvasRef} style={{ width: "180px", height: "202.5px" }}
+                className="rounded-lg border border-emerald-200 bg-white" />
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">간격</label>
+                  <input type="range" min={0} max={40} value={gap} onChange={(e) => setGap(+e.target.value)}
+                    className="flex-1 h-1 accent-emerald-600" />
+                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)}
+                    className="w-6 h-6 rounded border border-gray-300 cursor-pointer flex-shrink-0" title="배경색" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">모서리</label>
+                  <input type="range" min={0} max={48} value={radius} onChange={(e) => setRadius(+e.target.value)}
+                    className="flex-1 h-1 accent-emerald-600" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">테두리</label>
+                  <input type="range" min={0} max={16} value={border} onChange={(e) => setBorder(+e.target.value)}
+                    className="flex-1 h-1 accent-emerald-600" />
+                  <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)}
+                    className="w-6 h-6 rounded border border-gray-300 cursor-pointer flex-shrink-0" title="테두리색" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">비네트</label>
+                  <input type="range" min={0} max={100} value={Math.round(vignette * 100)} onChange={(e) => setVignette(+e.target.value / 100)}
+                    className="flex-1 h-1 accent-emerald-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* 3 슬롯 */}
+            <div className="flex-1 min-w-0 space-y-2">
+              {slots.slice(0, panelCount).map((s, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-lg p-2 flex items-center gap-2">
+                  <div className="w-10 h-12 flex-shrink-0 rounded bg-gray-100 overflow-hidden flex items-center justify-center">
+                    {s.img ? <img src={s.url} alt="" className="w-full h-full object-cover" /> : <span className="text-[9px] text-gray-400 font-bold">{i + 1}</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-gray-500 truncate mb-1">{items[i]?.name || `칸 ${i + 1}`}</p>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <label className="text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded cursor-pointer hover:bg-emerald-700">
+                        파일 업로드
+                        <input type="file" accept="image/*" className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(i, f); e.target.value = ""; }} />
+                      </label>
+                      {items[i]?.image_url && (
+                        <button type="button" onClick={() => loadProductCut(i, items[i].image_url)}
+                          className="text-[10px] px-2 py-0.5 border border-gray-300 rounded text-gray-600 hover:bg-gray-50">제품컷 사용</button>
+                      )}
+                      {s.img && (
+                        <>
+                          <span className="text-[9px] text-gray-400">좌우</span>
+                          <input type="range" min={0} max={100} value={Math.round(s.fx * 100)}
+                            onChange={(e) => setSlot(i, { fx: +e.target.value / 100 })} className="w-14 h-1 accent-emerald-600" />
+                          <span className="text-[9px] text-gray-400">상하</span>
+                          <input type="range" min={0} max={100} value={Math.round(s.fy * 100)}
+                            onChange={(e) => setSlot(i, { fy: +e.target.value / 100 })} className="w-14 h-1 accent-emerald-600" />
+                          <button type="button" onClick={() => setSlots((prev) => prev.map((sl, j) => {
+                              if (j !== i) return sl;
+                              if (sl.url.startsWith("blob:")) URL.revokeObjectURL(sl.url);
+                              return { ...sl, url: "", img: null };
+                            }))}
+                            className="text-[10px] text-red-400 hover:text-red-600">비우기</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {hiddenFilled > 0 && (
+            <p className="text-[11px] text-amber-600">
+              현재 레이아웃은 {panelCount}칸만 사용 — 숨겨진 칸 {hiddenFilled}개의 사진은 합성에 포함되지 않습니다.
+            </p>
+          )}
+          {err && <p className="text-[11px] text-red-500">{err}</p>}
+
+          <button type="button" onClick={apply} disabled={busy || filled === 0}
+            className="w-full py-2 text-[12px] font-semibold rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+            {busy ? "생성 중..." : `합성 이미지 생성 → 섹션 이미지로 적용 (${filled}/${panelCount})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── 서브 컴포넌트: 배너 에디터 (배너1/배너2 공용) ─────────
 function BannerEditor({ banner, label, onChange, products }: {
   banner: Banner;
@@ -962,6 +1254,9 @@ function BannerEditor({ banner, label, onChange, products }: {
           </div>
         </div>
       </div>
+
+      {/* 기획전 합성기 — 모델컷 3장을 옷 변형 없이 한 배너로 합쳐 섹션 이미지로 적용 */}
+      <BannerComposer items={items3} onApply={(url) => onChange({ image_url: url })} />
     </div>
   );
 }
@@ -1125,44 +1420,59 @@ function buildCollectionPrompt(opts: {
   const lineup = promptItems.map((it, n) => `  ${n + 1}. ${it.name} — ${it.garment}`).join("\n");
   const refs = (isHero ? [items[repIndex]?.imageUrl] : items.map((it) => it.imageUrl)).filter(Boolean) as string[];
 
+  // 참고이미지 1:1 바인딩 — 이미지 있는 항목만 순번 부여 (첨부 순서와 일치)
+  let refCounter = 0;
+  const bindings = promptItems.map((it) => ({ it, ref: it.imageUrl ? ++refCounter : null }));
+
   let subject = "", composition = "", camera = "", anatomy = "";
   if (mode === "flatlay") {
-    subject = `- NO human model. The ${items.length} actual garments themselves are the hero subject.`;
+    subject = `- NO human model. The ${items.length} actual garments themselves are the hero subject, each reproduced EXACTLY from its reference photo.`;
     composition = `- Flat-lay / knolling still-life: the ${items.length} garments neatly folded or laid out and styled together as ONE cohesive collection on a clean minimal surface. Top-down or slight 30° angle, balanced layout with gentle negative space, every piece clearly readable even at a small 440×495 thumbnail. Vertical 8:9 framing.`;
     camera = `- 50mm product still-life setup, soft even light with subtle directional shadow for material depth`;
   } else if (mode === "lineup") {
-    subject = `- A few ${who}authentic, real-worker-type Korean models — EACH wearing ONE different piece from the lineup, styled naturally${moodLine ? `; ${moodLine}` : ""}.`;
-    composition = `- Group editorial framing (vertical 8:9, 440×495): models staged together in one balanced composition so the whole collection reads as a single themed group; keep each garment recognizable.`;
+    subject = `- EXACTLY ${promptItems.length} ${who}authentic, real-worker-type Korean models, ONE garment per model, each garment LOCKED 1:1 to its reference photo as listed in [GARMENT LOCK]. No garment is altered, swapped, merged or restyled${moodLine ? `; overall mood: ${moodLine}` : ""}.`;
+    composition = `- Group editorial framing (vertical 8:9, 440×495): the ${promptItems.length} models staged together in one balanced composition so the collection reads as a single themed group, while each garment stays exactly as its reference.`;
     camera = `- 35mm lens, several models within the scene, cohesive group composition`;
     anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
   } else {
     const rep = items[repIndex];
-    subject = `- One ${who}authentic, real-worker-type Korean model wearing EXACTLY this product: "${rep.name}" (${rep.garment}), reproduced precisely from the reference photo. The model wears ONLY this single garment as the hero piece, styled naturally${moodLine ? `; ${moodLine}` : ""}.`;
+    subject = `- One ${who}authentic, real-worker-type Korean model wearing EXACTLY the garment in Reference Image 1 ("${rep.name}", ${rep.garment}), reproduced pixel-faithfully per [GARMENT LOCK]. ONLY this single, unaltered garment, styled naturally${moodLine ? `; ${moodLine}` : ""}.`;
     composition = `- Single-subject model shot (vertical 8:9, 440×495): one model worn-on-body, the product clearly visible and in focus, environment softly behind. Clear focal point that still reads at thumbnail size.`;
     camera = `- 50mm lens, waist-up to full body, subject prominent with environment softly behind`;
     anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
   }
 
-  // 충실도 — 참고이미지가 있으면 최상단에 강하게 배치 (#일치도 개선)
-  const fidelityBlock = refs.length
-    ? `[FIDELITY — TOP PRIORITY]\n` +
-      `- The garment${refs.length > 1 ? "s" : ""} MUST match the attached reference photo${refs.length > 1 ? "s" : ""} EXACTLY: same silhouette, cut, collar / neckline, sleeve length, color, fabric texture, seams, pockets, zippers, buttons, prints and logos.\n` +
-      `- Do NOT invent, restyle, recolor, or substitute a different garment. When in doubt, copy the reference. The clothing identity is fixed by the photo; only pose, model and background may change.\n\n`
-    : "";
+  // 의류 잠금 — 강제·비협상 블록 (각 참고사진을 모델/의류에 1:1 고정, 변경 절대 금지)
+  const lockNoun = mode === "flatlay" ? "Garment" : "Model";
+  const lockLines = bindings.map((b, i) => {
+    const where = b.ref ? `in Reference Image ${b.ref}` : `as named (no photo provided)`;
+    return `  - ${lockNoun} ${i + 1} = the EXACT garment ${where}: "${b.it.name}" (${b.it.garment}). Reproduce it pixel-faithfully; do NOT change it in any way.`;
+  }).join("\n");
+
+  const garmentLockBlock =
+    `[GARMENT LOCK — MANDATORY · NON-NEGOTIABLE]\n` +
+    `This is a photo-COMPOSITING task, NOT a redesign. Every garment is a FIXED, UNCHANGEABLE ASSET taken from its attached reference photo.\n` +
+    `ALLOWED to change: pose, body / person, camera framing, background, lighting.\n` +
+    `FORBIDDEN to change — even slightly: each garment's design, silhouette, cut, length, collar / neckline, sleeves, color, pattern, print, logo, buttons, zippers, pockets, fabric and proportions.\n` +
+    (mode !== "flatlay"
+      ? `Each model wears exactly ONE garment, bound 1:1 to its own reference photo — NEVER mix, blend or swap garments between models.\n`
+      : ``) +
+    lockLines + `\n` +
+    `If an exact match is uncertain, COPY the garment directly from its reference instead of inventing or restyling. Treat each reference as a locked layer composited onto a new model/scene.\n\n`;
 
   const lineupHeader = isHero
-    ? `\n[PRODUCT] — feature THIS single product on the model, reproduced exactly from the reference photo:\n`
-    : `\n[COLLECTION LINEUP] — represent these ${items.length} pieces TOGETHER as one themed group:\n`;
+    ? `\n[PRODUCT] — feature THIS single locked product on the model:\n`
+    : `\n[COLLECTION LINEUP] — ${promptItems.length} locked garments shown together, one per model:\n`;
 
   const refsBlock = refs.length
-    ? `\n\n[REFERENCE IMAGE${refs.length > 1 ? "S" : ""}] (${refs.length}) — the SINGLE SOURCE OF TRUTH for the garment${refs.length > 1 ? "s" : ""}. Reproduce ${refs.length > 1 ? "each" : "it"} faithfully (same style, color, fabric, prints, hardware, details):\n` +
-      refs.map((u) => `  - ${u}`).join("\n")
+    ? `\n\n[REFERENCE IMAGES] (${refs.length}) — attach in THIS exact order; each is the single, unchangeable source for its garment:\n` +
+      bindings.filter((b) => b.ref).map((b) => `  ${b.ref}. ${b.it.name} → ${b.it.imageUrl}`).join("\n")
     : "";
 
   return (
     `[GENERATION DIRECTIVE]\n` +
-    `Generate ONE single photorealistic cinematic editorial image that represents a themed product collection AS ONE cohesive scene. No collage, grid, card-news, multi-panel layout, split-screen, or any text inside the image.\n\n` +
-    fidelityBlock +
+    `Assemble the provided garments (LOCKED reference assets) into ONE single photorealistic cinematic editorial image — one cohesive scene. No collage, grid, card-news, multi-panel layout, split-screen, or any text inside the image.\n\n` +
+    garmentLockBlock +
     `[CONCEPT]\n` +
     `- Brand: WORKUP — ${clothingEn}\n` +
     `- Theme: "${theme}"\n` +
@@ -1182,6 +1492,7 @@ function buildCollectionPrompt(opts: {
     `\n\n[NEGATIVE PROMPT]\n` +
     `text, typography, caption, watermark, added graphic logo overlay, collage, grid, split-screen, multi-panel, border, frame, ` +
     `different garment, redesigned clothing, restyled outfit, altered color, recolored fabric, wrong collar, wrong neckline, wrong sleeve length, invented print, changed pattern, added logo, removed logo, extra clothing items, ` +
+    `garment swap, swapped clothing, mixed garments, blended outfits, merged clothing, mismatched garment, garment from wrong reference, hallucinated clothing, ` +
     `deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, mutated anatomy, twisted joints, plastic skin, over-retouched, uncanny face, ` +
     `distorted product, warped proportions, wrong colors, color cast, oversaturated, blurry, low-resolution, jpeg artifacts` +
     `\n\n── 한글 참고 ──\n` +
@@ -1243,8 +1554,13 @@ function buildEditorialPrompt(opts: {
     : "8:9 vertical, 440 × 495px";
 
   const refBlock = imageUrl
-    ? `\n\n[REFERENCE IMAGE]\n- Match the uploaded product exactly — same garment style, color palette, fabric texture, prints and design details.`
-    : "";
+    ? `\n\n[REFERENCE IMAGE — SINGLE SOURCE OF TRUTH]\n` +
+      `- Use the uploaded product photo as the primary reference, not as loose inspiration.\n` +
+      `- The garment MUST match the uploaded product exactly: same silhouette, cut, collar / neckline, sleeve length, color, fabric texture, seams, pockets, zippers, buttons, prints and logos.\n` +
+      `- Do NOT invent, restyle, recolor, or substitute a different garment. Only the model, pose, lighting and background may change.`
+    : `\n\n[PRODUCT ACCURACY WARNING]\n` +
+      `- No product reference image is attached. Do NOT claim this is an exact worn photo of a real product.\n` +
+      `- Create a product-inspired editorial mood image only. If exact product fidelity is required, ask for the real product photo first.`;
 
   return (
     `[GENERATION DIRECTIVE]\n` +
@@ -1257,7 +1573,7 @@ function buildEditorialPrompt(opts: {
     `- Set in ${sceneEn}\n` +
     (seasonEn ? `- Season mood: ${seasonEn}\n` : "") +
     `\n[WARDROBE & SUBJECT]\n` +
-    `- ${modelDesc} wearing the ${clothingEn} from the theme, styled naturally\n` +
+    `- ${modelDesc} wearing the ${imageUrl ? "exact referenced product" : clothingEn + " from the theme"}, styled naturally\n` +
     (moodLine ? `- Mood / styling: ${moodLine}\n` : "") +
     `\n[COMPOSITION — ${shotLabel}]\n- ${composition}\n` +
     `\n[CAMERA & LENS]\n- ${shotCam}\n` +
@@ -1499,11 +1815,13 @@ function PromptBuilder({
   const showcaseActive = !!(enableShowcase && showcaseOn && buildShowcaseFn);
   const itemRefs = (items ?? []).map((i) => i.image_url).filter(Boolean) as string[];
   const namedItems = (items ?? []).filter((i) => i.name.trim());
+  const missingImageItems = namedItems.filter((i) => !i.image_url);
   const safeRep = Math.min(repIndex, Math.max(0, namedItems.length - 1));
   // 대표 모델컷은 대표 제품 1장만, 그 외는 전체 — 프롬프트 본문과 참고이미지 표기 일치
   const showcaseRefs = showcaseMode === "hero"
     ? ([namedItems[safeRep]?.image_url].filter(Boolean) as string[])
     : itemRefs;
+  const activeRefCount = showcaseActive ? showcaseRefs.length : (refImageUrl ? 1 : 0);
 
   const resetPrompt = () => setShowPrompt(false);
 
@@ -1518,10 +1836,14 @@ function PromptBuilder({
     const suffix = isHero
       ? `\n\n[권장 사이즈] 950 × 1280px  [비율] 3 : 4\n[PC 표시] 동일 이미지를 8:9 비율 center-top 크롭으로 사용`
       : `\n\n[권장 사이즈] ${sizeLabel}  [비율] ${ratioLabel}`;
+    // 기획전 본문에 이미 순서·바인딩 포함된 [REFERENCE IMAGES]가 있어 중복 방지
     const refPart = showcaseActive
-      ? (showcaseRefs.length ? `\n[참고 이미지 ${showcaseRefs.length}장 — ${showcaseMode === "hero" ? "대표 제품" : "각 제품"} 사진]\n` + showcaseRefs.map((u) => `- ${u}`).join("\n") : "")
+      ? ""
       : (refImageUrl ? `\n[참고 이미지] ${refImageUrl}` : "");
-    const full = prompt + suffix + refPart;
+    const usageGuide = activeRefCount
+      ? `[ChatGPT 사용법]\n1. 아래 참고 이미지 URL의 실제 제품 사진을 먼저 대화창에 업로드하세요.\n2. 그 다음 이 프롬프트를 붙여넣어 생성하세요.\n3. 색상, 주머니, 절개선, 로고, 지퍼/단추 위치가 다르면 폐기하고 다시 생성하세요.\n\n`
+      : `[ChatGPT 사용법]\n정확한 착용샷이 필요하면 먼저 실제 제품 이미지를 업로드하세요. 참고 이미지 없이 생성하면 비슷한 옷으로 바뀔 수 있습니다.\n\n`;
+    const full = usageGuide + prompt + suffix + refPart;
     navigator.clipboard.writeText(full)
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })
       .catch(() => {});
@@ -1558,25 +1880,39 @@ function PromptBuilder({
               {showcaseOn && (
                 <>
                   <ShowcaseModeSelector value={showcaseMode} onChange={(v) => { setShowcaseMode(v); resetPrompt(); }} />
+                  {namedItems.length > 0 && missingImageItems.length > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] leading-snug text-amber-700">
+                      상품 이미지가 없는 연결상품 {missingImageItems.length}개가 있습니다. 실제 제품과 같은 착용샷이 필요하면 먼저 각 상품 이미지를 등록하세요.
+                    </div>
+                  )}
 
                   {/* 대표 모델컷 — 어떤 제품을 대표로 쓸지 선택 */}
                   {showcaseMode === "hero" && namedItems.length > 0 && (
                     <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
-                      <p className="text-[10px] text-violet-600 font-medium mb-1.5">대표 제품 선택 (모델이 착용)</p>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <p className="text-[10px] text-violet-600 font-medium">대표 착용 제품 선택</p>
+                        <span className="text-[9px] text-violet-400">이미지 있는 상품 권장</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5">
                         {namedItems.map((it, idx) => (
                           <button
                             key={it.id}
                             type="button"
                             onClick={() => { setRepIndex(idx); resetPrompt(); }}
-                            className={`inline-flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-0.5 border transition-colors ${
+                            className={`flex items-center gap-2 rounded-lg px-2 py-1.5 border text-left transition-colors ${
                               safeRep === idx ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-violet-200 text-gray-600 hover:border-violet-400"
                             }`}
                           >
                             {it.image_url
-                              ? <img src={it.image_url} alt="" className="w-5 h-5 object-cover rounded-full" />
-                              : <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[7px] text-gray-400 font-bold">WU</span>}
-                            <span className="text-[11px] max-w-[100px] truncate">{it.name}</span>
+                              ? <img src={it.image_url} alt="" className="w-8 h-8 object-cover rounded border border-black/10 flex-shrink-0" />
+                              : <span className="w-8 h-8 rounded border border-amber-200 bg-amber-50 flex items-center justify-center text-[8px] text-amber-500 font-bold flex-shrink-0">NO IMG</span>}
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[11px] font-semibold truncate">{it.name}</span>
+                              <span className={`block text-[9px] ${safeRep === idx ? "text-white/70" : it.image_url ? "text-gray-400" : "text-amber-600"}`}>
+                                {it.image_url ? "참고 이미지 있음" : "이미지 없음 - 정확도 낮음"}
+                              </span>
+                            </span>
+                            {safeRep === idx && <span className="text-[9px] font-semibold bg-white/20 px-1.5 py-0.5 rounded">대표</span>}
                           </button>
                         ))}
                       </div>
@@ -1705,6 +2041,16 @@ function PromptBuilder({
                   ? (showcaseRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 {showcaseRefs.length}장{showcaseMode === "hero" ? " · 대표" : ""}</span>)
                   : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 이미지</span>)}
               </div>
+              {activeRefCount === 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] leading-snug text-amber-700">
+                  실제 제품과 같은 착용샷이 필요하면 먼저 상품 이미지를 연결한 뒤 생성하세요. 참고 이미지 없이 만들면 색상, 주머니, 절개선이 다른 옷으로 나올 수 있습니다.
+                </div>
+              )}
+              {activeRefCount > 0 && (
+                <div className="rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-2 text-[10px] leading-snug text-orange-700">
+                  ChatGPT에 참고 이미지를 먼저 업로드한 뒤 복사한 프롬프트를 붙여넣으세요. 생성 후 색상, 포켓, 절개선, 로고/부자재 위치를 실제 제품과 비교하세요.
+                </div>
+              )}
               {/* 참고이미지 + 생성가이드 한 라인 */}
               {(isHero || (!showcaseActive && refImageUrl) || (showcaseActive && showcaseRefs.length > 0)) && (
                 <div className="flex items-start gap-1.5">

@@ -55,42 +55,54 @@ html {
 }
 
 /* 가까운 매장 찾기 CTA — 오프라인 방문 유도 핵심 버튼
-   기본: #ff550c 아웃라인 / 호버·터치: 오렌지 채움 스윕 + 핀 바운스 + 리프트 */
+   기본부터 #ff550c 채움(높은 시인성) / 호버·터치: 광택 스윕 + 리프트 + 핀 바운스 */
 .store-cta {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  border: 1.5px solid #ff550c;
-  color: #ff550c;
-  background: transparent;
-  transition: color 0.35s ease, box-shadow 0.35s ease, transform 0.18s ease;
+  border: none;
+  color: #fff;
+  background: #ff550c;
+  box-shadow: 0 4px 14px -4px rgba(255, 85, 12, 0.45);
+  transition: background 0.3s ease, box-shadow 0.35s ease, transform 0.18s ease;
 }
+/* 표면을 가로지르는 광택(glint) */
 .store-cta::before {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: #ff550c;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  top: 0;
+  left: -80%;
+  width: 60%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+  transform: skewX(-20deg);
 }
 .store-cta:hover,
 .store-cta:focus-visible {
-  color: #fff;
-  box-shadow: 0 10px 22px -8px rgba(255, 85, 12, 0.55);
+  background: #e84a08;
+  box-shadow: 0 12px 26px -6px rgba(255, 85, 12, 0.6);
+  transform: translateY(-2px);
+}
+/* 터치(모바일): 누르는 순간 살짝 눌리는 피드백 */
+.store-cta:active {
+  background: #e84a08;
+  transform: scale(0.98);
 }
 .store-cta:hover::before,
 .store-cta:focus-visible::before,
 .store-cta:active::before {
-  transform: scaleX(1);
+  animation: store-shine 0.85s ease;
 }
-/* 터치(모바일): 누르는 순간 채움 + 살짝 눌리는 피드백 */
-.store-cta:active {
-  color: #fff;
-  transform: scale(0.98);
+@keyframes store-shine {
+  0%   { left: -80%; }
+  100% { left: 130%; }
 }
+/* 핀 아이콘 — 호버·터치 시 통통 튀는 모션 */
 .store-cta svg {
+  position: relative;
+  z-index: 2;
   transition: transform 0.3s ease;
 }
 .store-cta:hover svg,
@@ -105,25 +117,17 @@ html {
   75%  { transform: translateY(-2px); }
   100% { transform: translateY(0); }
 }
-/* 모션 최소화 선호 사용자: 애니메이션 없이 색상만 즉시 전환 */
+/* 모션 최소화 선호 사용자: 채움 색은 유지, 동작만 제거 */
 @media (prefers-reduced-motion: reduce) {
   .store-cta,
-  .store-cta::before,
   .store-cta svg {
     transition: none;
-    animation: none;
+    transform: none;
   }
-  .store-cta:hover,
-  .store-cta:focus-visible,
-  .store-cta:active {
-    background: #ff550c;
-    color: #fff;
-  }
-  .store-cta:hover::before,
-  .store-cta:focus-visible::before,
-  .store-cta:active::before {
-    transform: scaleX(1);
-  }
+  .store-cta::before { display: none; }
+  .store-cta:hover svg,
+  .store-cta:focus-visible svg,
+  .store-cta:active svg { animation: none; }
 }
 
 /* 어드민 페이지 타이틀 축소 */

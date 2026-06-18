@@ -1,16 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 
-const navItems = [
-  { label: "PRODUCTS", href: "/products" },
-  { label: "STORE", href: "/store" },
-  { label: "STORY", href: "/story" },
-  { label: "MATE", href: "/people" },
-  { label: "FIELD TEST", href: "/field-test" },
-];
-
-export default function BottomNav() {
+export default function BottomNav({ navItems = DEFAULT_HEADER_NAV.items }: { navItems?: NavMenuItem[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // 메뉴 열릴 때 body 스크롤 잠금
@@ -66,20 +59,31 @@ export default function BottomNav() {
           </button>
         </div>
 
-        {/* 메뉴 항목 */}
+        {/* 메뉴 항목 — 시트가 열릴 때 위에서부터 순차로 슬라이드업(stagger) */}
         <nav className="px-6 pb-4 pt-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="flex items-center justify-between py-4 text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] transition-colors tracking-[0.15em] border-b border-gray-100 last:border-0"
-              onClick={() => setMenuOpen(false)}
+          {navItems.map((item, i) => (
+            <div
+              key={item.id}
+              className="border-b border-gray-100 last:border-0 transition-[opacity,transform] duration-300 ease-out"
+              style={{
+                transitionDelay: menuOpen ? `${i * 45 + 120}ms` : "0ms",
+                opacity: menuOpen ? 1 : 0,
+                transform: menuOpen ? "translateY(0)" : "translateY(10px)",
+              }}
             >
-              {item.label}
-              <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
-              </svg>
-            </Link>
+              <Link
+                href={item.href}
+                target={item.newTab ? "_blank" : undefined}
+                rel={item.newTab ? "noopener noreferrer" : undefined}
+                className="flex items-center justify-between py-4 text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] active:text-[#ff550c] tracking-[0.15em] transition-[color,transform] active:scale-[0.97]"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+                <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+                </svg>
+              </Link>
+            </div>
           ))}
         </nav>
       </div>
@@ -91,7 +95,7 @@ export default function BottomNav() {
           {/* 메뉴 */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-[color,transform] active:scale-95 ${
               menuOpen ? "text-[#ff550c]" : "text-[#1A2B4A]"
             }`}
             aria-label="메뉴"
@@ -114,7 +118,7 @@ export default function BottomNav() {
           {/* 홈 */}
           <Link
             href="/"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A]"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] transition-transform active:scale-95"
             aria-label="홈"
             onClick={() => setMenuOpen(false)}
           >
@@ -128,7 +132,7 @@ export default function BottomNav() {
           {/* 전체매장 */}
           <Link
             href="/store"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A]"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] transition-transform active:scale-95"
             aria-label="전체매장"
             onClick={() => setMenuOpen(false)}
           >

@@ -1,0 +1,160 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]: EVERY WORKER EVERY WEAR
+    - generic [ref=e6]:
+      - link "카탈로그" [ref=e7] [cursor=pointer]:
+        - /url: /catalog
+        - img [ref=e8]
+        - text: 카탈로그
+      - generic [ref=e10]: "|"
+      - link "가맹/제휴문의" [ref=e11] [cursor=pointer]:
+        - /url: /partnership
+        - img [ref=e12]
+        - text: 가맹/제휴문의
+  - banner [ref=e14]:
+    - generic [ref=e16]:
+      - link "WORKUP" [ref=e17] [cursor=pointer]:
+        - /url: /
+        - img "WORKUP" [ref=e18]
+      - navigation [ref=e19]:
+        - link "PRODUCTS" [ref=e20] [cursor=pointer]:
+          - /url: /products
+        - link "STORE" [ref=e21] [cursor=pointer]:
+          - /url: /store
+        - link "STORY" [ref=e22] [cursor=pointer]:
+          - /url: /story
+        - link "MATE" [ref=e23] [cursor=pointer]:
+          - /url: /people
+        - link "FIELD TEST" [ref=e24] [cursor=pointer]:
+          - /url: /field-test
+      - generic [ref=e25]:
+        - button "검색" [ref=e26]:
+          - img [ref=e27]
+        - button "찜 목록" [ref=e29]:
+          - img [ref=e30]
+        - link "로그인" [ref=e32] [cursor=pointer]:
+          - /url: /member/login
+          - img [ref=e33]
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - paragraph [ref=e38]: WORKUP STUDIO
+      - heading "나만의 티셔츠 꾸미기" [level=1] [ref=e39]
+      - paragraph [ref=e40]: 스티커·텍스트·도형을 올려 나만의 디자인을 만들고, 매장에서 제작 상담받아 보세요.
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic:
+            - img
+        - generic [ref=e44]:
+          - paragraph [ref=e45]: 티셔츠 색상
+          - generic [ref=e46]:
+            - button "화이트" [ref=e47]
+            - button "샌드" [ref=e48]
+            - button "그레이" [ref=e49]
+            - button "네이비" [pressed] [ref=e50]
+            - button "블랙" [ref=e51]
+            - button "오렌지" [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - button "스티커" [ref=e55]
+          - button "텍스트" [ref=e56]
+          - button "도형" [ref=e57]
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - paragraph [ref=e60]: 공구
+            - generic [ref=e61]:
+              - button "스티커 🔧 추가" [ref=e62]: 🔧
+              - button "스티커 🔨 추가" [ref=e63]: 🔨
+              - button "스티커 🪛 추가" [ref=e64]: 🪛
+              - button "스티커 ⚙️ 추가" [ref=e65]: ⚙️
+              - button "스티커 🧰 추가" [ref=e66]: 🧰
+              - button "스티커 🔩 추가" [ref=e67]: 🔩
+              - button "스티커 🪚 추가" [ref=e68]: 🪚
+              - button "스티커 ⛏️ 추가" [ref=e69]: ⛏️
+          - generic [ref=e70]:
+            - paragraph [ref=e71]: 안전·현장
+            - generic [ref=e72]:
+              - button "스티커 🦺 추가" [ref=e73]: 🦺
+              - button "스티커 ⛑️ 추가" [ref=e74]: ⛑️
+              - button "스티커 🧤 추가" [ref=e75]: 🧤
+              - button "스티커 🥾 추가" [ref=e76]: 🥾
+              - button "스티커 🚧 추가" [ref=e77]: 🚧
+              - button "스티커 📐 추가" [ref=e78]: 📐
+              - button "스티커 📏 추가" [ref=e79]: 📏
+              - button "스티커 🪜 추가" [ref=e80]: 🪜
+          - generic [ref=e81]:
+            - paragraph [ref=e82]: 아웃도어
+            - generic [ref=e83]:
+              - button "스티커 🌿 추가" [ref=e84]: 🌿
+              - button "스티커 🌲 추가" [ref=e85]: 🌲
+              - button "스티커 ☀️ 추가" [ref=e86]: ☀️
+              - button "스티커 🔥 추가" [ref=e87]: 🔥
+              - button "스티커 ⛰️ 추가" [ref=e88]: ⛰️
+              - button "스티커 🏕️ 추가" [ref=e89]: 🏕️
+              - button "스티커 🧭 추가" [ref=e90]: 🧭
+              - button "스티커 💧 추가" [ref=e91]: 💧
+          - generic [ref=e92]:
+            - paragraph [ref=e93]: 표현
+            - generic [ref=e94]:
+              - button "스티커 💪 추가" [ref=e95]: 💪
+              - button "스티커 👍 추가" [ref=e96]: 👍
+              - button "스티커 🤙 추가" [ref=e97]: 🤙
+              - button "스티커 😎 추가" [ref=e98]: 😎
+              - button "스티커 ⭐ 추가" [ref=e99]: ⭐
+              - button "스티커 ✨ 추가" [ref=e100]: ✨
+              - button "스티커 💥 추가" [ref=e101]: 💥
+              - button "스티커 🏆 추가" [ref=e102]: 🏆
+              - button "스티커 ❤️ 추가" [ref=e103]: ❤️
+              - button "스티커 🤍 추가" [ref=e104]: 🤍
+        - paragraph [ref=e105]: 요소를 탭하면 이동·회전·크기 조절과 편집을 할 수 있어요.
+        - button "전체 지우기" [ref=e106]
+    - generic [ref=e107]:
+      - button "이미지 저장" [ref=e108]
+      - button "카카오 상담" [ref=e109]
+      - button "매장 찾기" [ref=e110]
+  - contentinfo [ref=e111]:
+    - generic [ref=e113]:
+      - button "맨 위로" [ref=e114]:
+        - img [ref=e115]
+        - text: TOP
+      - generic [ref=e117]:
+        - link "About WORKUP" [ref=e118] [cursor=pointer]:
+          - /url: /story
+        - link "매장안내" [ref=e119] [cursor=pointer]:
+          - /url: /store
+        - link "이용약관" [ref=e120] [cursor=pointer]:
+          - /url: /terms
+        - link "개인정보처리방침" [ref=e121] [cursor=pointer]:
+          - /url: /privacy
+    - generic [ref=e123]:
+      - generic [ref=e124]:
+        - link "WORKUP" [ref=e125] [cursor=pointer]:
+          - /url: /
+          - img "WORKUP" [ref=e126]
+        - navigation [ref=e127]:
+          - link "고객센터" [ref=e128] [cursor=pointer]:
+            - /url: /support
+          - link "1:1문의" [ref=e129] [cursor=pointer]:
+            - /url: /support
+          - link "가맹·창업문의" [ref=e130] [cursor=pointer]:
+            - /url: /partnership/franchise
+          - link "입점·제휴문의" [ref=e131] [cursor=pointer]:
+            - /url: /partnership/wholesale
+      - generic [ref=e132]:
+        - generic [ref=e133]:
+          - paragraph [ref=e134]: "상호명 : (주)트레이딩포스트"
+          - paragraph [ref=e135]: "대표 : 방교환"
+          - paragraph [ref=e136]: "주소 : 경기도 포천시 호국로 56"
+          - paragraph [ref=e137]: "사업자등록번호 : 206-86-40318"
+          - paragraph [ref=e138]: "통신판매업 신고번호 : 제 2021-경기포천-0336"
+        - link "임직원 인증" [ref=e139] [cursor=pointer]:
+          - /url: /admin
+      - generic [ref=e140]:
+        - paragraph [ref=e141]: 고객센터
+        - paragraph [ref=e142]: 070-4680-0064
+        - generic [ref=e143]:
+          - paragraph [ref=e144]: 평일 09:00 ~ 20:00
+          - paragraph [ref=e145]: 주말 10:00 ~ 20:00
+        - link "1:1 문의하기 →" [ref=e146] [cursor=pointer]:
+          - /url: /support
+    - paragraph [ref=e148]: © 2026 (주)트레이딩포스트. All rights reserved.

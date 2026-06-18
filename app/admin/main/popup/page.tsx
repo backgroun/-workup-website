@@ -458,7 +458,7 @@ export default function PopupManagePage() {
           )}
 
           {/* ── AI 생성기 ── */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
             <div className="px-4 py-3 border-b border-slate-100">
               <p className="text-sm font-semibold text-slate-700">✨ AI 생성기</p>
               <p className="text-[11px] text-slate-400 mt-0.5">팝업 문구·이미지 프롬프트 자동 생성 (무료)</p>
@@ -730,6 +730,8 @@ export default function PopupManagePage() {
                         <span className="text-[11px] text-slate-400">체크 해제 시 모바일 이미지 분리 등록</span>
                       </label>
 
+                      {/* 이미지 미리보기 영역 — 30% 축소 (너비 70%) */}
+                      <div className="max-w-[70%]">
                       {!separateImg ? (
                         <PopupImagePicker
                           label="이미지 (PC·모바일 공용)"
@@ -777,6 +779,7 @@ export default function PopupManagePage() {
                           />
                         </div>
                       )}
+                      </div>
                     </div>
                   )}
                 </div>

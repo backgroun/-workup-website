@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { stores } from "@/data/stores";
 import type { Product } from "@/data/products";
@@ -36,9 +37,19 @@ export default function ProductDetailClient({
   isNewLayout?: boolean;
 }) {
   const { addItem } = useCart();
+  const router = useRouter();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   const [addedMsg, setAddedMsg] = useState(false);
+  // 회원 로그인 세션 — 피팅 리스트 담기 게이팅용 (null = 비로그인)
+  const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/member/me")
+      .then((r) => r.json())
+      .then((data) => setMemberSession(data ?? null))
+      .catch(() => setMemberSession(null));
+  }, []);
 
   const [showStorePanel, setShowStorePanel] = useState(false);
   const [nearStores, setNearStores] = useState<NearStore[]>([]);
@@ -99,6 +110,11 @@ export default function ProductDetailClient({
   };
 
   const handleAddToCart = () => {
+    if (!memberSession) {
+      alert("로그인 후 피팅 리스트를 이용하실 수 있습니다.");
+      router.push("/member/login?from=cart");
+      return;
+    }
     if (!selectedSize) { alert("사이즈를 선택해 주세요."); return; }
     addItem({ productId: product.id, name: product.name, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg });
     setAddedMsg(true);
@@ -154,7 +170,6 @@ export default function ProductDetailClient({
           <span>{product.category}</span>
           <span className="text-gray-300">›</span>
           <span>{product.subCategory}</span>
-          <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 tracking-wider">WORKUP {product.line}</span>
         </div>
         {product.brand && (
           <span className="inline-block text-[11px] text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full mb-2">
@@ -163,6 +178,9 @@ export default function ProductDetailClient({
         )}
         <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-3">{product.name}</h1>
         <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{product.price}</p>
+        {product.sku && (
+          <p className="text-xs text-gray-400 tracking-wider mt-2.5">제품번호 · {product.sku}</p>
+        )}
       </div>
 
       <div className="h-px bg-gray-100" />
@@ -313,8 +331,8 @@ export default function ProductDetailClient({
 
     </div>
 
-    {/* 모바일 바텀시트 매장 패널 */}
-    {showStorePanel && isNewLayout && (
+    {/* 모바일 바텀시트 매장 패널 — 전 상품 공통 */}
+    {showStorePanel && (
       <div className="md:hidden">
         <div className="fixed inset-0 bg-black/50 z-[60]" onClick={() => setShowStorePanel(false)} />
         <div className="fixed bottom-0 left-0 right-0 z-[61] bg-white rounded-t-2xl max-h-[75vh] flex flex-col">

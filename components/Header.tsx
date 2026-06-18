@@ -5,17 +5,10 @@ import Image from "next/image";
 import { Oxanium } from "next/font/google";
 import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["600"] });
-
-const navItems = [
-  { label: "PRODUCTS", href: "/products" },
-  { label: "STORE", href: "/store" },
-  { label: "STORY", href: "/story" },
-  { label: "MATE", href: "/people" },
-  { label: "FIELD TEST", href: "/field-test" },
-];
 
 const popularTerms = [
   "카고 팬츠", "방풍 자켓", "쿨링 티셔츠", "안전조끼", "롤업 셔츠", "멀티포켓",
@@ -24,7 +17,7 @@ const POPULAR_VISIBLE = 4;
 
 type MemberSession = { name: string; grade: string } | null;
 
-export default function Header() {
+export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navItems?: NavMenuItem[] }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [termIndex, setTermIndex] = useState(0);
@@ -77,8 +70,10 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-7 flex-1 justify-start ml-[60px]">
             {navItems.map((item) => (
               <Link
-                key={item.label}
+                key={item.id}
                 href={item.href}
+                target={item.newTab ? "_blank" : undefined}
+                rel={item.newTab ? "noopener noreferrer" : undefined}
                 className={`${oxanium.className} text-[17px] text-[#1A2B4A] hover:text-[#ff550c] transition-colors tracking-wide whitespace-nowrap`}
                 style={{ fontWeight: 650 }}
               >

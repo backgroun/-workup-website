@@ -314,6 +314,13 @@ export default function ProductsGrid() {
       {/* ══════════════════ MOBILE ══════════════════════ */}
       <div className="md:hidden">
 
+        {/* 상단 컨트롤 고정 — 타이틀·카테고리·하위카테고리·정렬/필터까지 sticky(헤더 바로 아래),
+            상품 리스트만 스크롤. top = 공지바 높이(--wu-topbar-h) + 헤더 높이(56px) */}
+        <div
+          className="sticky z-40 bg-white"
+          style={{ top: "calc(var(--wu-topbar-h, 36px) + 56px)" }}
+        >
+
         {/* Top bar: ← Title Cart */}
         <div className="flex items-center justify-between px-[15px] py-3 border-b border-gray-200">
           <button
@@ -438,6 +445,9 @@ export default function ProductsGrid() {
           </div>
 
           </div>
+
+        </div>
+        {/* ── 상단 고정 컨트롤 끝 ── */}
 
         {/* ── 정렬 바텀시트 ── */}
         {sortSheetOpen && (

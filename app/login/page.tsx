@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from "next";
+import Image from "next/image";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -22,7 +23,17 @@ export default async function LoginPage() {
         {/* 브랜드 헤더 */}
         <div className="bg-[#1A2B4A] px-10 py-10 mb-0">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">Members Only</p>
-          <h1 className="text-2xl font-bold text-white mb-2">WORKUP 파트너</h1>
+          <h1 className="flex items-center gap-2.5 mb-2">
+            <Image
+              src="/images/logo_black.png"
+              alt="WORKUP"
+              width={130}
+              height={18}
+              className="h-[18px] w-auto brightness-0 invert"
+              priority
+            />
+            <span className="text-xl font-bold text-white">파트너</span>
+          </h1>
           <p className="text-sm text-gray-300 leading-relaxed">
             관리자 및 파트너 전용 로그인입니다.
           </p>
