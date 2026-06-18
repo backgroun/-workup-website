@@ -63,16 +63,18 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
   const showSidebar = brands.length > 0;
 
   return (
-    <div className="bg-[#0d1826] flex flex-col" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+    <div className="bg-[#0d1826] flex flex-col" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px - var(--wu-bottom-nav-h, 0px))" }}>
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
       {/* 메인 뷰어 */}
-      <div className="flex-1 min-w-0 flex flex-col order-2 md:order-1">
-        <div className="flex items-center justify-between px-4 py-1.5 flex-shrink-0 h-7">
-          <span className="text-white/70 text-xs font-medium truncate">{isWorkup ? "WORKUP" : (brand?.name ?? "")}</span>
-          {!isWorkup && pdfUrl && (
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-[#ff550c] text-xs whitespace-nowrap">원본 PDF ↗</a>
-          )}
-        </div>
+      <div className="flex-1 min-w-0 flex flex-col order-1">
+        {!isWorkup && (
+          <div className="flex items-center justify-between px-4 py-1.5 flex-shrink-0 h-7">
+            <span className="text-white/70 text-xs font-medium truncate">{brand?.name ?? ""}</span>
+            {pdfUrl && (
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-[#ff550c] text-xs whitespace-nowrap">원본 PDF ↗</a>
+            )}
+          </div>
+        )}
 
         <div ref={areaRef} className="flex-1 flex items-center justify-center overflow-hidden px-2">
           {total > 0 && dims.w > 0 ? (
@@ -100,20 +102,27 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           )}
         </div>
 
-        {total > 1 && (
-          <div className="flex items-center justify-center gap-6 py-3 flex-shrink-0">
-            <button onClick={() => bookRef.current?.pageFlip().flipPrev()} disabled={currentPage === 0}
-              className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
-            <span className="text-gray-500 text-[10px] tracking-widest w-16 text-center">{currentPage + 1} / {total}</span>
-            <button onClick={() => bookRef.current?.pageFlip().flipNext()} disabled={currentPage >= total - 1}
-              className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-4 py-3 flex-shrink-0">
+          <Link href="/" className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white/70 hover:text-white flex items-center justify-center transition-colors" aria-label="메인으로">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </Link>
+          {total > 1 && (
+            <>
+              <button onClick={() => bookRef.current?.pageFlip().flipPrev()} disabled={currentPage === 0}
+                className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
+              <span className="text-gray-500 text-[10px] tracking-widest w-16 text-center">{currentPage + 1} / {total}</span>
+              <button onClick={() => bookRef.current?.pageFlip().flipNext()} disabled={currentPage >= total - 1}
+                className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 우측 표지 썸네일 네비 (브랜드가 있을 때만) */}
       {showSidebar && (
-        <aside className="flex-shrink-0 order-1 md:order-2 md:w-[150px] border-b md:border-b-0 md:border-l border-white/10 overflow-x-auto md:overflow-y-auto">
+        <aside className="flex-shrink-0 order-2 md:w-[150px] border-t md:border-t-0 md:border-l border-white/10 overflow-x-auto md:overflow-y-auto">
           <div className="flex md:flex-col gap-3 p-3 md:py-5">
             {/* WORKUP */}
             <CoverThumb name="WORKUP" active={isWorkup} onClick={() => setSelectedId("workup")}>
@@ -133,16 +142,6 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       )}
       </div>
 
-      {/* 하단 — 메인 페이지로 이동 */}
-      <div className="flex-shrink-0 border-t border-white/10 flex items-center justify-center py-2.5 px-4">
-        <Link href="/"
-          className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs tracking-widest border border-white/20 hover:border-[#ff550c] rounded-full px-6 py-2 transition-colors">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          메인으로
-        </Link>
-      </div>
     </div>
   );
 }

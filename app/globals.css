@@ -6,6 +6,18 @@
   /* 상단 탑바(공지바) 높이 — 관리자에서 변경되면 app/layout.tsx 가 <html> 에 덮어쓴다.
      헤더 sticky 오프셋·카탈로그 뷰어 높이가 이 값을 참조한다(var(--wu-topbar-h)). */
   --wu-topbar-h: 36px;
+  /* 모바일 바텀내비 높이 — 카탈로그 뷰어 높이 계산에 사용 */
+  --wu-bottom-nav-h: 56px;
+}
+@media (min-width: 768px) {
+  :root {
+    --wu-bottom-nav-h: 0px;
+  }
+}
+
+/* 카탈로그 전체화면 모드 — 사이트 푸터 숨김 */
+body.catalog-page footer {
+  display: none;
 }
 
 @theme inline {

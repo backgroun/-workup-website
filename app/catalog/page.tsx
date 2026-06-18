@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-server";
 import type { CatalogPage } from "@/data/catalog";
 import { brandPageUrl, brandCoverUrl, type BrandCatalog } from "@/data/brandCatalogs";
 import UnifiedCatalogViewer, { type BrandEntry } from "@/components/UnifiedCatalogViewer";
+import CatalogBodyClass from "@/components/CatalogBodyClass";
 
 export const metadata: Metadata = {
   title: "2026 SS 카탈로그 | WORKUP",
@@ -46,6 +47,7 @@ export default async function CatalogPage() {
 
   return (
     <main>
+      <CatalogBodyClass />
       <UnifiedCatalogViewer workupPages={pages} brands={brandEntries} />
     </main>
   );
