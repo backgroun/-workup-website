@@ -19,6 +19,8 @@ type CartContextType = {
   removeItem: (cartId: string) => void;
   clearCart: () => void;
   count: number;
+  hasProduct: (productId: string) => boolean;
+  toggleProduct: (item: Omit<CartItem, "cartId">) => void;
 };
 
 const CartContext = createContext<CartContextType>({
@@ -27,6 +29,8 @@ const CartContext = createContext<CartContextType>({
   removeItem: () => {},
   clearCart: () => {},
   count: 0,
+  hasProduct: () => false,
+  toggleProduct: () => {},
 });
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -59,8 +63,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     save([]);
   }, []);
 
+  // 제품 단위 찜 토글 (카드 하트용) — 같은 productId가 있으면 모두 제거, 없으면 추가.
+  const hasProduct = useCallback(
+    (productId: string) => items.some((i) => i.productId === productId),
+    [items]
+  );
+
+  const toggleProduct = useCallback((item: Omit<CartItem, "cartId">) => {
+    if (items.some((i) => i.productId === item.productId)) {
+      save(items.filter((i) => i.productId !== item.productId));
+    } else {
+      const cartId = `${item.productId}-${item.size}-${item.color}-${Date.now()}`;
+      save([...items, { ...item, cartId }]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
+
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, count: items.length }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, count: items.length, hasProduct, toggleProduct }}>
       {children}
     </CartContext.Provider>
   );

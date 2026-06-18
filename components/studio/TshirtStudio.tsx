@@ -1,29 +1,29 @@
 "use client";
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import NearbyStoreModal from "@/components/NearbyStoreModal";
 import {
   SHIRT_COLORS,
   DEFAULT_SHIRT_ID,
-  STICKER_GROUPS,
   TEXT_FONTS,
   PALETTE_COLORS,
-  SHAPES,
   EXPORT_W,
   EXPORT_H,
   STAGE_RATIO,
-  BASE_STICKER,
   BASE_TEXT,
-  BASE_SHAPE,
+  BASE_IMAGE,
   MIN_SCALE,
   MAX_SCALE,
   DROP_X,
   DROP_Y,
-  EMOJI_FONT,
+  IMG_MAX,
   shirtSvg,
-  shapeSvg,
   type Layer,
-  type LayerKind,
-  type ShapeId,
 } from "./assets";
 
 // ── 유틸 ────────────────────────────────────────────────
@@ -41,14 +41,10 @@ const loadImage = (src: string) =>
     img.src = src;
   });
 
-const svgDataUrl = (svg: string) =>
-  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-
-// 레이어 기본 px 크기(스테이지 가로폭 기준 · 배율 1)
-function baseSizePx(kind: LayerKind, widthPx: number) {
-  if (kind === "sticker") return BASE_STICKER * widthPx;
-  if (kind === "text") return BASE_TEXT * widthPx;
-  return BASE_SHAPE * widthPx;
+// 레이어 표시 크기(px) — 이미지는 너비 기준(비율 유지), 텍스트는 폰트 크기
+function layerWidthPx(l: Layer, stageWidthPx: number) {
+  const base = l.kind === "image" ? BASE_IMAGE : BASE_TEXT;
+  return base * stageWidthPx * l.scale;
 }
 
 type Interaction =
@@ -60,12 +56,14 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [shirtId, setShirtId] = useState<string>(DEFAULT_SHIRT_ID);
-  const [tab, setTab] = useState<"sticker" | "text" | "shape">("sticker");
+  const [tab, setTab] = useState<"image" | "text">("image");
   const [showStores, setShowStores] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [stageW, setStageW] = useState(0);
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const interaction = useRef<Interaction | null>(null);
 
   const shirt = SHIRT_COLORS.find((c) => c.id === shirtId) ?? SHIRT_COLORS[0];
@@ -78,7 +76,17 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     return () => clearTimeout(t);
   }, [notice]);
 
-  // 드래그/회전/크기조절 — 전역 포인터 이벤트로 처리
+  // 스테이지 가로폭 측정(레이어 px 계산용)
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setStageW(el.getBoundingClientRect().width));
+    ro.observe(el);
+    setStageW(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, []);
+
+  // 드래그/회전/크기조절 — 전역 포인터 이벤트
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       const it = interaction.current;
@@ -89,13 +97,10 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
       const py = (e.clientY - rect.top) / rect.height;
       if (it.mode === "move") {
         setLayers((ls) =>
-          ls.map((l) =>
-            l.id === it.id ? { ...l, x: clamp(px + it.dx, 0, 1), y: clamp(py + it.dy, 0, 1) } : l
-          )
+          ls.map((l) => (l.id === it.id ? { ...l, x: clamp(px + it.dx, 0, 1), y: clamp(py + it.dy, 0, 1) } : l))
         );
       } else if (it.mode === "rotate") {
-        const ang =
-          (Math.atan2((py - it.cy) * rect.height, (px - it.cx) * rect.width) * 180) / Math.PI + 90;
+        const ang = (Math.atan2((py - it.cy) * rect.height, (px - it.cx) * rect.width) * 180) / Math.PI + 90;
         setLayers((ls) => ls.map((l) => (l.id === it.id ? { ...l, rotation: Math.round(ang) } : l)));
       } else {
         const dist = Math.hypot((px - it.cx) * rect.width, (py - it.cy) * rect.height);
@@ -116,7 +121,7 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     };
   }, []);
 
-  // 키보드: Delete=삭제, Esc=선택해제 (입력 중에는 무시)
+  // 키보드: Delete=삭제, Esc=선택해제 (입력 중 무시)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -133,8 +138,8 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedId]);
 
-  // ── 레이어 조작 ─────────────────────────────────────
-  function addLayer(partial: Omit<Layer, "id" | "x" | "y" | "scale" | "rotation">) {
+  // ── 레이어 추가 ─────────────────────────────────────
+  function pushLayer(partial: Omit<Layer, "id" | "x" | "y" | "scale" | "rotation" | "opacity"> & { scale?: number }) {
     const n = layers.length;
     const id = uid();
     setLayers((ls) => [
@@ -143,24 +148,57 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
         id,
         x: clamp(DROP_X + ((n % 3) - 1) * 0.05, 0.1, 0.9),
         y: clamp(DROP_Y + (Math.floor(n / 3) % 3) * 0.05, 0.1, 0.9),
-        scale: 1,
+        scale: partial.scale ?? 1,
         rotation: 0,
+        opacity: 1,
         ...partial,
       },
     ]);
     setSelectedId(id);
   }
 
-  const addSticker = (glyph: string) => addLayer({ kind: "sticker", glyph });
   const addText = () =>
-    addLayer({
+    pushLayer({
       kind: "text",
       text: "텍스트",
       font: TEXT_FONTS[0].family,
       weight: TEXT_FONTS[0].weight,
-      color: shirt.id === "white" || shirt.id === "sand" ? "#1A2B4A" : "#FFFFFF",
+      color: shirt.id === "white" || shirt.id === "ivory" || shirt.id === "sand" || shirt.id === "sky" ? "#1A2B4A" : "#FFFFFF",
     });
-  const addShape = (shape: ShapeId) => addLayer({ kind: "shape", shape, color: "#ff550c" });
+
+  // 업로드 이미지 → (필요시 다운스케일) → 레이어 추가
+  function handleFiles(files: FileList | File[]) {
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result);
+        const probe = new Image();
+        probe.onload = () => {
+          let { width, height } = probe;
+          let src = dataUrl;
+          if (Math.max(width, height) > IMG_MAX) {
+            const s = IMG_MAX / Math.max(width, height);
+            const c = document.createElement("canvas");
+            c.width = Math.round(width * s);
+            c.height = Math.round(height * s);
+            c.getContext("2d")?.drawImage(probe, 0, 0, c.width, c.height);
+            src = c.toDataURL("image/png");
+            width = c.width;
+            height = c.height;
+          }
+          // 세로로 긴 이미지가 셔츠를 넘지 않도록 초기 배율 보정
+          const ratio = height / width;
+          const maxH = 0.62 * STAGE_RATIO; // (스테이지 가로폭 1 기준) 높이 한도
+          const dispH = BASE_IMAGE * ratio;
+          const initScale = dispH > maxH ? maxH / dispH : 1;
+          pushLayer({ kind: "image", src, w: width, h: height, scale: clamp(initScale, MIN_SCALE, 1) });
+        };
+        probe.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   function updateLayer(id: string, patch: Partial<Layer>) {
     setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -192,14 +230,11 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     setSelectedId(null);
   }
 
-  // ── 포인터 시작 핸들러 ──────────────────────────────
-  function rectInfo() {
-    return stageRef.current!.getBoundingClientRect();
-  }
+  // ── 포인터 시작 ─────────────────────────────────────
   function startMove(e: ReactPointerEvent, l: Layer) {
     e.stopPropagation();
     setSelectedId(l.id);
-    const rect = rectInfo();
+    const rect = stageRef.current!.getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width;
     const py = (e.clientY - rect.top) / rect.height;
     interaction.current = { mode: "move", id: l.id, dx: l.x - px, dy: l.y - py };
@@ -210,14 +245,14 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
   }
   function startScale(e: ReactPointerEvent, l: Layer) {
     e.stopPropagation();
-    const rect = rectInfo();
+    const rect = stageRef.current!.getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width;
     const py = (e.clientY - rect.top) / rect.height;
     const startDist = Math.hypot((px - l.x) * rect.width, (py - l.y) * rect.height) || 1;
     interaction.current = { mode: "scale", id: l.id, cx: l.x, cy: l.y, startDist, startScale: l.scale };
   }
 
-  // ── PNG 내보내기(라이브러리 없이 canvas 재렌더) ──────
+  // ── PNG 내보내기 ────────────────────────────────────
   async function buildBlob(): Promise<Blob | null> {
     const canvas = document.createElement("canvas");
     canvas.width = EXPORT_W;
@@ -228,40 +263,35 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
       try {
         await document.fonts.ready;
       } catch {
-        /* 폰트 준비 실패해도 진행 */
+        /* noop */
       }
     }
-    // 1) 셔츠
-    const shirtImg = await loadImage(svgDataUrl(shirtSvg(shirt.value, shirt.stroke, EXPORT_W, EXPORT_H)));
+    // 셔츠
+    const shirtImg = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(shirtSvg(shirt.value, EXPORT_W, EXPORT_H))}`);
     ctx.drawImage(shirtImg, 0, 0, EXPORT_W, EXPORT_H);
-    // 2) 도형 이미지 미리 로드
-    const shapeImgs = new Map<string, HTMLImageElement>();
-    for (const l of layers) {
-      if (l.kind === "shape" && l.shape) {
-        const size = baseSizePx("shape", EXPORT_W) * l.scale;
-        shapeImgs.set(l.id, await loadImage(svgDataUrl(shapeSvg(l.shape, l.color ?? "#ff550c", size))));
-      }
-    }
-    // 3) 레이어 순서대로 그리기
+    // 이미지 레이어 미리 로드
+    const imgs = new Map<string, HTMLImageElement>();
+    for (const l of layers) if (l.kind === "image" && l.src) imgs.set(l.id, await loadImage(l.src));
+    // 레이어 순서대로
     for (const l of layers) {
       ctx.save();
+      ctx.globalAlpha = l.opacity;
       ctx.translate(l.x * EXPORT_W, l.y * EXPORT_H);
       ctx.rotate((l.rotation * Math.PI) / 180);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      if (l.kind === "sticker") {
-        const fs = baseSizePx("sticker", EXPORT_W) * l.scale;
-        ctx.font = `${fs}px ${EMOJI_FONT}`;
-        ctx.fillText(l.glyph ?? "", 0, 0);
-      } else if (l.kind === "text") {
-        const fs = baseSizePx("text", EXPORT_W) * l.scale;
+      if (l.kind === "image") {
+        const img = imgs.get(l.id);
+        if (img && l.w && l.h) {
+          const dispW = BASE_IMAGE * EXPORT_W * l.scale;
+          const dispH = dispW * (l.h / l.w);
+          ctx.drawImage(img, -dispW / 2, -dispH / 2, dispW, dispH);
+        }
+      } else {
+        const fs = BASE_TEXT * EXPORT_W * l.scale;
         ctx.font = `${l.weight ?? 700} ${fs}px ${l.font ?? "sans-serif"}`;
         ctx.fillStyle = l.color ?? "#1A2B4A";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(l.text ?? "", 0, 0);
-      } else {
-        const img = shapeImgs.get(l.id);
-        const size = baseSizePx("shape", EXPORT_W) * l.scale;
-        if (img) ctx.drawImage(img, -size / 2, -size / 2, size, size);
       }
       ctx.restore();
     }
@@ -301,13 +331,9 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
       const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
       if (nav.canShare?.({ files: [file] }) && navigator.share) {
         try {
-          await navigator.share({
-            files: [file],
-            title: "내가 꾸민 워크업 티셔츠",
-            text: "이 디자인으로 매장에서 제작 상담받고 싶어요!",
-          });
+          await navigator.share({ files: [file], title: "내가 꾸민 워크업 티셔츠", text: "이 디자인으로 매장에서 제작 상담받고 싶어요!" });
         } catch {
-          /* 사용자가 공유 취소 — 무시 */
+          /* 취소 무시 */
         }
       } else {
         downloadBlob(blob, "workup-tshirt.png");
@@ -319,51 +345,34 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     }
   }
 
-  // ── 렌더: 레이어 1개 ────────────────────────────────
+  // ── 레이어 렌더 ─────────────────────────────────────
   function renderLayer(l: Layer, widthPx: number) {
-    const size = baseSizePx(l.kind, widthPx) * l.scale;
+    const w = layerWidthPx(l, widthPx);
     const isSel = l.id === selectedId;
     let content: ReactNode = null;
-    if (l.kind === "sticker") {
-      content = <span style={{ fontSize: size, lineHeight: 1 }}>{l.glyph}</span>;
+    if (l.kind === "image" && l.src && l.w && l.h) {
+      content = (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={l.src} alt="" draggable={false} style={{ width: w, height: w * (l.h / l.w), display: "block", pointerEvents: "none" }} />
+      );
     } else if (l.kind === "text") {
       content = (
-        <span
-          style={{
-            fontSize: size,
-            fontFamily: l.font,
-            fontWeight: l.weight,
-            color: l.color,
-            lineHeight: 1.1,
-            whiteSpace: "nowrap",
-          }}
-        >
+        <span style={{ fontSize: w, fontFamily: l.font, fontWeight: l.weight, color: l.color, lineHeight: 1.1, whiteSpace: "nowrap" }}>
           {l.text || "텍스트"}
         </span>
-      );
-    } else if (l.kind === "shape" && l.shape) {
-      content = (
-        <span
-          style={{ display: "block", width: size, height: size }}
-          dangerouslySetInnerHTML={{ __html: shapeSvg(l.shape, l.color ?? "#ff550c", size) }}
-        />
       );
     }
     return (
       <div
         key={l.id}
         className="absolute touch-none select-none cursor-move"
-        style={{ left: `${l.x * 100}%`, top: `${l.y * 100}%`, transform: `translate(-50%, -50%) rotate(${l.rotation}deg)` }}
+        style={{ left: `${l.x * 100}%`, top: `${l.y * 100}%`, opacity: l.opacity, transform: `translate(-50%, -50%) rotate(${l.rotation}deg)` }}
         onPointerDown={(e) => startMove(e, l)}
       >
-        {/* 선택 외곽선 */}
-        {isSel && (
-          <span className="pointer-events-none absolute -inset-2 border border-dashed border-[#ff550c]" aria-hidden />
-        )}
+        {isSel && <span className="pointer-events-none absolute -inset-2 border border-dashed border-[#ff550c]" aria-hidden />}
         {content}
         {isSel && (
           <>
-            {/* 삭제 */}
             <button
               type="button"
               onPointerDown={(e) => e.stopPropagation()}
@@ -372,13 +381,12 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
                 removeLayer(l.id);
               }}
               className="absolute -right-2 -top-2 flex h-7 w-7 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-[#1A2B4A] text-white shadow-md"
-              aria-label="요소 삭제"
+              aria-label="삭제"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {/* 회전 */}
             <button
               type="button"
               onPointerDown={(e) => startRotate(e, l)}
@@ -386,16 +394,15 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
               aria-label="회전"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 9a8 8 0 0 0-14-3M4 15a8 8 0 0 0 14 3" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
               </svg>
             </button>
-            {/* 크기 */}
             <button
               type="button"
               onPointerDown={(e) => startScale(e, l)}
               className="absolute -bottom-2 -right-2 flex h-7 w-7 translate-x-1/2 translate-y-1/2 cursor-nwse-resize touch-none items-center justify-center rounded-full bg-[#ff550c] text-white shadow-md"
-              aria-label="크기 조절"
+              aria-label="크기"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 21H3v-6M21 9V3h-6M3 21l8-8M21 3l-8 8" />
@@ -407,25 +414,26 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
     );
   }
 
-  // 스테이지 가로폭(레이어 px 계산용) — 측정해 두고 리사이즈 반영
-  const [stageW, setStageW] = useState(0);
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setStageW(el.getBoundingClientRect().width));
-    ro.observe(el);
-    setStageW(el.getBoundingClientRect().width);
-    return () => ro.disconnect();
-  }, []);
-
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
       {/* 헤더 */}
       <div className="mb-6 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff550c]">WORKUP STUDIO</p>
         <h1 className="mt-1 text-2xl font-extrabold text-[#1A2B4A] md:text-3xl">나만의 티셔츠 꾸미기</h1>
-        <p className="mt-2 text-sm text-gray-500">스티커·텍스트·도형을 올려 나만의 디자인을 만들고, 매장에서 제작 상담받아 보세요.</p>
+        <p className="mt-2 text-sm text-gray-500">사진·이미지를 올리고 텍스트를 더해 디자인하고, 매장에서 제작 상담받아 보세요.</p>
       </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) handleFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
 
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         {/* 스테이지 */}
@@ -433,36 +441,31 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
           <div
             ref={stageRef}
             onPointerDown={() => setSelectedId(null)}
-            className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+            }}
+            className="relative mx-auto w-full max-w-[440px] overflow-hidden rounded-xl bg-[#f3f3f4] ring-1 ring-gray-200"
             style={{ aspectRatio: `1 / ${STAGE_RATIO}` }}
           >
-            {/* 셔츠 */}
-            <div
-              className="pointer-events-none absolute inset-0"
-              dangerouslySetInnerHTML={{ __html: shirtSvg(shirt.value, shirt.stroke) }}
-            />
-            {/* 프린트 영역 가이드 */}
-            <div
-              className="pointer-events-none absolute rounded-md border border-dashed border-black/15"
-              style={{ left: "30%", top: "28%", width: "40%", height: "34%" }}
-              aria-hidden
-            />
-            {/* 레이어 */}
+            <div className="pointer-events-none absolute inset-0" dangerouslySetInnerHTML={{ __html: shirtSvg(shirt.value) }} />
+            <div className="pointer-events-none absolute rounded-md border border-dashed border-black/15" style={{ left: "30%", top: "28%", width: "40%", height: "34%" }} aria-hidden />
             {stageW > 0 && layers.map((l) => renderLayer(l, stageW))}
           </div>
 
           {/* 셔츠 색상 */}
           <div className="mt-4">
-            <p className="mb-2 text-center text-xs font-semibold text-gray-500">티셔츠 색상</p>
-            <div className="flex flex-wrap justify-center gap-2.5">
+            <p className="mb-2 text-center text-xs font-semibold text-gray-500">
+              색상 — <span className="text-[#1A2B4A]">{shirt.label}</span>
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
               {SHIRT_COLORS.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => setShirtId(c.id)}
-                  className={`h-9 w-9 rounded-full ring-2 transition ${
-                    shirtId === c.id ? "ring-[#ff550c] ring-offset-2" : "ring-gray-200"
-                  }`}
+                  className={`h-8 w-8 rounded-full ring-1 transition ${shirtId === c.id ? "ring-2 ring-[#ff550c] ring-offset-2" : "ring-gray-300"}`}
                   style={{ backgroundColor: c.value }}
                   aria-label={c.label}
                   aria-pressed={shirtId === c.id}
@@ -474,49 +477,41 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
 
         {/* 컨트롤 패널 */}
         <div className="md:w-1/2">
-          {/* 탭 */}
           <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
             {(
               [
-                ["sticker", "스티커"],
+                ["image", "이미지"],
                 ["text", "텍스트"],
-                ["shape", "도형"],
               ] as const
             ).map(([key, label]) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${
-                  tab === key ? "bg-white text-[#1A2B4A] shadow-sm" : "text-gray-500"
-                }`}
+                className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${tab === key ? "bg-white text-[#1A2B4A] shadow-sm" : "text-gray-500"}`}
               >
                 {label}
               </button>
             ))}
           </div>
 
-          {/* 탭 내용 */}
-          <div className="mt-4 max-h-[320px] overflow-y-auto pr-1">
-            {tab === "sticker" &&
-              STICKER_GROUPS.map((g) => (
-                <div key={g.label} className="mb-4">
-                  <p className="mb-2 text-xs font-semibold text-gray-400">{g.label}</p>
-                  <div className="grid grid-cols-6 gap-2">
-                    {g.items.map((glyph, i) => (
-                      <button
-                        key={`${glyph}-${i}`}
-                        type="button"
-                        onClick={() => addSticker(glyph)}
-                        className="flex aspect-square items-center justify-center rounded-lg bg-gray-50 text-2xl transition hover:bg-[#ff550c]/10 active:scale-95"
-                        aria-label={`스티커 ${glyph} 추가`}
-                      >
-                        {glyph}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          <div className="mt-4">
+            {tab === "image" && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-8 text-center transition hover:border-[#ff550c] hover:bg-[#ff550c]/5"
+                >
+                  <svg className="h-8 w-8 text-[#ff550c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16m-2-2l1.6-1.6a2 2 0 0 1 2.8 0L20 14M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" />
+                  </svg>
+                  <span className="text-sm font-semibold text-[#1A2B4A]">이미지 업로드</span>
+                  <span className="text-xs text-gray-400">탭하거나 끌어다 놓기 · PNG·JPG · 배경 없는 PNG 추천</span>
+                </button>
+                <p className="mt-3 text-xs text-gray-400">올린 이미지는 드래그로 이동, 모서리로 크기·회전할 수 있어요. 여러 장을 겹쳐 콜라주처럼 꾸며보세요.</p>
+              </div>
+            )}
 
             {tab === "text" && (
               <div>
@@ -530,42 +525,21 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
                 <p className="mt-3 text-xs text-gray-400">텍스트를 추가한 뒤 아래에서 문구·폰트·색상을 바꿀 수 있어요.</p>
               </div>
             )}
-
-            {tab === "shape" && (
-              <div className="grid grid-cols-3 gap-2">
-                {SHAPES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => addShape(s.id)}
-                    className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg bg-gray-50 transition hover:bg-[#ff550c]/10 active:scale-95"
-                    aria-label={`도형 ${s.label} 추가`}
-                  >
-                    <span
-                      className="h-9 w-9 text-[#ff550c]"
-                      dangerouslySetInnerHTML={{ __html: shapeSvg(s.id, "#ff550c", 36) }}
-                    />
-                    <span className="text-[11px] text-gray-500">{s.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* 선택 요소 인스펙터 */}
           {selected && (
             <div className="mt-4 rounded-lg border border-gray-200 bg-white p-3">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-500">선택한 요소</span>
+                <span className="text-xs font-semibold text-gray-500">{selected.kind === "image" ? "선택한 이미지" : "선택한 텍스트"}</span>
                 <div className="flex gap-1">
-                  <button type="button" onClick={() => reorder(selected.id, -1)} className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100" aria-label="뒤로 보내기">뒤로</button>
-                  <button type="button" onClick={() => reorder(selected.id, 1)} className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100" aria-label="앞으로 가져오기">앞으로</button>
+                  <button type="button" onClick={() => reorder(selected.id, -1)} className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100">뒤로</button>
+                  <button type="button" onClick={() => reorder(selected.id, 1)} className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100">앞으로</button>
                   <button type="button" onClick={() => duplicateLayer(selected.id)} className="rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100">복제</button>
                   <button type="button" onClick={() => removeLayer(selected.id)} className="rounded px-2 py-1 text-xs text-red-500 hover:bg-red-50">삭제</button>
                 </div>
               </div>
 
-              {/* 텍스트 편집 */}
               {selected.kind === "text" && (
                 <div className="space-y-3">
                   <input
@@ -581,103 +555,65 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
                         key={f.label}
                         type="button"
                         onClick={() => updateLayer(selected.id, { font: f.family, weight: f.weight })}
-                        className={`rounded-md border px-2.5 py-1 text-xs transition ${
-                          selected.font === f.family ? "border-[#ff550c] text-[#ff550c]" : "border-gray-200 text-gray-600"
-                        }`}
+                        className={`rounded-md border px-2.5 py-1 text-xs transition ${selected.font === f.family ? "border-[#ff550c] text-[#ff550c]" : "border-gray-200 text-gray-600"}`}
                         style={{ fontFamily: f.family }}
                       >
                         {f.label}
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* 색상(텍스트·도형) */}
-              {(selected.kind === "text" || selected.kind === "shape") && (
-                <div className="mt-3">
-                  <p className="mb-1.5 text-xs text-gray-400">색상</p>
-                  <div className="flex flex-wrap gap-2">
-                    {PALETTE_COLORS.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => updateLayer(selected.id, { color: c })}
-                        className={`h-7 w-7 rounded-full ring-1 transition ${
-                          selected.color === c ? "ring-2 ring-[#ff550c] ring-offset-1" : "ring-gray-200"
-                        }`}
-                        style={{ backgroundColor: c }}
-                        aria-label={`색상 ${c}`}
-                      />
-                    ))}
+                  <div>
+                    <p className="mb-1.5 text-xs text-gray-400">색상</p>
+                    <div className="flex flex-wrap gap-2">
+                      {PALETTE_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => updateLayer(selected.id, { color: c })}
+                          className={`h-7 w-7 rounded-full ring-1 transition ${selected.color === c ? "ring-2 ring-[#ff550c] ring-offset-1" : "ring-gray-200"}`}
+                          style={{ backgroundColor: c }}
+                          aria-label={`색상 ${c}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* 크기 슬라이더(키보드 접근성) */}
               <div className="mt-3">
                 <p className="mb-1 text-xs text-gray-400">크기</p>
-                <input
-                  type="range"
-                  min={MIN_SCALE}
-                  max={MAX_SCALE}
-                  step={0.05}
-                  value={selected.scale}
-                  onChange={(e) => updateLayer(selected.id, { scale: Number(e.target.value) })}
-                  className="w-full accent-[#ff550c]"
-                  aria-label="크기 조절"
-                />
+                <input type="range" min={MIN_SCALE} max={MAX_SCALE} step={0.05} value={selected.scale} onChange={(e) => updateLayer(selected.id, { scale: Number(e.target.value) })} className="w-full accent-[#ff550c]" aria-label="크기" />
+              </div>
+              <div className="mt-2">
+                <p className="mb-1 text-xs text-gray-400">투명도</p>
+                <input type="range" min={0.1} max={1} step={0.05} value={selected.opacity} onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} className="w-full accent-[#ff550c]" aria-label="투명도" />
               </div>
             </div>
           )}
 
           {!selected && (
-            <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2.5 text-center text-xs text-gray-400">
-              요소를 탭하면 이동·회전·크기 조절과 편집을 할 수 있어요.
-            </p>
+            <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2.5 text-center text-xs text-gray-400">요소를 탭하면 이동·회전·크기·투명도를 조절할 수 있어요.</p>
           )}
 
-          <button
-            type="button"
-            onClick={resetAll}
-            className="mt-3 w-full rounded-lg border border-gray-200 py-2.5 text-xs text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
-          >
+          <button type="button" onClick={resetAll} className="mt-3 w-full rounded-lg border border-gray-200 py-2.5 text-xs text-gray-500 transition hover:border-gray-300 hover:text-gray-700">
             전체 지우기
           </button>
         </div>
       </div>
 
       {/* 마무리 — 오프라인 전환 액션 바 */}
-      <div
-        className="sticky z-30 mt-8 flex gap-2 border-t border-gray-200 bg-white/95 px-1 py-3 backdrop-blur md:rounded-xl md:border md:px-3"
-        style={{ bottom: "var(--wu-bottom-nav-h, 0px)" }}
-      >
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={busy}
-          className="flex-1 rounded-lg bg-[#1A2B4A] py-3 text-sm font-bold text-white transition hover:bg-[#0f1d36] disabled:opacity-50"
-        >
+      <div className="sticky z-30 mt-8 flex gap-2 border-t border-gray-200 bg-white/95 px-1 py-3 backdrop-blur md:rounded-xl md:border md:px-3" style={{ bottom: "var(--wu-bottom-nav-h, 0px)" }}>
+        <button type="button" onClick={handleSave} disabled={busy} className="flex-1 rounded-lg bg-[#1A2B4A] py-3 text-sm font-bold text-white transition hover:bg-[#0f1d36] disabled:opacity-50">
           {busy ? "처리 중..." : "이미지 저장"}
         </button>
-        <button
-          type="button"
-          onClick={handleKakao}
-          disabled={busy}
-          className="flex-1 rounded-lg bg-[#FEE500] py-3 text-sm font-bold text-[#3C1E1E] transition hover:brightness-95 disabled:opacity-50"
-        >
+        <button type="button" onClick={handleKakao} disabled={busy} className="flex-1 rounded-lg bg-[#FEE500] py-3 text-sm font-bold text-[#3C1E1E] transition hover:brightness-95 disabled:opacity-50">
           카카오 상담
         </button>
-        <button
-          type="button"
-          onClick={() => setShowStores(true)}
-          className="store-cta flex-1 rounded-lg py-3 text-sm font-bold"
-        >
+        <button type="button" onClick={() => setShowStores(true)} className="store-cta flex-1 rounded-lg py-3 text-sm font-bold">
           매장 찾기
         </button>
       </div>
 
-      {/* 토스트 */}
       {notice && (
         <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#1A2B4A] px-5 py-2.5 text-center text-xs font-medium text-white shadow-lg" style={{ bottom: "calc(var(--wu-bottom-nav-h, 0px) + 80px)" }} role="status">
           {notice}

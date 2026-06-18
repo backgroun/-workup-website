@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
-import { useWishlist } from "@/contexts/WishlistContext";
 import {
   products as staticProducts,
   mainCategories,
@@ -104,8 +103,8 @@ export default function ProductsGrid() {
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
-  const { count } = useCart();
-  const { isWishlisted, toggleWishlist } = useWishlist();
+  const { count, hasProduct, toggleProduct } = useCart();
+  const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const searchQuery = searchParams.get("q") ?? "";
 
   useEffect(() => {
@@ -113,6 +112,14 @@ export default function ProductsGrid() {
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data) && data.length > 0) setProducts(data); })
       .catch(() => {});
+  }, []);
+
+  // 회원 로그인 세션 — 카드 하트(찜) 게이팅용
+  useEffect(() => {
+    fetch("/api/member/me")
+      .then((r) => r.json())
+      .then((d) => setMemberSession(d ?? null))
+      .catch(() => setMemberSession(null));
   }, []);
 
   const handleCategoryChange = (cat: MainCategory | "전체") => {
@@ -252,6 +259,25 @@ export default function ProductsGrid() {
       </div>
     </div>
   );
+
+  // 카드 하트 = 찜(피팅 리스트) 토글. 로그인 필요 — "피팅 리스트에 담기" 정책과 동일.
+  const toggleFav = (product: typeof products[0]) => {
+    if (!memberSession) {
+      alert("로그인 후 찜(피팅 리스트)을 이용하실 수 있습니다.");
+      router.push("/member/login?from=cart");
+      return;
+    }
+    toggleProduct({
+      productId: product.id,
+      name: product.name,
+      line: product.line,
+      price: product.price,
+      size: "",
+      color: product.colors?.[0]?.name ?? "",
+      colorHex: product.colors?.[0]?.hex ?? "#000",
+      bg: product.bg,
+    });
+  };
 
   // ── Product card (shared) ─────────────────────────────
   const ProductCard = ({ product, mobile }: { product: typeof products[0]; mobile?: boolean }) => (

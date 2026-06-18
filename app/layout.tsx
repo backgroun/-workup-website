@@ -11,6 +11,8 @@ import PixelManager from "@/components/PixelManager";
 import { getTopbarConfig } from "@/lib/topbar-server";
 import { getFooterConfig } from "@/lib/footer-server";
 import { getHeaderNavConfig } from "@/lib/header-nav-server";
+import { getLogoConfig } from "@/lib/logo-server";
+import { getSearchConfig } from "@/lib/header-search-server";
 import type { CSSProperties } from "react";
 
 export const metadata: Metadata = {
@@ -23,7 +25,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [topbar, footer, headerNav] = await Promise.all([getTopbarConfig(), getFooterConfig(), getHeaderNavConfig()]);
+  const [topbar, footer, headerNav, logo, search] = await Promise.all([
+    getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
+  ]);
   // 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조하는 탑바 높이(꺼져 있으면 0).
   const htmlStyle = { "--wu-topbar-h": `${topbar.enabled ? topbar.height : 0}px` } as CSSProperties;
 
@@ -42,12 +46,12 @@ export default async function RootLayout({
         <CartProvider>
           <WishlistProvider>
             <AnnouncementBanner config={topbar} />
-            <Header navItems={headerNav.items} />
+            <Header navItems={headerNav.items} logo={logo} search={search} />
             <div className="relative flex-1 pb-14 md:pb-0">
               {children}
             </div>
             <SideBanner />
-            <Footer config={footer} />
+            <Footer config={footer} logo={logo} />
             <BottomNav navItems={headerNav.items} />
           </WishlistProvider>
         </CartProvider>

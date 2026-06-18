@@ -237,8 +237,8 @@ export default function ProductDetailClient({
           <div className="flex items-center gap-3 flex-wrap">
             {product.colors.map((c) => (
               <button key={c.name} onClick={() => setSelectedColor(c)} title={c.name}
-                className={`w-7 h-7 rounded-full border-2 transition-all ${
-                  selectedColor?.name === c.name ? "border-[#ff550c] scale-110" : "border-transparent ring-1 ring-gray-200 hover:ring-gray-400"
+                className={`w-7 h-7 rounded-full transition-all ${
+                  selectedColor?.name === c.name ? "border-[3px] border-[#ebebeb] scale-110" : "border-2 border-transparent ring-1 ring-gray-200 hover:ring-gray-400"
                 }`}
                 style={{ backgroundColor: c.hex }}
               />

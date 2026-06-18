@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { DEFAULT_FOOTER, type FooterConfig } from "@/lib/site-content";
+import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
 
 const navLinks = [
   { label: "고객센터",       href: "/support" },
@@ -30,8 +31,9 @@ const KakaoIcon = (
   </svg>
 );
 
-export default function Footer({ config }: { config?: FooterConfig | null }) {
+export default function Footer({ config, logo }: { config?: FooterConfig | null; logo?: LogoConfig | null }) {
   const c = config ?? DEFAULT_FOOTER;
+  const lg = logo ?? DEFAULT_LOGO;
   const [bizOpen, setBizOpen] = useState(false);
 
   const socials = [
@@ -90,7 +92,7 @@ export default function Footer({ config }: { config?: FooterConfig | null }) {
           {/* 열 1: 로고 + 내비 */}
           <div>
             <Link href="/" className="inline-block mb-8">
-              <Image src="/images/logo_black.png" alt="WORKUP" width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
+              <Image src={lg.src} alt={lg.alt} width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
             </Link>
             <nav className="flex flex-col gap-[18px]">
               {navLinks.map((item) => (
@@ -141,7 +143,7 @@ export default function Footer({ config }: { config?: FooterConfig | null }) {
       {/* ══ 모바일 푸터 (md 미만) ══ */}
       <div className="md:hidden px-[15px] py-8">
         <Link href="/" className="inline-block mb-6">
-          <Image src="/images/logo_black.png" alt="WORKUP" width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
+          <Image src={lg.src} alt={lg.alt} width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
         </Link>
 
         <nav className="flex flex-col gap-4 mb-6">

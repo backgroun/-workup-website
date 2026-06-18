@@ -48,7 +48,9 @@ function getDateCutoff(preset: DatePreset): Date | null {
 
 function fmtDate(iso?: string) {
   if (!iso) return "-";
-  return iso.slice(0, 10);
+  const parts = iso.slice(0, 10).split("-"); // ["2026","06","15"]
+  if (parts.length !== 3) return iso.slice(0, 10);
+  return `${parts[0].slice(2)}.${parts[1]}.${parts[2]}`; // "26.06.15"
 }
 
 const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개월", "1년", "전체"];
@@ -111,6 +113,11 @@ export default function AdminProductsPage() {
   const [catList, setCatList] = useState<{ name: string; subs: string[] }[]>(
     mainCategories.map(n => ({ name: n, subs: subCategoriesByMain[n as keyof typeof subCategoriesByMain] ?? [] }))
   );
+
+  // ─ 리스트 내 인라인 카테고리 추가 (행별 피커) ───────────────────────────
+  const [catRowId, setCatRowId] = useState<string | null>(null);
+  const [rowMain, setRowMain]   = useState("");
+  const [rowSub, setRowSub]     = useState("");
 
   // ─ 로드 ────────────────────────────────────────────────────────────────
   const showMsg = (text: string) => { setMsg(text); setTimeout(() => setMsg(""), 3000); };
@@ -180,6 +187,44 @@ export default function AdminProductsPage() {
     return p.category ? [{ main: p.category, sub: p.subCategory ?? "" }] : [];
   };
 
+  // 리스트에서 카테고리 직접 저장 (낙관적 갱신 + 전체 PUT). 대표 카테고리는 첫 항목.
+  const saveProductCats = async (p: Product, cats: CatEntry[]) => {
+    const primary = cats[0];
+    const updated = {
+      ...p,
+      category: primary?.main ?? "",
+      subCategory: primary?.sub ?? "",
+      categories: cats,
+    };
+    setProducts(prev => prev.map(x => x.id === p.id ? (updated as unknown as Product) : x));
+    try {
+      const res = await fetch(`/api/admin/products/${p.id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); showMsg(`저장 실패: ${e.error ?? res.status}`); load(); }
+      else showMsg("저장됐습니다.");
+    } catch { showMsg("저장 실패: 네트워크 오류"); load(); }
+  };
+
+  const removeProductCat = (p: Product, idx: number) =>
+    saveProductCats(p, getProductCats(p).filter((_, i) => i !== idx));
+
+  const openRowCat = (p: Product) => {
+    setCatRowId(p.id);
+    setRowMain(catList[0]?.name ?? "");
+    setRowSub("");
+  };
+
+  const addRowCat = (p: Product) => {
+    if (rowMain) {
+      const cats = getProductCats(p);
+      if (!cats.some(c => c.main === rowMain && c.sub === rowSub)) {
+        saveProductCats(p, [...cats, { main: rowMain, sub: rowSub }]);
+      }
+    }
+    setCatRowId(null);
+  };
+
   const openCatModal = () => {
     setCatModalCats([]);
     setCatAddMain(catList[0]?.name ?? "");
@@ -198,9 +243,14 @@ export default function AdminProductsPage() {
   const bulkApplyCat = async () => {
     if (!selected.size || catModalCats.length === 0) return;
     setCatSaving(true);
-    const primary = catModalCats[0];
     const results = await Promise.all(
       products.filter(p => selected.has(p.id)).map(async p => {
+        // 기존 카테고리에 추가(병합) — 중복 제외, 대표 카테고리는 기존 유지
+        const merged = [...getProductCats(p)];
+        for (const nc of catModalCats) {
+          if (!merged.some(c => c.main === nc.main && c.sub === nc.sub)) merged.push(nc);
+        }
+        const primary = merged[0];
         const res = await fetch(`/api/admin/products/${p.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -208,7 +258,7 @@ export default function AdminProductsPage() {
             ...p,
             category: primary.main,
             subCategory: primary.sub,
-            categories: catModalCats,
+            categories: merged,
           }),
         });
         if (!res.ok) {
@@ -225,7 +275,7 @@ export default function AdminProductsPage() {
     } else {
       setCatModal(false);
       setCatModalCats([]);
-      showMsg(`${selected.size}개 상품 카테고리 변경 완료`);
+      showMsg(`${selected.size}개 상품 카테고리 추가 완료`);
       setSelected(new Set());
       load();
     }
@@ -558,7 +608,7 @@ export default function AdminProductsPage() {
               <div className="w-px h-5 bg-gray-300 mx-1" />
               <button onClick={() => selected.size && openCatModal()} disabled={!selected.size}
                 className="px-3 py-1.5 text-[14px] border border-[#ff550c] bg-white text-[#ff550c] hover:bg-[#ff550c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
-                카테고리 변경
+                카테고리 추가
               </button>
               <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
                 className="px-3 py-1.5 text-[14px] border border-[#1A2B4A] bg-white text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
@@ -593,7 +643,7 @@ export default function AdminProductsPage() {
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
                       className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                   </th>
-                  {["상품명", "카테고리", "가격", "판매 상태", "메인 노출", "기능 태그", "등록일", "관리"].map(h => (
+                  {["상품명", "카테고리", "가격", "판매 상태", "메인 노출", "등록일", "관리"].map(h => (
                     <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
                   ))}
                 </tr>
@@ -601,7 +651,7 @@ export default function AdminProductsPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-20 text-center text-[15px] text-gray-400">
+                    <td colSpan={8} className="py-20 text-center text-[15px] text-gray-400">
                       {products.length === 0 ? "등록된 제품이 없습니다. 상단의 '샘플 10개 추가' 또는 '+ 새 제품 추가'로 시작하세요." : "검색 조건에 맞는 제품이 없습니다."}
                     </td>
                   </tr>
@@ -640,16 +690,34 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
 
-                    {/* 카테고리 */}
+                    {/* 카테고리 (인라인 추가/삭제) */}
                     <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {getProductCats(p).length === 0 ? (
-                          <span className="text-[14px] text-gray-300">-</span>
-                        ) : getProductCats(p).map((c, i) => (
-                          <span key={i} className="inline-block text-[12px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded whitespace-nowrap">
+                      <div className="flex flex-wrap items-center gap-1 min-w-[150px]">
+                        {getProductCats(p).map((c, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 text-[12px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded whitespace-nowrap">
                             {c.main}{c.sub ? ` / ${c.sub}` : ""}
+                            <button onClick={() => removeProductCat(p, i)} title="삭제"
+                              className="text-gray-400 hover:text-red-500 leading-none text-[13px]">×</button>
                           </span>
                         ))}
+                        {catRowId === p.id ? (
+                          <span className="inline-flex items-center gap-1">
+                            <select value={rowMain} onChange={e => { setRowMain(e.target.value); setRowSub(""); }}
+                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#1A2B4A]">
+                              {catList.map(c => <option key={c.name}>{c.name}</option>)}
+                            </select>
+                            <select value={rowSub} onChange={e => setRowSub(e.target.value)}
+                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#1A2B4A]">
+                              <option value="">서브 없음</option>
+                              {(catList.find(c => c.name === rowMain)?.subs ?? []).map(s => <option key={s}>{s}</option>)}
+                            </select>
+                            <button onClick={() => addRowCat(p)} className="text-[12px] font-bold text-[#1A2B4A] px-1 hover:text-[#ff550c]">추가</button>
+                            <button onClick={() => setCatRowId(null)} className="text-[12px] text-gray-400 px-0.5 hover:text-gray-600">취소</button>
+                          </span>
+                        ) : (
+                          <button onClick={() => openRowCat(p)} title="카테고리 추가"
+                            className="inline-flex items-center justify-center w-5 h-5 text-[14px] leading-none text-gray-400 border border-dashed border-gray-300 rounded hover:border-[#1A2B4A] hover:text-[#1A2B4A]">+</button>
+                        )}
                       </div>
                     </td>
 
@@ -688,19 +756,6 @@ export default function AdminProductsPage() {
                               <span key={e} className={`px-2 py-0.5 text-[12px] font-bold rounded ${EXPOSE_COLOR[e] ?? "bg-gray-100 text-gray-600"}`}>{e}</span>
                             ))
                         }
-                      </div>
-                    </td>
-
-                    {/* 기능 태그 */}
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[140px]">
-                        {(p.featureTags ?? []).slice(0, 3).map(t => (
-                          <span key={t} className="px-1.5 py-0.5 text-[12px] bg-gray-100 text-gray-600 rounded">{t}</span>
-                        ))}
-                        {(p.featureTags ?? []).length > 3 && (
-                          <span className="text-[12px] text-gray-400 self-center">+{(p.featureTags ?? []).length - 3}</span>
-                        )}
-                        {(p.featureTags ?? []).length === 0 && <span className="text-[13px] text-gray-300">-</span>}
                       </div>
                     </td>
 
@@ -762,18 +817,18 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* ── 카테고리 변경 모달 ────────────────────────────────────────────── */}
+      {/* ── 카테고리 추가 모달 ────────────────────────────────────────────── */}
       {catModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
             <div className="px-7 py-5 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">카테고리 변경</h2>
-              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#ff550c]">{selected.size}개</span> 상품에 일괄 적용됩니다.</p>
+              <h2 className="text-xl font-bold text-gray-900">카테고리 추가</h2>
+              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#ff550c]">{selected.size}개</span> 상품의 기존 카테고리에 추가됩니다.</p>
             </div>
             <div className="px-7 py-6 space-y-5">
               {/* 현재 설정된 카테고리 태그 */}
               <div>
-                <p className="text-[15px] font-semibold text-gray-600 mb-2.5">적용할 카테고리</p>
+                <p className="text-[15px] font-semibold text-gray-600 mb-2.5">추가할 카테고리</p>
                 <div className="flex flex-wrap gap-1.5 min-h-[32px] p-3 border border-gray-200 rounded bg-gray-50">
                   {catModalCats.length === 0 && (
                     <span className="text-[13px] text-gray-300 self-center">카테고리를 추가해 주세요</span>
@@ -808,14 +863,14 @@ export default function AdminProductsPage() {
                   </button>
                 </div>
               </div>
-              <p className="text-[13px] text-gray-400">* 첫 번째 카테고리가 대표 카테고리로 설정됩니다.</p>
+              <p className="text-[13px] text-gray-400">* 각 상품의 기존 카테고리에 추가되며, 중복은 자동 제외됩니다.</p>
             </div>
             <div className="px-7 py-5 border-t border-gray-200 flex gap-3 justify-end">
               <button onClick={() => { setCatModal(false); setCatModalCats([]); }}
                 className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
               <button onClick={bulkApplyCat} disabled={catModalCats.length === 0 || catSaving}
                 className="px-6 py-2.5 bg-[#ff550c] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
-                {catSaving ? "적용 중..." : `${selected.size}개에 적용`}
+                {catSaving ? "추가 중..." : `${selected.size}개에 추가`}
               </button>
             </div>
           </div>

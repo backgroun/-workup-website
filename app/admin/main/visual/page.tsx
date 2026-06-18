@@ -309,38 +309,43 @@ export default function AdminMainVisualPage() {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">슬라이딩 메뉴</h1>
-          <p className="text-base text-gray-400 mt-1">히어로 슬라이드 관리 <span className="font-semibold text-gray-600">({slides.length} / 10개)</span></p>
-        </div>
-        <button
-          onClick={openNew}
-          disabled={slides.length >= 10}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          슬라이드 추가
-        </button>
-      </div>
-
-      {/* 슬라이딩 메뉴 타입 탭 */}
-      <div className="flex gap-1 mb-6 bg-slate-100 rounded-xl p-1 w-fit">
-        {(Object.entries(SLIDE_TYPE_LABELS) as [SlideType, string][]).map(([type, label]) => (
+      <div className="mb-6">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-[26px] font-extrabold text-slate-900 tracking-tight">슬라이딩 메뉴</h1>
+            <p className="text-sm text-slate-500 mt-1.5">
+              홈·상품 상단에 노출되는 히어로 배너를 관리합니다.
+              <span className="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{slides.length} / 10</span>
+            </p>
+          </div>
           <button
-            key={type}
-            onClick={() => { router.push(`/admin/main/visual${type === "main" ? "" : `?type=${type}`}`); }}
-            className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
-              slideType === type
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            onClick={openNew}
+            disabled={slides.length >= 10}
+            className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 shadow-sm shadow-blue-600/20"
           >
-            {label}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            슬라이드 추가
           </button>
-        ))}
+        </div>
+
+        {/* 슬라이딩 메뉴 타입 탭 */}
+        <div className="flex gap-1 mt-5 bg-slate-100 rounded-xl p-1 w-fit">
+          {(Object.entries(SLIDE_TYPE_LABELS) as [SlideType, string][]).map(([type, label]) => (
+            <button
+              key={type}
+              onClick={() => { router.push(`/admin/main/visual${type === "main" ? "" : `?type=${type}`}`); }}
+              className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+                slideType === type
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 피드백 */}
@@ -405,19 +410,22 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
 
       <div className="flex gap-6 items-start">
       {/* ── 왼쪽: 슬라이드 목록 ── */}
-      <div className="w-[340px] flex-shrink-0 sticky top-6">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">슬라이드 목록</h2>
-          <span className="text-xs text-slate-400">드래그로 순서 변경</span>
+      <div className="w-[360px] flex-shrink-0 sticky top-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-800">슬라이드 목록</h2>
+          <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" /></svg>
+            드래그로 순서 변경
+          </span>
         </div>
         {loading ? (
-          <div className="flex items-center justify-center gap-2 py-14 text-slate-400 text-sm">
+          <div className="flex items-center justify-center gap-2 py-16 text-slate-400 text-sm">
             <span className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             불러오는 중...
           </div>
         ) : slides.length === 0 && !editing ? (
-          <div className="py-14 text-center text-slate-400 text-sm">
+          <div className="py-16 text-center text-slate-400 text-sm">
             <svg className="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
             </svg>
@@ -433,63 +441,68 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                 onDragOver={(e) => { e.preventDefault(); setDragOver(i); }}
                 onDrop={() => handleDrop(i)}
                 onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
-                className={`flex items-start gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${
-                  editing?.id === slide.id ? "bg-blue-50" : "hover:bg-slate-50"
-                } ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}
+                className={`group px-3 py-3 cursor-grab active:cursor-grabbing transition-colors ${
+                  editing?.id === slide.id ? "bg-blue-50/70" : "hover:bg-slate-50"
+                } ${dragOver === i && dragIndex !== i ? "ring-2 ring-inset ring-orange-300 bg-orange-50/60" : ""}`}
               >
-                {/* 드래그 핸들 */}
-                <svg className="w-3 h-3 text-slate-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 6a1 1 0 100-2 1 1 0 000 2zM16 6a1 1 0 100-2 1 1 0 000 2zM8 12a1 1 0 100-2 1 1 0 000 2zM16 12a1 1 0 100-2 1 1 0 000 2zM8 18a1 1 0 100-2 1 1 0 000 2zM16 18a1 1 0 100-2 1 1 0 000 2z" />
-                </svg>
+                <div className="flex items-start gap-2.5">
+                  {/* 드래그 핸들 */}
+                  <svg className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 flex-shrink-0 mt-2.5 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 6a1 1 0 100-2 1 1 0 000 2zM16 6a1 1 0 100-2 1 1 0 000 2zM8 12a1 1 0 100-2 1 1 0 000 2zM16 12a1 1 0 100-2 1 1 0 000 2zM8 18a1 1 0 100-2 1 1 0 000 2zM16 18a1 1 0 100-2 1 1 0 000 2z" />
+                  </svg>
 
-                {/* 썸네일 */}
-                <div className="w-16 h-10 flex-shrink-0 bg-slate-100 overflow-hidden rounded">
-                  {slide.pc_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={slide.pc_image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-slate-700 flex items-center justify-center">
-                      <span className="text-white/30 text-[9px] font-bold">WU</span>
+                  {/* 썸네일 */}
+                  <div className="w-[72px] h-11 flex-shrink-0 bg-slate-100 overflow-hidden rounded-lg ring-1 ring-slate-200">
+                    {slide.pc_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={slide.pc_image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                        <span className="text-white/40 text-[9px] font-bold tracking-wider">WU</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 제목 + 노출 토글 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="flex-1 min-w-0 text-[13px] font-semibold text-slate-800 truncate">
+                        {slide.admin_title || slide.title || "(제목 없음)"}
+                      </p>
+                      <button
+                        onClick={() => toggleVisible(slide)}
+                        title={slide.is_visible ? "노출 중 — 클릭하면 숨김" : "숨김 — 클릭하면 노출"}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${slide.is_visible ? "bg-emerald-500" : "bg-slate-200"}`}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${slide.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                      </button>
                     </div>
-                  )}
+                    <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${slide.is_visible ? "bg-emerald-500" : "bg-slate-300"}`} />
+                      <span className="text-[11px] font-medium text-slate-400">{slide.is_visible ? "노출 중" : "숨김"}</span>
+                      {(slide.scheduled_start || slide.scheduled_end) && (
+                        <span className="text-[11px] text-slate-400 truncate">
+                          · {fmtDate(slide.scheduled_start) ?? "∞"} ~ {fmtDate(slide.scheduled_end) ?? "∞"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* 제목 + 토글, 그 아래 액션 버튼 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="flex-1 min-w-0 text-xs font-semibold text-slate-800 truncate">
-                      {slide.admin_title || slide.title || "(제목 없음)"}
-                    </p>
-                    <button
-                      onClick={() => toggleVisible(slide)}
-                      title={slide.is_visible ? "노출 중" : "숨김"}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${slide.is_visible ? "bg-blue-500" : "bg-slate-200"}`}
-                    >
-                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${slide.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
-                    </button>
-                  </div>
-
-                  {(slide.scheduled_start || slide.scheduled_end) && (
-                    <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-                      {fmtDate(slide.scheduled_start) ?? "∞"} ~ {fmtDate(slide.scheduled_end) ?? "∞"}
-                    </p>
-                  )}
-
-                  {/* 수정 · 복제 · 삭제 */}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <button onClick={() => openEdit(slide)}
-                      className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">
-                      수정
-                    </button>
-                    <button onClick={() => handleDuplicate(slide)} title="복제"
-                      className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">
-                      복제
-                    </button>
-                    <button onClick={() => handleDelete(slide.id, slide.admin_title || slide.title)}
-                      className="text-[11px] font-medium text-red-400 border border-red-200 px-2.5 py-1 hover:bg-red-50 transition-colors rounded">
-                      삭제
-                    </button>
-                  </div>
+                {/* 수정 · 복제 · 삭제 */}
+                <div className="flex items-center gap-1.5 mt-2.5 pl-[26px]">
+                  <button onClick={() => openEdit(slide)}
+                    className="flex-1 text-[11px] font-semibold text-slate-700 border border-slate-200 bg-white px-2.5 py-1.5 hover:bg-slate-100 hover:border-slate-300 transition-colors rounded-lg">
+                    수정
+                  </button>
+                  <button onClick={() => handleDuplicate(slide)} title="복제"
+                    className="text-[11px] font-semibold text-blue-600 border border-blue-200 bg-white px-2.5 py-1.5 hover:bg-blue-50 transition-colors rounded-lg">
+                    복제
+                  </button>
+                  <button onClick={() => handleDelete(slide.id, slide.admin_title || slide.title)}
+                    className="text-[11px] font-semibold text-red-500 border border-red-200 bg-white px-2.5 py-1.5 hover:bg-red-50 transition-colors rounded-lg">
+                    삭제
+                  </button>
                 </div>
               </li>
             ))}
@@ -501,50 +514,51 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
       {/* ── 오른쪽: 편집 폼 ── */}
       <div className="flex-1 min-w-0">
       {editing ? (
-        <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 bg-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
+        <div ref={formRef} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="sticky top-0 z-20 px-5 py-3.5 bg-slate-900 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1 bg-white/10 rounded-xl p-1">
               {(["image", "video"] as const).map((m) => (
                 <button key={m} onClick={() => setMediaTab(m)}
-                  className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                  className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors ${
                     mediaTab === m
-                      ? (m === "video" ? "bg-[#ff550c] text-white" : "bg-white text-slate-800")
-                      : "text-white/60 hover:text-white"
+                      ? (m === "video" ? "bg-[#ff550c] text-white shadow-sm" : "bg-white text-slate-900 shadow-sm")
+                      : "text-white/55 hover:text-white"
                   }`}>
                   {m === "image" ? "이미지 슬라이드" : "동영상 슬라이드"}{isNew ? " 추가" : ""}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+                className="flex items-center gap-1.5 px-5 py-2 bg-blue-500 hover:bg-blue-400 active:scale-[0.98] text-white text-sm font-bold rounded-lg transition-all disabled:opacity-50 disabled:active:scale-100 shadow-sm">
                 {saving ? (
                   <><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />저장 중...</>
                 ) : "저장"}
               </button>
-              <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setEditing(null)} title="닫기"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="p-6 md:p-7 space-y-7">
 
           {/* 노출 설정 (최상단) */}
-          <div className="pb-6 border-b border-gray-100 space-y-4">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 설정</p>
-            <div className="flex items-center gap-6 flex-wrap">
-              <label className="flex items-center gap-2 cursor-pointer">
+          <div className="pb-7 border-b border-slate-100 space-y-4">
+            <SectionTitle title="노출 설정" accent="bg-emerald-500" desc="사이트에 보일지, 특정 기간에만 보일지 설정합니다." />
+            <div className="flex flex-wrap gap-3">
+              <label className="flex items-center gap-2.5 cursor-pointer rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2.5 hover:border-slate-300 transition-colors">
                 <input
                   type="checkbox"
                   checked={editing.is_visible}
                   onChange={(e) => set("is_visible", e.target.checked)}
-                  className="w-4 h-4 accent-[#1A2B4A]"
+                  className="w-4 h-4 accent-emerald-600"
                 />
-                <span className="text-sm text-gray-700">노출 여부</span>
+                <span className="text-sm font-semibold text-slate-700">노출 여부</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2.5 cursor-pointer rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2.5 hover:border-slate-300 transition-colors">
                 <input
                   type="checkbox"
                   checked={useSchedule}
@@ -555,10 +569,10 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
                       set("scheduled_end", null);
                     }
                   }}
-                  className="w-4 h-4 accent-[#1A2B4A]"
+                  className="w-4 h-4 accent-blue-600"
                 />
-                <span className="text-sm text-gray-700">예약 노출</span>
-                <span className="text-xs text-gray-400">설정 기간에만 자동 노출/숨김</span>
+                <span className="text-sm font-semibold text-slate-700">예약 노출</span>
+                <span className="text-xs text-slate-400">설정 기간에만 자동 노출/숨김</span>
               </label>
             </div>
             {useSchedule && (
@@ -584,7 +598,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           </div>
 
           {/* 관리용 타이틀 (기획 컨셉) + AI 자동 생성 */}
-          <div className="pb-6 border-b border-slate-100 space-y-4">
+          <div className="pb-7 border-b border-slate-100 space-y-4">
             <Field label="관리용 타이틀 (기획 컨셉)" hint="목록 식별용 + AI 생성의 기준. 실제 화면에 표시되지 않음.">
               <input
                 type="text"
@@ -604,9 +618,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
 
           {/* 동영상 (동영상 슬라이드 전용) */}
           {mediaTab === "video" && (
-            <div className="pb-6 border-b border-gray-100 space-y-4">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">동영상 (PC · 모바일)</p>
-              <p className="text-xs text-slate-400 -mt-2">권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다.</p>
+            <div className="pb-7 border-b border-slate-100 space-y-4">
+              <SectionTitle title="동영상 (PC · 모바일)" accent="bg-[#ff550c]" desc="권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다." />
               <VideoField label="PC 동영상" value={editing.pc_video_url} uploading={uploading === "pc"} onUpload={(f) => uploadVideo(f, "pc")} onClear={() => set("pc_video_url", "")} />
               <VideoField label="모바일 동영상 (선택)" value={editing.mobile_video_url} uploading={uploading === "mobile"} onUpload={(f) => uploadVideo(f, "mobile")} onClear={() => set("mobile_video_url", "")} />
               {(editing.pc_video_url || editing.mobile_video_url) && (
@@ -620,17 +633,18 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
 
           {/* AI 이미지 프롬프트 (이미지 슬라이드 전용) */}
           {mediaTab !== "video" && (
-          <div className="pb-6 border-b border-gray-100">
+          <div className="pb-7 border-b border-slate-100">
             <button
               type="button"
               onClick={() => setPromptOpen((v) => !v)}
               className="w-full flex items-center justify-between group"
             >
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                AI 이미지 프롬프트
-                <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 생략 가능</span>
+              <span className="flex items-center gap-2">
+                <span className="w-1 h-4 rounded-full bg-indigo-500" />
+                <span className="text-[15px] font-bold text-slate-800 tracking-tight">AI 이미지 프롬프트</span>
+                <span className="text-xs font-medium text-slate-400">— 생략 가능</span>
               </span>
-              <span className={`text-gray-400 transition-transform text-sm ${promptOpen ? "rotate-180" : ""}`}>▼</span>
+              <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-slate-400 group-hover:bg-slate-100 transition-all text-xs ${promptOpen ? "rotate-180" : ""}`}>▼</span>
             </button>
             {promptOpen && (
               <div className="mt-4">
@@ -646,28 +660,36 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
 
           {/* 2. 이미지 (이미지 슬라이드 전용) */}
           {mediaTab !== "video" && (
-          <div className="pb-6 border-b border-gray-100 space-y-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">이미지</p>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={sameImage}
-                  onChange={(e) => {
-                    setSameImage(e.target.checked);
-                    if (e.target.checked) set("mobile_image_url", "");
-                  }}
-                  className="w-4 h-4 accent-[#1A2B4A]"
-                />
-                <span className="text-xs text-gray-600">PC · 모바일 동일 이미지 사용</span>
-              </label>
-            </div>
+          <div className="pb-7 border-b border-slate-100 space-y-5">
+            <SectionTitle
+              title="이미지"
+              accent="bg-blue-500"
+              desc="PC·모바일에 노출할 배경 이미지를 등록하고 위치를 잡습니다."
+              right={
+                <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-1.5 hover:border-slate-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={sameImage}
+                    onChange={(e) => {
+                      setSameImage(e.target.checked);
+                      if (e.target.checked) set("mobile_image_url", "");
+                    }}
+                    className="w-4 h-4 accent-blue-600"
+                  />
+                  <span className="text-xs font-semibold text-slate-600">PC · 모바일 동일 이미지</span>
+                </label>
+              }
+            />
 
             <ImageField
               label={sameImage ? "PC · 모바일 공통 이미지" : "PC 메인 이미지"}
               hint={sameImage ? "권장: 1920 × 695px · JPG/PNG · 2MB 이하" : "권장: 1920 × 680px · JPG/PNG · 2MB 이하"}
               value={editing.pc_image_url}
-              onChange={(v) => set("pc_image_url", v)}
+              onChange={(v) => {
+                set("pc_image_url", v);
+                // PC(메인) 이미지를 제거하면 모바일 이미지도 함께 제거 — 한쪽만 남는 것 방지
+                if (!v) set("mobile_image_url", "");
+              }}
               uploading={uploading === "pc"}
               onUpload={(file) => uploadImage(file, "pc")}
               inputRef={pcRef}
@@ -711,11 +733,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           )}
 
           {/* 자유 배치 텍스트 캔버스 */}
-          <div className="pb-6 border-b border-gray-100">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-              텍스트 캔버스
-              <span className="normal-case font-normal text-gray-400 tracking-normal ml-2">— 여러 텍스트를 드래그로 자유 배치 · 폰트·색·자간·장평</span>
-            </p>
+          <div className="pb-7 border-b border-slate-100">
+            <SectionTitle title="텍스트 캔버스" accent="bg-violet-500" desc="여러 텍스트를 드래그로 자유 배치 · 폰트·색·자간·장평을 조절합니다." />
             <TextCanvasEditor
               layers={editing.text_layers ?? []}
               onChange={(next) => set("text_layers", next)}
@@ -731,26 +750,28 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
           </div>
 
           {/* 저장/취소 */}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-1">
             <button onClick={handleSave} disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm">
+              className="flex items-center justify-center gap-2 flex-1 px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-[0.99] transition-all disabled:opacity-50 disabled:active:scale-100 shadow-sm shadow-blue-600/20">
               {saving ? (
                 <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />저장 중...</>
-              ) : "저장"}
+              ) : "저장하기"}
             </button>
             <button onClick={() => setEditing(null)}
-              className="px-6 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+              className="px-6 py-3 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">
               취소
             </button>
           </div>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl border border-dashed border-slate-200 text-slate-400 text-sm gap-3">
-          <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-          </svg>
-          <p>목록에서 슬라이드를 선택하거나 새 슬라이드를 추가하세요.</p>
+        <div className="flex flex-col items-center justify-center min-h-[360px] bg-white rounded-2xl border border-dashed border-slate-300 text-slate-400 text-sm gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
+            <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+          </div>
+          <p className="font-medium text-slate-500">목록에서 슬라이드를 선택하거나 새 슬라이드를 추가하세요.</p>
         </div>
       )}
       </div>
@@ -767,11 +788,29 @@ function Field({ label, hint, optional, children }: {
   return (
     <div>
       <label className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-sm font-medium text-slate-700">{label}</span>
+        <span className="text-sm font-semibold text-slate-700">{label}</span>
         {optional && <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">생략가능</span>}
       </label>
       {hint && <p className="text-xs text-slate-400 mb-2">{hint}</p>}
       {children}
+    </div>
+  );
+}
+
+// ── 공통 섹션 헤더 (컬러 액센트 바 + 제목 + 보조설명) ──
+function SectionTitle({ title, desc, accent = "bg-blue-500", right }: {
+  title: string; desc?: string; accent?: string; right?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <div className="flex items-center gap-2">
+          <span className={`w-1 h-4 rounded-full ${accent}`} />
+          <h3 className="text-[15px] font-bold text-slate-800 tracking-tight">{title}</h3>
+        </div>
+        {desc && <p className="text-xs text-slate-400 mt-1.5 ml-3">{desc}</p>}
+      </div>
+      {right && <div className="flex-shrink-0">{right}</div>}
     </div>
   );
 }
@@ -782,30 +821,31 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
   onUpload: (file: File) => void; inputRef: React.RefObject<HTMLInputElement | null>;
 }) {
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-700">{label}</label>
-      {hint && <p className="text-xs text-slate-400">{hint}</p>}
-
+    <div className="space-y-2.5">
       <div>
-        <p className="text-xs text-slate-500 font-medium mb-1.5">URL 직접 입력</p>
+        <label className="block text-sm font-semibold text-slate-700">{label}</label>
+        {hint && <p className="text-xs text-slate-400 mt-0.5">{hint}</p>}
+      </div>
+
+      <div className="flex items-stretch gap-2">
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+          className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors disabled:opacity-50 whitespace-nowrap rounded-lg">
+          {uploading ? (
+            <><span className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />업로드 중</>
+          ) : (
+            <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0L8 8m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" /></svg>파일 선택</>
+          )}
+        </button>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="https://example.com/image.jpg"
-          className="w-full border border-slate-200 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 rounded-lg transition-colors"
+          placeholder="또는 이미지 URL 직접 입력 (https://...)"
+          className="flex-1 min-w-0 border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 rounded-lg transition-colors"
         />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <p className="text-xs text-slate-400">또는 파일 업로드</p>
-        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
-          className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 whitespace-nowrap rounded-lg">
-          {uploading ? "업로드 중..." : "파일 선택"}
-        </button>
         {value && (
           <button type="button" onClick={() => onChange("")}
-            className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-lg">
+            className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded-lg">
             제거
           </button>
         )}
@@ -816,7 +856,7 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
 
       {value && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="" className="h-20 object-cover border border-gray-100 rounded" />
+        <img src={value} alt="" className="h-24 object-cover border border-slate-200 rounded-lg" />
       )}
     </div>
   );

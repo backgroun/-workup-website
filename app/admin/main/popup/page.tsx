@@ -730,8 +730,8 @@ export default function PopupManagePage() {
                         <span className="text-[11px] text-slate-400">체크 해제 시 모바일 이미지 분리 등록</span>
                       </label>
 
-                      {/* 이미지 미리보기 영역 — 30% 축소 (너비 70%) */}
-                      <div className="max-w-[70%]">
+                      {/* 이미지 미리보기 영역 — 공용 고정 400px / 분리 70% */}
+                      <div className={separateImg ? "max-w-[70%]" : "max-w-[400px]"}>
                       {!separateImg ? (
                         <PopupImagePicker
                           label="이미지 (PC·모바일 공용)"

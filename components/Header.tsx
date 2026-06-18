@@ -6,18 +6,25 @@ import { Oxanium } from "next/font/google";
 import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
+import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
+import { DEFAULT_SEARCH, type SearchConfig } from "@/lib/header-search";
 
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["600"] });
 
-const popularTerms = [
-  "카고 팬츠", "방풍 자켓", "쿨링 티셔츠", "안전조끼", "롤업 셔츠", "멀티포켓",
-];
 const POPULAR_VISIBLE = 4;
 
 type MemberSession = { name: string; grade: string } | null;
 
-export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navItems?: NavMenuItem[] }) {
+export default function Header({
+  navItems = DEFAULT_HEADER_NAV.items,
+  logo = DEFAULT_LOGO,
+  search = DEFAULT_SEARCH,
+}: {
+  navItems?: NavMenuItem[];
+  logo?: LogoConfig;
+  search?: SearchConfig;
+}) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [termIndex, setTermIndex] = useState(0);
@@ -36,9 +43,9 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
   }, [pathname]);
 
   useEffect(() => {
-    if (!searchOpen) return;
-    setTermIndex(Math.floor(Math.random() * popularTerms.length));
-  }, [searchOpen]);
+    if (!searchOpen || search.popularTerms.length === 0) return;
+    setTermIndex(Math.floor(Math.random() * search.popularTerms.length));
+  }, [searchOpen, search.popularTerms.length]);
 
   useEffect(() => {
     setSearchOpen(false);
@@ -63,7 +70,7 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
 
           {/* 로고 */}
           <Link href="/" className="flex-shrink-0 py-2 active:opacity-50 active:scale-95 transition-[opacity,transform] duration-150">
-            <Image src="/images/logo_black.png" alt="WORKUP" width={130} height={18} className="h-[14px] w-[100px] md:h-[18px] md:w-[130px]" priority />
+            <Image src={logo.src} alt={logo.alt} width={130} height={18} className="h-[14px] w-[100px] md:h-[18px] md:w-[130px]" priority />
           </Link>
 
           {/* 데스크탑 내비게이션 */}
@@ -95,16 +102,18 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
           {/* 우측 아이콘 */}
           <div className="flex items-center gap-4 flex-shrink-0">
             {/* 검색 */}
-            <button
-              onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-              className="p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
-              aria-label="검색"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-              </svg>
-            </button>
+            {search.enabled && (
+              <button
+                onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
+                className="p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+                aria-label="검색"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
+              </button>
+            )}
 
             {/* 찜 목록 — 비로그인 시 로그인 유도 */}
             <button
@@ -143,7 +152,7 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
         </div>
 
         {/* 검색 패널 */}
-        {searchOpen && (
+        {searchOpen && search.enabled && (
           <div className="border-t border-gray-200 py-3">
             {/* 검색 입력 */}
             <div className="flex items-center gap-3">
@@ -151,7 +160,7 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="검색어를 입력하세요"
+                placeholder={search.placeholder}
                 autoFocus
                 className="flex-1 text-[14px] text-[#1A2B4A] placeholder-gray-400 bg-transparent outline-none"
                 onKeyDown={(e) => {
@@ -179,11 +188,12 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
 
             {/* 인기 검색어 */}
             <div className="flex items-center gap-2 mt-3 overflow-hidden">
-              {Array.from({ length: POPULAR_VISIBLE }, (_, i) =>
-                popularTerms[(termIndex + i) % popularTerms.length]
-              ).map((term) => (
+              {search.popularTerms.length > 0 && Array.from(
+                { length: Math.min(POPULAR_VISIBLE, search.popularTerms.length) },
+                (_, i) => search.popularTerms[(termIndex + i) % search.popularTerms.length]
+              ).map((term, idx) => (
                 <button
-                  key={term}
+                  key={`${term}-${idx}`}
                   onClick={() => handleSearch(term)}
                   className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#ff550c] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
                 >
