@@ -1625,7 +1625,6 @@ function HeroEditor({ hero, onChange, products }: {
   onChange: (patch: Partial<EditorialBlock["hero"]>) => void;
   products: SearchProduct[];
 }) {
-  const [heroTab, setHeroTab] = useState<"edit" | "prompt">("edit");
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
   const [posView, setPosView] = useState<"pc" | "mobile">("pc");
@@ -1738,31 +1737,16 @@ function HeroEditor({ hero, onChange, products }: {
         <Field label="부제목 (이미지 위 작은 문구)" value={hero.subtitle} onChange={(v) => onChange({ subtitle: v, hero_subtitle: v })} placeholder="자외선 차단 + 흡한속건" />
       </div>
 
-      {/* 서브탭: 기획전 | AI 프롬프트 */}
-      <div className="flex gap-0 border-b border-gray-200">
-        <button type="button" onClick={() => setHeroTab("edit")}
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors -mb-px ${
-            heroTab === "edit" ? "text-[#1A2B4A] border-[#1A2B4A]" : "text-gray-400 border-transparent hover:text-gray-600"
-          }`}>기획전</button>
-        <button type="button" onClick={() => setHeroTab("prompt")}
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors -mb-px ${
-            heroTab === "prompt" ? "text-violet-600 border-violet-600" : "text-gray-400 border-transparent hover:text-gray-600"
-          }`}>✨ AI 프롬프트</button>
-      </div>
+      {/* AI 이미지 프롬프트 빌더 */}
+      <PromptBuilder
+        isHero
+        buildFn={(shotType, clothingType, season, extras, scene) =>
+          buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, scene, hero.image_url || undefined)
+        }
+        refImageUrl={hero.image_url || undefined}
+      />
 
-      {/* AI 프롬프트 탭 */}
-      {heroTab === "prompt" && (
-        <PromptBuilder
-          isHero
-          buildFn={(shotType, clothingType, season, extras, scene) =>
-            buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, scene, hero.image_url || undefined)
-          }
-          refImageUrl={hero.image_url || undefined}
-        />
-      )}
-
-      {/* ── 기획전 탭: 3-column (대표이미지 | 위치·크기 | 상품태그) ── */}
-      {heroTab === "edit" && (
+      {/* ── 3-column (대표이미지 | 위치·크기 | 상품태그) ── */}
       <div className="flex gap-3 items-start">
 
         {/* Col 1: 대표 이미지 (compact, 3:4) */}
@@ -2039,16 +2023,15 @@ function HeroEditor({ hero, onChange, products }: {
           </div>
         </div>
       </div>
-      </div>
-      )}
     </div>
+  </div>
   );
 }
 
 // ── 서브 컴포넌트: 블록 카드 ────────────────────────────────
 function BlockCard({
   block, index, total, products,
-  onUpdate, onDelete, onMove,
+  onUpdate, onDelete, onMove, alwaysOpen,
 }: {
   block: EditorialBlock;
   index: number;
@@ -2057,9 +2040,11 @@ function BlockCard({
   onUpdate: (patch: Partial<EditorialBlock>) => void;
   onDelete: () => void;
   onMove: (dir: -1 | 1) => void;
+  alwaysOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"hero" | "banner1" | "banner2" | "banner3" | "banner4">("hero");
+  const isOpen = alwaysOpen || open;
 
   const TABS = [
     { key: "hero" as const,    label: "메인 기획전" },
@@ -2070,9 +2055,10 @@ function BlockCard({
   ];
 
   return (
-    <div className={`border rounded-xl overflow-hidden ${open ? "border-[#1A2B4A]/30 shadow-sm" : "border-gray-200"}`}>
-      {/* 블록 헤더 */}
-      <div className={`flex items-center gap-3 px-5 py-4 ${open ? "bg-[#f5f7ff] border-b border-[#1A2B4A]/10" : "bg-white hover:bg-gray-50"} transition-colors`}>
+    <div className={`border rounded-xl overflow-hidden ${isOpen ? "border-[#1A2B4A]/30 shadow-sm" : "border-gray-200"}`}>
+      {/* 블록 헤더 — 아코디언 모드에서만 표시 */}
+      {!alwaysOpen && (
+      <div className={`flex items-center gap-3 px-5 py-4 ${isOpen ? "bg-[#f5f7ff] border-b border-[#1A2B4A]/10" : "bg-white hover:bg-gray-50"} transition-colors`}>
         {/* 순서 이동 */}
         <div className="flex flex-col gap-0.5 flex-shrink-0">
           <button onClick={() => onMove(-1)} disabled={index === 0}
@@ -2142,14 +2128,15 @@ function BlockCard({
         {/* 열기/닫기 화살표 */}
         <button onClick={() => setOpen((v) => !v)}
           className="w-7 h-7 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-lg flex-shrink-0">
-          <svg className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
       </div>
+      )}
 
       {/* 편집 패널 */}
-      {open && (
+      {isOpen && (
         <div className="bg-white">
           {/* 기본 설정 바 */}
           <div className="flex items-center gap-6 px-5 py-3 bg-gray-50 border-b border-gray-100 flex-wrap">
@@ -2261,6 +2248,7 @@ function BlockCard({
 // ── 메인 페이지 ────────────────────────────────────────────
 export default function AdminMainEditorialPage() {
   const [blocks, setBlocks] = useState<EditorialBlock[]>(createDefaultBlocks);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<"ok" | "err" | null>(null);
@@ -2315,7 +2303,11 @@ export default function AdminMainEditorialPage() {
   }
   function deleteBlock(id: string) {
     if (!confirm("이 블록을 삭제하시겠습니까?")) return;
-    setBlocks((prev) => prev.filter((b) => b.id !== id));
+    setBlocks((prev) => {
+      const next = prev.filter((b) => b.id !== id);
+      setActiveIdx((i) => Math.min(i, Math.max(0, next.length - 1)));
+      return next;
+    });
   }
   function moveBlock(index: number, dir: -1 | 1) {
     const next = [...blocks];
@@ -2326,7 +2318,7 @@ export default function AdminMainEditorialPage() {
   }
   function addBlock() {
     const b = emptyBlock(blocks.length);
-    setBlocks((prev) => [...prev, b]);
+    setBlocks((prev) => { setActiveIdx(prev.length); return [...prev, b]; });
   }
 
   if (loading) {
@@ -2363,35 +2355,61 @@ export default function AdminMainEditorialPage() {
         </div>
       )}
 
-      {/* 블록 목록 */}
-      <div className="space-y-3 mb-4">
-        {blocks.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
-            등록된 기획전 블록이 없습니다.
+      {/* 블록 탭 */}
+      {blocks.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl mb-4">
+          등록된 기획전 블록이 없습니다.
+        </div>
+      ) : (
+        <>
+          {/* 탭 바 */}
+          <div className="flex items-stretch gap-0 border-b border-gray-200 mb-0 overflow-x-auto">
+            {blocks.map((block, index) => (
+              <div key={block.id} className="relative flex-shrink-0 group flex items-stretch">
+                <button
+                  onClick={() => setActiveIdx(index)}
+                  className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    activeIdx === index
+                      ? "text-[#1A2B4A] border-[#1A2B4A] bg-[#f5f7ff]"
+                      : "text-gray-500 border-transparent hover:text-[#1A2B4A] hover:bg-gray-50"
+                  }`}
+                >
+                  <span className="text-[10px] text-gray-400 mr-1">#{index + 1}</span>
+                  {block.hero.title || "제목 없음"}
+                  {/* 노출 상태 dot */}
+                  <span className={`ml-1.5 inline-block w-1.5 h-1.5 rounded-full ${block.is_visible ? "bg-green-400" : "bg-gray-300"}`} />
+                </button>
+                {/* 탭 내 삭제 버튼 */}
+                <button
+                  onClick={() => deleteBlock(block.id)}
+                  className="opacity-0 group-hover:opacity-100 self-center -ml-2 mr-1 w-4 h-4 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all text-[10px] flex-shrink-0"
+                  title="블록 삭제"
+                >×</button>
+              </div>
+            ))}
+            {/* + 추가 버튼 */}
+            <button
+              onClick={addBlock}
+              className="px-4 py-3 text-sm text-gray-400 hover:text-[#1A2B4A] border-b-2 border-transparent hover:border-[#1A2B4A] transition-colors flex-shrink-0 whitespace-nowrap"
+            >+ 추가</button>
           </div>
-        ) : (
-          blocks.map((block, index) => (
-            <BlockCard
-              key={block.id}
-              products={products}
-              block={block}
-              index={index}
-              total={blocks.length}
-              onUpdate={(patch) => updateBlock(block.id, patch)}
-              onDelete={() => deleteBlock(block.id)}
-              onMove={(dir) => moveBlock(index, dir)}
-            />
-          ))
-        )}
-      </div>
 
-      {/* 블록 추가 */}
-      <button
-        onClick={addBlock}
-        className="w-full py-3.5 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors"
-      >
-        + 기획전 블록 추가
-      </button>
+          {/* 선택된 블록 에디터 */}
+          {blocks[activeIdx] && (
+            <BlockCard
+              key={blocks[activeIdx].id}
+              products={products}
+              block={blocks[activeIdx]}
+              index={activeIdx}
+              total={blocks.length}
+              onUpdate={(patch) => updateBlock(blocks[activeIdx].id, patch)}
+              onDelete={() => deleteBlock(blocks[activeIdx].id)}
+              onMove={(dir) => moveBlock(activeIdx, dir)}
+              alwaysOpen
+            />
+          )}
+        </>
+      )}
 
       {/* DB 오류 안내 */}
       {dbError && (
