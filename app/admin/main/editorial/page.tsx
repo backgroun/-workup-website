@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 // ── 타입 정의 ──────────────────────────────────────────────
 type ProductItem = {
@@ -2332,13 +2333,21 @@ export default function AdminMainEditorialPage() {
             메인 에디토리얼 블록을 관리합니다. 블록은 순서대로 메인에 표시됩니다.
           </p>
         </div>
-        <button
-          onClick={save}
-          disabled={saving}
-          className="px-6 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d6a] disabled:opacity-50 transition-colors"
-        >
-          {saving ? "저장 중..." : "전체 저장"}
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/main/editorial/list"
+            className="px-5 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded hover:bg-gray-50 transition-colors"
+          >
+            목록 보기
+          </Link>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="px-6 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d6a] disabled:opacity-50 transition-colors"
+          >
+            {saving ? "저장 중..." : "전체 저장"}
+          </button>
+        </div>
       </div>
 
       {saveMsg === "ok" && (
