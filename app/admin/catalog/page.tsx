@@ -83,6 +83,28 @@ export default function AdminCatalogPage() {
   const updItems = (fn: (a: ContentsItem[]) => ContentsItem[]) =>
     setEditing((prev) => (prev ? { ...prev, data: { ...(prev.data ?? {}), items: fn(prev.data?.items ?? []) } } : prev));
 
+  // 현재 divider 페이지 목록에서 목차 항목 자동 생성
+  const autoFillToc = () => {
+    const visible = pages.filter((p) => p.is_visible);
+    const items: ContentsItem[] = [];
+    visible.forEach((p, i) => {
+      if (p.page_type !== "divider") return;
+      const nextDivIdx = visible.findIndex((q, qi) => qi > i && q.page_type === "divider");
+      const contentStart = i + 2; // divider 다음 페이지
+      const contentEnd = nextDivIdx !== -1 ? nextDivIdx : visible.length;
+      const pageStr = contentStart <= contentEnd
+        ? `P.${contentStart} – ${contentEnd}`
+        : `P.${contentStart}`;
+      items.push({ name: p.data?.title ?? "", count: p.data?.count ?? "", page: pageStr });
+    });
+    if (items.length === 0) {
+      flash("노출 중인 구분(divider) 페이지가 없어 자동 생성할 항목이 없습니다.", "err");
+      return;
+    }
+    updItems(() => items);
+    flash(`${items.length}개 항목을 자동으로 채웠습니다.`);
+  };
+
   const handleSave = async () => {
     if (!editing) return;
     if (editing.page_type === "image" && !editing.image_url) { flash("페이지 이미지를 등록하세요.", "err"); return; }
@@ -387,10 +409,17 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                     <>
                       <Field label="상단 영문 (eyebrow)"><input type="text" value={d.eyebrow ?? ""} onChange={(e) => setData({ eyebrow: e.target.value })} placeholder="Contents" className={INPUT} /></Field>
                       <div>
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center justify-between mb-2">
                           <label className="text-xs font-semibold text-gray-500">목차 항목</label>
-                          <button type="button" onClick={() => updItems((a) => [...a, { name: "", count: "", page: "" }])} className="text-xs text-blue-600 hover:text-blue-800">+ 항목 추가</button>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={autoFillToc}
+                              className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-lg font-medium transition-colors">
+                              ↻ 현재 페이지 목록으로 자동 채우기
+                            </button>
+                            <button type="button" onClick={() => updItems((a) => [...a, { name: "", count: "", page: "" }])} className="text-xs text-blue-600 hover:text-blue-800">+ 항목 추가</button>
+                          </div>
                         </div>
+                        <p className="text-[11px] text-slate-400 mb-2">구분(divider) 페이지 기준으로 자동 채워집니다. 생성 후 페이지 범위를 확인·수정하세요.</p>
                         <div className="space-y-2">
                           {(d.items ?? []).map((it, i) => (
                             <div key={i} className="grid grid-cols-[1fr_90px_110px_auto] gap-2 items-center">
