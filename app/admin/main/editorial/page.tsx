@@ -885,15 +885,15 @@ function BannerEditor({ banner, label, onChange, products }: {
 
   return (
     <div className="space-y-4">
-      {/* 타이틀 + 설명 한 줄 */}
-      <div className="flex gap-3 items-start">
+      {/* 타이틀 + 설명 한 줄 (single-line inputs) */}
+      <div className="flex gap-3 items-end">
         <div className="flex-shrink-0" style={{ width: "220px" }}>
           <Field label="타이틀" value={banner.title} onChange={(v) => onChange({ title: v })}
             placeholder="자외선을 막는 기능성 상의" />
         </div>
         <div className="flex-1 min-w-0">
           <Field label="설명" value={banner.desc} onChange={(v) => onChange({ desc: v })}
-            placeholder="섹션 설명을 입력하세요" multiline />
+            placeholder="섹션 설명을 입력하세요" />
         </div>
       </div>
 
@@ -902,8 +902,8 @@ function BannerEditor({ banner, label, onChange, products }: {
         buildFn={(shotType, clothingType, season, extras, scene) =>
           buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, scene, banner.image_url || undefined)
         }
-        buildShowcaseFn={(mode, clothingType, season, extras, scene) =>
-          buildShowcasePrompt(banner.title, banner.desc, items3, mode, clothingType, season, extras, scene)
+        buildShowcaseFn={(mode, repIndex, clothingType, season, extras, scene) =>
+          buildShowcasePrompt(banner.title, banner.desc, items3, mode, repIndex, clothingType, season, extras, scene)
         }
         enableShowcase
         items={items3}
@@ -912,32 +912,24 @@ function BannerEditor({ banner, label, onChange, products }: {
         refImageUrl={banner.image_url || undefined}
       />
 
-      {/* 섹션 이미지 */}
-      <ImageField
-        label="섹션 이미지"
-        hint="권장: 440 × 495px (세로형)"
-        value={banner.image_url}
-        onChange={(url) => onChange({ image_url: url })}
-      />
-
       {/* 연결상품 3개 탭 */}
       <div>
-        {/* 탭 바 */}
+        {/* 탭 바 — 좌측 정렬, 자연 너비 */}
         <div className="flex border border-gray-200 rounded-t-xl overflow-hidden">
           {[0, 1, 2].map((i) => (
             <button
               key={i}
               onClick={() => setItemTab(i)}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 ${
+              className={`px-5 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 text-left whitespace-nowrap ${
                 itemTab === i
                   ? "bg-[#1A2B4A] text-white"
                   : "bg-gray-50 text-gray-500 hover:bg-gray-100"
               }`}
             >
-              연결상품{i + 1}
+              상품{i + 1}
               {items3[i].name && (
                 <span className={`ml-1.5 text-[10px] font-normal ${itemTab === i ? "text-white/70" : "text-gray-400"}`}>
-                  · {items3[i].name.length > 8 ? items3[i].name.slice(0, 8) + "…" : items3[i].name}
+                  · {items3[i].name}
                 </span>
               )}
             </button>
@@ -953,6 +945,14 @@ function BannerEditor({ banner, label, onChange, products }: {
           />
         </div>
       </div>
+
+      {/* 섹션 이미지 — 하단 */}
+      <ImageField
+        label="섹션 이미지"
+        hint="권장: 440 × 495px (세로형)"
+        value={banner.image_url}
+        onChange={(url) => onChange({ image_url: url })}
+      />
     </div>
   );
 }
@@ -1063,14 +1063,19 @@ const SHOT_CAM: Record<ShotKey, string> = {
 type ShowcaseMode = "flatlay" | "hero" | "lineup";
 const SHOWCASE_MODES = [
   { key: "flatlay", label: "컬렉션 정물", desc: "무모델 정물(놀링) — 3제품을 또렷하게" },
-  { key: "hero",    label: "대표 1컷",   desc: "대표 1점 착장 + 테마 씬" },
-  { key: "lineup",  label: "라인업",     desc: "여러 모델이 각 1점씩 그룹 착장" },
+  { key: "hero",    label: "대표 모델컷", desc: "선택한 1제품을 모델이 착용 — 일치도 가장 높음" },
+  { key: "lineup",  label: "그룹 모델컷", desc: "여러 모델이 각 1점씩 착장" },
 ] as const;
 
 type CollItem = { name: string; garment: string; imageUrl?: string };
 
 // 한글 제품명 → 영문 의류 표현 (이미지 모델 인식률 ↑, 미매칭은 참고이미지에 위임)
+// 색상은 앞에 와서 자연스러운 영문이 되도록 상단 배치
 const GARMENT_KEYWORDS: Record<string, string> = {
+  "네이비": "navy", "그레이": "gray", "회색": "gray", "차콜": "charcoal",
+  "블랙": "black", "검정": "black", "화이트": "white", "흰색": "white",
+  "카키": "khaki", "베이지": "beige", "올리브": "olive", "카멜": "camel",
+  "브라운": "brown", "블루": "blue", "그린": "green", "버건디": "burgundy",
   "소로나": "Sorona-blend", "흡한속건": "moisture-wicking quick-dry",
   "흡습속건": "moisture-wicking quick-dry", "쿨링": "cooling",
   "기능성": "technical functional", "방풍": "windproof", "방수": "waterproof",
@@ -1097,14 +1102,19 @@ function buildCollectionPrompt(opts: {
   theme: string; desc: string;
   clothingEn: string; seasonEn: string; sceneEn: string;
   descriptors: string[]; moodLine: string;
-  collection: { mode: ShowcaseMode; items: CollItem[] };
+  collection: { mode: ShowcaseMode; items: CollItem[]; repIndex?: number };
 }): string {
   const { theme, desc, clothingEn, seasonEn, sceneEn, descriptors, moodLine, collection } = opts;
   const { mode, items } = collection;
-  const lineup = items.map((it, n) => `  ${n + 1}. ${it.name} — ${it.garment}`).join("\n");
-  const refs = items.map((it) => it.imageUrl).filter(Boolean) as string[];
+  const repIndex = Math.min(Math.max(collection.repIndex ?? 0, 0), items.length - 1);
   const who = descriptors.length ? `${descriptors.join(" ")} ` : "";
   const output = "8:9 vertical, 440 × 495px";
+  const isHero = mode === "hero";
+
+  // 대표 모델컷은 선택 1제품만 묘사·참고 → 일치도 ↑ / 나머지 모드는 전체
+  const promptItems = isHero ? [items[repIndex]] : items;
+  const lineup = promptItems.map((it, n) => `  ${n + 1}. ${it.name} — ${it.garment}`).join("\n");
+  const refs = (isHero ? [items[repIndex]?.imageUrl] : items.map((it) => it.imageUrl)).filter(Boolean) as string[];
 
   let subject = "", composition = "", camera = "", anatomy = "";
   if (mode === "flatlay") {
@@ -1117,26 +1127,38 @@ function buildCollectionPrompt(opts: {
     camera = `- 35mm lens, several models within the scene, cohesive group composition`;
     anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
   } else {
-    const rep = items[0];
-    subject = `- One ${who}authentic, real-worker-type Korean model wearing the representative piece (${rep.name} — ${rep.garment}), styled naturally${moodLine ? `; ${moodLine}` : ""}. The rest of the collection is evoked through the themed styling and setting.`;
-    composition = `- Single-subject editorial framing (vertical 8:9, 440×495): subject and environment balanced, clear focal point that still reads at thumbnail size.`;
+    const rep = items[repIndex];
+    subject = `- One ${who}authentic, real-worker-type Korean model wearing EXACTLY this product: "${rep.name}" (${rep.garment}), reproduced precisely from the reference photo. The model wears ONLY this single garment as the hero piece, styled naturally${moodLine ? `; ${moodLine}` : ""}.`;
+    composition = `- Single-subject model shot (vertical 8:9, 440×495): one model worn-on-body, the product clearly visible and in focus, environment softly behind. Clear focal point that still reads at thumbnail size.`;
     camera = `- 50mm lens, waist-up to full body, subject prominent with environment softly behind`;
     anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
   }
 
+  // 충실도 — 참고이미지가 있으면 최상단에 강하게 배치 (#일치도 개선)
+  const fidelityBlock = refs.length
+    ? `[FIDELITY — TOP PRIORITY]\n` +
+      `- The garment${refs.length > 1 ? "s" : ""} MUST match the attached reference photo${refs.length > 1 ? "s" : ""} EXACTLY: same silhouette, cut, collar / neckline, sleeve length, color, fabric texture, seams, pockets, zippers, buttons, prints and logos.\n` +
+      `- Do NOT invent, restyle, recolor, or substitute a different garment. When in doubt, copy the reference. The clothing identity is fixed by the photo; only pose, model and background may change.\n\n`
+    : "";
+
+  const lineupHeader = isHero
+    ? `\n[PRODUCT] — feature THIS single product on the model, reproduced exactly from the reference photo:\n`
+    : `\n[COLLECTION LINEUP] — represent these ${items.length} pieces TOGETHER as one themed group:\n`;
+
   const refsBlock = refs.length
-    ? `\n\n[REFERENCE IMAGES] (${refs.length}) — keep EACH garment faithful to its uploaded photo (same style, color, fabric, prints, details):\n` +
+    ? `\n\n[REFERENCE IMAGE${refs.length > 1 ? "S" : ""}] (${refs.length}) — the SINGLE SOURCE OF TRUTH for the garment${refs.length > 1 ? "s" : ""}. Reproduce ${refs.length > 1 ? "each" : "it"} faithfully (same style, color, fabric, prints, hardware, details):\n` +
       refs.map((u) => `  - ${u}`).join("\n")
     : "";
 
   return (
     `[GENERATION DIRECTIVE]\n` +
     `Generate ONE single photorealistic cinematic editorial image that represents a themed product collection AS ONE cohesive scene. No collage, grid, card-news, multi-panel layout, split-screen, or any text inside the image.\n\n` +
+    fidelityBlock +
     `[CONCEPT]\n` +
     `- Brand: WORKUP — ${clothingEn}\n` +
     `- Theme: "${theme}"\n` +
     (desc.trim() ? `- Story: ${desc.trim().slice(0, 160)}\n` : "") +
-    `\n[COLLECTION LINEUP] — represent these ${items.length} pieces TOGETHER as one themed group:\n` +
+    lineupHeader +
     lineup + `\n` +
     `\n[SCENE & ENVIRONMENT]\n- Set in ${sceneEn}\n` +
     (seasonEn ? `- Season mood: ${seasonEn}\n` : "") +
@@ -1150,14 +1172,17 @@ function buildCollectionPrompt(opts: {
     refsBlock +
     `\n\n[NEGATIVE PROMPT]\n` +
     `text, typography, caption, watermark, added graphic logo overlay, collage, grid, split-screen, multi-panel, border, frame, ` +
+    `different garment, redesigned clothing, restyled outfit, altered color, recolored fabric, wrong collar, wrong neckline, wrong sleeve length, invented print, changed pattern, added logo, removed logo, extra clothing items, ` +
     `deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, mutated anatomy, twisted joints, plastic skin, over-retouched, uncanny face, ` +
     `distorted product, warped proportions, wrong colors, color cast, oversaturated, blurry, low-resolution, jpeg artifacts` +
     `\n\n── 한글 참고 ──\n` +
     `테마: ${theme}\n` +
     (desc.trim() ? `설명: ${desc.trim().slice(0, 160)}\n` : "") +
     `기획전 구도: ${SHOWCASE_MODES.find((m) => m.key === mode)?.label}\n` +
-    `연결상품: ${items.map((i) => i.name).join(", ")}\n` +
-    (refs.length ? `참고 이미지 ${refs.length}장: 각 제품 사진과 동일하게` : "참고 이미지 없음 — 제품명 묘사 기반")
+    (isHero ? `대표 제품: ${items[repIndex]?.name ?? ""}\n` : `연결상품: ${items.map((i) => i.name).join(", ")}\n`) +
+    (refs.length
+      ? `참고 이미지 ${refs.length}장: ${isHero ? "대표 제품 사진과 동일하게 (1장만 첨부 → 일치도 ↑)" : "각 제품 사진과 동일하게"}`
+      : "참고 이미지 없음 — 제품명 묘사 기반 (이미지 첨부 시 일치도 크게 향상)")
   );
 }
 
@@ -1167,7 +1192,7 @@ function buildEditorialPrompt(opts: {
   theme: string; desc: string; shotType: ShotKey;
   clothingType: "작업복" | "일상복" | "잡화";
   season: string; extras: string[]; scene: string; imageUrl?: string;
-  collection?: { mode: ShowcaseMode; items: CollItem[] };
+  collection?: { mode: ShowcaseMode; items: CollItem[]; repIndex?: number };
 }): string {
   const { kind, theme, desc, shotType, clothingType, season, extras, scene, imageUrl, collection } = opts;
   if (!theme) return "";
@@ -1272,9 +1297,10 @@ function buildBannerPrompt(
 }
 
 // 기획전 프롬프트 — 배너 하단 연결상품(items)을 하나로 아우르는 상단 이미지
+// repIndex: 대표 모델컷에서 어떤 제품을 대표로 쓸지 (named 제품 기준 인덱스)
 function buildShowcasePrompt(
   title: string, desc: string, items: ProductItem[],
-  mode: ShowcaseMode,
+  mode: ShowcaseMode, repIndex: number,
   clothingType: "작업복" | "일상복" | "잡화",
   season: string, extras: string[], scene: string
 ): string {
@@ -1285,7 +1311,7 @@ function buildShowcasePrompt(
   return buildEditorialPrompt({
     kind: "banner", theme: title.trim(), desc,
     shotType: "full", clothingType, season, extras, scene,
-    collection: { mode, items: coll },
+    collection: { mode, items: coll, repIndex },
   });
 }
 
@@ -1440,7 +1466,7 @@ function PromptBuilder({
   refImageUrl,
 }: {
   buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복" | "잡화", season: string, extras: string[], scene: string) => string;
-  buildShowcaseFn?: (mode: ShowcaseMode, clothingType: "작업복" | "일상복" | "잡화", season: string, extras: string[], scene: string) => string;
+  buildShowcaseFn?: (mode: ShowcaseMode, repIndex: number, clothingType: "작업복" | "일상복" | "잡화", season: string, extras: string[], scene: string) => string;
   enableShowcase?: boolean;
   items?: ProductItem[];
   isHero?: boolean;
@@ -1459,16 +1485,22 @@ function PromptBuilder({
   const [copied, setCopied]               = useState(false);
   const [showcaseOn, setShowcaseOn]       = useState<boolean>(!!enableShowcase);
   const [showcaseMode, setShowcaseMode]   = useState<ShowcaseMode>("flatlay");
+  const [repIndex, setRepIndex]           = useState(0);
 
   const showcaseActive = !!(enableShowcase && showcaseOn && buildShowcaseFn);
   const itemRefs = (items ?? []).map((i) => i.image_url).filter(Boolean) as string[];
   const namedItems = (items ?? []).filter((i) => i.name.trim());
+  const safeRep = Math.min(repIndex, Math.max(0, namedItems.length - 1));
+  // 대표 모델컷은 대표 제품 1장만, 그 외는 전체 — 프롬프트 본문과 참고이미지 표기 일치
+  const showcaseRefs = showcaseMode === "hero"
+    ? ([namedItems[safeRep]?.image_url].filter(Boolean) as string[])
+    : itemRefs;
 
   const resetPrompt = () => setShowPrompt(false);
 
   const generate = () => {
     const p = showcaseActive
-      ? buildShowcaseFn!(showcaseMode, clothingType, season, extras, scene)
+      ? buildShowcaseFn!(showcaseMode, safeRep, clothingType, season, extras, scene)
       : buildFn(shotType, clothingType, season, extras, scene);
     if (p) { setPrompt(p); setShowPrompt(true); }
   };
@@ -1478,7 +1510,7 @@ function PromptBuilder({
       ? `\n\n[권장 사이즈] 950 × 1280px  [비율] 3 : 4\n[PC 표시] 동일 이미지를 8:9 비율 center-top 크롭으로 사용`
       : `\n\n[권장 사이즈] ${sizeLabel}  [비율] ${ratioLabel}`;
     const refPart = showcaseActive
-      ? (itemRefs.length ? `\n[참고 이미지 ${itemRefs.length}장 — 각 제품 사진]\n` + itemRefs.map((u) => `- ${u}`).join("\n") : "")
+      ? (showcaseRefs.length ? `\n[참고 이미지 ${showcaseRefs.length}장 — ${showcaseMode === "hero" ? "대표 제품" : "각 제품"} 사진]\n` + showcaseRefs.map((u) => `- ${u}`).join("\n") : "")
       : (refImageUrl ? `\n[참고 이미지] ${refImageUrl}` : "");
     const full = prompt + suffix + refPart;
     navigator.clipboard.writeText(full)
@@ -1490,7 +1522,7 @@ function PromptBuilder({
     <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
       {/* 헤더: 제목 + 생성 버튼 */}
       <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[11px] font-semibold text-gray-700">✨ AI 이미지 프롬프트 생성</p>
+        <p className="text-[11px] font-semibold text-gray-700">{enableShowcase ? "✨ 기획 AI 이미지 프롬프트 생성" : "✨ AI 이미지 프롬프트 생성"}</p>
         <button type="button" onClick={generate}
           className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-gradient-to-r from-violet-500 to-indigo-500 text-white hover:from-violet-600 hover:to-indigo-600 transition-all rounded shadow-sm">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -1517,6 +1549,34 @@ function PromptBuilder({
               {showcaseOn && (
                 <>
                   <ShowcaseModeSelector value={showcaseMode} onChange={(v) => { setShowcaseMode(v); resetPrompt(); }} />
+
+                  {/* 대표 모델컷 — 어떤 제품을 대표로 쓸지 선택 */}
+                  {showcaseMode === "hero" && namedItems.length > 0 && (
+                    <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
+                      <p className="text-[10px] text-violet-600 font-medium mb-1.5">대표 제품 선택 (모델이 착용)</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {namedItems.map((it, idx) => (
+                          <button
+                            key={it.id}
+                            type="button"
+                            onClick={() => { setRepIndex(idx); resetPrompt(); }}
+                            className={`inline-flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-0.5 border transition-colors ${
+                              safeRep === idx ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-violet-200 text-gray-600 hover:border-violet-400"
+                            }`}
+                          >
+                            {it.image_url
+                              ? <img src={it.image_url} alt="" className="w-5 h-5 object-cover rounded-full" />
+                              : <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[7px] text-gray-400 font-bold">WU</span>}
+                            <span className="text-[11px] max-w-[100px] truncate">{it.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      {!namedItems[safeRep]?.image_url && (
+                        <p className="text-[10px] text-amber-600 mt-1.5">선택 제품에 이미지가 없습니다 — 이미지를 등록하면 일치도가 크게 올라갑니다.</p>
+                      )}
+                    </div>
+                  )}
+
                   {namedItems.length > 0 ? (
                     <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
                       <p className="text-[10px] text-violet-600 font-medium mb-1">반영될 제품 {namedItems.length}개{itemRefs.length > 0 && ` · 참고이미지 ${itemRefs.length}장`}</p>
@@ -1570,7 +1630,17 @@ function PromptBuilder({
 
           {/* 추가 옵션 */}
           <div>
-            <p className="text-[11px] font-medium text-gray-500 mb-1">추가 옵션 <span className="text-gray-400 font-normal">(복수 선택 가능)</span></p>
+            {/* 라벨 줄 — 직접 입력 input + + 버튼을 같은 줄에 */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <p className="text-[11px] font-medium text-gray-500 flex-shrink-0">추가 옵션 <span className="text-gray-400 font-normal">(복수 선택 가능)</span></p>
+              <input value={customInput} onChange={e => setCustomInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
+                placeholder="직접 입력 후 Enter 또는 + 클릭"
+                className="flex-1 min-w-0 text-[11px] border border-gray-200 rounded px-2.5 py-1 focus:outline-none focus:border-violet-400 bg-white" />
+              <button type="button" onClick={() => { if (customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
+                className="flex-shrink-0 px-3 py-1 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-semibold">+</button>
+            </div>
+            {/* 프리셋 버튼 */}
             <div className="flex flex-wrap items-center gap-1.5">
               {PROMPT_EXTRA_PRESETS.map(opt => (
                 <button key={opt} type="button"
@@ -1579,12 +1649,6 @@ function PromptBuilder({
                     extras.includes(opt) ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold" : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
                   }`}>{opt}</button>
               ))}
-              <input value={customInput} onChange={e => setCustomInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
-                placeholder="직접 입력..."
-                className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-violet-400 bg-white w-20" />
-              <button type="button" onClick={() => { if (customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
-                className="px-2 py-1 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">+</button>
             </div>
             {extras.length > 0 && (
               <div className="flex gap-1 flex-wrap mt-1">
@@ -1629,16 +1693,16 @@ function PromptBuilder({
                   <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">비율 {ratioLabel}</span></>
                 )}
                 {showcaseActive
-                  ? (itemRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 {itemRefs.length}장</span>)
+                  ? (showcaseRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 {showcaseRefs.length}장{showcaseMode === "hero" ? " · 대표" : ""}</span>)
                   : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 이미지</span>)}
               </div>
               {/* 참고이미지 + 생성가이드 한 라인 */}
-              {(isHero || (!showcaseActive && refImageUrl) || (showcaseActive && itemRefs.length > 0)) && (
+              {(isHero || (!showcaseActive && refImageUrl) || (showcaseActive && showcaseRefs.length > 0)) && (
                 <div className="flex items-start gap-1.5">
                   {/* 참고이미지 썸네일들 */}
-                  {showcaseActive && itemRefs.length > 0 && (
+                  {showcaseActive && showcaseRefs.length > 0 && (
                     <div className="flex gap-0.5 flex-shrink-0">
-                      {itemRefs.slice(0, 3).map((u, i) => <img key={i} src={u} alt="" className="w-6 h-6 object-cover rounded border border-orange-200" />)}
+                      {showcaseRefs.slice(0, 3).map((u, i) => <img key={i} src={u} alt="" className="w-6 h-6 object-cover rounded border border-orange-200" />)}
                     </div>
                   )}
                   {!showcaseActive && refImageUrl && (
@@ -1648,7 +1712,9 @@ function PromptBuilder({
                   <div className="text-[10px] leading-snug min-w-0">
                     {isHero && <p className="text-indigo-600">· 피사체 50~60% · PC 하단 10% 크롭</p>}
                     {(!showcaseActive && refImageUrl) && <p className="text-orange-600">참고 이미지 포함</p>}
-                    {showcaseActive && itemRefs.length > 0 && <p className="text-orange-600">참고 {itemRefs.length}장 반영</p>}
+                    {showcaseActive && showcaseRefs.length > 0 && (
+                      <p className="text-orange-600">{showcaseMode === "hero" ? "대표 제품 1장 반영 — 일치도 ↑" : `참고 ${showcaseRefs.length}장 반영`}</p>
+                    )}
                   </div>
                 </div>
               )}
