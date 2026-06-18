@@ -76,25 +76,56 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           </div>
         )}
 
-        <div ref={areaRef} className="flex-1 flex items-center justify-center overflow-hidden px-2">
+        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-2">
           {total > 0 && dims.w > 0 ? (
-            <Book
-              key={`${selectedId}-${dims.w}-${dims.portrait}`}
-              ref={bookRef}
-              width={dims.w}
-              height={dims.h}
-              usePortrait={dims.portrait}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onFlip={(e: any) => setCurrentPage(e.data)}
-              maxShadowOpacity={0.5}
-              showCover={true}
-              mobileScrollSupport={true}
-              size="fixed"
-              minWidth={80} maxWidth={1200} minHeight={120} maxHeight={1800}
-              drawShadow={true} flippingTime={700} useMouseEvents={true} clickEventForward={true} swipeDistance={30} showPageCorners={true}
-            >
-              {pageNodes.map((node, i) => <FlipPage key={i}>{node}</FlipPage>)}
-            </Book>
+            <>
+              <Book
+                key={`${selectedId}-${dims.w}-${dims.portrait}`}
+                ref={bookRef}
+                width={dims.w}
+                height={dims.h}
+                usePortrait={dims.portrait}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onFlip={(e: any) => setCurrentPage(e.data)}
+                maxShadowOpacity={0.5}
+                showCover={true}
+                mobileScrollSupport={true}
+                size="fixed"
+                minWidth={80} maxWidth={1200} minHeight={120} maxHeight={1800}
+                drawShadow={true} flippingTime={700} useMouseEvents={true} clickEventForward={true}
+                swipeDistance={dims.portrait ? 9999 : 30}
+                showPageCorners={true}
+              >
+                {pageNodes.map((node, i) => <FlipPage key={i}>{node}</FlipPage>)}
+              </Book>
+              {/* 모바일 전용 좌우 ghost 화살표 — 스와이프 대신 탭으로 넘김 */}
+              {dims.portrait && total > 1 && (
+                <>
+                  <button
+                    onClick={() => bookRef.current?.pageFlip().flipPrev()}
+                    disabled={currentPage === 0}
+                    aria-label="이전 페이지"
+                    className="absolute left-0 inset-y-0 w-10 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
+                    style={{ opacity: currentPage === 0 ? 0 : 0.18 }}
+                  >
+                    <svg className="w-4 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 16 28">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L4 14l8 12" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => bookRef.current?.pageFlip().flipNext()}
+                    disabled={currentPage >= total - 1}
+                    aria-label="다음 페이지"
+                    className="absolute right-0 inset-y-0 w-10 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
+                    style={{ opacity: currentPage >= total - 1 ? 0 : 0.18 }}
+                  >
+                    <svg className="w-4 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 16 28">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 2l8 12-8 12" />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </>
           ) : !isWorkup && total === 0 && pdfUrl ? (
             <iframe src={pdfUrl} className="w-full h-full bg-white rounded" title={brand?.name} />
           ) : (
