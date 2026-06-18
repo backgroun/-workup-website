@@ -14,7 +14,9 @@ export default function Home() {
       <PopupBanner />
       <Hero />
       <HomeNewArrivals />
-      <hr className="border-t border-gray-200 mx-4" />
+      <div className="px-[15px] md:px-[70px]">
+        <hr className="border-t border-gray-200" />
+      </div>
       <HomeCategoryGrid />
       <HomeEditorial />
       <HomePeopleTeaser />

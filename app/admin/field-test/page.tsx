@@ -3,6 +3,14 @@ import { useState, useEffect } from "react";
 import { DEFAULT_TESTS, type Test, type DataPoint } from "@/data/field-test";
 import AdminImageField from "@/components/admin/AdminImageField";
 
+const DEFAULT_HEADER = {
+  title: "제품 검증 콘텐츠",
+  description: "워크업은 제품을 팔기 전에 현장에서 먼저 씁니다.\n통과한 것만 올립니다. 수치는 현장 언어로 번역합니다.",
+};
+
+type PageHeader = { title: string; description: string };
+type PageData = { header?: PageHeader; items?: Test[] };
+
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 function emptyTest(): Test {
@@ -13,9 +21,11 @@ function emptyTest(): Test {
 }
 
 export default function AdminFieldTestPage() {
+  const [header, setHeader]     = useState<PageHeader>({ ...DEFAULT_HEADER });
   const [items, setItems]       = useState<Test[]>([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
+  const [headerSaving, setHeaderSaving] = useState(false);
   const [toast, setToast]       = useState("");
   const [editing, setEditing]   = useState<Test | null>(null);
   const [isNew, setIsNew]       = useState(false);
@@ -25,7 +35,8 @@ export default function AdminFieldTestPage() {
   useEffect(() => {
     fetch("/api/admin/site-settings/field_test_page")
       .then(r => r.json())
-      .then((data: { items?: Test[] } | null) => {
+      .then((data: PageData | null) => {
+        if (data?.header) setHeader(data.header);
         setItems(data?.items?.length ? data.items : DEFAULT_TESTS);
       })
       .catch(() => setItems(DEFAULT_TESTS))
@@ -40,10 +51,22 @@ export default function AdminFieldTestPage() {
       const r = await fetch("/api/admin/site-settings/field_test_page", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: list }),
+        body: JSON.stringify({ header, items: list }),
       });
       flash(r.ok ? "저장됐습니다." : "저장에 실패했습니다.");
     } finally { setSaving(false); }
+  };
+
+  const saveHeader = async () => {
+    setHeaderSaving(true);
+    try {
+      const r = await fetch("/api/admin/site-settings/field_test_page", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ header, items }),
+      });
+      flash(r.ok ? "상단 텍스트가 저장됐습니다." : "저장에 실패했습니다.");
+    } finally { setHeaderSaving(false); }
   };
 
   const openNew = () => { setEditing(emptyTest()); setIsNew(true); };
@@ -118,6 +141,42 @@ export default function AdminFieldTestPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             테스트 추가
           </button>
+        </div>
+      </div>
+
+      {/* ── 상단 텍스트 편집 ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-700">페이지 상단 텍스트</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Field Test 페이지 최상단에 표시되는 제목과 소개 문구입니다.</p>
+          </div>
+          <button onClick={saveHeader} disabled={headerSaving}
+            className="px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
+            {headerSaving ? "저장 중..." : "저장"}
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">제목</label>
+            <input
+              type="text"
+              value={header.title}
+              onChange={e => setHeader(h => ({ ...h, title: e.target.value }))}
+              placeholder="제품 검증 콘텐츠"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">소개 문구 <span className="font-normal text-gray-400">(\n으로 줄 나눔)</span></label>
+            <textarea
+              rows={3}
+              value={header.description}
+              onChange={e => setHeader(h => ({ ...h, description: e.target.value }))}
+              placeholder="워크업은 제품을 팔기 전에 현장에서 먼저 씁니다."
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none"
+            />
+          </div>
         </div>
       </div>
 

@@ -3,6 +3,14 @@ import { useState, useEffect } from "react";
 import { DEFAULT_PEOPLE, type Person, type PersonProduct } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
 
+const DEFAULT_HEADER = {
+  title: "일하는 사람이 제일 멋있다.",
+  description: "워크업이 만드는 옷의 주인공은 제품이 아닙니다.\n매일 현장에서 땀 흘리는 사람들의 이야기입니다.",
+};
+
+type PageHeader = { title: string; description: string };
+type PageData = { header?: PageHeader; items?: Person[] };
+
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 function emptyPerson(): Person {
@@ -13,9 +21,11 @@ function emptyPerson(): Person {
 }
 
 export default function AdminMainPeoplePage() {
+  const [header, setHeader]     = useState<PageHeader>({ ...DEFAULT_HEADER });
   const [items, setItems]       = useState<Person[]>([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
+  const [headerSaving, setHeaderSaving] = useState(false);
   const [toast, setToast]       = useState("");
   const [editing, setEditing]   = useState<Person | null>(null);
   const [isNew, setIsNew]       = useState(false);
@@ -25,7 +35,8 @@ export default function AdminMainPeoplePage() {
   useEffect(() => {
     fetch("/api/admin/site-settings/people_page")
       .then(r => r.json())
-      .then((data: { items?: Person[] } | null) => {
+      .then((data: PageData | null) => {
+        if (data?.header) setHeader(data.header);
         setItems(data?.items?.length ? data.items : DEFAULT_PEOPLE);
       })
       .catch(() => setItems(DEFAULT_PEOPLE))
@@ -40,10 +51,22 @@ export default function AdminMainPeoplePage() {
       const r = await fetch("/api/admin/site-settings/people_page", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: list }),
+        body: JSON.stringify({ header, items: list }),
       });
       flash(r.ok ? "저장됐습니다." : "저장에 실패했습니다.");
     } finally { setSaving(false); }
+  };
+
+  const saveHeader = async () => {
+    setHeaderSaving(true);
+    try {
+      const r = await fetch("/api/admin/site-settings/people_page", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ header, items }),
+      });
+      flash(r.ok ? "상단 텍스트가 저장됐습니다." : "저장에 실패했습니다.");
+    } finally { setHeaderSaving(false); }
   };
 
   const openNew = () => { setEditing(emptyPerson()); setIsNew(true); };
@@ -122,6 +145,42 @@ export default function AdminMainPeoplePage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             인물 추가
           </button>
+        </div>
+      </div>
+
+      {/* ── 상단 텍스트 편집 ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-700">페이지 상단 텍스트</h2>
+            <p className="text-xs text-slate-400 mt-0.5">MATE 페이지 최상단에 표시되는 제목과 소개 문구입니다.</p>
+          </div>
+          <button onClick={saveHeader} disabled={headerSaving}
+            className="px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
+            {headerSaving ? "저장 중..." : "저장"}
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">제목</label>
+            <input
+              type="text"
+              value={header.title}
+              onChange={e => setHeader(h => ({ ...h, title: e.target.value }))}
+              placeholder="일하는 사람이 제일 멋있다."
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">소개 문구 <span className="font-normal text-gray-400">(\n으로 줄 나눔)</span></label>
+            <textarea
+              rows={3}
+              value={header.description}
+              onChange={e => setHeader(h => ({ ...h, description: e.target.value }))}
+              placeholder="워크업이 만드는 옷의 주인공은 제품이 아닙니다."
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none"
+            />
+          </div>
         </div>
       </div>
 

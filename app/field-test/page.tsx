@@ -3,27 +3,34 @@ import Link from "next/link";
 import { DEFAULT_TESTS, type Test } from "@/data/field-test";
 import { getSiteSection } from "@/lib/site-settings";
 
+const DEFAULT_HEADER = {
+  title: "제품 검증 콘텐츠",
+  description: "워크업은 제품을 팔기 전에 현장에서 먼저 씁니다.\n통과한 것만 올립니다. 수치는 현장 언어로 번역합니다.",
+};
+
 export const metadata: Metadata = {
   title: "FIELD TEST — 제품 검증 콘텐츠 | WORKUP",
   description: "워크업이 현장에서 직접 검증한 제품 테스트 결과를 공개합니다.",
 };
 
 export default async function FieldTestPage() {
-  const config = await getSiteSection<{ items?: Test[] }>("field_test_page");
+  const config = await getSiteSection<{ header?: typeof DEFAULT_HEADER; items?: Test[] }>("field_test_page");
+  const header = config?.header ?? DEFAULT_HEADER;
   const tests = config?.items?.length ? config.items : DEFAULT_TESTS;
 
   return (
     <main>
 
       {/* ── 페이지 타이틀 ── */}
-      <section className="py-16 bg-white border-b border-gray-100">
+      <section className="py-16 bg-[#F5F2ED]">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
-            제품 검증 콘텐츠
+            {header.title}
           </h1>
           <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl">
-            워크업은 제품을 팔기 전에 현장에서 먼저 씁니다.<br />
-            통과한 것만 올립니다. 수치는 현장 언어로 번역합니다.
+            {header.description.split("\n").map((line, i) => (
+              <span key={i}>{line}{i < header.description.split("\n").length - 1 && <br />}</span>
+            ))}
           </p>
         </div>
       </section>
