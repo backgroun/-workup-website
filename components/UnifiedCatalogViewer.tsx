@@ -35,7 +35,11 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       let h = ah - 8;
       let w = Math.round(h / ratio);
       if (portrait) {
-        if (w > aw - 16) { w = aw - 16; h = Math.round(w * ratio); }
+        // 모바일: 북 높이를 영역의 88%로 제한 → 하단 버튼이 항상 보임
+        h = Math.min(h, Math.round(ah * 0.88));
+        w = Math.round(h / ratio);
+        // 좌우 화살표(48px×2) 공간 확보
+        if (w > aw - 96) { w = aw - 96; h = Math.round(w * ratio); }
       } else {
         if (w * 2 > aw - 24) { w = Math.floor((aw - 24) / 2); h = Math.round(w * ratio); }
       }
@@ -92,36 +96,42 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                 mobileScrollSupport={true}
                 size="fixed"
                 minWidth={80} maxWidth={1200} minHeight={120} maxHeight={1800}
-                drawShadow={true} flippingTime={700} useMouseEvents={true} clickEventForward={true}
+                drawShadow={true} flippingTime={700}
+                useMouseEvents={!dims.portrait}
+                clickEventForward={!dims.portrait}
                 swipeDistance={dims.portrait ? 9999 : 30}
-                showPageCorners={true}
+                showPageCorners={!dims.portrait}
               >
                 {pageNodes.map((node, i) => <FlipPage key={i}>{node}</FlipPage>)}
               </Book>
-              {/* 모바일 전용 좌우 ghost 화살표 — 스와이프 대신 탭으로 넘김 */}
+              {/* 모바일 전용 좌우 화살표 — 탭으로만 페이지 넘김 */}
               {dims.portrait && total > 1 && (
                 <>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipPrev()}
                     disabled={currentPage === 0}
                     aria-label="이전 페이지"
-                    className="absolute left-0 inset-y-0 w-10 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
-                    style={{ opacity: currentPage === 0 ? 0 : 0.18 }}
+                    className="absolute left-0 inset-y-0 w-12 flex items-center justify-start pl-0.5 transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-0"
+                    style={{ opacity: currentPage === 0 ? 0 : 1 }}
                   >
-                    <svg className="w-4 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 16 28">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L4 14l8 12" />
-                    </svg>
+                    <span className="flex items-center justify-center w-8 h-16 rounded-r-2xl bg-white/10 backdrop-blur-[2px]">
+                      <svg className="w-3.5 h-6 text-white/70" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 14 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 2L2 12l8 10" />
+                      </svg>
+                    </span>
                   </button>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipNext()}
                     disabled={currentPage >= total - 1}
                     aria-label="다음 페이지"
-                    className="absolute right-0 inset-y-0 w-10 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
-                    style={{ opacity: currentPage >= total - 1 ? 0 : 0.18 }}
+                    className="absolute right-0 inset-y-0 w-12 flex items-center justify-end pr-0.5 transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-0"
+                    style={{ opacity: currentPage >= total - 1 ? 0 : 1 }}
                   >
-                    <svg className="w-4 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 16 28">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 2l8 12-8 12" />
-                    </svg>
+                    <span className="flex items-center justify-center w-8 h-16 rounded-l-2xl bg-white/10 backdrop-blur-[2px]">
+                      <svg className="w-3.5 h-6 text-white/70" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 14 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 2l8 10-8 10" />
+                      </svg>
+                    </span>
                   </button>
                 </>
               )}
@@ -180,7 +190,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
 // 썸네일 버튼 — 현재 보는 카탈로그는 흑백, 나머지는 컬러로 구분(요청 사양). 선택 표시는 주황 테두리.
 function CoverThumb({ name, active, onClick, children }: { name: string; active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="block flex-shrink-0 w-[88px] md:w-full group">
+    <button onClick={onClick} className="block flex-shrink-0 w-[64px] md:w-full group">
       <div
         className={`relative w-full overflow-hidden rounded border-2 transition-all ${active ? "border-[#ff550c]" : "border-transparent group-hover:border-white/30"}`}
         style={{ aspectRatio: "5 / 7", filter: active ? "grayscale(1)" : "none" }}
