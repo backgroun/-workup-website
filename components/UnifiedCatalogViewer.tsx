@@ -122,7 +122,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
 
       {/* 우측 표지 썸네일 네비 (브랜드가 있을 때만) */}
       {showSidebar && (
-        <aside className="flex-shrink-0 order-2 md:w-[150px] border-t md:border-t-0 md:border-l border-white/10 overflow-x-auto md:overflow-y-auto">
+        <aside className="flex-shrink-0 order-2 md:w-[150px] border-t md:border-t-0 md:border-l border-white/10 overflow-x-auto md:overflow-y-auto bg-[#0d1826]">
           <div className="flex md:flex-col gap-3 p-3 md:py-5">
             {/* WORKUP */}
             <CoverThumb name="WORKUP" active={isWorkup} onClick={() => setSelectedId("workup")}>
