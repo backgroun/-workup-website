@@ -256,7 +256,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
             ) : pages.length === 0 && !editing ? (
               <div className="py-14 text-center text-slate-400 text-sm">등록된 페이지가 없습니다.</div>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100 overflow-y-auto" style={{ maxHeight: "calc(100vh - 260px)" }}>
                 {pages.map((page, i) => (
                   <li key={page.id} draggable
                     onDragStart={() => setDragIndex(i)}
