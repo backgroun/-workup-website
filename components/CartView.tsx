@@ -58,9 +58,9 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                       <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-0.5">WORKUP {item.line}</p>
                       <p className="text-sm font-bold text-[#1A2B4A] truncate">{item.name}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-gray-500">사이즈 <strong>{item.size}</strong></span>
+                        <span className="text-xs text-gray-500">사이즈 <strong>{item.size || "매장 문의"}</strong></span>
                         <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-500">컬러 <strong>{item.color}</strong></span>
+                        <span className="text-xs text-gray-500">컬러 <strong>{item.color || "-"}</strong></span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
