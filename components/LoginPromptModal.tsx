@@ -1,0 +1,39 @@
+"use client";
+
+// 비로그인 사용자에게 로그인 유도를 띄우는 공용 모달.
+// 찜(카드 하트) · 피팅 리스트 담기 등 로그인이 필요한 동작에서 공통 사용.
+export default function LoginPromptModal({
+  open,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
+      <div className="relative bg-white rounded-sm shadow-xl px-10 py-8 flex flex-col items-center gap-6 min-w-[280px] max-w-[90vw]">
+        <p className="text-[15px] text-[#1A2B4A] font-medium text-center leading-relaxed">
+          로그인이 필요한 서비스 입니다.<br />로그인 하시겠습니까?
+        </p>
+        <div className="flex items-center gap-3 w-full">
+          <button
+            onClick={onCancel}
+            className="flex-1 h-11 border border-gray-300 text-[14px] text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 h-11 bg-[#1A2B4A] text-white text-[14px] font-medium hover:bg-[#15223b] transition-colors"
+          >
+            로그인 바로가기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

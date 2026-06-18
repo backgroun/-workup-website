@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import LoginPromptModal from "@/components/LoginPromptModal";
 import { stores } from "@/data/stores";
 import type { Product } from "@/data/products";
 
@@ -43,6 +44,8 @@ export default function ProductDetailClient({
   const [addedMsg, setAddedMsg] = useState(false);
   // 회원 로그인 세션 — 피팅 리스트 담기 게이팅용 (null = 비로그인)
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/member/me")
@@ -109,10 +112,22 @@ export default function ProductDetailClient({
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try { await navigator.share({ title: product.name, url }); } catch { /* 취소됨 */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch { /* noop */ }
+  };
+
   const handleAddToCart = () => {
     if (!memberSession) {
-      alert("로그인 후 피팅 리스트를 이용하실 수 있습니다.");
-      router.push("/member/login?from=cart");
+      setLoginPromptOpen(true);
       return;
     }
     if (!selectedSize) { alert("사이즈를 선택해 주세요."); return; }
@@ -288,14 +303,28 @@ export default function ProductDetailClient({
 
       <div className="h-px bg-gray-100" />
 
-      {/* CTA: 피팅 리스트(1) → 매장 찾기(2) */}
+      {/* CTA: 피팅 리스트 + 공유(1줄) → 매장 찾기(2) */}
       <div className="space-y-2.5">
-        <button onClick={handleAddToCart}
-          className={`w-full py-4 text-sm font-bold tracking-widest transition-colors ${
-            addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
-          }`}>
-          {addedMsg ? "✓ 피팅 리스트에 담았습니다!" : "피팅 리스트에 담기"}
-        </button>
+        <div className="flex gap-2.5">
+          <button onClick={handleAddToCart}
+            className={`flex-1 py-3.5 text-sm font-bold tracking-wide transition-colors ${
+              addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
+            }`}>
+            {addedMsg ? "✓ 담았습니다!" : "피팅 리스트에 담기"}
+          </button>
+          <button onClick={handleShare} aria-label="공유하기" title="공유하기"
+            className="flex-shrink-0 w-[54px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            {shareCopied ? (
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            )}
+          </button>
+        </div>
 
         {/* 매장 찾기 — 모바일: 바텀시트 / 데스크탑: 인라인 */}
         <button
@@ -372,6 +401,13 @@ export default function ProductDetailClient({
         </div>
       </div>
     )}
+
+    {/* 비로그인 시 로그인 유도 모달 */}
+    <LoginPromptModal
+      open={loginPromptOpen}
+      onCancel={() => setLoginPromptOpen(false)}
+      onConfirm={() => router.push("/member/login?from=cart")}
+    />
     </>
   );
 }

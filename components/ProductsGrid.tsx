@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import LoginPromptModal from "@/components/LoginPromptModal";
 import {
   products as staticProducts,
   mainCategories,
@@ -105,6 +106,7 @@ export default function ProductsGrid() {
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
   const { count, hasProduct, toggleProduct } = useCart();
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const searchQuery = searchParams.get("q") ?? "";
 
   useEffect(() => {
@@ -263,8 +265,7 @@ export default function ProductsGrid() {
   // 카드 하트 = 찜(피팅 리스트) 토글. 로그인 필요 — "피팅 리스트에 담기" 정책과 동일.
   const toggleFav = (product: typeof products[0]) => {
     if (!memberSession) {
-      alert("로그인 후 찜(피팅 리스트)을 이용하실 수 있습니다.");
-      router.push("/member/login?from=cart");
+      setLoginPromptOpen(true);
       return;
     }
     toggleProduct({
@@ -298,14 +299,13 @@ export default function ProductsGrid() {
         )}
         <button
           onClick={(e) => { e.preventDefault(); toggleFav(product); }}
-          className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center z-10"
+          className="absolute bottom-2 right-2 w-9 h-9 flex items-center justify-center z-10"
           aria-label="찜하기"
         >
           <svg
-            className="w-5 h-5 transition-colors duration-150"
-            style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" }}
-            fill={hasProduct(product.id) ? "#B5152B" : "none"}
-            stroke={hasProduct(product.id) ? "#B5152B" : "white"}
+            className="w-7 h-7 transition-colors duration-150"
+            fill={hasProduct(product.id) ? "#ff550c" : "none"}
+            stroke={hasProduct(product.id) ? "#ff550c" : "white"}
             strokeWidth={1.5}
             viewBox="0 0 24 24"
           >
@@ -671,6 +671,13 @@ export default function ProductsGrid() {
           </div>
         </div>
       </div>
+
+      {/* 비로그인 시 로그인 유도 모달 */}
+      <LoginPromptModal
+        open={loginPromptOpen}
+        onCancel={() => setLoginPromptOpen(false)}
+        onConfirm={() => router.push("/member/login?from=cart")}
+      />
     </section>
   );
 }
