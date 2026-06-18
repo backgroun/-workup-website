@@ -35,11 +35,10 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       let h = ah - 8;
       let w = Math.round(h / ratio);
       if (portrait) {
-        // 모바일: 북 높이를 영역의 80%로 제한 → 하단 버튼 행이 항상 완전히 보임
-        h = Math.min(h, Math.round(ah * 0.80));
-        w = Math.round(h / ratio);
-        // 좌우 화살표(48px×2) 공간 확보
-        if (w > aw - 96) { w = aw - 96; h = Math.round(w * ratio); }
+        // 모바일: 전체 너비 사용, 화살표는 이미지 위 오버레이
+        w = aw;
+        h = Math.round(w * ratio);
+        if (h > ah - 8) { h = ah - 8; w = Math.round(h / ratio); }
       } else {
         if (w * 2 > aw - 24) { w = Math.floor((aw - 24) / 2); h = Math.round(w * ratio); }
       }
@@ -72,33 +71,29 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       {/* 메인 뷰어 */}
       <div className="flex-1 min-w-0 min-h-0 flex flex-col order-1">
 
-        {/* 모바일 상단 바: 표지로 이동 + 홈 + 페이지 카운터 */}
-        <div className="md:hidden flex items-center justify-between px-3 py-1 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {total > 0 && (
-              <button
-                onClick={() => bookRef.current?.pageFlip().flip(0)}
-                className="flex items-center gap-1 text-white/50 hover:text-white/90 transition-colors"
-                aria-label="표지로 이동"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <span className="text-[11px] tracking-wide">표지</span>
-              </button>
-            )}
-            <Link href="/" className="text-white/50 hover:text-white/90 transition-colors" aria-label="메인으로">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </Link>
-          </div>
+        {/* 모바일 상단 바 */}
+        <div className="md:hidden flex items-center bg-neutral-900 border-b border-white/10 flex-shrink-0 mt-1">
+          {total > 0 && (
+            <button
+              onClick={() => bookRef.current?.pageFlip().flip(0)}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5"
+              aria-label="표지로 이동"
+            >
+              <span className="text-sm leading-none">📖</span>
+              <span className="text-xs font-medium tracking-wide">표지</span>
+            </button>
+          )}
+          <span className="text-white/20 text-xs select-none">|</span>
+          <Link href="/" className="flex items-center gap-1.5 px-4 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5">
+            <span className="text-sm leading-none">🏠</span>
+            <span className="text-xs font-medium tracking-wide">홈으로</span>
+          </Link>
           {total > 1 && (
-            <span className="text-white/30 text-[10px] tracking-widest">{currentPage + 1} / {total}</span>
+            <span className="ml-auto text-white/30 text-[10px] tracking-widest pr-4">{currentPage + 1} / {total}</span>
           )}
         </div>
 
-        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-1">
+        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-0 md:px-1">
           {total > 0 && dims.w > 0 ? (
             <>
               <Book
@@ -122,29 +117,27 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
               >
                 {pageNodes.map((node, i) => <FlipPage key={i}>{node}</FlipPage>)}
               </Book>
-              {/* 모바일 전용 좌우 화살표 — 탭으로만 페이지 넘김 */}
+              {/* 모바일 전용 좌우 화살표 — 이미지 위 오버레이 */}
               {dims.portrait && total > 1 && (
                 <>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipPrev()}
                     disabled={currentPage === 0}
                     aria-label="이전 페이지"
-                    className="absolute left-0 inset-y-0 w-12 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
-                    style={{ opacity: currentPage === 0 ? 0 : 0.45 }}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-10 h-16 flex items-center justify-center rounded-xl bg-black/50 backdrop-blur-sm text-white transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
                   >
-                    <svg className="w-4 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 16 32">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4L4 16l8 12" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipNext()}
                     disabled={currentPage >= total - 1}
                     aria-label="다음 페이지"
-                    className="absolute right-0 inset-y-0 w-12 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
-                    style={{ opacity: currentPage >= total - 1 ? 0 : 0.45 }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-10 h-16 flex items-center justify-center rounded-xl bg-black/50 backdrop-blur-sm text-white transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
                   >
-                    <svg className="w-4 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 16 32">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4l8 12-8 12" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </>
