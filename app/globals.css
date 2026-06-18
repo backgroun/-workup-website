@@ -55,51 +55,45 @@ html {
 }
 
 /* 가까운 매장 찾기 CTA — 오프라인 방문 유도 핵심 버튼
-   기본부터 #ff550c 채움(높은 시인성) / 호버·터치: 광택 스윕 + 리프트 + 핀 바운스 */
+   기본 #ff550c 채움(높은 시인성) / 호버·터치: 흰색 배경이 좌→우로 채워지며 텍스트·아이콘이 주황으로 반전 + 리프트 + 핀 바운스 */
 .store-cta {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  border: none;
+  border: 2px solid #ff550c;
   color: #fff;
   background: #ff550c;
   box-shadow: 0 4px 14px -4px rgba(255, 85, 12, 0.45);
-  transition: background 0.3s ease, box-shadow 0.35s ease, transform 0.18s ease;
+  transition: color 0.3s ease, box-shadow 0.35s ease, transform 0.18s ease;
 }
-/* 표면을 가로지르는 광택(glint) */
+/* 호버 시 좌→우로 채워지는 흰색 배경 (텍스트·아이콘 뒤) */
 .store-cta::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: -80%;
-  width: 60%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
-  transform: skewX(-20deg);
+  inset: 0;
+  z-index: -1;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .store-cta:hover,
 .store-cta:focus-visible {
-  background: #e84a08;
-  box-shadow: 0 12px 26px -6px rgba(255, 85, 12, 0.6);
+  color: #ff550c;
+  box-shadow: 0 10px 24px -8px rgba(255, 85, 12, 0.4);
   transform: translateY(-2px);
 }
-/* 터치(모바일): 누르는 순간 살짝 눌리는 피드백 */
+/* 터치(모바일): 누르는 순간 흰색 채움 + 살짝 눌리는 피드백 */
 .store-cta:active {
-  background: #e84a08;
+  color: #ff550c;
   transform: scale(0.98);
 }
 .store-cta:hover::before,
 .store-cta:focus-visible::before,
 .store-cta:active::before {
-  animation: store-shine 0.85s ease;
+  transform: scaleX(1);
 }
-@keyframes store-shine {
-  0%   { left: -80%; }
-  100% { left: 130%; }
-}
-/* 핀 아이콘 — 호버·터치 시 통통 튀는 모션 */
+/* 핀 아이콘 — 호버·터치 시 통통 튀는 모션 (색은 currentColor 따라 주황) */
 .store-cta svg {
   position: relative;
   z-index: 2;
@@ -117,14 +111,14 @@ html {
   75%  { transform: translateY(-2px); }
   100% { transform: translateY(0); }
 }
-/* 모션 최소화 선호 사용자: 채움 색은 유지, 동작만 제거 */
+/* 모션 최소화 선호 사용자: 흰색 배경 전환은 즉시 적용, 움직임만 제거 */
 @media (prefers-reduced-motion: reduce) {
-  .store-cta,
-  .store-cta svg {
-    transition: none;
-    transform: none;
-  }
-  .store-cta::before { display: none; }
+  .store-cta { transition: none; }
+  .store-cta::before { transition: none; }
+  .store-cta svg { transition: none; }
+  .store-cta:hover,
+  .store-cta:focus-visible,
+  .store-cta:active { transform: none; color: #ff550c; }
   .store-cta:hover svg,
   .store-cta:focus-visible svg,
   .store-cta:active svg { animation: none; }
