@@ -1731,12 +1731,6 @@ function HeroEditor({ hero, onChange, products }: {
 
   return (
     <div className="space-y-4">
-      {/* 기본 텍스트 정보 */}
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="제목" value={hero.title} onChange={(v) => onChange({ title: v })} placeholder="UV 대책 특집" />
-        <Field label="부제목 (이미지 위 작은 문구)" value={hero.subtitle} onChange={(v) => onChange({ subtitle: v, hero_subtitle: v })} placeholder="자외선 차단 + 흡한속건" />
-      </div>
-
       {/* AI 이미지 프롬프트 빌더 */}
       <PromptBuilder
         isHero
@@ -2139,9 +2133,9 @@ function BlockCard({
       {isOpen && (
         <div className="bg-white">
           {/* 기본 설정 바 */}
-          <div className="flex items-center gap-6 px-5 py-3 bg-gray-50 border-b border-gray-100 flex-wrap">
+          <div className="flex items-center gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
             {/* 레이아웃 */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-xs text-gray-500">레이아웃</span>
               <div className="flex rounded-lg overflow-hidden border border-gray-200">
                 {(["normal", "reversed"] as const).map((v) => (
@@ -2159,24 +2153,27 @@ function BlockCard({
                 ))}
               </div>
             </div>
-            {/* 타입 */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">타입</span>
-              <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                {(["product", "image"] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => onUpdate({ type: v })}
-                    className={`text-xs px-3 py-1.5 transition-colors ${
-                      block.type === v
-                        ? "bg-[#1A2B4A] text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {v === "product" ? "상품형" : "이미지형"}
-                  </button>
-                ))}
-              </div>
+            {/* 제목 */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <span className="text-xs text-gray-500 flex-shrink-0">제목</span>
+              <input
+                type="text"
+                value={block.hero.title}
+                onChange={(e) => onUpdate({ hero: { ...block.hero, title: e.target.value } })}
+                placeholder="UV 대책 특집"
+                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#1A2B4A]"
+              />
+            </div>
+            {/* 부제목 */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <span className="text-xs text-gray-500 flex-shrink-0">부제목</span>
+              <input
+                type="text"
+                value={block.hero.subtitle}
+                onChange={(e) => onUpdate({ hero: { ...block.hero, subtitle: e.target.value, hero_subtitle: e.target.value } })}
+                placeholder="이미지 위 작은 문구"
+                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#1A2B4A]"
+              />
             </div>
           </div>
 
