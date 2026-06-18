@@ -14,27 +14,36 @@ function isDropdown(item: NavItem): item is NavDropdown {
 }
 
 const navGroups: NavGroup[] = [
+  // ── 1. 제품 관리 (최상단) ─────────────────────────────────────────────────
   {
-    label: "메인페이지 관리",
+    label: "제품 관리",
     items: [
       {
-        label: "상단 탑바",
-        href: "/admin/main/topbar",
+        label: "제품 목록",
+        href: "/admin/products",
+        exact: true,
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 9h18" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         ),
       },
       {
-        label: "푸터·약관",
-        href: "/admin/main/footer",
+        label: "카테고리 관리",
+        href: "/admin/main/categories",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 15h18" />
+            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
           </svg>
         ),
       },
+    ],
+  },
+  // ── 2. 메인 관리 ──────────────────────────────────────────────────────────
+  {
+    label: "메인 관리",
+    items: [
       {
         label: "슬라이딩 메뉴",
         icon: (
@@ -61,7 +70,6 @@ const navGroups: NavGroup[] = [
               </svg>
             ),
           },
-          // 추후 슬라이딩 메뉴 추가 시 여기에 추가
         ],
       },
       {
@@ -91,8 +99,14 @@ const navGroups: NavGroup[] = [
           </svg>
         ),
       },
+    ],
+  },
+  // ── 3. 사이트관리 (신설) ─────────────────────────────────────────────────
+  {
+    label: "사이트관리",
+    items: [
       {
-        label: "MATE 영역",
+        label: "메이트",
         href: "/admin/main/people",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -101,7 +115,7 @@ const navGroups: NavGroup[] = [
         ),
       },
       {
-        label: "FIELD TEST 영역",
+        label: "필드테스트",
         href: "/admin/field-test",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -110,7 +124,7 @@ const navGroups: NavGroup[] = [
         ),
       },
       {
-        label: "STORY 관리",
+        label: "스토리",
         href: "/admin/main/story",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -118,10 +132,55 @@ const navGroups: NavGroup[] = [
           </svg>
         ),
       },
+      {
+        label: "상단 탑바",
+        href: "/admin/main/topbar",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 9h18" />
+          </svg>
+        ),
+      },
+      {
+        label: "푸터·약관",
+        href: "/admin/main/footer",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 15h18" />
+          </svg>
+        ),
+      },
     ],
   },
+  // ── 4. 고객 문의 ──────────────────────────────────────────────────────────
   {
-    label: "카탈로그",
+    label: "고객 문의",
+    items: [
+      {
+        label: "문의 관리",
+        href: "/admin/inquiries",
+        exact: true,
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        ),
+      },
+      {
+        label: "문의 리스트(보여주기)",
+        href: "/admin/inquiries/board",
+        exact: true,
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  // ── 5. 카달로그 ───────────────────────────────────────────────────────────
+  {
+    label: "카달로그",
     items: [
       {
         label: "카탈로그 관리",
@@ -145,50 +204,32 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
+  // ── 6. 마케팅/분석 ────────────────────────────────────────────────────────
   {
-    label: "제품 관리",
+    label: "마케팅/분석",
     items: [
       {
-        label: "제품 목록",
-        href: "/admin/products",
+        label: "분석 대시보드",
+        href: "/admin/analytics",
         exact: true,
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-        ),
-      },
-{
-        label: "Excel 업로드",
-        href: "/admin/products/import",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         ),
       },
       {
-        label: "브랜드/제조사",
-        href: "/admin/brands",
-        exact: true,
+        label: "픽셀/광고 설정",
+        href: "/admin/analytics/pixels",
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-        ),
-      },
-      {
-        label: "카테고리 관리",
-        href: "/admin/main/categories",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
           </svg>
         ),
       },
     ],
   },
+  // ── 7. 회원 관리 ──────────────────────────────────────────────────────────
   {
     label: "회원 관리",
     items: [
@@ -244,55 +285,6 @@ const navGroups: NavGroup[] = [
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    label: "마케팅/분석",
-    items: [
-      {
-        label: "분석 대시보드",
-        href: "/admin/analytics",
-        exact: true,
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        ),
-      },
-      {
-        label: "픽셀/광고 설정",
-        href: "/admin/analytics/pixels",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-          </svg>
-        ),
-      },
-    ],
-  },
-  {
-    label: "고객 문의",
-    items: [
-      {
-        label: "문의 관리",
-        href: "/admin/inquiries",
-        exact: true,
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        ),
-      },
-      {
-        label: "문의 리스트(보여주기)",
-        href: "/admin/inquiries/board",
-        exact: true,
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
           </svg>
         ),
       },

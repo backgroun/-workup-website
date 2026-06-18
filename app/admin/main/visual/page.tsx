@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { bgColorWithAlpha } from "@/lib/color";
@@ -1026,7 +1026,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
   pcPos: string; mobilePos: string;
   pcScale: number; mobileScale: number;
 }) {
-  const [mode, setMode] = useState<”pc” | “mobile”>(“pc”);
+  const [mode, setMode] = useState<"pc" | "mobile">("pc");
   const [selIds, setSelIds] = useState<Set<string>>(() => new Set(layers[0]?.id ? [layers[0].id] : []));
   const [editId, setEditId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1051,15 +1051,15 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     }
   }, [editId]);
 
-  const designW = mode === “pc” ? 1920 : 750;
-  const aspectRatio = mode === “pc” ? “1920 / 680” : “750 / 695”;
-  const bg = mode === “pc” ? pcImage : (mobileImage || pcImage);
-  const bgVideo = mode === “pc” ? pcVideo : (mobileVideo || pcVideo);
-  const bgPos = mode === “pc” ? pcPos : mobilePos;
-  const bgScale = mode === “pc” ? pcScale : mobileScale;
+  const designW = mode === "pc" ? 1920 : 750;
+  const aspectRatio = mode === "pc" ? "1920 / 680" : "750 / 695";
+  const bg = mode === "pc" ? pcImage : (mobileImage || pcImage);
+  const bgVideo = mode === "pc" ? pcVideo : (mobileVideo || pcVideo);
+  const bgPos = mode === "pc" ? pcPos : mobilePos;
+  const bgScale = mode === "pc" ? pcScale : mobileScale;
 
   const getXY = (l: TextLayer) =>
-    mode === “pc” ? { x: l.pc_x, y: l.pc_y, size: l.pc_size } : { x: l.mobile_x, y: l.mobile_y, size: l.mobile_size };
+    mode === "pc" ? { x: l.pc_x, y: l.pc_y, size: l.pc_size } : { x: l.mobile_x, y: l.mobile_y, size: l.mobile_size };
 
   const patch = (id: string, p: Partial<TextLayer>) =>
     onChange(layers.map((l) => (l.id === id ? { ...l, ...p } : l)));
@@ -1067,7 +1067,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
   const patchAll = (p: Partial<TextLayer>) =>
     onChange(layers.map((l) => (selIds.has(l.id) ? { ...l, ...p } : l)));
   const patchSize = (id: string, size: number) =>
-    patch(id, mode === “pc” ? { pc_size: size } : { mobile_size: size });
+    patch(id, mode === "pc" ? { pc_size: size } : { mobile_size: size });
 
   // 단일 선택 시 편집 패널용
   const selId = selIds.size === 1 ? [...selIds][0] : null;
@@ -1126,32 +1126,32 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
       if (!o) return layer;
       const nx = Math.max(0, Math.min(98, Math.round((o.x + dX) * 10) / 10));
       const ny = Math.max(0, Math.min(96, Math.round((o.y + dY) * 10) / 10));
-      return mode === “pc” ? { ...layer, pc_x: nx, pc_y: ny } : { ...layer, mobile_x: nx, mobile_y: ny };
+      return mode === "pc" ? { ...layer, pc_x: nx, pc_y: ny } : { ...layer, mobile_x: nx, mobile_y: ny };
     }));
   };
 
   // ── 위치 정렬 ──
-  type AlignType = “left” | “center-h” | “right” | “top” | “middle-v” | “bottom” | “dist-h” | “dist-v”;
+  type AlignType = "left" | "center-h" | "right" | "top" | "middle-v" | "bottom" | "dist-h" | "dist-v";
   const alignSelected = (type: AlignType) => {
     const selected = layers.filter((l) => selIds.has(l.id));
     if (selected.length < 2) return;
     const pos = selected.map((l) => ({ id: l.id, ...getXY(l) }));
     const updates: Record<string, { x?: number; y?: number }> = {};
     switch (type) {
-      case “left”:     { const v = Math.min(...pos.map((p) => p.x)); pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
-      case “right”:    { const v = Math.max(...pos.map((p) => p.x)); pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
-      case “center-h”: { const v = Math.round(((Math.min(...pos.map((p) => p.x)) + Math.max(...pos.map((p) => p.x))) / 2) * 10) / 10; pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
-      case “top”:      { const v = Math.min(...pos.map((p) => p.y)); pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
-      case “bottom”:   { const v = Math.max(...pos.map((p) => p.y)); pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
-      case “middle-v”: { const v = Math.round(((Math.min(...pos.map((p) => p.y)) + Math.max(...pos.map((p) => p.y))) / 2) * 10) / 10; pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
-      case “dist-h”: {
+      case "left":     { const v = Math.min(...pos.map((p) => p.x)); pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
+      case "right":    { const v = Math.max(...pos.map((p) => p.x)); pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
+      case "center-h": { const v = Math.round(((Math.min(...pos.map((p) => p.x)) + Math.max(...pos.map((p) => p.x))) / 2) * 10) / 10; pos.forEach((p) => { updates[p.id] = { x: v }; }); break; }
+      case "top":      { const v = Math.min(...pos.map((p) => p.y)); pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
+      case "bottom":   { const v = Math.max(...pos.map((p) => p.y)); pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
+      case "middle-v": { const v = Math.round(((Math.min(...pos.map((p) => p.y)) + Math.max(...pos.map((p) => p.y))) / 2) * 10) / 10; pos.forEach((p) => { updates[p.id] = { y: v }; }); break; }
+      case "dist-h": {
         if (selected.length < 3) break;
         const sorted = [...pos].sort((a, b) => a.x - b.x);
         const step = (sorted[sorted.length - 1].x - sorted[0].x) / (sorted.length - 1);
         sorted.forEach((p, i) => { updates[p.id] = { x: Math.round((sorted[0].x + step * i) * 10) / 10 }; });
         break;
       }
-      case “dist-v”: {
+      case "dist-v": {
         if (selected.length < 3) break;
         const sorted = [...pos].sort((a, b) => a.y - b.y);
         const step = (sorted[sorted.length - 1].y - sorted[0].y) / (sorted.length - 1);
@@ -1162,7 +1162,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     onChange(layers.map((layer) => {
       const u = updates[layer.id];
       if (!u) return layer;
-      const p = mode === “pc”
+      const p = mode === "pc"
         ? { ...(u.x !== undefined ? { pc_x: u.x } : {}), ...(u.y !== undefined ? { pc_y: u.y } : {}) }
         : { ...(u.x !== undefined ? { mobile_x: u.x } : {}), ...(u.y !== undefined ? { mobile_y: u.y } : {}) };
       return { ...layer, ...p };
@@ -1170,37 +1170,37 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
   };
 
   const ALIGN_BTNS: { type: AlignType; icon: string; label: string; min?: number }[] = [
-    { type: “left”,     icon: “⇤”,  label: “왼쪽 맞춤” },
-    { type: “center-h”, icon: “↔”,  label: “가로 가운데” },
-    { type: “right”,    icon: “⇥”,  label: “오른쪽 맞춤” },
-    { type: “top”,      icon: “⇡”,  label: “위쪽 맞춤” },
-    { type: “middle-v”, icon: “↕”,  label: “세로 가운데” },
-    { type: “bottom”,   icon: “⇣”,  label: “아래쪽 맞춤” },
-    { type: “dist-h”,   icon: “⇹”,  label: “가로 등간격”, min: 3 },
-    { type: “dist-v”,   icon: “⇵”,  label: “세로 등간격”, min: 3 },
+    { type: "left",     icon: "⇤",  label: "왼쪽 맞춤" },
+    { type: "center-h", icon: "↔",  label: "가로 가운데" },
+    { type: "right",    icon: "⇥",  label: "오른쪽 맞춤" },
+    { type: "top",      icon: "⇡",  label: "위쪽 맞춤" },
+    { type: "middle-v", icon: "↕",  label: "세로 가운데" },
+    { type: "bottom",   icon: "⇣",  label: "아래쪽 맞춤" },
+    { type: "dist-h",   icon: "⇹",  label: "가로 등간격", min: 3 },
+    { type: "dist-v",   icon: "⇵",  label: "세로 등간격", min: 3 },
   ];
 
   return (
-    <div className=”space-y-4”>
+    <div className="space-y-4">
       {/* PC / 모바일 전환 */}
-      <div className=”flex items-center justify-between”>
-        <div className=”flex gap-2”>
-          {([“pc”, “mobile”] as const).map((m) => (
-            <button key={m} type=”button” onClick={() => setMode(m)}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${mode === m ? “bg-slate-800 text-white border-slate-800” : “bg-white text-slate-500 border-slate-200 hover:border-slate-400”}`}>
-              {m === “pc” ? “PC (1920×680)” : “모바일 (750×695)”}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          {(["pc", "mobile"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => setMode(m)}
+              className={`px-4 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${mode === m ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"}`}>
+              {m === "pc" ? "PC (1920×680)" : "모바일 (750×695)"}
             </button>
           ))}
         </div>
-        <div className=”flex items-center gap-2”>
+        <div className="flex items-center gap-2">
           {layers.length >= 2 && (
-            <button type=”button” onClick={() => setSelIds(new Set(layers.map((l) => l.id)))}
-              className=”text-xs px-3 py-1.5 border border-slate-200 text-slate-500 rounded-lg hover:border-slate-400 transition-colors”>
+            <button type="button" onClick={() => setSelIds(new Set(layers.map((l) => l.id)))}
+              className="text-xs px-3 py-1.5 border border-slate-200 text-slate-500 rounded-lg hover:border-slate-400 transition-colors">
               전체 선택
             </button>
           )}
-          <button type=”button” onClick={addLayer}
-            className=”flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors”>
+          <button type="button" onClick={addLayer}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
             + 텍스트 추가
           </button>
         </div>
@@ -1209,29 +1209,29 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
       {/* 캔버스 미리보기 */}
       <div
         ref={containerRef}
-        className=”relative rounded-lg overflow-hidden bg-slate-900 select-none”
+        className="relative rounded-lg overflow-hidden bg-slate-900 select-none"
         style={{
           aspectRatio,
-          width: “100%”,
-          maxWidth: mode === “mobile” ? 300 : 720,
-          marginInline: mode === “mobile” ? “auto” : undefined,
-          containerType: “inline-size”,
+          width: "100%",
+          maxWidth: mode === "mobile" ? 300 : 720,
+          marginInline: mode === "mobile" ? "auto" : undefined,
+          containerType: "inline-size",
         }}
         onMouseMove={onMouseMove}
         onMouseUp={() => { drag.current = null; }}
         onMouseLeave={() => { drag.current = null; }}
       >
-        <div className=”absolute inset-0” onMouseDown={() => { setSelIds(new Set()); setEditId(null); }}>
+        <div className="absolute inset-0" onMouseDown={() => { setSelIds(new Set()); setEditId(null); }}>
           {bg ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={bg} alt=”” className=”absolute inset-0 w-full h-full object-cover”
+            <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover"
               style={{ objectPosition: bgPos, transform: `scale(${bgScale || 1})`, transformOrigin: bgPos }} />
           ) : bgVideo ? (
             <video src={bgVideo} muted loop autoPlay playsInline
-              className=”absolute inset-0 w-full h-full object-cover pointer-events-none”
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               style={{ objectPosition: bgPos, transform: `scale(${bgScale || 1})`, transformOrigin: bgPos }} />
           ) : (
-            <div className=”absolute inset-0 flex items-center justify-center text-slate-500 text-xs”>이미지 또는 동영상을 먼저 등록하세요</div>
+            <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs">이미지 또는 동영상을 먼저 등록하세요</div>
           )}
           {layers.map((l) => {
             const { x, y, size } = getXY(l);
@@ -1245,9 +1245,9 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
                 suppressContentEditableWarning
                 onMouseDown={(e) => { if (isEditing) { e.stopPropagation(); return; } onLayerMouseDown(e, l); }}
                 onDoubleClick={(e) => { e.stopPropagation(); setSelIds(new Set([l.id])); setEditId(l.id); }}
-                onBlur={(e) => { patch(l.id, { text: e.currentTarget.textContent ?? “” }); setEditId((cur) => (cur === l.id ? null : cur)); }}
-                onKeyDown={(e) => { if (isEditing && e.key === “Enter” && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
-                className={`absolute outline-offset-2 ${isEditing ? “cursor-text outline-dashed outline-2 outline-blue-300” : “cursor-move”} ${isSelected && !isEditing ? “outline outline-2 outline-blue-400” : “”}`}
+                onBlur={(e) => { patch(l.id, { text: e.currentTarget.textContent ?? "" }); setEditId((cur) => (cur === l.id ? null : cur)); }}
+                onKeyDown={(e) => { if (isEditing && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
+                className={`absolute outline-offset-2 ${isEditing ? "cursor-text outline-dashed outline-2 outline-blue-300" : "cursor-move"} ${isSelected && !isEditing ? "outline outline-2 outline-blue-400" : ""}`}
                 style={{
                   left: `${x}%`, top: `${y}%`,
                   fontFamily: l.font_family || undefined,
@@ -1258,39 +1258,39 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
                   lineHeight: l.line_height,
                   fontSize: `${(size / designW * 100).toFixed(2)}cqw`,
                   transform: `scaleX(${l.scale_x})`,
-                  transformOrigin: “left top”,
-                  whiteSpace: “pre-wrap”,
-                  textShadow: “0 1px 8px rgba(0,0,0,0.25)”,
-                  ...(l.bg_color ? { backgroundColor: bgColorWithAlpha(l.bg_color, l.opacity ?? 1), padding: “0.08em 0.35em” } : {}),
+                  transformOrigin: "left top",
+                  whiteSpace: "pre-wrap",
+                  textShadow: "0 1px 8px rgba(0,0,0,0.25)",
+                  ...(l.bg_color ? { backgroundColor: bgColorWithAlpha(l.bg_color, l.opacity ?? 1), padding: "0.08em 0.35em" } : {}),
                 }}
               >
-                {isEditing ? l.text : (l.text || “텍스트”)}
+                {isEditing ? l.text : (l.text || "텍스트")}
               </div>
             );
           })}
 
           {/* 페이지 넘김(좌우 화살표) 영역 — PC 전용 */}
-          {mode === “pc” && (
+          {mode === "pc" && (
             <>
-              <div className=”absolute inset-y-0 left-0 w-[9%] bg-black/35 border-r border-dashed border-white/50 pointer-events-none flex items-center justify-center”>
-                <span className=”text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl] rotate-180”>넘김 영역</span>
+              <div className="absolute inset-y-0 left-0 w-[9%] bg-black/35 border-r border-dashed border-white/50 pointer-events-none flex items-center justify-center">
+                <span className="text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl] rotate-180">넘김 영역</span>
               </div>
-              <div className=”absolute inset-y-0 right-0 w-[9%] bg-black/35 border-l border-dashed border-white/50 pointer-events-none flex items-center justify-center”>
-                <span className=”text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl]”>넘김 영역</span>
+              <div className="absolute inset-y-0 right-0 w-[9%] bg-black/35 border-l border-dashed border-white/50 pointer-events-none flex items-center justify-center">
+                <span className="text-white/70 text-[9px] tracking-wide [writing-mode:vertical-rl]">넘김 영역</span>
               </div>
             </>
           )}
-          <div className=”absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none”>
+          <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full pointer-events-none">
             더블클릭 입력 · 드래그 이동 · Ctrl+클릭 다중 선택
           </div>
         </div>
       </div>
 
       {/* 레이어 목록 */}
-      <div className=”flex gap-1.5 flex-wrap”>
-        {layers.length === 0 && <p className=”text-xs text-slate-400”>텍스트 개체가 없습니다. “+ 텍스트 추가”를 눌러보세요.</p>}
+      <div className="flex gap-1.5 flex-wrap">
+        {layers.length === 0 && <p className="text-xs text-slate-400">텍스트 개체가 없습니다. "+ 텍스트 추가"를 눌러보세요.</p>}
         {layers.map((l, i) => (
-          <button key={l.id} type=”button”
+          <button key={l.id} type="button"
             onClick={(e) => {
               if (e.ctrlKey || e.metaKey) {
                 setSelIds((prev) => { const next = new Set(prev); next.has(l.id) ? next.delete(l.id) : next.add(l.id); return next; });
@@ -1298,36 +1298,36 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
                 setSelIds(new Set([l.id]));
               }
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full border max-w-[160px] transition-colors ${selIds.has(l.id) ? “bg-blue-600 text-white border-blue-600” : “bg-white text-slate-600 border-slate-200 hover:border-slate-400”}`}>
-            <span className=”truncate”>{i + 1}. {l.text || “(빈 텍스트)”}</span>
+            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full border max-w-[160px] transition-colors ${selIds.has(l.id) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
+            <span className="truncate">{i + 1}. {l.text || "(빈 텍스트)"}</span>
             <span onClick={(e) => { e.stopPropagation(); removeLayer(l.id); }}
-              className={`flex-shrink-0 leading-none ${selIds.has(l.id) ? “text-white/70 hover:text-white” : “text-slate-300 hover:text-red-500”}`}>×</span>
+              className={`flex-shrink-0 leading-none ${selIds.has(l.id) ? "text-white/70 hover:text-white" : "text-slate-300 hover:text-red-500"}`}>×</span>
           </button>
         ))}
       </div>
 
       {/* ── 다중 선택 툴바 (2개 이상 선택 시) ── */}
       {selIds.size >= 2 && (
-        <div className=”p-3 bg-blue-50 rounded-lg border border-blue-200 space-y-3”>
-          <div className=”flex items-center justify-between”>
-            <p className=”text-[11px] font-semibold text-blue-700”>{selIds.size}개 선택 · Ctrl+클릭으로 추가/해제</p>
-            <button type=”button” onClick={() => setSelIds(new Set())}
-              className=”text-[11px] text-blue-500 hover:text-blue-700 transition-colors”>선택 해제</button>
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold text-blue-700">{selIds.size}개 선택 · Ctrl+클릭으로 추가/해제</p>
+            <button type="button" onClick={() => setSelIds(new Set())}
+              className="text-[11px] text-blue-500 hover:text-blue-700 transition-colors">선택 해제</button>
           </div>
 
           {/* 위치 정렬 */}
           <div>
-            <p className=”text-[10px] font-semibold text-blue-600 mb-2 uppercase tracking-wide”>위치 정렬</p>
-            <div className=”flex flex-wrap gap-1”>
+            <p className="text-[10px] font-semibold text-blue-600 mb-2 uppercase tracking-wide">위치 정렬</p>
+            <div className="flex flex-wrap gap-1">
               {ALIGN_BTNS.map(({ type, icon, label, min }) => {
                 const disabled = min !== undefined && selIds.size < min;
                 return (
-                  <button key={type} type=”button”
+                  <button key={type} type="button"
                     onClick={() => !disabled && alignSelected(type)}
                     title={disabled ? `${min}개 이상 선택 시 사용 가능` : label}
-                    className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-[10px] border rounded transition-colors min-w-[46px] ${disabled ? “bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed” : “bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600 cursor-pointer”}`}>
-                    <span className=”text-[14px] leading-none”>{icon}</span>
-                    <span className=”whitespace-nowrap leading-tight”>{label}</span>
+                    className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-[10px] border rounded transition-colors min-w-[46px] ${disabled ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed" : "bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600 cursor-pointer"}`}>
+                    <span className="text-[14px] leading-none">{icon}</span>
+                    <span className="whitespace-nowrap leading-tight">{label}</span>
                   </button>
                 );
               })}
@@ -1336,27 +1336,27 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
 
           {/* 일괄 스타일 변경 */}
           <div>
-            <p className=”text-[10px] font-semibold text-blue-600 mb-2 uppercase tracking-wide”>일괄 스타일 변경</p>
-            <div className=”flex flex-wrap items-center gap-3”>
-              <div className=”flex items-center gap-1.5”>
-                <span className=”text-[11px] text-slate-500”>글자색</span>
-                <input type=”color” defaultValue=”#ffffff”
+            <p className="text-[10px] font-semibold text-blue-600 mb-2 uppercase tracking-wide">일괄 스타일 변경</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-slate-500">글자색</span>
+                <input type="color" defaultValue="#ffffff"
                   onChange={(e) => patchAll({ color: e.target.value })}
-                  className=”w-8 h-7 border border-gray-200 rounded cursor-pointer p-0.5” />
+                  className="w-8 h-7 border border-gray-200 rounded cursor-pointer p-0.5" />
               </div>
-              <div className=”flex gap-1”>
+              <div className="flex gap-1">
                 {[400, 700, 900].map((w) => (
-                  <button key={w} type=”button” onClick={() => patchAll({ weight: w })}
-                    className=”px-2 py-1 text-[11px] rounded border bg-white text-slate-500 border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors”
-                    style={{ fontWeight: w }}>{w === 400 ? “보통” : w === 700 ? “굵게” : “더굵게”}</button>
+                  <button key={w} type="button" onClick={() => patchAll({ weight: w })}
+                    className="px-2 py-1 text-[11px] rounded border bg-white text-slate-500 border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                    style={{ fontWeight: w }}>{w === 400 ? "보통" : w === 700 ? "굵게" : "더굵게"}</button>
                 ))}
               </div>
-              <div className=”flex gap-1”>
-                {([“left”, “center”, “right”] as const).map((a) => (
-                  <button key={a} type=”button” onClick={() => patchAll({ align: a })}
-                    title={a === “left” ? “텍스트 왼쪽 정렬” : a === “center” ? “텍스트 가운데 정렬” : “텍스트 오른쪽 정렬”}
-                    className=”w-7 py-1 text-[11px] rounded border bg-white text-slate-500 border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors”>
-                    {a === “left” ? “↤” : a === “center” ? “↔” : “↦”}
+              <div className="flex gap-1">
+                {(["left", "center", "right"] as const).map((a) => (
+                  <button key={a} type="button" onClick={() => patchAll({ align: a })}
+                    title={a === "left" ? "텍스트 왼쪽 정렬" : a === "center" ? "텍스트 가운데 정렬" : "텍스트 오른쪽 정렬"}
+                    className="w-7 py-1 text-[11px] rounded border bg-white text-slate-500 border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors">
+                    {a === "left" ? "↤" : a === "center" ? "↔" : "↦"}
                   </button>
                 ))}
               </div>
@@ -1367,109 +1367,109 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
 
       {/* ── 단일 선택 편집 패널 ── */}
       {sel && selIds.size === 1 && (
-        <div className=”p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3”>
-          <div className=”flex items-center justify-between”>
-            <p className=”text-[11px] font-semibold text-slate-600”>선택한 텍스트</p>
-            <button type=”button” onClick={() => { setSelIds(new Set([sel.id])); setEditId(sel.id); }}
-              className=”text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100”>이미지에서 직접 편집 ✎</button>
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold text-slate-600">선택한 텍스트</p>
+            <button type="button" onClick={() => { setSelIds(new Set([sel.id])); setEditId(sel.id); }}
+              className="text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100">이미지에서 직접 편집 ✎</button>
           </div>
 
           <div>
-            <label className=”block text-[11px] text-slate-500 mb-1”>텍스트 내용 (줄바꿈: Enter)</label>
+            <label className="block text-[11px] text-slate-500 mb-1">텍스트 내용 (줄바꿈: Enter)</label>
             <textarea
               value={sel.text}
               onChange={(e) => patch(sel.id, { text: e.target.value })}
               rows={2}
-              placeholder=”여기에 문구를 입력하세요”
-              className=”w-full border border-gray-200 px-2.5 py-2 text-sm rounded bg-white focus:outline-none focus:border-[#1A2B4A] resize-none”
+              placeholder="여기에 문구를 입력하세요"
+              className="w-full border border-gray-200 px-2.5 py-2 text-sm rounded bg-white focus:outline-none focus:border-[#1A2B4A] resize-none"
             />
           </div>
 
-          <div className=”grid grid-cols-2 gap-3”>
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>폰트</label>
+              <label className="block text-[11px] text-slate-500 mb-1">폰트</label>
               <select value={sel.font_family} onChange={(e) => patch(sel.id, { font_family: e.target.value })}
-                className=”w-full border border-gray-200 px-2 py-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#1A2B4A]”>
+                className="w-full border border-gray-200 px-2 py-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#1A2B4A]">
                 {FONT_OPTIONS.map((f) => (
                   <option key={f.value} value={f.value} style={{ fontFamily: f.value || undefined }}>{f.label}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>크기 ({mode === “pc” ? “PC” : “모바일”}) · {getXY(sel).size}px</label>
-              <input type=”range” min={12} max={mode === “pc” ? 240 : 140} value={getXY(sel).size}
+              <label className="block text-[11px] text-slate-500 mb-1">크기 ({mode === "pc" ? "PC" : "모바일"}) · {getXY(sel).size}px</label>
+              <input type="range" min={12} max={mode === "pc" ? 240 : 140} value={getXY(sel).size}
                 onChange={(e) => patchSize(sel.id, Number(e.target.value))}
-                className=”w-full accent-blue-600 h-1.5 mt-2” />
+                className="w-full accent-blue-600 h-1.5 mt-2" />
             </div>
           </div>
 
-          <div className=”grid grid-cols-2 gap-3”>
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>색상</label>
-              <div className=”flex items-center gap-2”>
-                <input type=”color” value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
-                  className=”w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5” />
-                <input type=”text” value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
-                  className=”flex-1 border border-gray-200 px-2 py-1.5 text-xs rounded font-mono uppercase” />
+              <label className="block text-[11px] text-slate-500 mb-1">색상</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
+                  className="w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5" />
+                <input type="text" value={sel.color} onChange={(e) => patch(sel.id, { color: e.target.value })}
+                  className="flex-1 border border-gray-200 px-2 py-1.5 text-xs rounded font-mono uppercase" />
               </div>
             </div>
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>굵기 · 정렬</label>
-              <div className=”flex gap-1”>
+              <label className="block text-[11px] text-slate-500 mb-1">굵기 · 정렬</label>
+              <div className="flex gap-1">
                 {[400, 700, 900].map((w) => (
-                  <button key={w} type=”button” onClick={() => patch(sel.id, { weight: w })}
-                    className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${sel.weight === w ? “bg-slate-800 text-white border-slate-800” : “bg-white text-slate-500 border-slate-200”}`}
-                    style={{ fontWeight: w }}>{w === 400 ? “보통” : w === 700 ? “굵게” : “더굵게”}</button>
+                  <button key={w} type="button" onClick={() => patch(sel.id, { weight: w })}
+                    className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${sel.weight === w ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}
+                    style={{ fontWeight: w }}>{w === 400 ? "보통" : w === 700 ? "굵게" : "더굵게"}</button>
                 ))}
-                {([“left”, “center”, “right”] as const).map((a) => (
-                  <button key={a} type=”button” onClick={() => patch(sel.id, { align: a })}
-                    className={`w-7 py-1.5 text-[11px] rounded border transition-colors ${sel.align === a ? “bg-slate-800 text-white border-slate-800” : “bg-white text-slate-500 border-slate-200”}`}>
-                    {a === “left” ? “↤” : a === “center” ? “↔” : “↦”}</button>
+                {(["left", "center", "right"] as const).map((a) => (
+                  <button key={a} type="button" onClick={() => patch(sel.id, { align: a })}
+                    className={`w-7 py-1.5 text-[11px] rounded border transition-colors ${sel.align === a ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}>
+                    {a === "left" ? "↤" : a === "center" ? "↔" : "↦"}</button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className=”grid grid-cols-3 gap-3”>
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>자간 · {sel.letter_spacing}px</label>
-              <input type=”range” min={-10} max={30} step={0.5} value={sel.letter_spacing}
+              <label className="block text-[11px] text-slate-500 mb-1">자간 · {sel.letter_spacing}px</label>
+              <input type="range" min={-10} max={30} step={0.5} value={sel.letter_spacing}
                 onChange={(e) => patch(sel.id, { letter_spacing: Number(e.target.value) })}
-                className=”w-full accent-blue-600 h-1.5 mt-2” />
+                className="w-full accent-blue-600 h-1.5 mt-2" />
             </div>
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>장평 · {Math.round(sel.scale_x * 100)}%</label>
-              <input type=”range” min={0.5} max={1.5} step={0.01} value={sel.scale_x}
+              <label className="block text-[11px] text-slate-500 mb-1">장평 · {Math.round(sel.scale_x * 100)}%</label>
+              <input type="range" min={0.5} max={1.5} step={0.01} value={sel.scale_x}
                 onChange={(e) => patch(sel.id, { scale_x: Number(e.target.value) })}
-                className=”w-full accent-blue-600 h-1.5 mt-2” />
+                className="w-full accent-blue-600 h-1.5 mt-2" />
             </div>
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>줄간격 · {sel.line_height.toFixed(2)}</label>
-              <input type=”range” min={0.9} max={2} step={0.05} value={sel.line_height}
+              <label className="block text-[11px] text-slate-500 mb-1">줄간격 · {sel.line_height.toFixed(2)}</label>
+              <input type="range" min={0.9} max={2} step={0.05} value={sel.line_height}
                 onChange={(e) => patch(sel.id, { line_height: Number(e.target.value) })}
-                className=”w-full accent-blue-600 h-1.5 mt-2” />
+                className="w-full accent-blue-600 h-1.5 mt-2" />
             </div>
           </div>
 
-          <div className=”grid grid-cols-2 gap-3”>
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>배경 투명도 · {Math.round((sel.opacity ?? 1) * 100)}%</label>
-              <input type=”range” min={0} max={1} step={0.01} value={sel.opacity ?? 1}
+              <label className="block text-[11px] text-slate-500 mb-1">배경 투명도 · {Math.round((sel.opacity ?? 1) * 100)}%</label>
+              <input type="range" min={0} max={1} step={0.01} value={sel.opacity ?? 1}
                 onChange={(e) => patch(sel.id, { opacity: Number(e.target.value) })}
-                className=”w-full accent-blue-600 h-1.5 mt-2” />
-              {!sel.bg_color && <p className=”text-[10px] text-slate-400 mt-1”>배경색을 지정하면 적용됩니다</p>}
+                className="w-full accent-blue-600 h-1.5 mt-2" />
+              {!sel.bg_color && <p className="text-[10px] text-slate-400 mt-1">배경색을 지정하면 적용됩니다</p>}
             </div>
             <div>
-              <label className=”block text-[11px] text-slate-500 mb-1”>배경색</label>
-              <div className=”flex items-center gap-2”>
-                <input type=”color” value={sel.bg_color || “#000000”} onChange={(e) => patch(sel.id, { bg_color: e.target.value })}
-                  className=”w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5” />
-                <button type=”button” onClick={() => patch(sel.id, { bg_color: “” })}
-                  className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${!sel.bg_color ? “bg-slate-800 text-white border-slate-800” : “bg-white text-slate-500 border-slate-200”}`}>없음(투명)</button>
+              <label className="block text-[11px] text-slate-500 mb-1">배경색</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={sel.bg_color || "#000000"} onChange={(e) => patch(sel.id, { bg_color: e.target.value })}
+                  className="w-9 h-8 border border-gray-200 rounded cursor-pointer p-0.5" />
+                <button type="button" onClick={() => patch(sel.id, { bg_color: "" })}
+                  className={`flex-1 py-1.5 text-[11px] rounded border transition-colors ${!sel.bg_color ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200"}`}>없음(투명)</button>
               </div>
             </div>
           </div>
-          <p className=”text-[10px] text-slate-400”>크기·위치는 PC/모바일 각각 따로 저장됩니다. 상단 탭으로 전환해 모바일도 배치하세요.</p>
+          <p className="text-[10px] text-slate-400">크기·위치는 PC/모바일 각각 따로 저장됩니다. 상단 탭으로 전환해 모바일도 배치하세요.</p>
         </div>
       )}
     </div>
@@ -1525,7 +1525,7 @@ function VisualConceptGenerator({ concept, currentLayers, onChangeLayers }: {
   const [addedKey, setAddedKey] = useState("");
 
   const generate = () => {
-    if (!concept.trim()) { setError("먼저 위의 ‘관리용 타이틀(기획 컨셉)’을 입력하세요."); return; }
+    if (!concept.trim()) { setError("먼저 위의 '관리용 타이틀(기획 컨셉)'을 입력하세요."); return; }
     setError("");
     const s = season || detectSeason(concept);
     setResult({
@@ -1777,7 +1777,7 @@ function VisualPromptBuilder({ title, subtitle, pcImageUrl }: {
               className="w-full flex-1 min-h-[180px] border border-slate-200 px-3 py-2.5 text-xs text-slate-700 rounded-lg focus:outline-none focus:border-blue-400 resize-none bg-white" />
           ) : (
             <div className="w-full flex-1 min-h-[180px] border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-[11px] text-slate-400 px-4 leading-relaxed">
-              왼쪽 옵션을 고르고 위의<br />‘이미지 프롬프트 생성’을 누르면<br />여기에 프롬프트가 표시됩니다.
+              왼쪽 옵션을 고르고 위의<br />'이미지 프롬프트 생성'을 누르면<br />여기에 프롬프트가 표시됩니다.
             </div>
           )}
           {prompt && pcImageUrl && (

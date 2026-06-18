@@ -201,13 +201,8 @@ export default function AdminStoryPage() {
               promptType="product"
               promptSeed="브랜드 스토리 히어로, 일하는 사람, 와이드 배경"
               label="상단 히어로 이미지 (비우면 네이비 배경 + WU 워터마크)"
+              recommendedSize={`1920 × ${hero.height}px`}
             />
-            <p className="text-[11px] text-gray-400 -mt-2 flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-              권장 사이즈:&nbsp;
-              <span className="font-mono font-semibold text-gray-500">1920 × {hero.height}px</span>
-              &nbsp;· 와이드 비율 · object-cover로 중앙 자동 크롭
-            </p>
             <Field label="헤드라인 (줄바꿈 Enter)">
               <textarea value={hero.heading} onChange={(e) => setHeroField("heading", e.target.value)} rows={2}
                 className={`${INPUT} resize-none`} placeholder="일하는 사람 편에서&#10;만든 브랜드" />
@@ -430,7 +425,7 @@ export default function AdminStoryPage() {
                           ))}
                         </div>
                       </Field>
-                      <AdminImageField value={editing.image_url} onChange={(url) => setFound({ image_url: url })} promptType="product" promptSeed={`창업 스토리, ${editing.heading}`} label="창업 스토리 이미지 (비우면 플레이스홀더)" />
+                      <AdminImageField value={editing.image_url} onChange={(url) => setFound({ image_url: url })} promptType="product" promptSeed={`창업 스토리, ${editing.heading}`} label="창업 스토리 이미지 (비우면 플레이스홀더)" recommendedSize="800 × 600px (4:3)" />
                     </>
                   )}
 
@@ -473,9 +468,7 @@ export default function AdminStoryPage() {
                             </button>
                           ))}
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-1.5">
-                          권장 이미지 사이즈: <span className="font-mono font-semibold text-gray-500">{Math.floor(1920 / editing.columns)} × {Math.floor(1920 / editing.columns)}px</span> (1:1 정사각형)
-                        </p>
+                        <p className="text-[11px] text-gray-400 mt-1.5">각 이미지 권장 사이즈: <span className="font-mono font-semibold text-gray-500">{Math.floor(1920 / editing.columns)} × {Math.floor(1920 / editing.columns)}px</span> · 1:1 정사각형 · 열 수 변경 시 자동 반영</p>
                       </Field>
                       <ArrayField label={`이미지 목록 (${editing.images.length}장)`} onAdd={() => updPhotoImages((a) => [...a, { url: undefined, alt: "" }])}>
                         {editing.images.map((img, i) => (
@@ -490,6 +483,7 @@ export default function AdminStoryPage() {
                               promptType="product"
                               promptSeed="브랜드 스토리, 일하는 사람, 현장"
                               label=""
+                              recommendedSize={`${Math.floor(1920 / editing.columns)} × ${Math.floor(1920 / editing.columns)}px (1:1)`}
                             />
                             <input
                               type="text"

@@ -19,6 +19,10 @@ type HeroSlide = {
   mobile_video_url?: string | null;
   pc_image_position?: string | null;
   mobile_image_position?: string | null;
+  pc_image_scale?: number | null;
+  mobile_image_scale?: number | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  text_layers?: any[] | null;
   content_x?: number | null;
   content_y?: number | null;
   is_visible: boolean;
