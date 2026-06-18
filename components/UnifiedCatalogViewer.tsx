@@ -147,10 +147,9 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                     onClick={() => bookRef.current?.pageFlip().flipPrev()}
                     disabled={currentPage === 0}
                     aria-label="이전 페이지"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center rounded-r-xl transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
-                    style={{ backgroundColor: "#ebebeb" }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
                   >
-                    <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
@@ -158,10 +157,9 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                     onClick={() => bookRef.current?.pageFlip().flipNext()}
                     disabled={currentPage >= total - 1}
                     aria-label="다음 페이지"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center rounded-l-xl transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
-                    style={{ backgroundColor: "#ebebeb" }}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
                   >
-                    <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
