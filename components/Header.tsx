@@ -20,12 +20,14 @@ const navItems = [
 const popularTerms = [
   "카고 팬츠", "방풍 자켓", "쿨링 티셔츠", "안전조끼", "롤업 셔츠", "멀티포켓",
 ];
+const POPULAR_VISIBLE = 4;
 
 type MemberSession = { name: string; grade: string } | null;
 
 export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [termIndex, setTermIndex] = useState(0);
   const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
   const { count } = useCart();
   const router = useRouter();
@@ -39,6 +41,15 @@ export default function Header() {
       .then(data => setMemberSession(data ?? null))
       .catch(() => setMemberSession(null));
   }, [pathname]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    setTermIndex(0);
+    const timer = setInterval(() => {
+      setTermIndex(i => (i + 1) % popularTerms.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [searchOpen]);
 
   const handleSearch = (query: string) => {
     const q = query.trim();
@@ -57,7 +68,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-14">
 
           {/* 로고 */}
-          <Link href="/" className="flex-shrink-0 py-2">
+          <Link href="/" className="flex-shrink-0 py-2 active:opacity-50 active:scale-95 transition-[opacity,transform] duration-150">
             <Image src="/images/logo_black.png" alt="WORKUP" width={130} height={18} className="h-[14px] w-[100px] md:h-[18px] md:w-[130px]" priority />
           </Link>
 
@@ -89,8 +100,12 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* 찜 목록 */}
-            <Link href="/cart" className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors" aria-label="찜 목록">
+            {/* 찜 목록 — 비로그인 시 로그인 유도 */}
+            <button
+              onClick={() => { memberSession ? router.push("/cart") : router.push("/member/login?from=cart"); }}
+              className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+              aria-label="찜 목록"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -100,13 +115,13 @@ export default function Header() {
                   {count}
                 </span>
               )}
-            </Link>
+            </button>
 
-            {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 회원가입 */}
+            {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 로그인 */}
             <Link
-              href={memberSession ? "/mypage" : "/register"}
+              href={memberSession ? "/mypage" : "/member/login"}
               className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
-              aria-label={memberSession ? "마이페이지" : "회원가입"}
+              aria-label={memberSession ? "마이페이지" : "로그인"}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
@@ -157,13 +172,14 @@ export default function Header() {
             </div>
 
             {/* 인기 검색어 */}
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <span className="text-[11px] text-gray-400 tracking-wide flex-shrink-0">인기검색어</span>
-              {popularTerms.map((term) => (
+            <div className="flex items-center gap-2 mt-3 overflow-hidden">
+              {Array.from({ length: POPULAR_VISIBLE }, (_, i) =>
+                popularTerms[(termIndex + i) % popularTerms.length]
+              ).map((term) => (
                 <button
                   key={term}
                   onClick={() => handleSearch(term)}
-                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#ff550c] hover:text-white px-2.5 py-1 transition-colors"
+                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#ff550c] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
                 >
                   {term}
                 </button>

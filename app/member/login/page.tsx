@@ -1,13 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function MemberLoginPage() {
+function LoginContent() {
   const [form, setForm]     = useState({ email: "", password: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -25,7 +27,7 @@ export default function MemberLoginPage() {
     });
     setSaving(false);
     if (res.ok) {
-      router.push("/mypage");
+      router.push(from === "cart" ? "/cart" : "/mypage");
       router.refresh();
     } else {
       const data = await res.json().catch(() => ({}));
@@ -45,6 +47,16 @@ export default function MemberLoginPage() {
           <h1 className="text-xl font-bold text-gray-900 mt-4">로그인</h1>
           <p className="text-sm text-gray-400 mt-1">워크업 회원 전용 로그인</p>
         </div>
+
+        {/* 찜 목록 접근 시 안내 */}
+        {from === "cart" && (
+          <div className="mb-5 px-4 py-3 bg-[#1A2B4A]/5 border border-[#1A2B4A]/20 text-[#1A2B4A] text-sm rounded-lg flex items-start gap-2.5">
+            <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>찜 목록은 로그인 후 이용하실 수 있습니다.</span>
+          </div>
+        )}
 
         {error && (
           <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
@@ -95,5 +107,13 @@ export default function MemberLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MemberLoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }
