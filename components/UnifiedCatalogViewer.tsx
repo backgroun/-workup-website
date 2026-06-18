@@ -71,16 +71,34 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
       {/* 메인 뷰어 */}
       <div className="flex-1 min-w-0 min-h-0 flex flex-col order-1">
-        {!isWorkup && (
-          <div className="flex items-center justify-between px-4 py-1.5 flex-shrink-0 h-7">
-            <span className="text-white/70 text-xs font-medium truncate">{brand?.name ?? ""}</span>
-            {pdfUrl && (
-              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-[#ff550c] text-xs whitespace-nowrap">원본 PDF ↗</a>
-            )}
-          </div>
-        )}
 
-        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-2">
+        {/* 모바일 상단 바: 표지로 이동 + 홈 + 페이지 카운터 */}
+        <div className="md:hidden flex items-center justify-between px-3 py-1 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            {total > 0 && (
+              <button
+                onClick={() => bookRef.current?.pageFlip().flip(0)}
+                className="flex items-center gap-1 text-white/50 hover:text-white/90 transition-colors"
+                aria-label="표지로 이동"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span className="text-[11px] tracking-wide">표지</span>
+              </button>
+            )}
+            <Link href="/" className="text-white/50 hover:text-white/90 transition-colors" aria-label="메인으로">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </Link>
+          </div>
+          {total > 1 && (
+            <span className="text-white/30 text-[10px] tracking-widest">{currentPage + 1} / {total}</span>
+          )}
+        </div>
+
+        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-1">
           {total > 0 && dims.w > 0 ? (
             <>
               <Book
@@ -111,27 +129,23 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                     onClick={() => bookRef.current?.pageFlip().flipPrev()}
                     disabled={currentPage === 0}
                     aria-label="이전 페이지"
-                    className="absolute left-0 inset-y-0 w-12 flex items-center justify-start pl-0.5 transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-0"
-                    style={{ opacity: currentPage === 0 ? 0 : 1 }}
+                    className="absolute left-0 inset-y-0 w-12 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
+                    style={{ opacity: currentPage === 0 ? 0 : 0.45 }}
                   >
-                    <span className="flex items-center justify-center w-8 h-16 rounded-r-2xl bg-white/10 backdrop-blur-[2px]">
-                      <svg className="w-3.5 h-6 text-white/70" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 14 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 2L2 12l8 10" />
-                      </svg>
-                    </span>
+                    <svg className="w-4 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 16 32">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4L4 16l8 12" />
+                    </svg>
                   </button>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipNext()}
                     disabled={currentPage >= total - 1}
                     aria-label="다음 페이지"
-                    className="absolute right-0 inset-y-0 w-12 flex items-center justify-end pr-0.5 transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-0"
-                    style={{ opacity: currentPage >= total - 1 ? 0 : 1 }}
+                    className="absolute right-0 inset-y-0 w-12 flex items-center justify-center transition-opacity duration-200 disabled:pointer-events-none"
+                    style={{ opacity: currentPage >= total - 1 ? 0 : 0.45 }}
                   >
-                    <span className="flex items-center justify-center w-8 h-16 rounded-l-2xl bg-white/10 backdrop-blur-[2px]">
-                      <svg className="w-3.5 h-6 text-white/70" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 14 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 2l8 10-8 10" />
-                      </svg>
-                    </span>
+                    <svg className="w-4 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 16 32">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4l8 12-8 12" />
+                    </svg>
                   </button>
                 </>
               )}
@@ -143,7 +157,8 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-3 py-2 flex-shrink-0">
+        {/* 데스크탑 하단 바 */}
+        <div className="hidden md:flex items-center justify-center gap-3 py-2 flex-shrink-0">
           <Link href="/" className="w-8 h-8 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white/70 hover:text-white flex items-center justify-center transition-colors" aria-label="메인으로">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
