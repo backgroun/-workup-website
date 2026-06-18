@@ -164,22 +164,33 @@ export default function ProductDetailClient({
     <>
     <div className="px-6 md:px-10 lg:px-14 py-8 md:py-12 space-y-7">
 
-      {/* 카테고리 + 이름 + 가격 */}
+      {/* 이름 → 가격 → 브랜드·제품번호 (데스크탑 카테고리는 상단 브레드크럼이 담당) */}
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mb-2.5">
-          <span>{product.category}</span>
-          <span className="text-gray-300">›</span>
-          <span>{product.subCategory}</span>
-        </div>
-        {product.brand && (
-          <span className="inline-block text-[11px] text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full mb-2">
-            {product.brand}
-          </span>
+        {/* 카테고리 — 모바일 전용 (데스크탑은 상단 브레드크럼에 표시) */}
+        {product.category && (
+          <div className="md:hidden flex items-center gap-1.5 text-[11px] text-gray-400 mb-2.5">
+            <span>{product.category}</span>
+            {product.subCategory && (
+              <>
+                <span className="text-gray-300">›</span>
+                <span>{product.subCategory}</span>
+              </>
+            )}
+          </div>
         )}
-        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-3">{product.name}</h1>
+        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-2">{product.name}</h1>
         <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{product.price}</p>
-        {product.sku && (
-          <p className="text-xs text-gray-400 tracking-wider mt-2.5">제품번호 · {product.sku}</p>
+        {(product.brand || product.sku) && (
+          <div className="flex items-center gap-2.5 flex-wrap mt-3.5">
+            {product.brand && (
+              <span className="text-[11px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{product.brand}</span>
+            )}
+            {product.sku && (
+              <span className="text-xs text-gray-400 tracking-wider">
+                제품번호 · <span className="text-gray-500">#{product.sku}</span>
+              </span>
+            )}
+          </div>
         )}
       </div>
 

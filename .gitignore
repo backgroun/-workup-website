@@ -16,3 +16,4 @@ start-sync.bat
 *.zip
 
 .playwright-mcp/
+studio-*.png
