@@ -36,10 +36,9 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       let h = ah - 8;
       let w = Math.round(h / ratio);
       if (portrait) {
-        // 모바일: 전체 너비 사용, 화살표는 이미지 위 오버레이
+        // 모바일: 항상 좌우 꽉찬 너비 유지. 높이만 클리핑.
         w = aw;
         h = Math.round(w * ratio);
-        if (h > ah - 8) { h = ah - 8; w = Math.round(h / ratio); }
       } else {
         if (w * 2 > aw - 24) { w = Math.floor((aw - 24) / 2); h = Math.round(w * ratio); }
       }
@@ -116,7 +115,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           )}
         </div>
 
-        <div ref={areaRef} className="relative flex-1 flex items-center justify-center overflow-hidden px-0 md:px-1">
+        <div ref={areaRef} className="relative flex-1 flex items-start md:items-center justify-center overflow-hidden px-0 md:px-1">
           {total > 0 && dims.w > 0 ? (
             <>
               <Book
