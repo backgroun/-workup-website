@@ -698,7 +698,7 @@ export default function PopupManagePage() {
 
                   {/* 이미지 */}
                   {editing.bg_type === "image" && (
-                    <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4 items-start">
                       <PopupImagePicker
                         label="PC 이미지"
                         sizeHint="권장: 760 × 560px"
@@ -732,91 +732,104 @@ export default function PopupManagePage() {
                 {/* 3. 팝업 콘텐츠 */}
                 <div className="pb-5 border-b border-slate-100 space-y-4">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">팝업 콘텐츠</p>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">서브 문구</label>
-                    <input type="text" value={editing.subtitle}
-                      onChange={e => set("subtitle", e.target.value)}
-                      placeholder="예: 안는 순간, 시원해지는"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">메인 제목</label>
-                    <textarea value={editing.title}
-                      onChange={e => set("title", e.target.value)}
-                      rows={2}
-                      placeholder={"여름을 위한\n냉감 멀티쿠션"}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
-                    <p className="text-[11px] text-gray-400 mt-0.5">줄바꿈: 엔터 키</p>
+                  <div className="grid grid-cols-2 gap-4 items-start">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">서브 문구</label>
+                      <input type="text" value={editing.subtitle}
+                        onChange={e => set("subtitle", e.target.value)}
+                        placeholder="예: 안는 순간, 시원해지는"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">메인 제목</label>
+                      <textarea value={editing.title}
+                        onChange={e => set("title", e.target.value)}
+                        rows={2}
+                        placeholder={"여름을 위한\n냉감 멀티쿠션"}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
+                      <p className="text-[11px] text-gray-400 mt-0.5">줄바꿈: 엔터 키</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* 4. 링크 설정 */}
                 <div className="pb-5 border-b border-slate-100 space-y-4">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">링크 설정</p>
-                  <div className="flex gap-5">
-                    {(["url", "product"] as LinkType[]).map(t => (
-                      <label key={t} className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" checked={editing.link_type === t}
-                          onChange={() => set("link_type", t)}
-                          className="accent-blue-600" />
-                        <span className="text-sm text-gray-700">{t === "url" ? "URL 직접 입력" : "제품 선택"}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <div className="grid grid-cols-2 gap-4 items-start">
+                    {/* 왼쪽: 링크 */}
+                    <div className="space-y-2.5">
+                      <div className="flex gap-4">
+                        {(["url", "product"] as LinkType[]).map(t => (
+                          <label key={t} className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" checked={editing.link_type === t}
+                              onChange={() => set("link_type", t)}
+                              className="accent-blue-600" />
+                            <span className="text-sm text-gray-700">{t === "url" ? "URL 직접 입력" : "제품 선택"}</span>
+                          </label>
+                        ))}
+                      </div>
 
-                  {editing.link_type === "url" ? (
-                    <input type="text" value={editing.link}
-                      onChange={e => set("link", e.target.value)}
-                      placeholder="/products"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                  ) : (
-                    <ProductSearch
-                      currentLink={editing.link}
-                      onSelect={(id, name) => {
-                        set("link", `/products/${id}`);
-                        if (!editing.link_text || editing.link_text === "상품 보러가기")
-                          set("link_text", name);
-                      }}
-                    />
-                  )}
+                      {editing.link_type === "url" ? (
+                        <input type="text" value={editing.link}
+                          onChange={e => set("link", e.target.value)}
+                          placeholder="/products"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                      ) : (
+                        <ProductSearch
+                          currentLink={editing.link}
+                          onSelect={(id, name) => {
+                            set("link", `/products/${id}`);
+                            if (!editing.link_text || editing.link_text === "상품 보러가기")
+                              set("link_text", name);
+                          }}
+                        />
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">버튼 텍스트</label>
-                    <input type="text" value={editing.link_text}
-                      onChange={e => set("link_text", e.target.value)}
-                      placeholder="상품 보러가기"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    {/* 오른쪽: 버튼 텍스트 */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">버튼 텍스트</label>
+                      <input type="text" value={editing.link_text}
+                        onChange={e => set("link_text", e.target.value)}
+                        placeholder="상품 보러가기"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    </div>
                   </div>
                 </div>
 
                 {/* 5. 노출 기간 */}
-                <div className="pb-5 border-b border-slate-100 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 기간</p>
+                <div className="pb-5 border-b border-slate-100">
+                  <div className="flex items-start gap-5">
+                    {/* 왼쪽: 라벨 */}
+                    <div className="w-28 shrink-0">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">노출 기간</p>
+                      <p className="text-[11px] text-gray-400 mt-1.5 leading-snug">미설정 시 항상 노출됩니다.</p>
+                    </div>
+                    {/* 오른쪽: 시작 / 종료 */}
+                    <div className="flex-1 grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">시작 일시</label>
+                        <input type="datetime-local"
+                          value={editing.scheduled_start ? editing.scheduled_start.slice(0, 16) : ""}
+                          onChange={e => set("scheduled_start", toIsoOrNull(e.target.value))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">종료 일시</label>
+                        <input type="datetime-local"
+                          value={editing.scheduled_end ? editing.scheduled_end.slice(0, 16) : ""}
+                          onChange={e => set("scheduled_end", toIsoOrNull(e.target.value))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                      </div>
+                    </div>
+                    {/* 기간 초기화 */}
                     {(editing.scheduled_start || editing.scheduled_end) && (
                       <button type="button"
                         onClick={() => { set("scheduled_start", null); set("scheduled_end", null); }}
-                        className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+                        className="text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0 pt-6">
                         기간 초기화
                       </button>
                     )}
-                  </div>
-                  <p className="text-xs text-gray-400 -mt-2">미설정 시 활성화 상태에서 항상 노출됩니다.</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">시작 일시</label>
-                      <input type="datetime-local"
-                        value={editing.scheduled_start ? editing.scheduled_start.slice(0, 16) : ""}
-                        onChange={e => set("scheduled_start", toIsoOrNull(e.target.value))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">종료 일시</label>
-                      <input type="datetime-local"
-                        value={editing.scheduled_end ? editing.scheduled_end.slice(0, 16) : ""}
-                        onChange={e => set("scheduled_end", toIsoOrNull(e.target.value))}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                    </div>
                   </div>
                 </div>
 

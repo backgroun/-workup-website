@@ -443,11 +443,13 @@ function ImageField({
   hint,
   value,
   onChange,
+  compact = false,
 }: {
   label: string;
   hint: string;
   value: string;
   onChange: (url: string) => void;
+  compact?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -473,6 +475,57 @@ function ImageField({
     e.preventDefault(); setDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleFile(file);
+  }
+
+  if (compact) {
+    return (
+      <div>
+        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">{label}</label>
+        <div
+          onDragOver={onDragOver} onDragEnter={onDragEnter}
+          onDragLeave={onDragLeave} onDrop={onDrop}
+          onClick={() => !uploading && ref.current?.click()}
+          className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+            dragging ? "border-[#ff550c] bg-orange-50" :
+            value ? "border-gray-200 hover:border-gray-300" :
+                    "border-dashed border-gray-300 hover:border-[#1A2B4A]"
+          }`}
+          style={{ aspectRatio: "3/4" }}
+        >
+          <input ref={ref} type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+          {value ? (
+            <img src={value} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+              <svg className={`w-6 h-6 ${dragging ? "text-[#ff550c]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+              </svg>
+              <p className="text-[10px] text-gray-400 text-center leading-snug px-2">클릭 또는<br/>드래그</p>
+            </div>
+          )}
+          {uploading && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+        {value && (
+          <div className="mt-1.5 space-y-0.5">
+            <p className="text-[10px] text-gray-500 truncate">{value.split("/").pop()}</p>
+            <p className="text-[10px] text-gray-400 leading-snug">{hint}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <button type="button" onClick={(e) => { e.stopPropagation(); ref.current?.click(); }}
+                className="text-[11px] text-[#1A2B4A] hover:underline">이미지 변경</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onChange(""); }}
+                className="text-[11px] text-red-400 hover:text-red-600">제거</button>
+            </div>
+          </div>
+        )}
+        {!value && <p className="text-[10px] text-gray-400 mt-1 leading-snug">{hint}</p>}
+        {err && <p className="text-[11px] text-red-500 mt-1">{err}</p>}
+      </div>
+    );
   }
 
   return (
@@ -863,6 +916,9 @@ const SHOT_TYPES = [
   { key: "lower",  label: "하반신",   en: "lower body shot, waist down, focus on bottom wear" },
   { key: "detail", label: "클로즈업", en: "close-up detail shot, fabric texture and material focus" },
   { key: "group",  label: "그룹샷",   en: "group shot of multiple workers wearing the outfit together" },
+  { key: "side",   label: "측면샷",   en: "side profile shot at 45-90 degrees showing garment silhouette and layering" },
+  { key: "action", label: "동작샷",   en: "dynamic action shot with natural work movement, walking or active pose" },
+  { key: "back",   label: "뒷모습",   en: "rear view shot emphasizing back design, seams and overall fit from behind" },
 ] as const;
 type ShotKey = typeof SHOT_TYPES[number]["key"];
 
@@ -950,6 +1006,9 @@ const SHOT_CAM: Record<ShotKey, string> = {
   lower:  "50mm lens angled toward the lower body, bottoms in focus with the ground / location visible",
   detail: "90mm lens, tight close-up on fabric / hardware with creamy background bokeh",
   group:  "35mm lens, several models staged together within the scene, balanced group composition",
+  side:   "50mm lens, side profile angle, silhouette and layering clearly readable from a 45-90 degree perspective",
+  action: "35mm lens, slight motion blur on extremities, dynamic working or walking motion captured mid-movement",
+  back:   "50mm lens, rear view centered, back panel design and overall silhouette clearly visible",
 };
 
 // ── 기획전(컬렉션) 모드: 하단 연결상품 3개를 하나로 아우르는 상단 이미지 ──
@@ -1058,14 +1117,16 @@ function buildCollectionPrompt(opts: {
 function buildEditorialPrompt(opts: {
   kind: "hero" | "banner";
   theme: string; desc: string; shotType: ShotKey;
-  clothingType: "작업복" | "일상복";
+  clothingType: "작업복" | "일상복" | "잡화";
   season: string; extras: string[]; scene: string; imageUrl?: string;
   collection?: { mode: ShowcaseMode; items: CollItem[] };
 }): string {
   const { kind, theme, desc, shotType, clothingType, season, extras, scene, imageUrl, collection } = opts;
   if (!theme) return "";
 
-  const clothingEn = clothingType === "일상복" ? "Korean casual everyday wear" : "Korean functional workwear";
+  const clothingEn = clothingType === "일상복" ? "Korean casual everyday wear"
+    : clothingType === "잡화" ? "Korean workwear accessories and hard goods"
+    : "Korean functional workwear";
   const shotLabel = SHOT_TYPES.find((s) => s.key === shotType)?.label ?? "";
   const shotEn = SHOT_TYPES.find((s) => s.key === shotType)?.en ?? SHOT_TYPES[0].en;
   const shotCam = SHOT_CAM[shotType] ?? SHOT_CAM.full;
@@ -1141,7 +1202,7 @@ function buildEditorialPrompt(opts: {
 function buildHeroPrompt(
   title: string, subtitle: string, desc: string, heroSub: string,
   shotType: ShotKey,
-  clothingType: "작업복" | "일상복",
+  clothingType: "작업복" | "일상복" | "잡화",
   season: string,
   extras: string[],
   scene: string,
@@ -1153,7 +1214,7 @@ function buildHeroPrompt(
 
 function buildBannerPrompt(
   title: string, desc: string, shotType: ShotKey,
-  clothingType: "작업복" | "일상복",
+  clothingType: "작업복" | "일상복" | "잡화",
   season: string,
   extras: string[],
   scene: string,
@@ -1166,7 +1227,7 @@ function buildBannerPrompt(
 function buildShowcasePrompt(
   title: string, desc: string, items: ProductItem[],
   mode: ShowcaseMode,
-  clothingType: "작업복" | "일상복",
+  clothingType: "작업복" | "일상복" | "잡화",
   season: string, extras: string[], scene: string
 ): string {
   const coll = items
@@ -1315,7 +1376,10 @@ function HeroPromptBox({ prompt, refImageUrl }: { prompt: string; refImageUrl?: 
 }
 
 // ── 공통 프롬프트 빌더 ────────────────────────────────────
-const PROMPT_EXTRA_PRESETS = ["남성", "여성", "한국인", "서양인", "캐주얼", "프로페셔널"];
+const PROMPT_EXTRA_PRESETS = [
+  "남성", "여성", "한국인", "서양인", "캐주얼", "프로페셔널",
+  "청년", "중장년", "단체", "야외작업", "도심출근",
+];
 
 function PromptBuilder({
   buildFn,
@@ -1327,8 +1391,8 @@ function PromptBuilder({
   ratioLabel,
   refImageUrl,
 }: {
-  buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복", season: string, extras: string[], scene: string) => string;
-  buildShowcaseFn?: (mode: ShowcaseMode, clothingType: "작업복" | "일상복", season: string, extras: string[], scene: string) => string;
+  buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복" | "잡화", season: string, extras: string[], scene: string) => string;
+  buildShowcaseFn?: (mode: ShowcaseMode, clothingType: "작업복" | "일상복" | "잡화", season: string, extras: string[], scene: string) => string;
   enableShowcase?: boolean;
   items?: ProductItem[];
   isHero?: boolean;
@@ -1337,7 +1401,7 @@ function PromptBuilder({
   refImageUrl?: string;
 }) {
   const [shotType, setShotType]           = useState<ShotKey>("full");
-  const [clothingType, setClothingType]   = useState<"작업복" | "일상복">("작업복");
+  const [clothingType, setClothingType]   = useState<"작업복" | "일상복" | "잡화">("작업복");
   const [season, setSeason]               = useState("");
   const [scene, setScene]                 = useState("");
   const [extras, setExtras]               = useState<string[]>([]);
@@ -1391,7 +1455,7 @@ function PromptBuilder({
       {/* 2열: 컨트롤 (좌) | 프롬프트 (우) */}
       <div className="flex gap-3">
         {/* Left: 컨트롤 */}
-        <div className="flex-shrink-0 w-[300px] space-y-2">
+        <div className="flex-1 min-w-0 space-y-2">
           {/* 기획전 모드 */}
           {enableShowcase && buildShowcaseFn && (
             <div className="bg-violet-50 border border-violet-200 rounded-lg p-2.5 space-y-2">
@@ -1430,7 +1494,7 @@ function PromptBuilder({
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">의류 유형</span>
               <div className="flex gap-1">
-                {(["작업복", "일상복"] as const).map(t => (
+                {(["작업복", "일상복", "잡화"] as const).map(t => (
                   <button key={t} type="button" onClick={() => { setClothingType(t); resetPrompt(); }}
                     className={`px-2.5 py-1 text-[11px] rounded-full border font-medium transition-colors ${
                       clothingType === t ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
@@ -1493,7 +1557,7 @@ function PromptBuilder({
         </div>
 
         {/* Right: 프롬프트 생성 영역 */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-shrink-0 w-[220px]">
           {showPrompt && prompt ? (
             <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-xl p-3 space-y-2 h-full">
               <div className="flex items-center justify-between">
@@ -1520,22 +1584,24 @@ function PromptBuilder({
                   ? (itemRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 {itemRefs.length}장</span>)
                   : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 이미지</span>)}
               </div>
-              {isHero && (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1.5 text-[10px] text-indigo-700 leading-snug">
-                  <p className="font-semibold mb-0.5">📐 생성 가이드</p>
-                  <p>· 피사체 50~60% 이하 차지</p>
-                  <p>· PC에서 하단 약 10% 크롭</p>
-                </div>
-              )}
-              {(showcaseActive && itemRefs.length > 0) && (
-                <div className="flex flex-wrap gap-1">
-                  {itemRefs.map((u, i) => <img key={i} src={u} alt="" className="w-8 h-8 object-cover rounded border border-orange-200" />)}
-                </div>
-              )}
-              {(!showcaseActive && refImageUrl) && (
-                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg p-2">
-                  <img src={refImageUrl} alt="" className="w-8 h-8 object-cover rounded border border-orange-200 flex-shrink-0" />
-                  <p className="text-[10px] text-orange-700 leading-snug">참고 이미지 포함</p>
+              {/* 참고이미지 + 생성가이드 한 라인 */}
+              {(isHero || (!showcaseActive && refImageUrl) || (showcaseActive && itemRefs.length > 0)) && (
+                <div className="flex items-start gap-1.5">
+                  {/* 참고이미지 썸네일들 */}
+                  {showcaseActive && itemRefs.length > 0 && (
+                    <div className="flex gap-0.5 flex-shrink-0">
+                      {itemRefs.slice(0, 3).map((u, i) => <img key={i} src={u} alt="" className="w-6 h-6 object-cover rounded border border-orange-200" />)}
+                    </div>
+                  )}
+                  {!showcaseActive && refImageUrl && (
+                    <img src={refImageUrl} alt="" className="w-6 h-6 object-cover rounded border border-orange-200 flex-shrink-0" />
+                  )}
+                  {/* 안내 텍스트 */}
+                  <div className="text-[10px] leading-snug min-w-0">
+                    {isHero && <p className="text-indigo-600">· 피사체 50~60% · PC 하단 10% 크롭</p>}
+                    {(!showcaseActive && refImageUrl) && <p className="text-orange-600">참고 이미지 포함</p>}
+                    {showcaseActive && itemRefs.length > 0 && <p className="text-orange-600">참고 {itemRefs.length}장 반영</p>}
+                  </div>
                 </div>
               )}
               <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={8}
@@ -1559,6 +1625,7 @@ function HeroEditor({ hero, onChange, products }: {
   onChange: (patch: Partial<EditorialBlock["hero"]>) => void;
   products: SearchProduct[];
 }) {
+  const [heroTab, setHeroTab] = useState<"edit" | "prompt">("edit");
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
   const [posView, setPosView] = useState<"pc" | "mobile">("pc");
@@ -1664,36 +1731,59 @@ function HeroEditor({ hero, onChange, products }: {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* 기본 텍스트 정보 */}
       <div className="grid grid-cols-2 gap-4">
         <Field label="제목" value={hero.title} onChange={(v) => onChange({ title: v })} placeholder="UV 대책 특집" />
         <Field label="부제목 (이미지 위 작은 문구)" value={hero.subtitle} onChange={(v) => onChange({ subtitle: v, hero_subtitle: v })} placeholder="자외선 차단 + 흡한속건" />
       </div>
 
-      {/* AI 이미지 프롬프트 빌더 */}
-      <PromptBuilder
-        isHero
-        buildFn={(shotType, clothingType, season, extras, scene) =>
-          buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, scene, hero.image_url || undefined)
-        }
-        refImageUrl={hero.image_url || undefined}
-      />
+      {/* 서브탭: 기획전 | AI 프롬프트 */}
+      <div className="flex gap-0 border-b border-gray-200">
+        <button type="button" onClick={() => setHeroTab("edit")}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors -mb-px ${
+            heroTab === "edit" ? "text-[#1A2B4A] border-[#1A2B4A]" : "text-gray-400 border-transparent hover:text-gray-600"
+          }`}>기획전</button>
+        <button type="button" onClick={() => setHeroTab("prompt")}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors -mb-px ${
+            heroTab === "prompt" ? "text-violet-600 border-violet-600" : "text-gray-400 border-transparent hover:text-gray-600"
+          }`}>✨ AI 프롬프트</button>
+      </div>
 
-      {/* 이미지 업로드 */}
-      <ImageField
-        label="대표 이미지 (모바일 · 3:4)"
-        hint="모바일용: 950 × 1280px (3:4) — PC는 패널 전체를 채우도록 크롭"
-        value={hero.image_url}
-        onChange={(url) => { onChange({ image_url: url }); setSelectedIdx(null); }}
-      />
+      {/* AI 프롬프트 탭 */}
+      {heroTab === "prompt" && (
+        <PromptBuilder
+          isHero
+          buildFn={(shotType, clothingType, season, extras, scene) =>
+            buildHeroPrompt(hero.title, hero.subtitle, hero.desc, hero.hero_subtitle, shotType, clothingType, season, extras, scene, hero.image_url || undefined)
+          }
+          refImageUrl={hero.image_url || undefined}
+        />
+      )}
 
-      {/* ── 이미지 위치·스케일 + 상품 태그 (수평 2열 레이아웃) ── */}
-      <div className="flex gap-4 items-start">
+      {/* ── 기획전 탭: 3-column (대표이미지 | 위치·크기 | 상품태그) ── */}
+      {heroTab === "edit" && (
+      <div className="flex gap-3 items-start">
 
-        {/* Left: 이미지 위치 / 스케일 컨트롤 */}
+        {/* Col 1: 대표 이미지 (compact, 3:4) */}
+        <div className="flex-shrink-0" style={{ width: "130px" }}>
+          <ImageField
+            label="대표 이미지 (모바일 · 3:4)"
+            hint="모바일용: 950 × 1280px (3:4) — PC는 패널 전체를 채우도록 크롭"
+            value={hero.image_url}
+            onChange={(url) => { onChange({ image_url: url }); setSelectedIdx(null); }}
+            compact
+          />
+        </div>
+
+        {/* Col 2: 이미지 위치 / 스케일 컨트롤 */}
+        {!hero.image_url && (
+          <div className="flex-shrink-0 flex items-center justify-center rounded-xl border-2 border-dashed border-gray-200 text-[11px] text-gray-400" style={{ width: "200px", minHeight: "200px" }}>
+            이미지를 업로드하면<br/>위치·크기 조절 가능
+          </div>
+        )}
         {hero.image_url && (
-          <div className="flex-shrink-0 space-y-2" style={{ width: "190px" }}>
+          <div className="flex-shrink-0 space-y-2" style={{ width: "200px" }}>
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-semibold text-gray-700">이미지 위치·크기</label>
               <button type="button"
@@ -1772,8 +1862,8 @@ function HeroEditor({ hero, onChange, products }: {
           </div>
         )}
 
-        {/* Right: 상품 태그 에디터 */}
-        <div className={hero.image_url ? "flex-1 min-w-0" : "w-full"}>
+        {/* Col 3: 상품 태그 에디터 */}
+        <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <div>
               <label className="text-xs font-medium text-gray-700">상품 태그 ({hero.tags.length}개)</label>
@@ -1949,8 +2039,8 @@ function HeroEditor({ hero, onChange, products }: {
           </div>
         </div>
       </div>
-    </div>
-
+      </div>
+      )}
     </div>
   );
 }
