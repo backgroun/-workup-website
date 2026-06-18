@@ -22,8 +22,6 @@ export default function AdminCatalogPage() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLDivElement>(null);
-  // 종류 전환 시 종류별 입력 내용 보관 → 왕복해도 복원(데이터 유실 방지)
   const dataCacheRef = useRef<Partial<Record<CatalogPageType, CatalogPageData>>>({});
 
   const load = async () => {
@@ -58,15 +56,12 @@ export default function AdminCatalogPage() {
     dataCacheRef.current = {};
     setEditing({ id: "", ...EMPTY_CATALOG_PAGE, sort_order: pages.length });
     setIsNew(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   const openEdit = (page: CatalogPage) => {
     dataCacheRef.current = {};
-    // 구버전 행 방어: page_type/data 누락 시 기본값
     setEditing({ ...page, page_type: page.page_type ?? "image", data: page.data ?? {} });
     setIsNew(false);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   const set = (key: keyof CatalogPage, value: string | boolean | number | null) => {
@@ -75,13 +70,39 @@ export default function AdminCatalogPage() {
   const setType = (type: CatalogPageType) =>
     setEditing((prev) => {
       if (!prev || prev.page_type === type) return prev;
-      dataCacheRef.current[prev.page_type] = prev.data; // 현재 종류 내용 보관
+      dataCacheRef.current[prev.page_type] = prev.data;
       return { ...prev, page_type: type, data: dataCacheRef.current[type] ?? emptyDataFor(type) };
     });
   const setData = (patch: Partial<CatalogPageData>) =>
     setEditing((prev) => (prev ? { ...prev, data: { ...(prev.data ?? {}), ...patch } } : prev));
   const updItems = (fn: (a: ContentsItem[]) => ContentsItem[]) =>
     setEditing((prev) => (prev ? { ...prev, data: { ...(prev.data ?? {}), items: fn(prev.data?.items ?? []) } } : prev));
+
+  // 목차 자동 생성 — 노출 중인 divider 페이지에서 카테고리명과 페이지 번호 추출
+  const autoFillToc = () => {
+    const visible = pages.filter((p) => p.is_visible);
+    const items: ContentsItem[] = [];
+    visible.forEach((p, i) => {
+      if (p.page_type === "divider") {
+        // 다음 divider가 있으면 그 직전 페이지까지 범위 계산
+        const nextDivIdx = visible.findIndex((q, qi) => qi > i && q.page_type === "divider");
+        const startPg = i + 1;
+        const endPg = nextDivIdx !== -1 ? nextDivIdx : visible.length;
+        const pageStr = startPg < endPg ? `P.${startPg + 1} – ${endPg}` : `P.${startPg + 1}`;
+        items.push({
+          name: p.data?.title ?? "",
+          count: p.data?.count ?? "",
+          page: pageStr,
+        });
+      }
+    });
+    if (items.length === 0) {
+      flash("노출 중인 구분(divider) 페이지가 없습니다.", "err");
+      return;
+    }
+    updItems(() => items);
+    flash(`${items.length}개 항목이 자동 생성됐습니다.`);
+  };
 
   const handleSave = async () => {
     if (!editing) return;
@@ -93,7 +114,7 @@ export default function AdminCatalogPage() {
 
     const id = isNew ? crypto.randomUUID() : editing.id;
     const payload: Record<string, unknown> = { ...editing, id, image_url: editing.image_url || null };
-    delete payload.created_at; delete payload.updated_at; // 서버 관리 컬럼 제외
+    delete payload.created_at; delete payload.updated_at;
 
     const url = isNew ? "/api/admin/catalog" : `/api/admin/catalog/${editing.id}`;
     const method = isNew ? "POST" : "PUT";
@@ -111,11 +132,9 @@ export default function AdminCatalogPage() {
 
   const handleDuplicate = async (page: CatalogPage) => {
     const payload: Record<string, unknown> = {
-      ...page,
-      id: crypto.randomUUID(),
+      ...page, id: crypto.randomUUID(),
       admin_title: `${page.admin_title || page.title || "페이지"} (복사본)`,
-      sort_order: pages.length,
-      image_url: page.image_url || null,
+      sort_order: pages.length, image_url: page.image_url || null,
     };
     delete payload.created_at; delete payload.updated_at;
     const res = await fetch("/api/admin/catalog", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -152,7 +171,31 @@ export default function AdminCatalogPage() {
     ));
   };
 
+  // 팝업 내 위/아래 이동
+  const moveUp = async (index: number) => {
+    if (index === 0) return;
+    const next = [...pages];
+    [next[index - 1], next[index]] = [next[index], next[index - 1]];
+    const updated = next.map((p, i) => ({ ...p, sort_order: i }));
+    setPages(updated);
+    await Promise.all(updated.map((p) =>
+      fetch(`/api/admin/catalog/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: p.sort_order }) })
+    ));
+  };
+
+  const moveDown = async (index: number) => {
+    if (index >= pages.length - 1) return;
+    const next = [...pages];
+    [next[index], next[index + 1]] = [next[index + 1], next[index]];
+    const updated = next.map((p, i) => ({ ...p, sort_order: i }));
+    setPages(updated);
+    await Promise.all(updated.map((p) =>
+      fetch(`/api/admin/catalog/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: p.sort_order }) })
+    ));
+  };
+
   const d = editing?.data ?? {};
+  const editingIndex = editing ? pages.findIndex((p) => p.id === editing.id) : -1;
 
   return (
     <div>
@@ -192,7 +235,7 @@ export default function AdminCatalogPage() {
           {fetchErrMsg && (
             <div className="mb-3 px-3 py-2 bg-white border border-red-200 rounded text-xs text-red-600 font-mono break-all">실제 에러: {fetchErrMsg}</div>
           )}
-          <p className="text-xs text-amber-700 mb-3">위 “연결된 프로젝트”에 아래 SQL을 1회 실행하세요.</p>
+          <p className="text-xs text-amber-700 mb-3">위 "연결된 프로젝트"에 아래 SQL을 1회 실행하세요.</p>
           <pre className="text-xs bg-white p-3 border border-amber-200 rounded overflow-x-auto text-gray-700 whitespace-pre-wrap">{`CREATE TABLE IF NOT EXISTS catalog_pages (
   id          TEXT PRIMARY KEY,
   page_type   TEXT NOT NULL DEFAULT 'image',
@@ -212,88 +255,137 @@ GRANT ALL ON TABLE catalog_pages TO anon, authenticated, service_role;
 ALTER TABLE catalog_pages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "public_read" ON catalog_pages;
 CREATE POLICY "public_read" ON catalog_pages FOR SELECT USING (true);
--- 기존 테이블에 컬럼 추가 (이미 있을 때)
 ALTER TABLE catalog_pages ADD COLUMN IF NOT EXISTS page_type TEXT NOT NULL DEFAULT 'image';
 ALTER TABLE catalog_pages ADD COLUMN IF NOT EXISTS data JSONB NOT NULL DEFAULT '{}'::jsonb;
 NOTIFY pgrst, 'reload schema';`}</pre>
         </div>
       )}
 
-      <div className="flex gap-6 items-start">
-        {/* ── 왼쪽: 페이지 목록 ── */}
-        <div className="w-[340px] flex-shrink-0 sticky top-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-700">페이지 목록</h2>
-              <span className="text-xs text-slate-400">드래그로 순서 변경</span>
-            </div>
-            {loading ? (
-              <div className="flex items-center justify-center gap-2 py-14 text-slate-400 text-sm">
-                <span className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />불러오는 중...
-              </div>
-            ) : pages.length === 0 && !editing ? (
-              <div className="py-14 text-center text-slate-400 text-sm">등록된 페이지가 없습니다.</div>
-            ) : (
-              <ul className="divide-y divide-slate-100">
-                {pages.map((page, i) => (
-                  <li key={page.id} draggable
-                    onDragStart={() => setDragIndex(i)}
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(i); }}
-                    onDrop={() => handleDrop(i)}
-                    onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
-                    className={`flex items-start gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${editing?.id === page.id ? "bg-blue-50" : "hover:bg-slate-50"} ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}>
-                    <svg className="w-3 h-3 text-slate-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 6a1 1 0 100-2 1 1 0 000 2zM16 6a1 1 0 100-2 1 1 0 000 2zM8 12a1 1 0 100-2 1 1 0 000 2zM16 12a1 1 0 100-2 1 1 0 000 2zM8 18a1 1 0 100-2 1 1 0 000 2zM16 18a1 1 0 100-2 1 1 0 000 2z" />
-                    </svg>
-
-                    {/* 번호 + 썸네일 */}
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      <div className="w-12 h-[68px] overflow-hidden rounded border border-slate-200 bg-slate-100">
-                        {(page.page_type ?? "image") !== "image" ? (
-                          <div className="w-full h-full" style={{ transform: "scale(0.99)" }}>
-                            <CatalogPageView page={page} />
-                          </div>
-                        ) : page.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={page.image_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-700 flex items-center justify-center"><span className="text-white/30 text-[9px] font-bold">WU</span></div>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-slate-400 mt-1">P.{i + 1}</span>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">{CATALOG_TYPE_LABEL[page.page_type ?? "image"]}</span>
-                        <p className="flex-1 min-w-0 text-xs font-semibold text-slate-800 truncate">{page.admin_title || page.title || page.data?.brand || page.data?.title || "(제목 없음)"}</p>
-                        <button onClick={() => toggleVisible(page)} title={page.is_visible ? "노출 중" : "숨김"}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${page.is_visible ? "bg-blue-500" : "bg-slate-200"}`}>
-                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${page.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
-                        </button>
-                      </div>
-                      {page.link_url && <p className="text-[10px] text-[#ff550c] mt-0.5 truncate">↗ {page.link_label || page.link_url}</p>}
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <button onClick={() => openEdit(page)} className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">수정</button>
-                        <button onClick={() => handleDuplicate(page)} title="복제" className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">복제</button>
-                        <button onClick={() => handleDelete(page.id, page.admin_title || page.title)} className="text-[11px] font-medium text-red-400 border border-red-200 px-2.5 py-1 hover:bg-red-50 transition-colors rounded">삭제</button>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+      {/* ── 텍스트 전용 페이지 목록 ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-700">페이지 목록</h2>
+          <span className="text-xs text-slate-400">드래그 또는 ↑↓ 버튼으로 순서 변경</span>
         </div>
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-14 text-slate-400 text-sm">
+            <span className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />불러오는 중...
+          </div>
+        ) : pages.length === 0 ? (
+          <div className="py-14 text-center text-slate-400 text-sm">등록된 페이지가 없습니다.</div>
+        ) : (
+          <ul className="divide-y divide-slate-50">
+            {pages.map((page, i) => (
+              <li key={page.id} draggable
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(i); }}
+                onDrop={() => handleDrop(i)}
+                onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
+                className={`flex items-center gap-2.5 px-4 py-2 cursor-grab active:cursor-grabbing transition-colors hover:bg-slate-50 ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}
+              >
+                {/* 드래그 핸들 */}
+                <svg className="w-3 h-3 text-slate-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 6a1 1 0 100-2 1 1 0 000 2zM16 6a1 1 0 100-2 1 1 0 000 2zM8 12a1 1 0 100-2 1 1 0 000 2zM16 12a1 1 0 100-2 1 1 0 000 2zM8 18a1 1 0 100-2 1 1 0 000 2zM16 18a1 1 0 100-2 1 1 0 000 2z" />
+                </svg>
 
-        {/* ── 오른쪽: 편집 폼 ── */}
-        <div className="flex-1 min-w-0">
-          {editing ? (
-            <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="px-6 py-4 bg-slate-800 flex items-center justify-between">
-                <h2 className="text-base font-semibold text-white">{isNew ? "새 페이지 추가" : "페이지 수정"} <span className="text-slate-400 text-sm font-normal">· {CATALOG_TYPE_LABEL[editing.page_type]}</span></h2>
-                <div className="flex items-center gap-3">
-                  <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+                {/* 페이지 번호 */}
+                <span className="text-[10px] text-slate-400 w-6 text-right flex-shrink-0">P.{i + 1}</span>
+
+                {/* 종류 뱃지 */}
+                <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                  {CATALOG_TYPE_LABEL[page.page_type ?? "image"]}
+                </span>
+
+                {/* 제목 */}
+                <p className="flex-1 min-w-0 text-sm text-slate-700 truncate">
+                  {page.admin_title || page.title || page.data?.brand || page.data?.title || "(제목 없음)"}
+                </p>
+
+                {/* 링크 표시 */}
+                {page.link_url && <span className="text-[10px] text-[#ff550c] flex-shrink-0" title={page.link_url}>↗</span>}
+
+                {/* 노출 토글 */}
+                <button onClick={() => toggleVisible(page)} title={page.is_visible ? "노출 중" : "숨김"}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${page.is_visible ? "bg-blue-500" : "bg-slate-200"}`}>
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${page.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                </button>
+
+                {/* 순서 이동 버튼 */}
+                <div className="flex items-center flex-shrink-0">
+                  <button onClick={() => moveUp(i)} disabled={i === 0}
+                    className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 disabled:cursor-not-allowed" title="위로">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button onClick={() => moveDown(i)} disabled={i >= pages.length - 1}
+                    className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 disabled:cursor-not-allowed" title="아래로">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* 액션 버튼 */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button onClick={() => openEdit(page)} className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">수정</button>
+                  <button onClick={() => handleDuplicate(page)} className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">복제</button>
+                  <button onClick={() => handleDelete(page.id, page.admin_title || page.title)} className="text-[11px] font-medium text-red-400 border border-red-200 px-2.5 py-1 hover:bg-red-50 transition-colors rounded">삭제</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* ── 편집 모달 팝업 ── */}
+      {editing && (
+        <>
+          {/* 백드롭 */}
+          <div className="fixed inset-0 bg-black/60 z-40" onClick={() => !saving && setEditing(null)} />
+
+          {/* 팝업 패널 */}
+          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl my-6">
+
+              {/* 팝업 헤더 */}
+              <div className="px-6 py-4 bg-slate-800 rounded-t-xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <h2 className="text-base font-semibold text-white flex-shrink-0">
+                    {isNew ? "새 페이지 추가" : "페이지 수정"}
+                  </h2>
+                  <span className="text-slate-400 text-sm flex-shrink-0">{CATALOG_TYPE_LABEL[editing.page_type]}</span>
+                  {!isNew && editingIndex >= 0 && (
+                    <span className="text-slate-500 text-xs flex-shrink-0">P.{editingIndex + 1} / {pages.length}</span>
+                  )}
+                </div>
+
+                {/* 팝업 내 위치 이동 */}
+                {!isNew && editingIndex >= 0 && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-slate-500 text-xs mr-1">위치</span>
+                    <button
+                      onClick={async () => { await moveUp(editingIndex); setEditing(prev => prev); }}
+                      disabled={editingIndex === 0}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" /></svg>
+                      위로
+                    </button>
+                    <button
+                      onClick={async () => { await moveDown(editingIndex); setEditing(prev => prev); }}
+                      disabled={editingIndex >= pages.length - 1}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      아래로
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <button onClick={handleSave} disabled={saving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
                     {saving ? (<><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />저장 중...</>) : "저장"}
                   </button>
                   <button onClick={() => setEditing(null)} className="text-slate-400 hover:text-white transition-colors">
@@ -302,6 +394,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                 </div>
               </div>
 
+              {/* 팝업 본문 */}
               <div className="p-6 flex gap-6">
                 <div className="flex-1 min-w-0 space-y-5">
                   {/* 종류 선택 */}
@@ -389,8 +482,16 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="text-xs font-semibold text-gray-500">목차 항목</label>
-                          <button type="button" onClick={() => updItems((a) => [...a, { name: "", count: "", page: "" }])} className="text-xs text-blue-600 hover:text-blue-800">+ 항목 추가</button>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={autoFillToc}
+                              className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 border border-emerald-200 hover:border-emerald-400 bg-emerald-50 px-2.5 py-1 rounded-lg transition-colors font-medium">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                              구분 페이지에서 자동 생성
+                            </button>
+                            <button type="button" onClick={() => updItems((a) => [...a, { name: "", count: "", page: "" }])} className="text-xs text-blue-600 hover:text-blue-800">+ 항목 추가</button>
+                          </div>
                         </div>
+                        <p className="text-[11px] text-slate-400 mb-2">이름·개수·페이지 범위 순. 자동 생성 후 페이지 범위를 확인·수정하세요.</p>
                         <div className="space-y-2">
                           {(d.items ?? []).map((it, i) => (
                             <div key={i} className="grid grid-cols-[1fr_90px_110px_auto] gap-2 items-center">
@@ -443,13 +544,9 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl border border-dashed border-slate-200 text-slate-400 text-sm gap-3">
-              <p>목록에서 페이지를 선택하거나 “페이지 추가”로 새 페이지를 만드세요.</p>
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
