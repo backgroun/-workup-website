@@ -2,7 +2,49 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import type { Editorial, EditorialSection } from "@/data/editorial";
+import type { Editorial, EditorialSection, EditorialSectionTag } from "@/data/editorial";
+
+// 섹션 이미지 위 상품 핫스팟 — 클릭 시 제품 상세로 이동 (PC는 hover 라벨)
+function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const valid = (tags ?? []).filter((t) => t.productId);
+  if (valid.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0 z-[3]">
+      {valid.map((t, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{ left: `${t.x}%`, top: `${t.y}%`, transform: "translate(-50%, -50%)" }}
+          onMouseEnter={() => setHovered(i)}
+          onMouseLeave={() => setHovered(null)}
+        >
+          <Link
+            href={`/products/${t.productId}`}
+            aria-label={t.name || "상품 보기"}
+            className="relative flex items-center justify-center w-9 h-9"
+          >
+            <span
+              className="rounded-full border-[3px] border-white bg-white/25 shadow-[0_0_0_1px_rgba(0,0,0,0.22)] transition-transform"
+              style={{ width: "16px", height: "16px", transform: hovered === i ? "scale(1.3)" : "scale(1)" }}
+            />
+          </Link>
+          {hovered === i && (t.name || t.price) && (
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap bg-white shadow-xl px-3 py-2 pointer-events-none ${
+                t.y < 22 ? "top-full mt-1.5" : "bottom-full mb-1.5"
+              }`}
+            >
+              {t.name && <p className="text-[11px] text-[#1A2B4A] font-medium leading-snug">{t.name}</p>}
+              {t.price && <p className="text-[12px] font-bold text-[#1A2B4A]">{t.price}</p>}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function WhiteBox({
   section,
@@ -57,6 +99,7 @@ function WhiteBox({
             <span className="text-gray-300 text-6xl font-black select-none">WU</span>
           )}
         </div>
+        <SectionTags tags={section.tags} />
       </div>
 
       {/* 텍스트 + 썸네일 */}
@@ -334,7 +377,7 @@ export default function FeatureHeroLayout({
             <div key={i} style={{ backgroundColor: "white", overflow: "hidden" }}>
               {/* 이미지 — object-contain으로 잘림 없음 */}
               <div
-                className="w-full flex items-center justify-center bg-gray-100"
+                className="relative w-full flex items-center justify-center bg-gray-100"
                 style={{ aspectRatio: "440 / 495" }}
               >
                 {section.imageUrl ? (
@@ -346,6 +389,7 @@ export default function FeatureHeroLayout({
                 ) : (
                   <span className="text-gray-300 text-5xl font-black select-none">WU</span>
                 )}
+                <SectionTags tags={section.tags} />
               </div>
 
               {/* 텍스트 + 상품 목록 */}

@@ -5,7 +5,7 @@ import type { Editorial, EditorialSection, EditorialSectionItem } from "@/data/e
 
 type HeroTag = { id: string; x: number; y: number; pc_x?: number; pc_y?: number; name: string; price: string; product_id: string; image_url: string; bg: string };
 type ProductItem = { id: string; product_id: string; name: string; price: string; image_url: string; bg: string };
-type Banner = { title: string; desc: string; section_bg: string; image_url: string; items: ProductItem[] };
+type Banner = { title: string; desc: string; section_bg: string; image_url: string; items: ProductItem[]; tags?: HeroTag[] };
 type DBBlock = {
   id: string; sort_order: number; is_visible: boolean; reversed: boolean;
   hero: { title: string; subtitle: string; hero_subtitle: string; desc: string; bg_color: string; image_url: string; image_position?: string; link: string; tags: HeroTag[] };
@@ -23,12 +23,23 @@ function blockToEditorial(block: DBBlock): Editorial {
       imageUrl: i.image_url || undefined,
     }));
     while (items.length < 3) items.push(pad);
+    const tags = (banner?.tags ?? [])
+      .filter((t) => t.product_id)
+      .map((t) => ({
+        x: t.x,
+        y: t.y,
+        name: t.name || "",
+        price: t.price || "",
+        productId: t.product_id,
+        imageUrl: t.image_url || undefined,
+      }));
     return {
       sectionBg: banner?.section_bg || "#1A2B4A",
       title: banner?.title || "",
       desc: banner?.desc || "",
       imageUrl: banner?.image_url || undefined,
       items: [items[0], items[1], items[2]],
+      tags,
     };
   };
 

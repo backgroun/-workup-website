@@ -1375,228 +1375,180 @@ function PromptBuilder({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-3">
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+      {/* 헤더: 제목 + 생성 버튼 */}
+      <div className="flex items-center justify-between mb-2.5">
         <p className="text-[11px] font-semibold text-gray-700">✨ AI 이미지 프롬프트 생성</p>
-
-        {/* 기획전 모드 — 하단 연결상품을 하나로 아우르는 상단 이미지 */}
-        {enableShowcase && buildShowcaseFn && (
-          <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2.5">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-[11px] font-semibold text-violet-700">🎯 하단 연결상품 반영 (기획전 모드)</span>
-              <button
-                type="button"
-                onClick={() => { setShowcaseOn((v) => !v); resetPrompt(); }}
-                className={`relative w-9 h-5 rounded-full transition-colors ${showcaseOn ? "bg-violet-600" : "bg-gray-300"}`}
-                aria-pressed={showcaseOn}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${showcaseOn ? "translate-x-4" : ""}`} />
-              </button>
-            </label>
-
-            {showcaseOn && (
-              <>
-                <ShowcaseModeSelector value={showcaseMode} onChange={(v) => { setShowcaseMode(v); resetPrompt(); }} />
-
-                {namedItems.length > 0 ? (
-                  <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
-                    <p className="text-[10px] text-violet-600 font-medium mb-1.5">
-                      반영될 제품 {namedItems.length}개{itemRefs.length > 0 && ` · 참고이미지 ${itemRefs.length}장`}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {namedItems.map((it) => (
-                        <span key={it.id} className="inline-flex items-center gap-1.5 bg-white border border-violet-100 rounded-full pl-1 pr-2 py-0.5">
-                          {it.image_url ? (
-                            <img src={it.image_url} alt="" className="w-4 h-4 object-cover rounded-full" />
-                          ) : (
-                            <span className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-[7px] text-gray-400 font-bold">WU</span>
-                          )}
-                          <span className="text-[10px] text-gray-600 max-w-[100px] truncate">{it.name}</span>
-                        </span>
-                      ))}
-                    </div>
-                    {itemRefs.length === 0 && (
-                      <p className="text-[10px] text-amber-600 mt-1.5">제품 이미지를 등록하면 더 정확한 결과가 나옵니다 (현재는 제품명 기반).</p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-[10px] text-amber-600">아래 &lsquo;연결 상품&rsquo;을 먼저 추가하세요. 추가된 제품이 상단 이미지에 반영됩니다.</p>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {/* 행 1: 의류 유형 + 시즌 드롭다운 + 장면 드롭다운 (인라인) */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">의류 유형</span>
-            <div className="flex gap-1">
-              {(["작업복", "일상복"] as const).map(t => (
-                <button key={t} type="button" onClick={() => { setClothingType(t); resetPrompt(); }}
-                  className={`px-2.5 py-1 text-[11px] rounded-full border font-medium transition-colors ${
-                    clothingType === t ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                  }`}>{t}</button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">시즌</span>
-            <select value={season} onChange={e => { setSeason(e.target.value); resetPrompt(); }}
-              className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
-              <option value="">선택 없음</option>
-              {["봄", "여름", "가을", "겨울", "전천후"].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">장면/배경</span>
-            <select value={scene} onChange={e => { setScene(e.target.value); resetPrompt(); }}
-              className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
-              <option value="">자동 선택</option>
-              {SCENE_PRESETS.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* 추가 옵션: 프리셋 + 직접 입력 인라인 */}
-        <div>
-          <p className="text-[11px] font-medium text-gray-500 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(복수 선택 가능)</span></p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {PROMPT_EXTRA_PRESETS.map(opt => (
-              <button key={opt} type="button"
-                onClick={() => {
-                  setExtras(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]);
-                  resetPrompt();
-                }}
-                className={`px-2.5 py-1 text-[11px] rounded-full border transition-colors ${
-                  extras.includes(opt) ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold" : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
-                }`}>{opt}</button>
-            ))}
-            <input value={customInput} onChange={e => setCustomInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && customInput.trim()) {
-                  setExtras(prev => [...prev, customInput.trim()]);
-                  setCustomInput(""); resetPrompt();
-                }
-              }}
-              placeholder="직접 입력..."
-              className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-violet-400 bg-white w-24" />
-            <button type="button"
-              onClick={() => {
-                if (customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); }
-              }}
-              className="px-2 py-1 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">+</button>
-          </div>
-          {extras.length > 0 && (
-            <div className="flex gap-1 flex-wrap mt-1.5">
-              {extras.map((opt, i) => (
-                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] rounded-full">
-                  {opt}
-                  <button type="button" onClick={() => { setExtras(prev => prev.filter((_, idx) => idx !== i)); resetPrompt(); }}
-                    className="text-violet-400 hover:text-violet-700 leading-none">×</button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 촬영 구도 — 기획전 모드에서는 위의 기획전 구도가 대체 */}
-        {!showcaseActive && (
-          <ShotTypeSelector value={shotType} onChange={(v) => { setShotType(v); resetPrompt(); }} />
-        )}
+        <button type="button" onClick={generate}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-gradient-to-r from-violet-500 to-indigo-500 text-white hover:from-violet-600 hover:to-indigo-600 transition-all rounded shadow-sm">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+          </svg>
+          이미지 프롬프트 생성
+        </button>
       </div>
 
-      {/* 생성 버튼 */}
-      <button type="button" onClick={generate}
-        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold bg-gradient-to-r from-violet-500 to-indigo-500 text-white hover:from-violet-600 hover:to-indigo-600 transition-all rounded shadow-sm">
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-        </svg>
-        이미지 프롬프트 생성
-      </button>
+      {/* 2열: 컨트롤 (좌) | 프롬프트 (우) */}
+      <div className="flex gap-3">
+        {/* Left: 컨트롤 */}
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* 기획전 모드 */}
+          {enableShowcase && buildShowcaseFn && (
+            <div className="bg-violet-50 border border-violet-200 rounded-lg p-2.5 space-y-2">
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-[11px] font-semibold text-violet-700">🎯 하단 연결상품 반영</span>
+                <button type="button" onClick={() => { setShowcaseOn((v) => !v); resetPrompt(); }}
+                  className={`relative w-9 h-5 rounded-full transition-colors ${showcaseOn ? "bg-violet-600" : "bg-gray-300"}`} aria-pressed={showcaseOn}>
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${showcaseOn ? "translate-x-4" : ""}`} />
+                </button>
+              </label>
+              {showcaseOn && (
+                <>
+                  <ShowcaseModeSelector value={showcaseMode} onChange={(v) => { setShowcaseMode(v); resetPrompt(); }} />
+                  {namedItems.length > 0 ? (
+                    <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
+                      <p className="text-[10px] text-violet-600 font-medium mb-1">반영될 제품 {namedItems.length}개{itemRefs.length > 0 && ` · 참고이미지 ${itemRefs.length}장`}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {namedItems.map((it) => (
+                          <span key={it.id} className="inline-flex items-center gap-1 bg-white border border-violet-100 rounded-full pl-1 pr-2 py-0.5">
+                            {it.image_url ? <img src={it.image_url} alt="" className="w-4 h-4 object-cover rounded-full" /> : <span className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-[7px] text-gray-400 font-bold">WU</span>}
+                            <span className="text-[10px] text-gray-600 max-w-[80px] truncate">{it.name}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-amber-600">아래 &lsquo;연결 상품&rsquo;을 먼저 추가하세요.</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
-      {/* 생성된 프롬프트 (편집 가능) */}
-      {showPrompt && prompt && (
-        <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-xl p-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-purple-700">
-              {isHero ? "✨ AI 이미지 프롬프트 (모바일·PC 공용 1장)" : "✨ AI 이미지 프롬프트"}
-            </span>
-            <div className="flex gap-2">
-              <button onClick={copy}
-                className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-colors flex-shrink-0 ${
-                  copied ? "bg-green-500 text-white" : "bg-purple-600 text-white hover:bg-purple-700"
-                }`}>{copied ? "복사됨 ✓" : "복사"}</button>
-              <button type="button" onClick={() => setShowPrompt(false)}
-                className="text-[11px] text-gray-400 hover:text-gray-600 px-1">×</button>
+          {/* 의류 유형 + 시즌 + 장면/배경 */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">의류 유형</span>
+              <div className="flex gap-1">
+                {(["작업복", "일상복"] as const).map(t => (
+                  <button key={t} type="button" onClick={() => { setClothingType(t); resetPrompt(); }}
+                    className={`px-2.5 py-1 text-[11px] rounded-full border font-medium transition-colors ${
+                      clothingType === t ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
+                    }`}>{t}</button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">시즌</span>
+              <select value={season} onChange={e => { setSeason(e.target.value); resetPrompt(); }}
+                className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
+                <option value="">선택 없음</option>
+                {["봄", "여름", "가을", "겨울", "전천후"].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">장면/배경</span>
+              <select value={scene} onChange={e => { setScene(e.target.value); resetPrompt(); }}
+                className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
+                <option value="">자동 선택</option>
+                {SCENE_PRESETS.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
-            {isHero ? (
-              <>
-                <span className="bg-purple-100 text-purple-700 font-medium px-2.5 py-1 rounded-full">950 × 1280px · 3:4</span>
-                <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">📱 모바일 + 🖥️ PC 공용</span>
-              </>
-            ) : (
-              <>
-                <span className="bg-purple-100 text-purple-700 font-medium px-2.5 py-1 rounded-full">{sizeLabel}</span>
-                <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">비율 {ratioLabel}</span>
-              </>
+          {/* 추가 옵션 */}
+          <div>
+            <p className="text-[11px] font-medium text-gray-500 mb-1">추가 옵션 <span className="text-gray-400 font-normal">(복수 선택 가능)</span></p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {PROMPT_EXTRA_PRESETS.map(opt => (
+                <button key={opt} type="button"
+                  onClick={() => { setExtras(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]); resetPrompt(); }}
+                  className={`px-2.5 py-1 text-[11px] rounded-full border transition-colors ${
+                    extras.includes(opt) ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold" : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
+                  }`}>{opt}</button>
+              ))}
+              <input value={customInput} onChange={e => setCustomInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
+                placeholder="직접 입력..."
+                className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-violet-400 bg-white w-20" />
+              <button type="button" onClick={() => { if (customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); } }}
+                className="px-2 py-1 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">+</button>
+            </div>
+            {extras.length > 0 && (
+              <div className="flex gap-1 flex-wrap mt-1">
+                {extras.map((opt, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] rounded-full">
+                    {opt}
+                    <button type="button" onClick={() => { setExtras(prev => prev.filter((_, idx) => idx !== i)); resetPrompt(); }} className="text-violet-400 hover:text-violet-700 leading-none">×</button>
+                  </span>
+                ))}
+              </div>
             )}
-            {showcaseActive
-              ? (itemRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">참고 이미지 {itemRefs.length}장</span>)
-              : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">참고 이미지 포함</span>)}
-            {showcaseActive && <span className="bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full">🎯 {SHOWCASE_MODES.find((m) => m.key === showcaseMode)?.label}</span>}
           </div>
 
-          {isHero && (
-            <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 text-[10px] text-indigo-700 leading-relaxed">
-              <p className="font-semibold mb-0.5">📐 생성 가이드</p>
-              <p>· 멀리서 촬영한 느낌 — 피사체가 프레임의 50~60% 이하 차지</p>
-              <p>· PC에서 하단 약 10% 크롭됩니다 → 발끝을 프레임 안쪽에 두세요</p>
+          {/* 촬영 구도 */}
+          {!showcaseActive && (
+            <ShotTypeSelector value={shotType} onChange={(v) => { setShotType(v); resetPrompt(); }} />
+          )}
+        </div>
+
+        {/* Right: 프롬프트 생성 영역 */}
+        <div className="flex-shrink-0" style={{ width: "260px" }}>
+          {showPrompt && prompt ? (
+            <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-xl p-3 space-y-2 h-full">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-purple-700">
+                  {isHero ? "✨ 프롬프트 (공용 1장)" : "✨ AI 이미지 프롬프트"}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={copy}
+                    className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                      copied ? "bg-green-500 text-white" : "bg-purple-600 text-white hover:bg-purple-700"
+                    }`}>{copied ? "복사됨 ✓" : "복사"}</button>
+                  <button type="button" onClick={() => setShowPrompt(false)} className="text-[11px] text-gray-400 hover:text-gray-600 px-1">×</button>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-wrap text-[10px]">
+                {isHero ? (
+                  <><span className="bg-purple-100 text-purple-700 font-medium px-2 py-0.5 rounded-full">950×1280 · 3:4</span>
+                  <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">📱+🖥️ 공용</span></>
+                ) : (
+                  <><span className="bg-purple-100 text-purple-700 font-medium px-2 py-0.5 rounded-full">{sizeLabel}</span>
+                  <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">비율 {ratioLabel}</span></>
+                )}
+                {showcaseActive
+                  ? (itemRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 {itemRefs.length}장</span>)
+                  : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">참고 이미지</span>)}
+              </div>
+              {isHero && (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1.5 text-[10px] text-indigo-700 leading-snug">
+                  <p className="font-semibold mb-0.5">📐 생성 가이드</p>
+                  <p>· 피사체 50~60% 이하 차지</p>
+                  <p>· PC에서 하단 약 10% 크롭</p>
+                </div>
+              )}
+              {(showcaseActive && itemRefs.length > 0) && (
+                <div className="flex flex-wrap gap-1">
+                  {itemRefs.map((u, i) => <img key={i} src={u} alt="" className="w-8 h-8 object-cover rounded border border-orange-200" />)}
+                </div>
+              )}
+              {(!showcaseActive && refImageUrl) && (
+                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg p-2">
+                  <img src={refImageUrl} alt="" className="w-8 h-8 object-cover rounded border border-orange-200 flex-shrink-0" />
+                  <p className="text-[10px] text-orange-700 leading-snug">참고 이미지 포함</p>
+                </div>
+              )}
+              <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={8}
+                className="w-full text-[11px] text-purple-800 leading-relaxed bg-white/80 rounded-lg p-2 border border-purple-100 focus:outline-none focus:border-violet-400 resize-y" />
+              <p className="text-[10px] text-purple-400">수정 후 복사하세요</p>
+            </div>
+          ) : (
+            <div className="bg-gray-900 rounded-xl flex items-center justify-center" style={{ minHeight: "180px" }}>
+              <p className="text-white/50 text-[12px] font-bold">프롬프트 생성 영역</p>
             </div>
           )}
-
-          {showcaseActive ? (
-            itemRefs.length > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 space-y-1.5">
-                <div className="flex flex-wrap gap-1.5">
-                  {itemRefs.map((u, i) => (
-                    <img key={i} src={u} alt={`참고 ${i + 1}`} className="w-10 h-10 object-cover rounded-md border border-orange-200" />
-                  ))}
-                </div>
-                <p className="text-[10px] text-orange-700 leading-relaxed">
-                  <span className="font-semibold block">제품 참고 이미지 {itemRefs.length}장 포함</span>
-                  ChatGPT: {itemRefs.length}장을 함께 업로드 후 프롬프트 붙여넣기 / Midjourney: URL들을 프롬프트 맨 앞에 추가
-                </p>
-              </div>
-            )
-          ) : (
-            refImageUrl && (
-              <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-200 rounded-lg p-2.5">
-                <img src={refImageUrl} alt="참고 이미지" className="w-10 h-10 object-cover rounded-md flex-shrink-0 border border-orange-200" />
-                <p className="text-[10px] text-orange-700 leading-relaxed">
-                  <span className="font-semibold block">참고 이미지 포함</span>
-                  ChatGPT: 이미지 업로드 후 붙여넣기 / Midjourney: URL을 프롬프트 맨 앞에 추가
-                </p>
-              </div>
-            )
-          )}
-
-          <textarea
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            rows={8}
-            className="w-full text-[11px] text-purple-800 leading-relaxed bg-white/80 rounded-lg p-2.5 border border-purple-100 focus:outline-none focus:border-violet-400 resize-y"
-          />
-          <p className="text-[10px] text-purple-400">프롬프트를 직접 수정한 뒤 복사하세요</p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -1609,7 +1561,6 @@ function HeroEditor({ hero, onChange, products }: {
 }) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
-  const [tagView, setTagView] = useState<"mobile" | "pc">("mobile");
   const [posView, setPosView] = useState<"pc" | "mobile">("pc");
   const [isDraggingPos, setIsDraggingPos] = useState(false);
   const imgAreaRef = useRef<HTMLDivElement>(null);
@@ -1623,7 +1574,7 @@ function HeroEditor({ hero, onChange, products }: {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    if (tagView === "mobile") {
+    if (posView === "mobile") {
       const newTag: HeroTag = { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#1A2B4A" };
       const next = [...hero.tags, newTag];
       onChange({ tags: next });
@@ -1650,7 +1601,7 @@ function HeroEditor({ hero, onChange, products }: {
     const rect = imgAreaRef.current.getBoundingClientRect();
     const x = Math.round(Math.min(99, Math.max(1, ((e.clientX - rect.left) / rect.width) * 100)));
     const y = Math.round(Math.min(99, Math.max(1, ((e.clientY - rect.top) / rect.height) * 100)));
-    if (tagView === "mobile") {
+    if (posView === "mobile") {
       updateTag(draggingIdx, { x, y });
     } else {
       updateTag(draggingIdx, { pc_x: x, pc_y: y });
@@ -1789,8 +1740,8 @@ function HeroEditor({ hero, onChange, products }: {
               />
               {/* 태그 도트 오버레이 — 실시간 반영 */}
               {hero.tags.map((tag) => {
-                const tx = tagView === "mobile" ? tag.x : (tag.pc_x ?? tag.x);
-                const ty = tagView === "mobile" ? tag.y : (tag.pc_y ?? tag.y);
+                const tx = posView === "mobile" ? tag.x : (tag.pc_x ?? tag.x);
+                const ty = posView === "mobile" ? tag.y : (tag.pc_y ?? tag.y);
                 return (
                   <div key={tag.id}
                     className="absolute rounded-full bg-white/80 border-2 border-orange-400 pointer-events-none"
@@ -1841,28 +1792,13 @@ function HeroEditor({ hero, onChange, products }: {
           <div className="flex gap-3">
             {/* 태그 이미지 클릭 영역 */}
             <div className="flex-shrink-0" style={{ width: "200px" }}>
-              {/* 모바일/PC 탭 */}
-              <div className="flex gap-1 mb-2">
-                <button type="button" onClick={() => setTagView("mobile")}
-                  className={`flex-1 text-[11px] font-semibold py-1.5 rounded-lg border transition-colors ${
-                    tagView === "mobile" ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                  }`}>
-                📱 모바일 태그
-              </button>
-              <button type="button" onClick={() => setTagView("pc")}
-                className={`flex-1 text-[11px] font-semibold py-1.5 rounded-lg border transition-colors ${
-                  tagView === "pc" ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                }`}>
-                🖥️ PC 태그
-              </button>
-            </div>
             <div
               ref={imgAreaRef}
               onClick={handleImageClick}
               className="relative rounded-xl overflow-hidden select-none border border-gray-200"
               style={{
                 width: "200px",
-                aspectRatio: tagView === "mobile" ? "3 / 4" : "8 / 9",
+                aspectRatio: posView === "mobile" ? "3 / 4" : "8 / 9",
                 background: "#d1d5db",
                 cursor: draggingIdx !== null ? "grabbing" : (hero.image_url ? "crosshair" : "default"),
               }}
@@ -1873,7 +1809,7 @@ function HeroEditor({ hero, onChange, products }: {
                   alt=""
                   draggable={false}
                   className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-                  style={tagView === "pc"
+                  style={posView === "pc"
                     ? { objectPosition: `${pcPx}% ${pcPy}%`, ...(pcScale !== 1.0 ? { transform: `scale(${pcScale})`, transformOrigin: `${pcPx}% ${pcPy}%` } : {}) }
                     : { objectPosition: `${mobilePx}% ${mobilePy}%`, ...(mobileScale !== 1.0 ? { transform: `scale(${mobileScale})`, transformOrigin: `${mobilePx}% ${mobilePy}%` } : {}) }
                   }
@@ -1890,8 +1826,8 @@ function HeroEditor({ hero, onChange, products }: {
               )}
 
               {hero.tags.map((tag, idx) => {
-                const tagX = tagView === "mobile" ? tag.x : (tag.pc_x ?? tag.x);
-                const tagY = tagView === "mobile" ? tag.y : (tag.pc_y ?? tag.y);
+                const tagX = posView === "mobile" ? tag.x : (tag.pc_x ?? tag.x);
+                const tagY = posView === "mobile" ? tag.y : (tag.pc_y ?? tag.y);
                 return (
                   <button
                     key={tag.id}
@@ -1924,7 +1860,7 @@ function HeroEditor({ hero, onChange, products }: {
               <div className="absolute inset-0 pointer-events-none opacity-10"
                 style={{ backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)", backgroundSize: "25% 25%" }} />
             </div>
-            {tagView === "pc" && hero.image_url && (
+            {posView === "pc" && hero.image_url && (
               <p className="text-[10px] text-indigo-500 mt-1.5 leading-snug">
                 클릭: 선택된 태그의 PC 위치 설정<br/>태그가 없으면 모바일 탭에서 먼저 추가하세요
               </p>
