@@ -23,6 +23,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
   const areaRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [dims, setDims] = useState({ w: 0, h: 0, portrait: false });
+  const [showToc, setShowToc] = useState(false);
 
   useEffect(() => {
     const el = areaRef.current;
@@ -76,20 +77,42 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           {total > 0 && (
             <button
               onClick={() => bookRef.current?.pageFlip().flip(0)}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5"
               aria-label="표지로 이동"
             >
-              <span className="text-sm leading-none">📖</span>
+              {/* 책 라인 아이콘 */}
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" />
+              </svg>
               <span className="text-xs font-medium tracking-wide">표지</span>
             </button>
           )}
-          <span className="text-white/20 text-xs select-none">|</span>
-          <Link href="/" className="flex items-center gap-1.5 px-4 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5">
-            <span className="text-sm leading-none">🏠</span>
+          <span className="text-white/15 text-xs select-none">|</span>
+          <Link href="/" className="flex items-center gap-1.5 px-3.5 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5">
+            {/* 홈 라인 아이콘 */}
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
             <span className="text-xs font-medium tracking-wide">홈으로</span>
           </Link>
           {total > 1 && (
-            <span className="ml-auto text-white/30 text-[10px] tracking-widest pr-4">{currentPage + 1} / {total}</span>
+            <>
+              <span className="text-white/15 text-xs select-none">|</span>
+              <button
+                onClick={() => setShowToc(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 text-white/60 hover:text-white/90 transition-colors active:bg-white/5"
+                aria-label="목차 보기"
+              >
+                {/* 목차 라인 아이콘 */}
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+                <span className="text-xs font-medium tracking-wide">목차</span>
+              </button>
+            </>
+          )}
+          {total > 1 && (
+            <span className="ml-auto text-white/30 text-[10px] tracking-widest pr-3">{currentPage + 1} / {total}</span>
           )}
         </div>
 
@@ -117,16 +140,17 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
               >
                 {pageNodes.map((node, i) => <FlipPage key={i}>{node}</FlipPage>)}
               </Book>
-              {/* 모바일 전용 좌우 화살표 — 이미지 위 오버레이 */}
+              {/* 모바일 전용 좌우 화살표 — 양쪽 엣지 오버레이 */}
               {dims.portrait && total > 1 && (
                 <>
                   <button
                     onClick={() => bookRef.current?.pageFlip().flipPrev()}
                     disabled={currentPage === 0}
                     aria-label="이전 페이지"
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-10 h-16 flex items-center justify-center rounded-xl bg-black/50 backdrop-blur-sm text-white transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center rounded-r-xl transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
+                    style={{ backgroundColor: "#ebebeb" }}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
@@ -134,9 +158,10 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                     onClick={() => bookRef.current?.pageFlip().flipNext()}
                     disabled={currentPage >= total - 1}
                     aria-label="다음 페이지"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-10 h-16 flex items-center justify-center rounded-xl bg-black/50 backdrop-blur-sm text-white transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-16 flex items-center justify-center rounded-l-xl transition-opacity duration-200 disabled:opacity-0 disabled:pointer-events-none"
+                    style={{ backgroundColor: "#ebebeb" }}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -191,6 +216,48 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
       )}
       </div>
 
+      {/* 모바일 목차 바텀시트 */}
+      {showToc && (
+        <>
+          <div
+            className="md:hidden fixed inset-0 z-[70] bg-black/40"
+            onClick={() => setShowToc(false)}
+            aria-hidden="true"
+          />
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-[71] bg-white rounded-t-2xl shadow-xl overflow-hidden"
+            style={{ maxHeight: "65vh" }}>
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">목차</p>
+              <button onClick={() => setShowToc(false)} className="text-gray-400 hover:text-gray-600 p-1" aria-label="닫기">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(65vh - 56px)" }}>
+              <div className="grid grid-cols-5 gap-2 p-4">
+                {Array.from({ length: total }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      bookRef.current?.pageFlip().flip(i);
+                      setCurrentPage(i);
+                      setShowToc(false);
+                    }}
+                    className={`aspect-square flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                      i === currentPage
+                        ? "bg-[#ff550c] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
