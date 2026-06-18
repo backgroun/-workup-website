@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 // ── 타입 ─────────────────────────────────────────────────────
@@ -34,28 +34,70 @@ function emptyBanner(): Banner { return { title: "", desc: "", section_bg: "#1A2
 
 // ── 개별 카드 ─────────────────────────────────────────────────
 function BlockCard({
-  block, index, isSaving,
-  onToggleVisible, onDelete, onDuplicate,
+  block, index, total, isSaving, isDragOver, isDragging,
+  onToggleVisible, onDelete, onDuplicate, onMoveUp, onMoveDown,
+  onDragStart, onDragOver, onDrop, onDragEnd,
 }: {
   block: EditorialBlock;
   index: number;
+  total: number;
   isSaving: boolean;
+  isDragOver: boolean;
+  isDragging: boolean;
   onToggleVisible: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onDragStart: () => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: () => void;
+  onDragEnd: () => void;
 }) {
   const banners = [block.banner1, block.banner2, block.banner3, block.banner4].filter(Boolean) as Banner[];
   const totalTagCount = block.hero.tags?.length ?? 0;
   const totalItemCount = banners.reduce((acc, b) => acc + (b.items?.filter(i => i.name).length ?? 0), 0);
 
   return (
-    <div className={`flex items-stretch gap-0 bg-white border rounded-xl overflow-hidden transition-all ${
-      isSaving ? "opacity-60" : "border-gray-200 hover:border-[#1A2B4A]/20 hover:shadow-sm"
-    }`}>
-
-      {/* 순서 번호 */}
-      <div className="flex items-center justify-center w-10 bg-gray-50 border-r border-gray-100 text-xs font-bold text-gray-400 flex-shrink-0">
-        {index + 1}
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`flex items-stretch gap-0 bg-white border rounded-xl overflow-hidden transition-all select-none ${
+        isDragging
+          ? "opacity-40 scale-[0.99] shadow-none border-gray-200"
+          : isDragOver
+          ? "border-[#1A2B4A] shadow-lg ring-2 ring-[#1A2B4A]/20"
+          : isSaving
+          ? "opacity-60 border-gray-200"
+          : "border-gray-200 hover:border-[#1A2B4A]/20 hover:shadow-sm"
+      }`}
+    >
+      {/* 드래그 핸들 + 순서 번호 + 이동 버튼 */}
+      <div className="flex flex-col items-center justify-center w-12 bg-gray-50 border-r border-gray-100 flex-shrink-0 gap-1 cursor-grab active:cursor-grabbing py-3">
+        {/* 드래그 핸들 아이콘 */}
+        <svg className="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M7 2a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 8a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 14a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4z" />
+        </svg>
+        {/* 순서 번호 */}
+        <span className="text-[11px] font-bold text-gray-400 leading-none">{index + 1}</span>
+        {/* ▲▼ 버튼 */}
+        <div className="flex flex-col gap-0.5 mt-1">
+          <button
+            onClick={onMoveUp}
+            disabled={index === 0 || isSaving}
+            className="w-5 h-4 flex items-center justify-center rounded hover:bg-gray-200 disabled:opacity-20 text-gray-400 text-[10px] transition-colors"
+            title="위로"
+          >▲</button>
+          <button
+            onClick={onMoveDown}
+            disabled={index === total - 1 || isSaving}
+            className="w-5 h-4 flex items-center justify-center rounded hover:bg-gray-200 disabled:opacity-20 text-gray-400 text-[10px] transition-colors"
+            title="아래로"
+          >▼</button>
+        </div>
       </div>
 
       {/* 대표 이미지 썸네일 */}
@@ -83,7 +125,6 @@ function BlockCard({
 
       {/* 정보 영역 */}
       <div className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-between gap-2">
-        {/* 제목 / 부제목 */}
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
@@ -101,7 +142,6 @@ function BlockCard({
 
         {/* 배너 썸네일 + 통계 */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* 배너 미리보기 */}
           <div className="flex gap-1.5">
             {banners.map((banner, i) => (
               <div
@@ -119,22 +159,16 @@ function BlockCard({
               </div>
             ))}
           </div>
-
-          {/* 통계 */}
           <div className="flex items-center gap-3 text-[11px] text-gray-400">
-            {totalTagCount > 0 && (
-              <span>🏷 상품 태그 {totalTagCount}개</span>
-            )}
-            {totalItemCount > 0 && (
-              <span>📦 상품 아이템 {totalItemCount}개</span>
-            )}
+            {totalTagCount > 0 && <span>🏷 태그 {totalTagCount}개</span>}
+            {totalItemCount > 0 && <span>📦 상품 {totalItemCount}개</span>}
           </div>
         </div>
       </div>
 
       {/* 액션 영역 */}
       <div className="flex flex-col items-center justify-center gap-2 px-4 border-l border-gray-100 flex-shrink-0">
-        {/* 노출 여부 토글 */}
+        {/* 노출 토글 */}
         <div className="flex flex-col items-center gap-1">
           <button
             onClick={onToggleVisible}
@@ -150,7 +184,7 @@ function BlockCard({
           <span className="text-[9px] text-gray-400">{block.is_visible ? "노출" : "비노출"}</span>
         </div>
 
-        {/* 버튼 그룹 */}
+        {/* 버튼 */}
         <div className="flex flex-col gap-1 mt-1">
           <Link
             href="/admin/main/editorial"
@@ -193,6 +227,11 @@ export default function AdminEditorialListPage() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [toast, setToast] = useState<"ok" | "err" | null>(null);
+
+  // 드래그 상태
+  const draggingIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/site-settings/editorial_blocks")
@@ -252,6 +291,44 @@ export default function AdminEditorialListPage() {
     setSavingId(null);
   }
 
+  async function moveBlock(from: number, to: number) {
+    if (from === to) return;
+    const next = [...blocks];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    const updated = next.map((b, i) => ({ ...b, sort_order: i }));
+    setBlocks(updated);
+    await persist(updated);
+  }
+
+  // ── 드래그 핸들러 ─────────────────────────────────────────
+  function handleDragStart(idx: number, id: string) {
+    draggingIdx.current = idx;
+    setDraggingId(id);
+  }
+
+  function handleDragOver(e: React.DragEvent, idx: number) {
+    e.preventDefault();
+    if (draggingIdx.current !== null && draggingIdx.current !== idx) {
+      setDragOverIdx(idx);
+    }
+  }
+
+  function handleDrop(toIdx: number) {
+    if (draggingIdx.current !== null && draggingIdx.current !== toIdx) {
+      moveBlock(draggingIdx.current, toIdx);
+    }
+    draggingIdx.current = null;
+    setDraggingId(null);
+    setDragOverIdx(null);
+  }
+
+  function handleDragEnd() {
+    draggingIdx.current = null;
+    setDraggingId(null);
+    setDragOverIdx(null);
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-gray-400 text-sm">불러오는 중...</div>;
   }
@@ -264,6 +341,7 @@ export default function AdminEditorialListPage() {
           <h1 className="text-3xl font-bold text-gray-900">기획전 목록</h1>
           <p className="text-base text-gray-400 mt-1">
             총 {blocks.length}개 블록 · 노출 {blocks.filter(b => b.is_visible).length}개
+            <span className="ml-2 text-gray-300">· 드래그 또는 ▲▼ 버튼으로 순서 변경</span>
           </p>
         </div>
         <Link
@@ -302,10 +380,19 @@ export default function AdminEditorialListPage() {
               key={block.id}
               block={block}
               index={index}
+              total={blocks.length}
               isSaving={savingId === block.id}
+              isDragging={draggingId === block.id}
+              isDragOver={dragOverIdx === index}
               onToggleVisible={() => toggleVisible(block.id)}
               onDelete={() => deleteBlock(block.id)}
               onDuplicate={() => duplicateBlock(block.id)}
+              onMoveUp={() => moveBlock(index, index - 1)}
+              onMoveDown={() => moveBlock(index, index + 1)}
+              onDragStart={() => handleDragStart(index, block.id)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={handleDragEnd}
             />
           ))}
         </div>
