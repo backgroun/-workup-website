@@ -1557,7 +1557,7 @@ function PromptBuilder({
         </div>
 
         {/* Right: 프롬프트 생성 영역 */}
-        <div className="flex-shrink-0 w-[220px]">
+        <div className="flex-shrink-0 w-[450px]">
           {showPrompt && prompt ? (
             <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-xl p-3 space-y-2 h-full">
               <div className="flex items-center justify-between">
