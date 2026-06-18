@@ -815,6 +815,57 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
   );
 }
 
+// ── 서브 컴포넌트: 연결상품 슬롯 에디터 (탭 내부) ───────────
+function SlotItemEditor({ item, onChange, products }: {
+  item: ProductItem;
+  onChange: (patch: Partial<ProductItem>) => void;
+  products: SearchProduct[];
+}) {
+  return (
+    <div className="flex gap-4">
+      {/* 상품 이미지 미리보기 */}
+      <div className="flex-shrink-0" style={{ width: "110px" }}>
+        <div
+          className="rounded-xl overflow-hidden border border-gray-200 bg-gray-100"
+          style={{ aspectRatio: "1 / 1" }}
+        >
+          {item.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 3l18 18" />
+              </svg>
+            </div>
+          )}
+        </div>
+        {item.image_url && (
+          <p className="text-[9px] text-gray-400 mt-1 truncate leading-tight">
+            {item.image_url.split("/").pop()}
+          </p>
+        )}
+      </div>
+
+      {/* 필드 */}
+      <div className="flex-1 min-w-0 space-y-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">제품 검색</label>
+          <ProductPicker
+            products={products}
+            value={item.name}
+            onSelect={(p) => onChange({ product_id: p.id, name: p.name, price: p.price, image_url: p.imageUrl ?? "" })}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="상품명 (직접 수정)" value={item.name} onChange={(v) => onChange({ name: v })} placeholder="쿨링 반팔 티셔츠" />
+          <Field label="가격" value={item.price} onChange={(v) => onChange({ price: v })} placeholder="19,000원" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 서브 컴포넌트: 배너 에디터 (배너1/배너2 공용) ─────────
 function BannerEditor({ banner, label, onChange, products }: {
   banner: Banner;
@@ -822,88 +873,84 @@ function BannerEditor({ banner, label, onChange, products }: {
   onChange: (patch: Partial<Banner>) => void;
   products: SearchProduct[];
 }) {
+  const [itemTab, setItemTab] = useState(0);
+
+  // 항상 3개 슬롯 고정
+  const items3: ProductItem[] = [0, 1, 2].map((i) => banner.items[i] ?? emptyItem());
+
   function updateItem(idx: number, patch: Partial<ProductItem>) {
-    const next = [...banner.items];
-    next[idx] = { ...next[idx], ...patch };
+    const next = items3.map((item, i) => (i === idx ? { ...item, ...patch } : item));
     onChange({ items: next });
-  }
-  function addItem() {
-    if (banner.items.length >= 3) return;
-    onChange({ items: [...banner.items, emptyItem()] });
-  }
-  function deleteItem(idx: number) {
-    onChange({ items: banner.items.filter((_, i) => i !== idx) });
   }
 
   return (
-    <div className="space-y-5">
-      <div className="bg-[#fff8f0] border border-orange-100 rounded-xl px-4 py-3">
-        <p className="text-xs text-orange-600 font-medium">
-          {label} — 이미지 권장: <strong>440 × 495px</strong> · JPG/PNG · 1MB 이하
-        </p>
+    <div className="space-y-4">
+      {/* 타이틀 + 설명 한 줄 */}
+      <div className="flex gap-3 items-start">
+        <div className="flex-shrink-0" style={{ width: "220px" }}>
+          <Field label="타이틀" value={banner.title} onChange={(v) => onChange({ title: v })}
+            placeholder="자외선을 막는 기능성 상의" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <Field label="설명" value={banner.desc} onChange={(v) => onChange({ desc: v })}
+            placeholder="섹션 설명을 입력하세요" multiline />
+        </div>
       </div>
 
-      <div>
-        <Field label="타이틀" value={banner.title} onChange={(v) => onChange({ title: v })}
-          placeholder="자외선을 막는 기능성 상의" />
-      </div>
-
-      <Field label="설명" value={banner.desc} onChange={(v) => onChange({ desc: v })}
-        placeholder="섹션 설명을 입력하세요" multiline />
-
-      {/* AI 이미지 프롬프트 빌더 — 기획전 모드로 하단 연결상품 반영 */}
+      {/* AI 이미지 프롬프트 빌더 */}
       <PromptBuilder
         buildFn={(shotType, clothingType, season, extras, scene) =>
           buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, scene, banner.image_url || undefined)
         }
         buildShowcaseFn={(mode, clothingType, season, extras, scene) =>
-          buildShowcasePrompt(banner.title, banner.desc, banner.items, mode, clothingType, season, extras, scene)
+          buildShowcasePrompt(banner.title, banner.desc, items3, mode, clothingType, season, extras, scene)
         }
         enableShowcase
-        items={banner.items}
+        items={items3}
         sizeLabel="440 × 495px"
         ratioLabel="8 : 9"
         refImageUrl={banner.image_url || undefined}
       />
 
+      {/* 섹션 이미지 */}
       <ImageField
         label="섹션 이미지"
-        hint="권장: 440 × 495px (세로형) · 자동 리사이징 적용"
+        hint="권장: 440 × 495px (세로형)"
         value={banner.image_url}
         onChange={(url) => onChange({ image_url: url })}
       />
 
-      {/* 섹션 이미지 상품 핫스팟 — 정물 이미지에서 바로 제품 상세로 진입 */}
-      <BannerTagEditor
-        tags={banner.tags ?? []}
-        imageUrl={banner.image_url}
-        onChange={(tags) => onChange({ tags })}
-        products={products}
-      />
-
+      {/* 연결상품 3개 탭 */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-xs font-medium text-gray-600">연결 상품 ({banner.items.length}/3)</label>
-          {banner.items.length < 3 && (
-            <button onClick={addItem}
-              className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-              + 상품 추가
+        {/* 탭 바 */}
+        <div className="flex border border-gray-200 rounded-t-xl overflow-hidden">
+          {[0, 1, 2].map((i) => (
+            <button
+              key={i}
+              onClick={() => setItemTab(i)}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 ${
+                itemTab === i
+                  ? "bg-[#1A2B4A] text-white"
+                  : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+              }`}
+            >
+              연결상품{i + 1}
+              {items3[i].name && (
+                <span className={`ml-1.5 text-[10px] font-normal ${itemTab === i ? "text-white/70" : "text-gray-400"}`}>
+                  · {items3[i].name.length > 8 ? items3[i].name.slice(0, 8) + "…" : items3[i].name}
+                </span>
+              )}
             </button>
-          )}
-        </div>
-        <div className="space-y-3">
-          {banner.items.map((item, idx) => (
-            <ItemEditor key={item.id} item={item}
-              onChange={(patch) => updateItem(idx, patch)}
-              onDelete={() => deleteItem(idx)}
-              products={products}
-            />
           ))}
-          {banner.items.length === 0 && (
-            <p className="text-xs text-gray-400 text-center py-4 border border-dashed border-gray-200 rounded-xl">
-              상품을 추가하세요
-            </p>
-          )}
+        </div>
+        {/* 탭 콘텐츠 */}
+        <div className="border border-t-0 border-gray-200 rounded-b-xl p-4">
+          <SlotItemEditor
+            key={itemTab}
+            item={items3[itemTab]}
+            onChange={(patch) => updateItem(itemTab, patch)}
+            products={products}
+          />
         </div>
       </div>
     </div>
