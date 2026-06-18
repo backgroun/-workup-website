@@ -1391,7 +1391,7 @@ function PromptBuilder({
       {/* 2열: 컨트롤 (좌) | 프롬프트 (우) */}
       <div className="flex gap-3">
         {/* Left: 컨트롤 */}
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex-shrink-0 w-[300px] space-y-2">
           {/* 기획전 모드 */}
           {enableShowcase && buildShowcaseFn && (
             <div className="bg-violet-50 border border-violet-200 rounded-lg p-2.5 space-y-2">
@@ -1493,7 +1493,7 @@ function PromptBuilder({
         </div>
 
         {/* Right: 프롬프트 생성 영역 */}
-        <div className="flex-shrink-0" style={{ width: "260px" }}>
+        <div className="flex-1 min-w-0">
           {showPrompt && prompt ? (
             <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-xl p-3 space-y-2 h-full">
               <div className="flex items-center justify-between">
