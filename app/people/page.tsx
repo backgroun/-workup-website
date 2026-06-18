@@ -3,18 +3,22 @@ import PeopleGrid from "@/components/PeopleGrid";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import { getSiteSection } from "@/lib/site-settings";
 
+type PageHeader = { title: string; description: string };
+type PageData = { header?: PageHeader; items?: Person[] };
+
 export const metadata: Metadata = {
   title: "MATE — 일하는 사람들의 이야기 | WORKUP",
   description: "워크업과 함께하는 사람들. 매일 현장에서 땀 흘리는 사람들의 이야기.",
 };
 
 export default async function PeoplePage() {
-  const config = await getSiteSection<{ items?: Person[] }>("people_page");
+  const config = await getSiteSection<PageData>("people_page");
   const items = config?.items?.length ? config.items : DEFAULT_PEOPLE;
+  const header = config?.header;
 
   return (
     <main>
-      <PeopleGrid items={items} />
+      <PeopleGrid items={items} header={header} />
     </main>
   );
 }

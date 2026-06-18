@@ -44,12 +44,13 @@ export default function Header() {
 
   useEffect(() => {
     if (!searchOpen) return;
-    setTermIndex(0);
-    const timer = setInterval(() => {
-      setTermIndex(i => (i + 1) % popularTerms.length);
-    }, 3000);
-    return () => clearInterval(timer);
+    setTermIndex(Math.floor(Math.random() * popularTerms.length));
   }, [searchOpen]);
+
+  useEffect(() => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  }, [pathname]);
 
   const handleSearch = (query: string) => {
     const q = query.trim();

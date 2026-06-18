@@ -22,7 +22,7 @@ export default async function FieldTestPage() {
     <main>
 
       {/* ── 페이지 타이틀 ── */}
-      <section className="py-16 bg-[#F5F2ED]">
+      <section className="pt-16 pb-0 bg-[#F5F2ED]">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
             {header.title}
@@ -36,7 +36,7 @@ export default async function FieldTestPage() {
       </section>
 
       {/* ── 테스트 결과 카드 ── */}
-      <section className="bg-[#F5F2ED] py-16">
+      <section className="bg-[#F5F2ED] pt-[60px] pb-16">
         <div className="px-[15px] md:px-[70px]">
 
           <div className="mb-8 flex items-center gap-3">

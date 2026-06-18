@@ -185,6 +185,40 @@ export default function StorySectionView({ section }: { section: StorySection })
         </section>
       );
 
+    // ── 사진 갤러리 (하단 이미지 그리드) ──
+    case "photos": {
+      const cols = section.columns ?? 3;
+      const colClass: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-2 md:grid-cols-3", 4: "grid-cols-2 md:grid-cols-4" };
+      const imgSize = Math.floor(1920 / cols);
+      return (
+        <section className={`${bg}`}>
+          <div className={`grid ${colClass[cols] ?? "grid-cols-3"} gap-1`}>
+            {section.images.map((img, i) =>
+              img.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={i}
+                  src={img.url}
+                  alt={img.alt || ""}
+                  className="w-full aspect-square object-cover"
+                />
+              ) : (
+                <div key={i} className="w-full aspect-square bg-gray-100 flex flex-col items-center justify-center gap-1">
+                  <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-[10px] text-gray-300 tracking-wider">
+                    {imgSize} × {imgSize}px
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        </section>
+      );
+    }
+
     default:
       return null;
   }

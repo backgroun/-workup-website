@@ -8,9 +8,10 @@ import {
   type StoryConfig, type StoryHero, type StorySection, type StorySectionType, type SectionBg, type ValueItem,
   type DeclarationSection, type CategorySection, type ValuesSection,
   type FoundingSection, type CtaSection, type RichTextSection,
+  type PhotosSection, type PhotoItem,
 } from "@/data/story";
 
-const SECTION_TYPES: StorySectionType[] = ["declaration", "category", "values", "founding", "cta", "richtext"];
+const SECTION_TYPES: StorySectionType[] = ["declaration", "category", "values", "founding", "cta", "richtext", "photos"];
 const INPUT = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400";
 const CTA_PRESETS = [
   { label: "매장 찾기", href: "/store" },
@@ -148,6 +149,10 @@ export default function AdminStoryPage() {
     setEditing((p) => (p && p.type === "cta" ? { ...p, ...patch } : p));
   const setRich = (patch: Partial<RichTextSection>) =>
     setEditing((p) => (p && p.type === "richtext" ? { ...p, ...patch } : p));
+  const setPhotos = (patch: Partial<PhotosSection>) =>
+    setEditing((p) => (p && p.type === "photos" ? { ...p, ...patch } : p));
+  const updPhotoImages = (fn: (a: PhotoItem[]) => PhotoItem[]) =>
+    setEditing((p) => (p && p.type === "photos" ? { ...p, images: fn(p.images) } : p));
 
   const updTags = (fn: (a: string[]) => string[]) =>
     setEditing((p) => (p && p.type === "category" ? { ...p, tags: fn(p.tags) } : p));
@@ -197,6 +202,12 @@ export default function AdminStoryPage() {
               promptSeed="브랜드 스토리 히어로, 일하는 사람, 와이드 배경"
               label="상단 히어로 이미지 (비우면 네이비 배경 + WU 워터마크)"
             />
+            <p className="text-[11px] text-gray-400 -mt-2 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+              권장 사이즈:&nbsp;
+              <span className="font-mono font-semibold text-gray-500">1920 × {hero.height}px</span>
+              &nbsp;· 와이드 비율 · object-cover로 중앙 자동 크롭
+            </p>
             <Field label="헤드라인 (줄바꿈 Enter)">
               <textarea value={hero.heading} onChange={(e) => setHeroField("heading", e.target.value)} rows={2}
                 className={`${INPUT} resize-none`} placeholder="일하는 사람 편에서&#10;만든 브랜드" />
@@ -450,6 +461,48 @@ export default function AdminStoryPage() {
                       <Field label="본문 (줄바꿈 Enter)"><textarea value={editing.body} onChange={(e) => setRich({ body: e.target.value })} rows={4} className={`${INPUT} resize-none`} /></Field>
                     </>
                   )}
+
+                  {editing.type === "photos" && (
+                    <>
+                      <Field label="열 수 (columns)">
+                        <div className="flex gap-2">
+                          {([2, 3, 4] as const).map((n) => (
+                            <button key={n} onClick={() => setPhotos({ columns: n })}
+                              className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${editing.columns === n ? "border-blue-400 text-blue-600 bg-blue-50" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                              {n}열
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-1.5">
+                          권장 이미지 사이즈: <span className="font-mono font-semibold text-gray-500">{Math.floor(1920 / editing.columns)} × {Math.floor(1920 / editing.columns)}px</span> (1:1 정사각형)
+                        </p>
+                      </Field>
+                      <ArrayField label={`이미지 목록 (${editing.images.length}장)`} onAdd={() => updPhotoImages((a) => [...a, { url: undefined, alt: "" }])}>
+                        {editing.images.map((img, i) => (
+                          <div key={i} className="p-3 border border-slate-200 rounded-lg space-y-2 bg-slate-50">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-semibold text-slate-500">사진 {i + 1}</span>
+                              {editing.images.length > 1 && <RemoveBtn onClick={() => updPhotoImages((a) => a.filter((_, idx) => idx !== i))} />}
+                            </div>
+                            <AdminImageField
+                              value={img.url}
+                              onChange={(url) => updPhotoImages((a) => a.map((x, idx) => idx === i ? { ...x, url } : x))}
+                              promptType="product"
+                              promptSeed="브랜드 스토리, 일하는 사람, 현장"
+                              label=""
+                            />
+                            <input
+                              type="text"
+                              value={img.alt || ""}
+                              onChange={(e) => updPhotoImages((a) => a.map((x, idx) => idx === i ? { ...x, alt: e.target.value } : x))}
+                              className={INPUT}
+                              placeholder="이미지 설명 (alt 텍스트 · 선택)"
+                            />
+                          </div>
+                        ))}
+                      </ArrayField>
+                    </>
+                  )}
                 </div>
 
                 {/* 섹션 미리보기 */}
@@ -509,6 +562,7 @@ function sectionSummary(s: StorySection): string {
     case "founding": return s.heading || s.eyebrow || "(창업스토리)";
     case "cta": return s.heading || s.eyebrow || "(CTA)";
     case "richtext": return s.heading || s.eyebrow || "(자유텍스트)";
+    case "photos": return `사진 ${s.images.length}장 · ${s.columns}열`;
     default: return "(섹션)";
   }
 }

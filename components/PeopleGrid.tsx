@@ -3,8 +3,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 
-export default function PeopleGrid({ items }: { items?: Person[] }) {
+type PageHeader = { title: string; description: string };
+
+const DEFAULT_HEADER: PageHeader = {
+  title: "일하는 사람이 제일 멋있다.",
+  description: "워크업이 만드는 옷의 주인공은 제품이 아닙니다.\n매일 현장에서 땀 흘리는 사람들의 이야기입니다.",
+};
+
+export default function PeopleGrid({ items, header }: { items?: Person[]; header?: PageHeader }) {
   const people: Person[] = items && items.length ? items : DEFAULT_PEOPLE;
+  const h = header ?? DEFAULT_HEADER;
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
@@ -14,11 +22,12 @@ export default function PeopleGrid({ items }: { items?: Person[] }) {
         {/* 섹션 헤더 */}
         <div className="mb-14">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
-            일하는 사람이 제일 멋있다.
+            {h.title}
           </h1>
           <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl">
-            워크업이 만드는 옷의 주인공은 제품이 아닙니다.<br />
-            매일 현장에서 땀 흘리는 사람들의 이야기입니다.
+            {h.description.split("\n").map((line, i) => (
+              <span key={i}>{line}{i < h.description.split("\n").length - 1 && <br />}</span>
+            ))}
           </p>
         </div>
 

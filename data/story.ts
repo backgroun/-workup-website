@@ -8,7 +8,7 @@ export type SectionBg = "white" | "beige"; // white = bg-white, beige = bg-[#f2f
 // 네이비 섹션 배경은 의도적으로 제외(본문 대비 문제 + 현재 페이지도 섹션엔 안 씀). 히어로 기본색으로만 사용.
 
 export type StorySectionType =
-  | "declaration" | "category" | "values" | "founding" | "cta" | "richtext";
+  | "declaration" | "category" | "values" | "founding" | "cta" | "richtext" | "photos";
 
 export type SectionBase = {
   id: string;
@@ -70,9 +70,16 @@ export type RichTextSection = SectionBase & {
   body: string;           // 줄바꿈 \n
 };
 
+export type PhotoItem = { url?: string; alt?: string };
+export type PhotosSection = SectionBase & {
+  type: "photos";
+  columns: 2 | 3 | 4;   // 열 수 (모바일은 2열 고정)
+  images: PhotoItem[];
+};
+
 export type StorySection =
   | DeclarationSection | CategorySection | ValuesSection
-  | FoundingSection | CtaSection | RichTextSection;
+  | FoundingSection | CtaSection | RichTextSection | PhotosSection;
 
 export type StoryHero = {
   image_url?: string;     // 설정 시 배경 이미지, 없으면 네이비 + WU 워터마크
@@ -93,6 +100,7 @@ export const SECTION_TYPE_LABEL: Record<StorySectionType, string> = {
   founding: "창업스토리",
   cta: "CTA",
   richtext: "자유텍스트",
+  photos: "사진갤러리",
 };
 
 export function uid() {
@@ -115,6 +123,8 @@ export function emptySection(type: StorySectionType): StorySection {
       return { ...base, type, eyebrow: "", heading: "", body: "", ctaLabel: "가까운 매장 찾기 →", ctaHref: "/store" };
     case "richtext":
       return { ...base, type, eyebrow: "", heading: "", body: "" };
+    case "photos":
+      return { ...base, type, columns: 3, images: [{ url: undefined, alt: "" }, { url: undefined, alt: "" }, { url: undefined, alt: "" }] };
   }
 }
 
