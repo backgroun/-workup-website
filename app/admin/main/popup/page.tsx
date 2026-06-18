@@ -37,6 +37,7 @@ type PopupItem = {
   bg_gradient_to: string;
   bg_gradient_angle: number;
   bg_image_url: string;
+  bg_image_url_mobile: string; // 비우면 PC 이미지 사용
   scheduled_start: string | null;
   scheduled_end: string | null;
   sort_order: number;
@@ -70,6 +71,7 @@ const EMPTY: Omit<PopupItem, "id"> = {
   bg_gradient_to: "#a8d8b8",
   bg_gradient_angle: 135,
   bg_image_url: "",
+  bg_image_url_mobile: "",
   scheduled_start: null,
   scheduled_end: null,
   sort_order: 0,
@@ -77,12 +79,16 @@ const EMPTY: Omit<PopupItem, "id"> = {
 
 // ── 헬퍼 ────────────────────────────────────────────────────────────────────
 
-function computeBg(item: Omit<PopupItem, "id"> | PopupItem): string {
-  if (item.bg_type === "solid")    return item.bg_solid || "#1A2B4A";
+function computeBg(item: Omit<PopupItem, "id"> | PopupItem, device: "pc" | "mobile" = "pc"): string {
+  if (item.bg_type === "solid") return item.bg_solid || "#1A2B4A";
   if (item.bg_type === "gradient")
     return `linear-gradient(${item.bg_gradient_angle}deg, ${item.bg_gradient_from}, ${item.bg_gradient_to})`;
-  if (item.bg_type === "image" && item.bg_image_url)
-    return `url('${item.bg_image_url}') center/cover no-repeat`;
+  if (item.bg_type === "image") {
+    const url = (device === "mobile" && item.bg_image_url_mobile)
+      ? item.bg_image_url_mobile
+      : item.bg_image_url;
+    if (url) return `url('${url}') center/cover no-repeat`;
+  }
   return item.bg_solid || "#1A2B4A";
 }
 
@@ -172,7 +178,9 @@ export default function PopupManagePage() {
   const [editing, setEditing]   = useState<PopupItem | null>(null);
   const [isNew, setIsNew]       = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileRefMobile = useRef<HTMLInputElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver,  setDragOver]  = useState<number | null>(null);
 
@@ -206,6 +214,7 @@ export default function PopupManagePage() {
             bg_gradient_to: "#a8d8b8",
             bg_gradient_angle: 135,
             bg_image_url: "",
+            bg_image_url_mobile: "",
             scheduled_start: null,
             scheduled_end: null,
             sort_order: 0,
@@ -317,6 +326,20 @@ export default function PopupManagePage() {
       set("bg_image_url", url);
     } else {
       flash("이미지 업로드 실패");
+    }
+  };
+
+  const uploadBgImageMobile = async (file: File) => {
+    setUploadingMobile(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+    setUploadingMobile(false);
+    if (res.ok) {
+      const { url } = await res.json();
+      set("bg_image_url_mobile", url);
+    } else {
+      flash("모바일 이미지 업로드 실패");
     }
   };
 
@@ -506,7 +529,7 @@ export default function PopupManagePage() {
 
                       {/* 배경 미리보기 */}
                       <div className="w-11 h-7 rounded flex-shrink-0 border border-gray-100"
-                        style={{ background: computeBg(item) }} />
+                        style={{ background: computeBg(item, "pc") }} />
 
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-slate-800 truncate leading-tight">
@@ -703,29 +726,66 @@ export default function PopupManagePage() {
 
                   {/* 이미지 */}
                   {editing.bg_type === "image" && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-xs text-gray-500 mb-1.5 block">이미지 URL</label>
-                        <input type="text" value={editing.bg_image_url}
-                          onChange={e => set("bg_image_url", e.target.value)}
-                          placeholder="https://..."
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-                          className="px-4 py-2 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg disabled:opacity-50">
-                          {uploading ? "업로드 중..." : "파일 업로드"}
-                        </button>
-                        <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                          onChange={e => { const f = e.target.files?.[0]; if (f) uploadBgImage(f); e.target.value = ""; }} />
-                        <span className="text-xs text-gray-400">JPG · PNG · WebP · 2MB 이하</span>
-                      </div>
-                      {editing.bg_image_url && (
-                        <div className="h-24 rounded-lg overflow-hidden border border-gray-100">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={editing.bg_image_url} alt="" className="w-full h-full object-cover" />
+                    <div className="space-y-5">
+
+                      {/* PC 이미지 */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-gray-600">PC 이미지</label>
+                          <span className="text-[11px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            권장: 760 × 560px · object-cover 중앙 크롭
+                          </span>
                         </div>
-                      )}
+                        <div className="flex items-center gap-2">
+                          <input type="text" value={editing.bg_image_url}
+                            onChange={e => set("bg_image_url", e.target.value)}
+                            placeholder="https://..."
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                            className="flex-shrink-0 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg disabled:opacity-50">
+                            {uploading ? "업로드 중..." : "파일 선택"}
+                          </button>
+                          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                            onChange={e => { const f = e.target.files?.[0]; if (f) uploadBgImage(f); e.target.value = ""; }} />
+                        </div>
+                        {editing.bg_image_url ? (
+                          <div className="h-20 rounded-lg overflow-hidden border border-gray-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={editing.bg_image_url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-gray-400">JPG · PNG · WebP · 2MB 이하</p>
+                        )}
+                      </div>
+
+                      {/* 모바일 이미지 */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-gray-600">모바일 이미지</label>
+                          <span className="text-[11px] font-mono text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
+                            권장: 750 × 440px · object-cover 중앙 크롭
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-400">비우면 PC 이미지를 그대로 사용합니다.</p>
+                        <div className="flex items-center gap-2">
+                          <input type="text" value={editing.bg_image_url_mobile}
+                            onChange={e => set("bg_image_url_mobile", e.target.value)}
+                            placeholder="https://... (비우면 PC 이미지 사용)"
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                          <button type="button" onClick={() => fileRefMobile.current?.click()} disabled={uploadingMobile}
+                            className="flex-shrink-0 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg disabled:opacity-50">
+                            {uploadingMobile ? "업로드 중..." : "파일 선택"}
+                          </button>
+                          <input ref={fileRefMobile} type="file" accept="image/*" className="hidden"
+                            onChange={e => { const f = e.target.files?.[0]; if (f) uploadBgImageMobile(f); e.target.value = ""; }} />
+                        </div>
+                        {editing.bg_image_url_mobile && (
+                          <div className="h-20 rounded-lg overflow-hidden border border-gray-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={editing.bg_image_url_mobile} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -827,10 +887,10 @@ export default function PopupManagePage() {
                   <div className="flex flex-wrap gap-8 items-start">
                     {/* PC */}
                     <div>
-                      <p className="text-xs font-medium text-gray-400 mb-2">PC 팝업</p>
+                      <p className="text-xs font-medium text-gray-400 mb-2">PC 팝업 <span className="text-gray-300 font-mono text-[10px]">380 × 280px</span></p>
                       <div className="shadow-xl overflow-hidden" style={{ width: 280 }}>
                         <div className="relative flex flex-col justify-between p-5"
-                          style={{ height: 200, background: computeBg(editing) }}>
+                          style={{ height: 200, background: computeBg(editing, "pc") }}>
                           <div>
                             <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
                             <p className="mt-1 text-lg font-bold text-white leading-tight whitespace-pre-line">
@@ -848,14 +908,14 @@ export default function PopupManagePage() {
 
                     {/* 모바일 */}
                     <div>
-                      <p className="text-xs font-medium text-gray-400 mb-2">모바일 바텀시트</p>
+                      <p className="text-xs font-medium text-gray-400 mb-2">모바일 바텀시트 <span className="text-gray-300 font-mono text-[10px]">풀스크린 × 220px</span></p>
                       <div className="bg-white rounded-t-3xl shadow-xl overflow-hidden" style={{ width: 260 }}>
                         <div className="flex justify-center pt-3 pb-1">
                           <div className="w-8 h-1 bg-gray-300 rounded-full" />
                         </div>
                         <div className="px-3 pt-1">
                           <div className="relative flex flex-col justify-between p-4 rounded-xl overflow-hidden"
-                            style={{ height: 150, background: computeBg(editing) }}>
+                            style={{ height: 150, background: computeBg(editing, "mobile") }}>
                             <div>
                               <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
                               <p className="mt-1 text-base font-bold text-white leading-tight whitespace-pre-line">

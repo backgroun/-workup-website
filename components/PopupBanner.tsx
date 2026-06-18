@@ -23,6 +23,7 @@ type PopupItem = {
   bg_gradient_to?: string;
   bg_gradient_angle?: number;
   bg_image_url?: string;
+  bg_image_url_mobile?: string; // 비우면 bg_image_url 사용
   scheduled_start?: string | null;
   scheduled_end?: string | null;
   sort_order?: number;
@@ -47,10 +48,8 @@ const DEFAULT_POPUP: PopupItem = {
   bg_image_url: "",
 };
 
-function computeBg(item: PopupItem): string {
-  const type = item.bg_type ?? (
-    item.bg_image_url ? "image" : "gradient"
-  );
+function computeBg(item: PopupItem, device: "pc" | "mobile" = "pc"): string {
+  const type = item.bg_type ?? (item.bg_image_url ? "image" : "gradient");
   if (type === "solid") return item.bg_solid || "#1A2B4A";
   if (type === "gradient") {
     const from  = item.bg_gradient_from  || "#7eb8d4";
@@ -58,9 +57,12 @@ function computeBg(item: PopupItem): string {
     const angle = item.bg_gradient_angle ?? 135;
     return `linear-gradient(${angle}deg, ${from}, ${to})`;
   }
-  if (type === "image" && item.bg_image_url)
-    return `url('${item.bg_image_url}') center/cover no-repeat`;
-  // 구형 단일 팝업 포맷 fallback
+  if (type === "image") {
+    const url = (device === "mobile" && item.bg_image_url_mobile)
+      ? item.bg_image_url_mobile
+      : item.bg_image_url;
+    if (url) return `url('${url}') center/cover no-repeat`;
+  }
   return item.bg_solid || "#1A2B4A";
 }
 
@@ -156,10 +158,10 @@ export default function PopupBanner() {
 
   // ── 공통 콘텐츠 렌더러 ──────────────────────────────────────────────────────
 
-  function BannerContent({ height, textSizeClass }: { height: number; textSizeClass: string }) {
+  function BannerContent({ height, textSizeClass, device }: { height: number; textSizeClass: string; device: "pc" | "mobile" }) {
     return (
       <div className="relative flex flex-col justify-between p-5 overflow-hidden"
-        style={{ height, background: computeBg(current) }}>
+        style={{ height, background: computeBg(current, device) }}>
         {/* 텍스트 */}
         <div>
           <p className="text-xs text-white/80 leading-snug">{current.subtitle}</p>
@@ -233,7 +235,7 @@ export default function PopupBanner() {
         aria-modal="true"
         aria-label="팝업 배너"
       >
-        <BannerContent height={280} textSizeClass="text-2xl" />
+        <BannerContent height={280} textSizeClass="text-2xl" device="pc" />
         <Footer />
       </div>
 
@@ -258,7 +260,7 @@ export default function PopupBanner() {
         </div>
         <div className="px-4 pt-2 pb-0">
           <div className="rounded-2xl overflow-hidden">
-            <BannerContent height={220} textSizeClass="text-xl" />
+            <BannerContent height={220} textSizeClass="text-xl" device="mobile" />
           </div>
         </div>
         <div className="mt-1">
