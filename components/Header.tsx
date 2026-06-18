@@ -80,6 +80,16 @@ export default function Header({ navItems = DEFAULT_HEADER_NAV.items }: { navIte
                 {item.label}
               </Link>
             ))}
+
+            {/* 티셔츠 꾸미기 스튜디오 — 설정 메뉴와 별개로 항상 노출되는 재미 요소(오렌지로 구분) */}
+            <Link
+              href="/studio"
+              className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#ff550c] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
+              style={{ fontWeight: 650 }}
+            >
+              STUDIO
+              <span className="text-[9px] font-bold leading-none bg-white text-[#ff550c] rounded-full px-1 py-[3px]">NEW</span>
+            </Link>
           </nav>
 
           {/* 우측 아이콘 */}

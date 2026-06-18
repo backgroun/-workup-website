@@ -61,6 +61,30 @@ export default function BottomNav({ navItems = DEFAULT_HEADER_NAV.items }: { nav
 
         {/* 메뉴 항목 — 시트가 열릴 때 위에서부터 순차로 슬라이드업(stagger) */}
         <nav className="px-6 pb-4 pt-1">
+          {/* 티셔츠 꾸미기 스튜디오 — 설정 메뉴와 별개로 항상 상단 고정 노출(재미 요소) */}
+          <div
+            className="border-b border-gray-100 transition-[opacity,transform] duration-300 ease-out"
+            style={{
+              transitionDelay: menuOpen ? "90ms" : "0ms",
+              opacity: menuOpen ? 1 : 0,
+              transform: menuOpen ? "translateY(0)" : "translateY(10px)",
+            }}
+          >
+            <Link
+              href="/studio"
+              className="flex items-center justify-between py-4 text-[13px] font-bold text-[#ff550c] tracking-[0.15em] transition-transform active:scale-[0.97]"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span className="flex items-center gap-2">
+                STUDIO
+                <span className="text-[9px] font-bold bg-[#ff550c] text-white rounded-full px-1.5 py-0.5 tracking-normal">NEW</span>
+                <span className="text-[11px] font-medium text-gray-400 tracking-normal">티셔츠 꾸미기</span>
+              </span>
+              <svg className="w-3.5 h-3.5 text-[#ff550c]/60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+              </svg>
+            </Link>
+          </div>
           {navItems.map((item, i) => (
             <div
               key={item.id}
