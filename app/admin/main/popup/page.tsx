@@ -37,7 +37,9 @@ type PopupItem = {
   bg_gradient_to: string;
   bg_gradient_angle: number;
   bg_image_url: string;
-  bg_image_url_mobile: string; // 비우면 PC 이미지 사용
+  bg_image_url_mobile: string;
+  bg_image_position: string;         // "50% 50%"
+  bg_image_position_mobile: string;  // "" = PC 위치 사용
   scheduled_start: string | null;
   scheduled_end: string | null;
   sort_order: number;
@@ -72,6 +74,8 @@ const EMPTY: Omit<PopupItem, "id"> = {
   bg_gradient_angle: 135,
   bg_image_url: "",
   bg_image_url_mobile: "",
+  bg_image_position: "50% 50%",
+  bg_image_position_mobile: "",
   scheduled_start: null,
   scheduled_end: null,
   sort_order: 0,
@@ -170,7 +174,6 @@ function CopyBtn({ text }: { text: string }) {
 }
 
 export default function PopupManagePage() {
-  const [tab, setTab] = useState<"manage" | "ai">("manage");
   const [popups, setPopups]     = useState<PopupItem[]>([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
@@ -215,6 +218,8 @@ export default function PopupManagePage() {
             bg_gradient_angle: 135,
             bg_image_url: "",
             bg_image_url_mobile: "",
+            bg_image_position: "50% 50%",
+            bg_image_position_mobile: "",
             scheduled_start: null,
             scheduled_end: null,
             sort_order: 0,
@@ -243,7 +248,6 @@ export default function PopupManagePage() {
       link_text: aiResult.ctaText,
     });
     setIsNew(true);
-    setTab("manage");
   };
 
   const saveAll = async (list: PopupItem[]) => {
@@ -355,142 +359,18 @@ export default function PopupManagePage() {
         </div>
         <div className="flex items-center gap-3">
           {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
-          {tab === "manage" && (
-            <button onClick={openNew}
-              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              팝업 추가
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 탭 */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {([["manage", "팝업 관리"], ["ai", "✨ AI 생성기"]] as const).map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              tab === t ? "border-slate-800 text-slate-900" : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}>
-            {label}
+          <button onClick={openNew}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            팝업 추가
           </button>
-        ))}
+        </div>
       </div>
 
-      {/* ── AI 생성기 탭 ── */}
-      {tab === "ai" && (
-        <div className="max-w-2xl space-y-6">
-          <p className="text-sm text-gray-500">제품 정보를 입력하면 팝업 문구와 이미지 프롬프트를 생성합니다. <span className="text-gray-400">(무료 · API 불필요)</span></p>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-            <h2 className="font-semibold text-gray-800">제품 정보 입력</h2>
-
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">제품명 / 종류 *</label>
-              <input type="text" value={aiInput.productName}
-                onChange={e => setAiInput(a => ({ ...a, productName: e.target.value }))}
-                placeholder="예: 냉감 멀티쿠션, 방수 작업복, 리플렉티브 재킷"
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">계절 / 테마</label>
-                <select value={aiInput.season} onChange={e => setAiInput(a => ({ ...a, season: e.target.value }))}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
-                  {["봄", "여름", "가을", "겨울", "사계절"].map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">분위기</label>
-                <select value={aiInput.mood} onChange={e => setAiInput(a => ({ ...a, mood: e.target.value }))}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
-                  {["시원한", "따뜻한", "세련된", "활동적인", "고급스러운", "편안한"].map(m => <option key={m}>{m}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">핵심 특징</label>
-              <textarea value={aiInput.features}
-                onChange={e => setAiInput(a => ({ ...a, features: e.target.value }))}
-                placeholder="예: 냉감 소재, 빠른 건조, 신축성 좋음, 현장 착용 가능"
-                rows={2}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 resize-none" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">타겟 고객</label>
-                <input type="text" value={aiInput.target}
-                  onChange={e => setAiInput(a => ({ ...a, target: e.target.value }))}
-                  placeholder="예: 현장 작업자, 30-40대 남성"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400" />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">스타일 방향</label>
-                <select value={aiInput.style} onChange={e => setAiInput(a => ({ ...a, style: e.target.value }))}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white">
-                  {["미니멀", "자연적", "도시적", "아웃도어", "스포티", "클래식"].map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {aiError && <p className="text-xs text-red-500">{aiError}</p>}
-
-            <button onClick={handleAiGenerate}
-              className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
-              ✨ 문구·이미지 태그 생성
-            </button>
-          </div>
-
-          {aiResult && (
-            <div className="space-y-4">
-              {/* 이미지 프롬프트 */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-gray-800">이미지 프롬프트</h2>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">복사해서 사용</span>
-                </div>
-                <div className="relative bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-700 leading-relaxed pr-16">{aiResult.imagePrompt}</p>
-                  <div className="absolute top-3 right-3"><CopyBtn text={aiResult.imagePrompt} /></div>
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  이 프롬프트를 복사해 ChatGPT·Midjourney·DALL·E 등 원하는 이미지 생성 도구에 붙여넣으면 팝업용 이미지를 만들 수 있습니다.
-                </p>
-              </div>
-
-              {/* 팝업 문구 */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-                <h2 className="font-semibold text-gray-800">팝업 문구</h2>
-                <div className="space-y-2">
-                  {[
-                    { label: "소제목", value: aiResult.subtitle },
-                    { label: "타이틀", value: aiResult.title },
-                    { label: "버튼",   value: aiResult.ctaText },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
-                      <span className="text-xs text-gray-400 w-12 shrink-0 pt-0.5">{label}</span>
-                      <span className="text-sm text-gray-800 flex-1 whitespace-pre-line">{value}</span>
-                      <CopyBtn text={value} />
-                    </div>
-                  ))}
-                </div>
-                <button onClick={applyAiToNewPopup}
-                  className="w-full py-2.5 rounded-xl border-2 border-slate-800 text-slate-800 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors">
-                  이 문구로 새 팝업 만들기 →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── 팝업 관리 탭 ── */}
-      {tab === "manage" && <div className="flex gap-6 items-start">
+      {/* ── 본문 2열 레이아웃 ── */}
+      <div className="flex gap-6 items-start">
 
         {/* ── 왼쪽: 팝업 목록 ── */}
         <div className="w-[280px] flex-shrink-0 sticky top-6">
@@ -563,6 +443,98 @@ export default function PopupManagePage() {
               여러 팝업이 활성화된 경우 순서대로 슬라이드로 표시됩니다.
             </p>
           )}
+
+          {/* ── AI 생성기 ── */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100">
+              <p className="text-sm font-semibold text-slate-700">✨ AI 생성기</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">팝업 문구·이미지 프롬프트 자동 생성 (무료)</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">제품명 / 종류 *</label>
+                <input type="text" value={aiInput.productName}
+                  onChange={e => setAiInput(a => ({ ...a, productName: e.target.value }))}
+                  placeholder="예: 냉감 멀티쿠션"
+                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-gray-500 block mb-1">계절</label>
+                  <select value={aiInput.season} onChange={e => setAiInput(a => ({ ...a, season: e.target.value }))}
+                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
+                    {["봄", "여름", "가을", "겨울", "사계절"].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-500 block mb-1">분위기</label>
+                  <select value={aiInput.mood} onChange={e => setAiInput(a => ({ ...a, mood: e.target.value }))}
+                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
+                    {["시원한", "따뜻한", "세련된", "활동적인", "고급스러운", "편안한"].map(m => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-500 block mb-1">핵심 특징</label>
+                <input type="text" value={aiInput.features}
+                  onChange={e => setAiInput(a => ({ ...a, features: e.target.value }))}
+                  placeholder="예: 냉감, 빠른 건조, 신축성"
+                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-gray-500 block mb-1">타겟</label>
+                  <input type="text" value={aiInput.target}
+                    onChange={e => setAiInput(a => ({ ...a, target: e.target.value }))}
+                    placeholder="예: 현장 작업자"
+                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-500 block mb-1">스타일</label>
+                  <select value={aiInput.style} onChange={e => setAiInput(a => ({ ...a, style: e.target.value }))}
+                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
+                    {["미니멀", "자연적", "도시적", "아웃도어", "스포티", "클래식"].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              {aiError && <p className="text-[11px] text-red-500">{aiError}</p>}
+              <button onClick={handleAiGenerate}
+                className="w-full py-2 rounded-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 transition-colors">
+                ✨ 생성
+              </button>
+
+              {aiResult && (
+                <div className="space-y-2 pt-1 border-t border-slate-100">
+                  {/* 팝업 문구 */}
+                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide pt-1">팝업 문구</p>
+                  {[
+                    { label: "소제목", value: aiResult.subtitle },
+                    { label: "타이틀", value: aiResult.title },
+                    { label: "버튼",   value: aiResult.ctaText },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-start gap-2 bg-gray-50 rounded-lg p-2">
+                      <span className="text-[10px] text-gray-400 w-10 shrink-0 pt-0.5">{label}</span>
+                      <span className="text-xs text-gray-800 flex-1 whitespace-pre-line leading-snug">{value}</span>
+                      <CopyBtn text={value} />
+                    </div>
+                  ))}
+
+                  {/* 이미지 프롬프트 */}
+                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide pt-1">이미지 프롬프트</p>
+                  <div className="relative bg-gray-50 rounded-lg p-2">
+                    <p className="text-[11px] text-gray-700 leading-relaxed pr-10 line-clamp-4">{aiResult.imagePrompt}</p>
+                    <div className="absolute top-2 right-2"><CopyBtn text={aiResult.imagePrompt} /></div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">ChatGPT·Midjourney·DALL·E 등에 붙여넣으세요.</p>
+
+                  <button onClick={applyAiToNewPopup}
+                    className="w-full py-2 rounded-lg border border-slate-800 text-slate-800 text-xs font-medium hover:bg-slate-800 hover:text-white transition-colors">
+                    이 문구로 새 팝업 만들기 →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ── 오른쪽: 편집 폼 ── */}
@@ -727,65 +699,32 @@ export default function PopupManagePage() {
                   {/* 이미지 */}
                   {editing.bg_type === "image" && (
                     <div className="space-y-5">
-
-                      {/* PC 이미지 */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-gray-600">PC 이미지</label>
-                          <span className="text-[11px] font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                            권장: 760 × 560px · object-cover 중앙 크롭
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input type="text" value={editing.bg_image_url}
-                            onChange={e => set("bg_image_url", e.target.value)}
-                            placeholder="https://..."
-                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-                            className="flex-shrink-0 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg disabled:opacity-50">
-                            {uploading ? "업로드 중..." : "파일 선택"}
-                          </button>
-                          <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                            onChange={e => { const f = e.target.files?.[0]; if (f) uploadBgImage(f); e.target.value = ""; }} />
-                        </div>
-                        {editing.bg_image_url ? (
-                          <div className="h-20 rounded-lg overflow-hidden border border-gray-100">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={editing.bg_image_url} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        ) : (
-                          <p className="text-[11px] text-gray-400">JPG · PNG · WebP · 2MB 이하</p>
-                        )}
-                      </div>
-
-                      {/* 모바일 이미지 */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-gray-600">모바일 이미지</label>
-                          <span className="text-[11px] font-mono text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
-                            권장: 750 × 440px · object-cover 중앙 크롭
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-400">비우면 PC 이미지를 그대로 사용합니다.</p>
-                        <div className="flex items-center gap-2">
-                          <input type="text" value={editing.bg_image_url_mobile}
-                            onChange={e => set("bg_image_url_mobile", e.target.value)}
-                            placeholder="https://... (비우면 PC 이미지 사용)"
-                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                          <button type="button" onClick={() => fileRefMobile.current?.click()} disabled={uploadingMobile}
-                            className="flex-shrink-0 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg disabled:opacity-50">
-                            {uploadingMobile ? "업로드 중..." : "파일 선택"}
-                          </button>
-                          <input ref={fileRefMobile} type="file" accept="image/*" className="hidden"
-                            onChange={e => { const f = e.target.files?.[0]; if (f) uploadBgImageMobile(f); e.target.value = ""; }} />
-                        </div>
-                        {editing.bg_image_url_mobile && (
-                          <div className="h-20 rounded-lg overflow-hidden border border-gray-100">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={editing.bg_image_url_mobile} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </div>
+                      <PopupImagePicker
+                        label="PC 이미지"
+                        sizeHint="권장: 760 × 560px"
+                        sizeColor="blue"
+                        imageUrl={editing.bg_image_url}
+                        position={editing.bg_image_position || "50% 50%"}
+                        onImageChange={(url) => set("bg_image_url", url)}
+                        onPositionChange={(pos) => set("bg_image_position", pos)}
+                        uploading={uploading}
+                        onUpload={uploadBgImage}
+                        aspect="pc"
+                      />
+                      <PopupImagePicker
+                        label="모바일 이미지"
+                        subLabel="비우면 PC 이미지 사용"
+                        sizeHint="권장: 750 × 440px"
+                        sizeColor="orange"
+                        imageUrl={editing.bg_image_url_mobile}
+                        position={editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%"}
+                        onImageChange={(url) => set("bg_image_url_mobile", url)}
+                        onPositionChange={(pos) => set("bg_image_position_mobile", pos)}
+                        uploading={uploadingMobile}
+                        onUpload={uploadBgImageMobile}
+                        aspect="mobile"
+                        placeholder="(비우면 PC 이미지 및 위치 사용)"
+                      />
                     </div>
                   )}
                 </div>
@@ -889,15 +828,20 @@ export default function PopupManagePage() {
                     <div>
                       <p className="text-xs font-medium text-gray-400 mb-2">PC 팝업 <span className="text-gray-300 font-mono text-[10px]">380 × 280px</span></p>
                       <div className="shadow-xl overflow-hidden" style={{ width: 280 }}>
-                        <div className="relative flex flex-col justify-between p-5"
-                          style={{ height: 200, background: computeBg(editing, "pc") }}>
-                          <div>
+                        <div className="relative flex flex-col justify-between p-5 overflow-hidden"
+                          style={{ height: 200, background: editing.bg_type === "image" ? (editing.bg_image_url ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "pc") }}>
+                          {editing.bg_type === "image" && editing.bg_image_url && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={editing.bg_image_url} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                              style={{ objectPosition: editing.bg_image_position || "50% 50%" }} />
+                          )}
+                          <div className="relative z-10">
                             <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
                             <p className="mt-1 text-lg font-bold text-white leading-tight whitespace-pre-line">
                               {editing.title || "메인 제목"}
                             </p>
                           </div>
-                          <p className="text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
+                          <p className="relative z-10 text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
                         </div>
                         <div className="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-100">
                           <span className="text-xs text-gray-500">오늘 하루 보지않기</span>
@@ -914,16 +858,29 @@ export default function PopupManagePage() {
                           <div className="w-8 h-1 bg-gray-300 rounded-full" />
                         </div>
                         <div className="px-3 pt-1">
-                          <div className="relative flex flex-col justify-between p-4 rounded-xl overflow-hidden"
-                            style={{ height: 150, background: computeBg(editing, "mobile") }}>
-                            <div>
-                              <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
-                              <p className="mt-1 text-base font-bold text-white leading-tight whitespace-pre-line">
-                                {editing.title || "메인 제목"}
-                              </p>
-                            </div>
-                            <p className="text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
-                          </div>
+                          {(() => {
+                            const mUrl = editing.bg_image_url_mobile || editing.bg_image_url;
+                            const mPos = editing.bg_image_url_mobile
+                              ? (editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%")
+                              : (editing.bg_image_position || "50% 50%");
+                            return (
+                              <div className="relative flex flex-col justify-between p-4 rounded-xl overflow-hidden"
+                                style={{ height: 150, background: editing.bg_type === "image" ? (mUrl ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "mobile") }}>
+                                {editing.bg_type === "image" && mUrl && (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={mUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                    style={{ objectPosition: mPos }} />
+                                )}
+                                <div className="relative z-10">
+                                  <p className="text-xs text-white/80 leading-snug">{editing.subtitle || "서브 문구"}</p>
+                                  <p className="mt-1 text-base font-bold text-white leading-tight whitespace-pre-line">
+                                    {editing.title || "메인 제목"}
+                                  </p>
+                                </div>
+                                <p className="relative z-10 text-xs text-white/90">{editing.link_text || "링크 텍스트"} &gt;</p>
+                              </div>
+                            );
+                          })()}
                         </div>
                         <div className="flex items-center justify-between px-4 py-3 mt-1">
                           <span className="text-xs text-gray-500">오늘 하루 보지않기</span>
@@ -957,7 +914,191 @@ export default function PopupManagePage() {
             </div>
           )}
         </div>
-      </div>}
+      </div>
+    </div>
+  );
+}
+
+// ── 팝업 이미지 피커 (위치 드래그 조정) ──────────────────────────────────────
+
+type PopupImagePickerProps = {
+  label: string;
+  subLabel?: string;
+  sizeHint: string;
+  sizeColor: "blue" | "orange";
+  imageUrl: string;
+  position: string;
+  onImageChange: (url: string) => void;
+  onPositionChange: (pos: string) => void;
+  uploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+  aspect: "pc" | "mobile";
+  placeholder?: string;
+};
+
+function PopupImagePicker({
+  label, subLabel, sizeHint, sizeColor,
+  imageUrl, position,
+  onImageChange, onPositionChange,
+  uploading, onUpload, aspect, placeholder,
+}: PopupImagePickerProps) {
+  const fileRef    = useRef<HTMLInputElement>(null);
+  const boxRef     = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  // PC popup: 380×280 → 73.7%  /  Mobile: 750×440 → 58.7%
+  const paddingBottom = aspect === "pc" ? "73.7%" : "58.7%";
+
+  const parsePct = (s: string): [number, number] => {
+    const parts = (s || "50% 50%").split(" ");
+    const x = parseFloat(parts[0] ?? "50");
+    const y = parseFloat(parts[1] ?? "50");
+    return [isNaN(x) ? 50 : x, isNaN(y) ? 50 : y];
+  };
+
+  const pctFromEvent = (e: { clientX: number; clientY: number }): [number, number] => {
+    const box = boxRef.current;
+    if (!box) return [50, 50];
+    const r = box.getBoundingClientRect();
+    return [
+      Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width)  * 100)),
+      Math.max(0, Math.min(100, ((e.clientY - r.top)  / r.height) * 100)),
+    ];
+  };
+
+  const handleMouseDown = (e: { clientX: number; clientY: number; preventDefault: () => void }) => {
+    if (!imageUrl) return;
+    e.preventDefault();
+    isDragging.current = true;
+    const [x, y] = pctFromEvent(e);
+    onPositionChange(`${x.toFixed(1)}% ${y.toFixed(1)}%`);
+
+    const onMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const [mx, my] = pctFromEvent(ev);
+      onPositionChange(`${mx.toFixed(1)}% ${my.toFixed(1)}%`);
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  const [posX, posY] = parsePct(position);
+  const accentCls = sizeColor === "blue"
+    ? "bg-blue-50 text-blue-600 border-blue-200"
+    : "bg-orange-50 text-orange-600 border-orange-200";
+
+  return (
+    <div className="space-y-2.5">
+      {/* 라벨 */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-semibold text-slate-700">{label}</span>
+        {subLabel && <span className="text-[11px] text-slate-400">{subLabel}</span>}
+        <span className={`ml-auto text-[10px] font-mono px-2 py-0.5 rounded border ${accentCls}`}>{sizeHint}</span>
+      </div>
+
+      {/* 프리뷰 박스 */}
+      <div
+        ref={boxRef}
+        className={`relative w-full overflow-hidden rounded-xl select-none ${
+          imageUrl
+            ? "cursor-crosshair border-2 border-slate-200"
+            : "border-2 border-dashed border-slate-300 cursor-pointer"
+        } bg-slate-100`}
+        style={{ paddingBottom }}
+        onMouseDown={imageUrl ? handleMouseDown : undefined}
+        onClick={!imageUrl ? () => fileRef.current?.click() : undefined}
+      >
+        {imageUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{ objectPosition: position }}
+            />
+            <div className="absolute inset-0 bg-black/5 pointer-events-none" />
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none">
+              <span className="text-[10px] bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm whitespace-nowrap">
+                클릭·드래그로 위치 조정
+              </span>
+            </div>
+            {/* 위치 핀 */}
+            <div
+              className="absolute pointer-events-none"
+              style={{ left: `${posX}%`, top: `${posY}%`, transform: "translate(-50%, -50%)" }}
+            >
+              <div className="w-5 h-5 rounded-full border-[2.5px] border-white shadow-[0_0_0_1px_rgba(0,0,0,.4)] bg-white/20" />
+            </div>
+          </>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-400">
+            <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+            <span className="text-xs text-center px-4 leading-relaxed">
+              {placeholder ?? "클릭하여 이미지 업로드"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* 버튼 행 */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors disabled:opacity-50"
+        >
+          {uploading ? (
+            <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+          )}
+          {uploading ? "업로드 중..." : "이미지 업로드"}
+        </button>
+
+        {imageUrl && (
+          <>
+            <button
+              type="button"
+              onClick={() => onPositionChange("50% 50%")}
+              className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 transition-colors"
+            >
+              위치 초기화
+            </button>
+            <button
+              type="button"
+              onClick={() => onImageChange("")}
+              className="px-3 py-1.5 text-xs font-medium border border-red-200 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
+            >
+              이미지 제거
+            </button>
+            <span className="ml-auto font-mono text-[10px] text-slate-400">{position}</span>
+          </>
+        )}
+      </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => {
+          const f = e.target.files?.[0];
+          if (f) onUpload(f);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }

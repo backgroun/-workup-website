@@ -23,7 +23,9 @@ type PopupItem = {
   bg_gradient_to?: string;
   bg_gradient_angle?: number;
   bg_image_url?: string;
-  bg_image_url_mobile?: string; // 비우면 bg_image_url 사용
+  bg_image_url_mobile?: string;
+  bg_image_position?: string;         // "50% 50%" 형식, object-position 에 그대로 사용
+  bg_image_position_mobile?: string;
   scheduled_start?: string | null;
   scheduled_end?: string | null;
   sort_order?: number;
@@ -159,18 +161,32 @@ export default function PopupBanner() {
   // ── 공통 콘텐츠 렌더러 ──────────────────────────────────────────────────────
 
   function BannerContent({ height, textSizeClass, device }: { height: number; textSizeClass: string; device: "pc" | "mobile" }) {
+    const isImageBg = (current.bg_type ?? (current.bg_image_url ? "image" : "gradient")) === "image";
+    const bgImageUrl = isImageBg
+      ? ((device === "mobile" && current.bg_image_url_mobile) ? current.bg_image_url_mobile : current.bg_image_url)
+      : undefined;
+    const bgImagePos = device === "mobile"
+      ? (current.bg_image_position_mobile || current.bg_image_position || "50% 50%")
+      : (current.bg_image_position || "50% 50%");
+
     return (
       <div className="relative flex flex-col justify-between p-5 overflow-hidden"
-        style={{ height, background: computeBg(current, device) }}>
+        style={{ height, background: isImageBg ? (bgImageUrl ? undefined : (current.bg_solid || "#1A2B4A")) : computeBg(current, device) }}>
+        {/* 이미지 배경 — object-position으로 위치 반영 */}
+        {isImageBg && bgImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ objectPosition: bgImagePos }} />
+        )}
         {/* 텍스트 */}
-        <div>
+        <div className="relative z-10">
           <p className="text-xs text-white/80 leading-snug">{current.subtitle}</p>
           <p className={`mt-1 font-bold text-white leading-tight whitespace-pre-line ${textSizeClass}`}>
             {current.title}
           </p>
         </div>
         <Link href={current.link} onClick={handleClose}
-          className="inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white">
+          className="relative z-10 inline-flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white">
           {current.link_text} &gt;
         </Link>
 
@@ -178,13 +194,13 @@ export default function PopupBanner() {
         {multi && (
           <>
             <button onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="이전 팝업"
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="다음 팝업"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>

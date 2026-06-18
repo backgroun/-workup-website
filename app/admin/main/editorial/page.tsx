@@ -30,6 +30,7 @@ type Banner = {
   section_bg: string;
   image_url: string;
   items: ProductItem[];
+  tags?: HeroTag[];   // 섹션 이미지 위 상품 핫스팟 (단일 x/y 좌표 사용)
 };
 
 type EditorialBlock = {
@@ -45,6 +46,9 @@ type EditorialBlock = {
     desc: string;
     image_url: string;
     image_position?: string;
+    image_position_mobile?: string;
+    image_scale?: number;
+    image_scale_mobile?: number;
     bg_color: string;
     tags: HeroTag[];
   };
@@ -64,6 +68,7 @@ function emptyBanner(): Banner {
     section_bg: "#1A2B4A",
     image_url: "",
     items: [emptyItem(), emptyItem(), emptyItem()],
+    tags: [],
   };
 }
 function emptyItem(): ProductItem {
@@ -231,7 +236,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         subtitle: "내구성과 안전을 동시에",
         hero_subtitle: "현장 작업자가 직접 선택한",
         desc: "15년 경력자도 인정한 현장 최강 라인업. 1,000회 내구성 테스트와 KC 인증 안전 소재로 어떤 현장에서도 믿을 수 있습니다.",
-        image_url: "", bg_color: "#1A2B4A",
+        image_url: "", image_scale: 1.0, image_scale_mobile: 1.0, bg_color: "#1A2B4A",
         tags: [
           tag(30, 28, "반사띠 안전 자켓", "79,000원", "reflective-safety-jacket", "#1A2B4A"),
           tag(52, 48, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
@@ -604,6 +609,158 @@ function ItemEditor({ item, onChange, onDelete, products }: {
   );
 }
 
+// ── 서브 컴포넌트: 배너 섹션 이미지 상품 태그 에디터 ───────
+// 프런트(WhiteBox)와 동일하게 8:9 object-contain → 단일 x/y 좌표로 PC·모바일 공용
+function BannerTagEditor({ tags, imageUrl, onChange, products }: {
+  tags: HeroTag[];
+  imageUrl: string;
+  onChange: (tags: HeroTag[]) => void;
+  products: SearchProduct[];
+}) {
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const imgAreaRef = useRef<HTMLDivElement>(null);
+  const wasDraggingRef = useRef(false);
+
+  function updateTag(idx: number, patch: Partial<HeroTag>) {
+    const next = [...tags];
+    next[idx] = { ...next[idx], ...patch };
+    onChange(next);
+  }
+  function deleteTag(idx: number) {
+    onChange(tags.filter((_, i) => i !== idx));
+    setSelectedIdx(null);
+  }
+
+  function handleImageClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (wasDraggingRef.current) { wasDraggingRef.current = false; return; }
+    if (!imageUrl) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    const next = [...tags, { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#1A2B4A" }];
+    onChange(next);
+    setSelectedIdx(next.length - 1);
+  }
+  function onTagDown(e: React.PointerEvent<HTMLButtonElement>, idx: number) {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    wasDraggingRef.current = false;
+    setDraggingIdx(idx);
+    setSelectedIdx(idx);
+  }
+  function onTagMove(e: React.PointerEvent<HTMLButtonElement>) {
+    if (draggingIdx === null || !imgAreaRef.current) return;
+    wasDraggingRef.current = true;
+    const rect = imgAreaRef.current.getBoundingClientRect();
+    const x = Math.round(Math.min(99, Math.max(1, ((e.clientX - rect.left) / rect.width) * 100)));
+    const y = Math.round(Math.min(99, Math.max(1, ((e.clientY - rect.top) / rect.height) * 100)));
+    updateTag(draggingIdx, { x, y });
+  }
+
+  const selectedTag = selectedIdx !== null ? tags[selectedIdx] : null;
+
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <label className="text-[11px] font-semibold text-gray-700">📍 이미지 상품 태그 ({tags.length}개)</label>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            {imageUrl ? "이미지 클릭 → 태그 추가 · 드래그 → 위치 이동 · 클릭 → 편집" : "섹션 이미지를 먼저 등록하세요"}
+          </p>
+        </div>
+        {tags.length > 0 && (
+          <button onClick={() => { onChange([]); setSelectedIdx(null); }}
+            className="text-[11px] text-red-400 hover:text-red-600">전체 삭제</button>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        {/* 클릭 영역 — 프런트와 동일 8:9 object-contain */}
+        <div
+          ref={imgAreaRef}
+          onClick={handleImageClick}
+          className="relative flex-shrink-0 rounded-xl overflow-hidden select-none border border-gray-200 bg-gray-200"
+          style={{ width: "150px", aspectRatio: "440 / 495", cursor: draggingIdx !== null ? "grabbing" : (imageUrl ? "crosshair" : "default") }}
+        >
+          {imageUrl ? (
+            <img src={imageUrl} alt="" draggable={false}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">이미지 없음</div>
+          )}
+          {tags.map((tag, idx) => (
+            <button
+              key={tag.id}
+              onPointerDown={(e) => onTagDown(e, idx)}
+              onPointerMove={onTagMove}
+              onPointerUp={() => setDraggingIdx(null)}
+              onClick={(e) => { e.stopPropagation(); if (!wasDraggingRef.current) setSelectedIdx(selectedIdx === idx ? null : idx); }}
+              className="absolute"
+              style={{ left: `${tag.x}%`, top: `${tag.y}%`, transform: "translate(-50%,-50%)", cursor: draggingIdx === idx ? "grabbing" : "grab", touchAction: "none" }}
+              title={tag.name || `태그 ${idx + 1}`}
+            >
+              <span className={`flex items-center justify-center rounded-full transition-all ${
+                selectedIdx === idx ? "w-5 h-5 bg-[#ff550c]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
+              }`}>
+                <span className="text-[8px] font-bold text-[#1A2B4A]">{idx + 1}</span>
+              </span>
+            </button>
+          ))}
+          <div className="absolute inset-0 pointer-events-none opacity-10"
+            style={{ backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)", backgroundSize: "25% 25%" }} />
+        </div>
+
+        {/* 칩 + 선택 태그 편집 */}
+        <div className="flex-1 min-w-0 space-y-2.5">
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((tag, idx) => (
+                <button key={tag.id} onClick={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                    selectedIdx === idx ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
+                  <span className="w-3.5 h-3.5 rounded-full bg-current opacity-30 flex items-center justify-center text-[9px] font-bold">{idx + 1}</span>
+                  {tag.name || "이름 미입력"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selectedTag !== null && selectedIdx !== null ? (
+            <div className="border-2 border-[#ff550c]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-[#ff550c]">태그 {selectedIdx + 1} 편집</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-gray-400">{selectedTag.x}%, {selectedTag.y}%</span>
+                  <button onClick={() => deleteTag(selectedIdx)} className="text-[11px] text-red-500 hover:text-red-700 font-medium">삭제</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">제품 검색</label>
+                <ProductPicker products={products} value={selectedTag.name}
+                  onSelect={(p) => updateTag(selectedIdx, { product_id: p.id, name: p.name, price: p.price, image_url: p.imageUrl ?? "" })} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="상품명" value={selectedTag.name} onChange={(v) => updateTag(selectedIdx, { name: v })} placeholder="쿨링 반팔 티셔츠" />
+                <Field label="가격" value={selectedTag.price} onChange={(v) => updateTag(selectedIdx, { price: v })} placeholder="19,000원" />
+              </div>
+            </div>
+          ) : (
+            imageUrl && tags.length === 0 && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <span className="text-blue-400 text-lg">👆</span>
+                <p className="text-[12px] text-blue-600">왼쪽 이미지를 클릭하면 태그가 추가됩니다.</p>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 서브 컴포넌트: 배너 에디터 (배너1/배너2 공용) ─────────
 function BannerEditor({ banner, label, onChange, products }: {
   banner: Banner;
@@ -640,11 +797,16 @@ function BannerEditor({ banner, label, onChange, products }: {
       <Field label="설명" value={banner.desc} onChange={(v) => onChange({ desc: v })}
         placeholder="섹션 설명을 입력하세요" multiline />
 
-      {/* AI 이미지 프롬프트 빌더 */}
+      {/* AI 이미지 프롬프트 빌더 — 기획전 모드로 하단 연결상품 반영 */}
       <PromptBuilder
         buildFn={(shotType, clothingType, season, extras, scene) =>
           buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, scene, banner.image_url || undefined)
         }
+        buildShowcaseFn={(mode, clothingType, season, extras, scene) =>
+          buildShowcasePrompt(banner.title, banner.desc, banner.items, mode, clothingType, season, extras, scene)
+        }
+        enableShowcase
+        items={banner.items}
         sizeLabel="440 × 495px"
         ratioLabel="8 : 9"
         refImageUrl={banner.image_url || undefined}
@@ -655,6 +817,14 @@ function BannerEditor({ banner, label, onChange, products }: {
         hint="권장: 440 × 495px (세로형) · 자동 리사이징 적용"
         value={banner.image_url}
         onChange={(url) => onChange({ image_url: url })}
+      />
+
+      {/* 섹션 이미지 상품 핫스팟 — 정물 이미지에서 바로 제품 상세로 진입 */}
+      <BannerTagEditor
+        tags={banner.tags ?? []}
+        imageUrl={banner.image_url}
+        onChange={(tags) => onChange({ tags })}
+        products={products}
       />
 
       <div>
@@ -720,6 +890,32 @@ function ShotTypeSelector({ value, onChange }: { value: ShotKey; onChange: (v: S
   );
 }
 
+function ShowcaseModeSelector({ value, onChange }: { value: ShowcaseMode; onChange: (v: ShowcaseMode) => void }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-medium text-gray-500 mb-1.5">기획전 구도 (하단 3제품 반영)</label>
+      <div className="flex flex-wrap gap-1.5">
+        {SHOWCASE_MODES.map((m) => (
+          <button
+            key={m.key}
+            type="button"
+            onClick={() => onChange(m.key)}
+            title={m.desc}
+            className={`text-[12px] px-3 py-1.5 rounded-full border font-medium transition-colors ${
+              value === m.key
+                ? "bg-violet-600 text-white border-violet-600"
+                : "bg-white text-gray-600 border-gray-300 hover:border-violet-400 hover:text-violet-600"
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-[10px] text-gray-400 mt-1">{SHOWCASE_MODES.find((m) => m.key === value)?.desc}</p>
+    </div>
+  );
+}
+
 const PROMPT_SEASON_EN: Record<string, string> = {
   "봄":    "spring transitional weather — light layering, mild temperature",
   "여름":  "summer heat — cooling, breathable, sweat-wicking",
@@ -756,14 +952,117 @@ const SHOT_CAM: Record<ShotKey, string> = {
   group:  "35mm lens, several models staged together within the scene, balanced group composition",
 };
 
+// ── 기획전(컬렉션) 모드: 하단 연결상품 3개를 하나로 아우르는 상단 이미지 ──
+type ShowcaseMode = "flatlay" | "hero" | "lineup";
+const SHOWCASE_MODES = [
+  { key: "flatlay", label: "컬렉션 정물", desc: "무모델 정물(놀링) — 3제품을 또렷하게" },
+  { key: "hero",    label: "대표 1컷",   desc: "대표 1점 착장 + 테마 씬" },
+  { key: "lineup",  label: "라인업",     desc: "여러 모델이 각 1점씩 그룹 착장" },
+] as const;
+
+type CollItem = { name: string; garment: string; imageUrl?: string };
+
+// 한글 제품명 → 영문 의류 표현 (이미지 모델 인식률 ↑, 미매칭은 참고이미지에 위임)
+const GARMENT_KEYWORDS: Record<string, string> = {
+  "소로나": "Sorona-blend", "흡한속건": "moisture-wicking quick-dry",
+  "흡습속건": "moisture-wicking quick-dry", "쿨링": "cooling",
+  "기능성": "technical functional", "방풍": "windproof", "방수": "waterproof",
+  "반사": "reflective safety", "경량": "lightweight", "스트레치": "stretch",
+  "반팔티": "short-sleeve t-shirt", "긴팔티": "long-sleeve t-shirt",
+  "반팔": "short-sleeve", "긴팔": "long-sleeve", "티셔츠": "t-shirt",
+  "스웻셔츠": "sweatshirt", "맨투맨": "sweatshirt", "셔츠": "button-up shirt",
+  "후드": "hooded", "집업": "zip-up", "자켓": "jacket",
+  "조끼": "vest", "베스트": "vest", "카고": "cargo", "치노": "chino",
+  "팬츠": "pants", "쇼츠": "shorts", "캠프": "camp-collar",
+  "팔토시": "UV arm sleeves", "넥게이터": "neck gaiter", "모자": "cap",
+  "백팩": "backpack", "파우치": "pouch",
+};
+function describeGarment(name: string): string {
+  const keys = Object.keys(GARMENT_KEYWORDS).filter((k) => name.includes(k));
+  // 더 긴 키에 포함되는 짧은 키 제거 (예: "반팔" ⊂ "반팔티")
+  const kept = keys.filter((k) => !keys.some((o) => o !== k && o.includes(k)));
+  const en = kept.map((k) => GARMENT_KEYWORDS[k]);
+  return en.length ? Array.from(new Set(en)).join(" ") : "functional apparel piece";
+}
+
+// 컬렉션 프롬프트 본문 — 모드별 피사체/구도 분기, no-text 규칙 동일 상속
+function buildCollectionPrompt(opts: {
+  theme: string; desc: string;
+  clothingEn: string; seasonEn: string; sceneEn: string;
+  descriptors: string[]; moodLine: string;
+  collection: { mode: ShowcaseMode; items: CollItem[] };
+}): string {
+  const { theme, desc, clothingEn, seasonEn, sceneEn, descriptors, moodLine, collection } = opts;
+  const { mode, items } = collection;
+  const lineup = items.map((it, n) => `  ${n + 1}. ${it.name} — ${it.garment}`).join("\n");
+  const refs = items.map((it) => it.imageUrl).filter(Boolean) as string[];
+  const who = descriptors.length ? `${descriptors.join(" ")} ` : "";
+  const output = "8:9 vertical, 440 × 495px";
+
+  let subject = "", composition = "", camera = "", anatomy = "";
+  if (mode === "flatlay") {
+    subject = `- NO human model. The ${items.length} actual garments themselves are the hero subject.`;
+    composition = `- Flat-lay / knolling still-life: the ${items.length} garments neatly folded or laid out and styled together as ONE cohesive collection on a clean minimal surface. Top-down or slight 30° angle, balanced layout with gentle negative space, every piece clearly readable even at a small 440×495 thumbnail. Vertical 8:9 framing.`;
+    camera = `- 50mm product still-life setup, soft even light with subtle directional shadow for material depth`;
+  } else if (mode === "lineup") {
+    subject = `- A few ${who}authentic, real-worker-type Korean models — EACH wearing ONE different piece from the lineup, styled naturally${moodLine ? `; ${moodLine}` : ""}.`;
+    composition = `- Group editorial framing (vertical 8:9, 440×495): models staged together in one balanced composition so the whole collection reads as a single themed group; keep each garment recognizable.`;
+    camera = `- 35mm lens, several models within the scene, cohesive group composition`;
+    anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
+  } else {
+    const rep = items[0];
+    subject = `- One ${who}authentic, real-worker-type Korean model wearing the representative piece (${rep.name} — ${rep.garment}), styled naturally${moodLine ? `; ${moodLine}` : ""}. The rest of the collection is evoked through the themed styling and setting.`;
+    composition = `- Single-subject editorial framing (vertical 8:9, 440×495): subject and environment balanced, clear focal point that still reads at thumbnail size.`;
+    camera = `- 50mm lens, waist-up to full body, subject prominent with environment softly behind`;
+    anatomy = `\n[MODEL & ANATOMY]\n- Anatomically correct proportions, natural hands and fingers, realistic joints; lifelike skin texture, no plastic skin, no over-retouching\n`;
+  }
+
+  const refsBlock = refs.length
+    ? `\n\n[REFERENCE IMAGES] (${refs.length}) — keep EACH garment faithful to its uploaded photo (same style, color, fabric, prints, details):\n` +
+      refs.map((u) => `  - ${u}`).join("\n")
+    : "";
+
+  return (
+    `[GENERATION DIRECTIVE]\n` +
+    `Generate ONE single photorealistic cinematic editorial image that represents a themed product collection AS ONE cohesive scene. No collage, grid, card-news, multi-panel layout, split-screen, or any text inside the image.\n\n` +
+    `[CONCEPT]\n` +
+    `- Brand: WORKUP — ${clothingEn}\n` +
+    `- Theme: "${theme}"\n` +
+    (desc.trim() ? `- Story: ${desc.trim().slice(0, 160)}\n` : "") +
+    `\n[COLLECTION LINEUP] — represent these ${items.length} pieces TOGETHER as one themed group:\n` +
+    lineup + `\n` +
+    `\n[SCENE & ENVIRONMENT]\n- Set in ${sceneEn}\n` +
+    (seasonEn ? `- Season mood: ${seasonEn}\n` : "") +
+    `\n[SUBJECT]\n${subject}\n` +
+    `\n[COMPOSITION]\n${composition}\n` +
+    `\n[CAMERA & LENS]\n${camera}\n` +
+    `\n[LIGHTING & MOOD]\n- Natural directional light (daylight / golden-hour feel), cinematic atmosphere and depth — premium commercial editorial quality\n` +
+    anatomy +
+    `\n[COLOR & FIDELITY]\n- Preserve the EXACT product colors, prints, logos and fabric; natural true-to-life editorial color grade, no color cast\n` +
+    `\n[OUTPUT]\n- ${output}, high-resolution, sharp fabric texture` +
+    refsBlock +
+    `\n\n[NEGATIVE PROMPT]\n` +
+    `text, typography, caption, watermark, added graphic logo overlay, collage, grid, split-screen, multi-panel, border, frame, ` +
+    `deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, mutated anatomy, twisted joints, plastic skin, over-retouched, uncanny face, ` +
+    `distorted product, warped proportions, wrong colors, color cast, oversaturated, blurry, low-resolution, jpeg artifacts` +
+    `\n\n── 한글 참고 ──\n` +
+    `테마: ${theme}\n` +
+    (desc.trim() ? `설명: ${desc.trim().slice(0, 160)}\n` : "") +
+    `기획전 구도: ${SHOWCASE_MODES.find((m) => m.key === mode)?.label}\n` +
+    `연결상품: ${items.map((i) => i.name).join(", ")}\n` +
+    (refs.length ? `참고 이미지 ${refs.length}장: 각 제품 사진과 동일하게` : "참고 이미지 없음 — 제품명 묘사 기반")
+  );
+}
+
 // 기획(에디토리얼) 공통 프롬프트 코어 — 배경·무드가 살아있는 시네마틱
 function buildEditorialPrompt(opts: {
   kind: "hero" | "banner";
   theme: string; desc: string; shotType: ShotKey;
   clothingType: "작업복" | "일상복";
   season: string; extras: string[]; scene: string; imageUrl?: string;
+  collection?: { mode: ShowcaseMode; items: CollItem[] };
 }): string {
-  const { kind, theme, desc, shotType, clothingType, season, extras, scene, imageUrl } = opts;
+  const { kind, theme, desc, shotType, clothingType, season, extras, scene, imageUrl, collection } = opts;
   if (!theme) return "";
 
   const clothingEn = clothingType === "일상복" ? "Korean casual everyday wear" : "Korean functional workwear";
@@ -785,6 +1084,13 @@ function buildEditorialPrompt(opts: {
   const sceneEn = scene && SCENE_EN[scene]
     ? SCENE_EN[scene]
     : "a tasteful real-world editorial environment that fits the theme and season — NOT a plain studio catalog backdrop";
+
+  // 기획전(컬렉션) 모드 — 하단 연결상품을 하나로 아우르는 별도 코어로 위임
+  if (collection && collection.items.length) {
+    return buildCollectionPrompt({
+      theme, desc, clothingEn, seasonEn, sceneEn, descriptors, moodLine, collection,
+    });
+  }
 
   const composition = kind === "hero"
     ? `${shotEn}. WIDE editorial framing for a 3:4 portrait (950×1280px): camera set back, generous negative space around the subject, subject occupies ~50–60% of the frame height, centered. This image is also cropped to 8:9 (top-aligned) on desktop — keep critical elements away from the bottom edge.`
@@ -841,7 +1147,7 @@ function buildHeroPrompt(
   scene: string,
   imageUrl?: string
 ): string {
-  const theme = [title, subtitle, heroSub].filter(Boolean).join(" · ");
+  const theme = [title, subtitle].filter(Boolean).join(" · ");
   return buildEditorialPrompt({ kind: "hero", theme, desc, shotType, clothingType, season, extras, scene, imageUrl });
 }
 
@@ -854,6 +1160,24 @@ function buildBannerPrompt(
   imageUrl?: string
 ): string {
   return buildEditorialPrompt({ kind: "banner", theme: title.trim(), desc, shotType, clothingType, season, extras, scene, imageUrl });
+}
+
+// 기획전 프롬프트 — 배너 하단 연결상품(items)을 하나로 아우르는 상단 이미지
+function buildShowcasePrompt(
+  title: string, desc: string, items: ProductItem[],
+  mode: ShowcaseMode,
+  clothingType: "작업복" | "일상복",
+  season: string, extras: string[], scene: string
+): string {
+  const coll = items
+    .filter((i) => i.name.trim())
+    .map((i) => ({ name: i.name.trim(), garment: describeGarment(i.name), imageUrl: i.image_url || undefined }));
+  if (!coll.length) return "";
+  return buildEditorialPrompt({
+    kind: "banner", theme: title.trim(), desc,
+    shotType: "full", clothingType, season, extras, scene,
+    collection: { mode, items: coll },
+  });
 }
 
 function PromptBox({
@@ -995,12 +1319,18 @@ const PROMPT_EXTRA_PRESETS = ["남성", "여성", "한국인", "서양인", "캐
 
 function PromptBuilder({
   buildFn,
+  buildShowcaseFn,
+  enableShowcase,
+  items,
   isHero,
   sizeLabel,
   ratioLabel,
   refImageUrl,
 }: {
   buildFn: (shotType: ShotKey, clothingType: "작업복" | "일상복", season: string, extras: string[], scene: string) => string;
+  buildShowcaseFn?: (mode: ShowcaseMode, clothingType: "작업복" | "일상복", season: string, extras: string[], scene: string) => string;
+  enableShowcase?: boolean;
+  items?: ProductItem[];
   isHero?: boolean;
   sizeLabel?: string;
   ratioLabel?: string;
@@ -1015,11 +1345,19 @@ function PromptBuilder({
   const [prompt, setPrompt]               = useState("");
   const [showPrompt, setShowPrompt]       = useState(false);
   const [copied, setCopied]               = useState(false);
+  const [showcaseOn, setShowcaseOn]       = useState<boolean>(!!enableShowcase);
+  const [showcaseMode, setShowcaseMode]   = useState<ShowcaseMode>("flatlay");
+
+  const showcaseActive = !!(enableShowcase && showcaseOn && buildShowcaseFn);
+  const itemRefs = (items ?? []).map((i) => i.image_url).filter(Boolean) as string[];
+  const namedItems = (items ?? []).filter((i) => i.name.trim());
 
   const resetPrompt = () => setShowPrompt(false);
 
   const generate = () => {
-    const p = buildFn(shotType, clothingType, season, extras, scene);
+    const p = showcaseActive
+      ? buildShowcaseFn!(showcaseMode, clothingType, season, extras, scene)
+      : buildFn(shotType, clothingType, season, extras, scene);
     if (p) { setPrompt(p); setShowPrompt(true); }
   };
 
@@ -1027,7 +1365,10 @@ function PromptBuilder({
     const suffix = isHero
       ? `\n\n[권장 사이즈] 950 × 1280px  [비율] 3 : 4\n[PC 표시] 동일 이미지를 8:9 비율 center-top 크롭으로 사용`
       : `\n\n[권장 사이즈] ${sizeLabel}  [비율] ${ratioLabel}`;
-    const full = prompt + suffix + (refImageUrl ? `\n[참고 이미지] ${refImageUrl}` : "");
+    const refPart = showcaseActive
+      ? (itemRefs.length ? `\n[참고 이미지 ${itemRefs.length}장 — 각 제품 사진]\n` + itemRefs.map((u) => `- ${u}`).join("\n") : "")
+      : (refImageUrl ? `\n[참고 이미지] ${refImageUrl}` : "");
+    const full = prompt + suffix + refPart;
     navigator.clipboard.writeText(full)
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })
       .catch(() => {});
@@ -1038,50 +1379,93 @@ function PromptBuilder({
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-3">
         <p className="text-[11px] font-semibold text-gray-700">✨ AI 이미지 프롬프트 생성</p>
 
-        {/* 의류 유형 */}
-        <div>
-          <p className="text-[11px] font-medium text-gray-500 mb-1.5">의류 유형</p>
-          <div className="flex gap-1.5">
-            {(["작업복", "일상복"] as const).map(t => (
-              <button key={t} type="button" onClick={() => { setClothingType(t); resetPrompt(); }}
-                className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                  clothingType === t ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                }`}>{t}</button>
-            ))}
+        {/* 기획전 모드 — 하단 연결상품을 하나로 아우르는 상단 이미지 */}
+        {enableShowcase && buildShowcaseFn && (
+          <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2.5">
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-[11px] font-semibold text-violet-700">🎯 하단 연결상품 반영 (기획전 모드)</span>
+              <button
+                type="button"
+                onClick={() => { setShowcaseOn((v) => !v); resetPrompt(); }}
+                className={`relative w-9 h-5 rounded-full transition-colors ${showcaseOn ? "bg-violet-600" : "bg-gray-300"}`}
+                aria-pressed={showcaseOn}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${showcaseOn ? "translate-x-4" : ""}`} />
+              </button>
+            </label>
+
+            {showcaseOn && (
+              <>
+                <ShowcaseModeSelector value={showcaseMode} onChange={(v) => { setShowcaseMode(v); resetPrompt(); }} />
+
+                {namedItems.length > 0 ? (
+                  <div className="bg-white/70 border border-violet-100 rounded-lg p-2">
+                    <p className="text-[10px] text-violet-600 font-medium mb-1.5">
+                      반영될 제품 {namedItems.length}개{itemRefs.length > 0 && ` · 참고이미지 ${itemRefs.length}장`}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {namedItems.map((it) => (
+                        <span key={it.id} className="inline-flex items-center gap-1.5 bg-white border border-violet-100 rounded-full pl-1 pr-2 py-0.5">
+                          {it.image_url ? (
+                            <img src={it.image_url} alt="" className="w-4 h-4 object-cover rounded-full" />
+                          ) : (
+                            <span className="w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-[7px] text-gray-400 font-bold">WU</span>
+                          )}
+                          <span className="text-[10px] text-gray-600 max-w-[100px] truncate">{it.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                    {itemRefs.length === 0 && (
+                      <p className="text-[10px] text-amber-600 mt-1.5">제품 이미지를 등록하면 더 정확한 결과가 나옵니다 (현재는 제품명 기반).</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-amber-600">아래 &lsquo;연결 상품&rsquo;을 먼저 추가하세요. 추가된 제품이 상단 이미지에 반영됩니다.</p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 행 1: 의류 유형 + 시즌 드롭다운 + 장면 드롭다운 (인라인) */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">의류 유형</span>
+            <div className="flex gap-1">
+              {(["작업복", "일상복"] as const).map(t => (
+                <button key={t} type="button" onClick={() => { setClothingType(t); resetPrompt(); }}
+                  className={`px-2.5 py-1 text-[11px] rounded-full border font-medium transition-colors ${
+                    clothingType === t ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
+                  }`}>{t}</button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">시즌</span>
+            <select value={season} onChange={e => { setSeason(e.target.value); resetPrompt(); }}
+              className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
+              <option value="">선택 없음</option>
+              {["봄", "여름", "가을", "겨울", "전천후"].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">장면/배경</span>
+            <select value={scene} onChange={e => { setScene(e.target.value); resetPrompt(); }}
+              className="text-[11px] border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-violet-400">
+              <option value="">자동 선택</option>
+              {SCENE_PRESETS.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* 시즌 */}
-        <div>
-          <p className="text-[11px] font-medium text-gray-500 mb-1.5">시즌 <span className="text-gray-400 font-normal">(선택)</span></p>
-          <div className="flex gap-1.5 flex-wrap">
-            {["봄", "여름", "가을", "겨울", "전천후"].map(s => (
-              <button key={s} type="button" onClick={() => { setSeason(season === s ? "" : s); resetPrompt(); }}
-                className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                  season === s ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                }`}>{s}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* 장면(배경) — 기획 이미지는 배경이 핵심 */}
-        <div>
-          <p className="text-[11px] font-medium text-gray-500 mb-1.5">장면 / 배경 <span className="text-gray-400 font-normal">(선택)</span></p>
-          <div className="flex gap-1.5 flex-wrap">
-            {SCENE_PRESETS.map(s => (
-              <button key={s} type="button" onClick={() => { setScene(scene === s ? "" : s); resetPrompt(); }}
-                className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                  scene === s ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                }`}>{s}</button>
-            ))}
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1">미선택 시 테마·시즌에 맞는 배경이 자동 적용됩니다.</p>
-        </div>
-
-        {/* 추가 옵션 */}
+        {/* 추가 옵션: 프리셋 + 직접 입력 인라인 */}
         <div>
           <p className="text-[11px] font-medium text-gray-500 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(복수 선택 가능)</span></p>
-          <div className="flex gap-1.5 flex-wrap mb-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             {PROMPT_EXTRA_PRESETS.map(opt => (
               <button key={opt} type="button"
                 onClick={() => {
@@ -1092,8 +1476,6 @@ function PromptBuilder({
                   extras.includes(opt) ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold" : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
                 }`}>{opt}</button>
             ))}
-          </div>
-          <div className="flex gap-1.5">
             <input value={customInput} onChange={e => setCustomInput(e.target.value)}
               onKeyDown={e => {
                 if (e.key === "Enter" && customInput.trim()) {
@@ -1101,16 +1483,16 @@ function PromptBuilder({
                   setCustomInput(""); resetPrompt();
                 }
               }}
-              placeholder="직접 입력 후 Enter..."
-              className="flex-1 text-[11px] border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:border-violet-400 bg-white" />
+              placeholder="직접 입력..."
+              className="text-[11px] border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-violet-400 bg-white w-24" />
             <button type="button"
               onClick={() => {
                 if (customInput.trim()) { setExtras(prev => [...prev, customInput.trim()]); setCustomInput(""); resetPrompt(); }
               }}
-              className="px-3 py-1.5 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">추가</button>
+              className="px-2 py-1 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">+</button>
           </div>
           {extras.length > 0 && (
-            <div className="flex gap-1 flex-wrap mt-2">
+            <div className="flex gap-1 flex-wrap mt-1.5">
               {extras.map((opt, i) => (
                 <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] rounded-full">
                   {opt}
@@ -1122,8 +1504,10 @@ function PromptBuilder({
           )}
         </div>
 
-        {/* 촬영 구도 */}
-        <ShotTypeSelector value={shotType} onChange={(v) => { setShotType(v); resetPrompt(); }} />
+        {/* 촬영 구도 — 기획전 모드에서는 위의 기획전 구도가 대체 */}
+        {!showcaseActive && (
+          <ShotTypeSelector value={shotType} onChange={(v) => { setShotType(v); resetPrompt(); }} />
+        )}
       </div>
 
       {/* 생성 버튼 */}
@@ -1164,7 +1548,10 @@ function PromptBuilder({
                 <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">비율 {ratioLabel}</span>
               </>
             )}
-            {refImageUrl && <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">참고 이미지 포함</span>}
+            {showcaseActive
+              ? (itemRefs.length > 0 && <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">참고 이미지 {itemRefs.length}장</span>)
+              : (refImageUrl && <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">참고 이미지 포함</span>)}
+            {showcaseActive && <span className="bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full">🎯 {SHOWCASE_MODES.find((m) => m.key === showcaseMode)?.label}</span>}
           </div>
 
           {isHero && (
@@ -1175,14 +1562,30 @@ function PromptBuilder({
             </div>
           )}
 
-          {refImageUrl && (
-            <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-200 rounded-lg p-2.5">
-              <img src={refImageUrl} alt="참고 이미지" className="w-10 h-10 object-cover rounded-md flex-shrink-0 border border-orange-200" />
-              <p className="text-[10px] text-orange-700 leading-relaxed">
-                <span className="font-semibold block">참고 이미지 포함</span>
-                ChatGPT: 이미지 업로드 후 붙여넣기 / Midjourney: URL을 프롬프트 맨 앞에 추가
-              </p>
-            </div>
+          {showcaseActive ? (
+            itemRefs.length > 0 && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 space-y-1.5">
+                <div className="flex flex-wrap gap-1.5">
+                  {itemRefs.map((u, i) => (
+                    <img key={i} src={u} alt={`참고 ${i + 1}`} className="w-10 h-10 object-cover rounded-md border border-orange-200" />
+                  ))}
+                </div>
+                <p className="text-[10px] text-orange-700 leading-relaxed">
+                  <span className="font-semibold block">제품 참고 이미지 {itemRefs.length}장 포함</span>
+                  ChatGPT: {itemRefs.length}장을 함께 업로드 후 프롬프트 붙여넣기 / Midjourney: URL들을 프롬프트 맨 앞에 추가
+                </p>
+              </div>
+            )
+          ) : (
+            refImageUrl && (
+              <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-200 rounded-lg p-2.5">
+                <img src={refImageUrl} alt="참고 이미지" className="w-10 h-10 object-cover rounded-md flex-shrink-0 border border-orange-200" />
+                <p className="text-[10px] text-orange-700 leading-relaxed">
+                  <span className="font-semibold block">참고 이미지 포함</span>
+                  ChatGPT: 이미지 업로드 후 붙여넣기 / Midjourney: URL을 프롬프트 맨 앞에 추가
+                </p>
+              </div>
+            )
           )}
 
           <textarea
@@ -1207,8 +1610,12 @@ function HeroEditor({ hero, onChange, products }: {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
   const [tagView, setTagView] = useState<"mobile" | "pc">("mobile");
+  const [posView, setPosView] = useState<"pc" | "mobile">("pc");
+  const [isDraggingPos, setIsDraggingPos] = useState(false);
   const imgAreaRef = useRef<HTMLDivElement>(null);
+  const posPreviewRef = useRef<HTMLDivElement>(null);
   const wasDraggingRef = useRef(false);
+  const posDragRef = useRef<{ startX: number; startY: number; startPx: number; startPy: number } | null>(null);
 
   function handleImageClick(e: React.MouseEvent<HTMLDivElement>) {
     if (wasDraggingRef.current) { wasDraggingRef.current = false; return; }
@@ -1267,20 +1674,51 @@ function HeroEditor({ hero, onChange, products }: {
 
   const selectedTag = selectedIdx !== null ? hero.tags[selectedIdx] : null;
 
+  // ── 이미지 위치/스케일 파싱 ──────────────────────────────────
+  const pcPos = (hero.image_position ?? "50% 0%").split(" ");
+  const pcPx = parseInt(pcPos[0]) || 50;
+  const pcPy = parseInt(pcPos[1]) || 0;
+  const mobilePos = (hero.image_position_mobile ?? "50% 50%").split(" ");
+  const mobilePx = parseInt(mobilePos[0]) || 50;
+  const mobilePy = parseInt(mobilePos[1]) || 50;
+  const pcScale = hero.image_scale ?? 1.0;
+  const mobileScale = hero.image_scale_mobile ?? 1.0;
+  const currPx = posView === "pc" ? pcPx : mobilePx;
+  const currPy = posView === "pc" ? pcPy : mobilePy;
+  const currScale = posView === "pc" ? pcScale : mobileScale;
+
+  function handlePosDragStart(e: React.PointerEvent<HTMLDivElement>) {
+    if (!hero.image_url) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    posDragRef.current = { startX: e.clientX, startY: e.clientY, startPx: currPx, startPy: currPy };
+    setIsDraggingPos(true);
+  }
+
+  function handlePosDragMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!posDragRef.current || !posPreviewRef.current) return;
+    const rect = posPreviewRef.current.getBoundingClientRect();
+    const dx = e.clientX - posDragRef.current.startX;
+    const dy = e.clientY - posDragRef.current.startY;
+    const newPx = Math.round(Math.min(100, Math.max(0, posDragRef.current.startPx - (dx / rect.width) * 100)));
+    const newPy = Math.round(Math.min(100, Math.max(0, posDragRef.current.startPy - (dy / rect.height) * 100)));
+    const posStr = `${newPx}% ${newPy}%`;
+    if (posView === "pc") onChange({ image_position: posStr });
+    else onChange({ image_position_mobile: posStr });
+  }
+
+  function handlePosDragEnd() {
+    setIsDraggingPos(false);
+    posDragRef.current = null;
+  }
+
   return (
     <div className="space-y-5">
       {/* 기본 텍스트 정보 */}
       <div className="grid grid-cols-2 gap-4">
         <Field label="제목" value={hero.title} onChange={(v) => onChange({ title: v })} placeholder="UV 대책 특집" />
-        <Field label="부제목" value={hero.subtitle} onChange={(v) => onChange({ subtitle: v })} placeholder="자외선 차단 + 흡한속건" />
+        <Field label="부제목 (이미지 위 작은 문구)" value={hero.subtitle} onChange={(v) => onChange({ subtitle: v, hero_subtitle: v })} placeholder="자외선 차단 + 흡한속건" />
       </div>
-      <div>
-        <Field label="이미지 위 작은 문구" value={hero.hero_subtitle}
-          onChange={(v) => onChange({ hero_subtitle: v })} placeholder="여름 현장 필수 아이템" />
-      </div>
-
-      <Field label="설명" value={hero.desc} onChange={(v) => onChange({ desc: v })}
-        placeholder="기획전 설명을 입력하세요" multiline />
 
       {/* AI 이미지 프롬프트 빌더 */}
       <PromptBuilder
@@ -1299,83 +1737,116 @@ function HeroEditor({ hero, onChange, products }: {
         onChange={(url) => { onChange({ image_url: url }); setSelectedIdx(null); }}
       />
 
-      {/* 이미지 위치 조절 (PC 크롭 기준점) */}
-      {hero.image_url && (() => {
-        const pos = (hero.image_position ?? "50% 0%").split(" ");
-        const px = parseInt(pos[0]) || 50;
-        const py = parseInt(pos[1]) || 0;
-        return (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+      {/* ── 이미지 위치·스케일 + 상품 태그 (수평 2열 레이아웃) ── */}
+      <div className="flex gap-4 items-start">
+
+        {/* Left: 이미지 위치 / 스케일 컨트롤 */}
+        {hero.image_url && (
+          <div className="flex-shrink-0 space-y-2" style={{ width: "190px" }}>
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-gray-700">🖥️ PC 이미지 위치 조절</label>
-              <button type="button" onClick={() => onChange({ image_position: "50% 0%" })}
+              <label className="text-[11px] font-semibold text-gray-700">이미지 위치·크기</label>
+              <button type="button"
+                onClick={() => {
+                  if (posView === "pc") onChange({ image_position: "50% 0%", image_scale: 1.0 });
+                  else onChange({ image_position_mobile: "50% 50%", image_scale_mobile: 1.0 });
+                }}
                 className="text-[10px] text-gray-400 hover:text-gray-600">초기화</button>
             </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] text-gray-500">좌우 (X)</span>
-                  <span className="text-[11px] text-gray-400 font-mono">{px}%</span>
-                </div>
-                <input type="range" min={0} max={100} value={px}
-                  onChange={(e) => onChange({ image_position: `${e.target.value}% ${py}%` })}
-                  className="w-full h-1.5 accent-[#1A2B4A] cursor-pointer" />
-                <div className="flex justify-between text-[9px] text-gray-400 mt-0.5">
-                  <span>왼쪽</span><span>가운데</span><span>오른쪽</span>
-                </div>
+            {/* PC / 모바일 탭 */}
+            <div className="flex gap-1">
+              {(["pc", "mobile"] as const).map((v) => (
+                <button key={v} type="button" onClick={() => setPosView(v)}
+                  className={`flex-1 text-[10px] font-semibold py-1 rounded border transition-colors ${
+                    posView === v
+                      ? (v === "pc" ? "bg-indigo-600 text-white border-indigo-600" : "bg-[#1A2B4A] text-white border-[#1A2B4A]")
+                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                  }`}>
+                  {v === "pc" ? "🖥️ PC" : "📱 모바일"}
+                </button>
+              ))}
+            </div>
+            {/* 드래그 미리보기 */}
+            <div
+              ref={posPreviewRef}
+              onPointerDown={handlePosDragStart}
+              onPointerMove={handlePosDragMove}
+              onPointerUp={handlePosDragEnd}
+              className="relative overflow-hidden rounded-lg border border-gray-200 select-none"
+              style={{
+                aspectRatio: posView === "pc" ? "8/9" : "3/4",
+                cursor: isDraggingPos ? "grabbing" : "grab",
+                touchAction: "none",
+              }}
+            >
+              <img
+                src={hero.image_url} alt=""
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                style={{
+                  objectPosition: `${currPx}% ${currPy}%`,
+                  ...(currScale !== 1.0 ? { transform: `scale(${currScale})`, transformOrigin: `${currPx}% ${currPy}%` } : {}),
+                }}
+              />
+              {/* 태그 도트 오버레이 — 실시간 반영 */}
+              {hero.tags.map((tag) => {
+                const tx = tagView === "mobile" ? tag.x : (tag.pc_x ?? tag.x);
+                const ty = tagView === "mobile" ? tag.y : (tag.pc_y ?? tag.y);
+                return (
+                  <div key={tag.id}
+                    className="absolute rounded-full bg-white/80 border-2 border-orange-400 pointer-events-none"
+                    style={{ width: "10px", height: "10px", left: `${tx}%`, top: `${ty}%`, transform: "translate(-50%,-50%)" }} />
+                );
+              })}
+              <div className="absolute bottom-1 left-1 text-[7px] text-white bg-black/40 px-1 rounded pointer-events-none">드래그로 이동</div>
+              <div className="absolute top-1 right-1 text-[7px] text-white bg-black/40 px-1 rounded pointer-events-none">{currPx}%·{currPy}%</div>
+            </div>
+            {/* 스케일 슬라이더 */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] text-gray-500">확대/축소</span>
+                <span className="text-[11px] text-gray-400 font-mono">{Math.round(currScale * 100)}%</span>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] text-gray-500">상하 (Y)</span>
-                  <span className="text-[11px] text-gray-400 font-mono">{py}%</span>
-                </div>
-                <input type="range" min={0} max={100} value={py}
-                  onChange={(e) => onChange({ image_position: `${px}% ${e.target.value}%` })}
-                  className="w-full h-1.5 accent-[#1A2B4A] cursor-pointer" />
-                <div className="flex justify-between text-[9px] text-gray-400 mt-0.5">
-                  <span>위</span><span>가운데</span><span>아래</span>
-                </div>
+              <input type="range" min={80} max={200} step={5}
+                value={Math.round(currScale * 100)}
+                onChange={(e) => {
+                  const scale = parseInt(e.target.value) / 100;
+                  if (posView === "pc") onChange({ image_scale: scale });
+                  else onChange({ image_scale_mobile: scale });
+                }}
+                className="w-full h-1.5 accent-[#1A2B4A] cursor-pointer" />
+              <div className="flex justify-between text-[9px] text-gray-400 mt-0.5">
+                <span>80%</span><span>원본</span><span>200%</span>
               </div>
             </div>
-            {/* 미니 PC 미리보기 */}
-            <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-200"
-              style={{ aspectRatio: "8/9", maxWidth: "120px" }}>
-              <img src={hero.image_url} alt="PC 미리보기"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ objectPosition: `${px}% ${py}%` }} />
-              <div className="absolute bottom-1 left-1 text-[7px] text-white bg-black/40 px-1 rounded">PC 미리보기</div>
+          </div>
+        )}
+
+        {/* Right: 상품 태그 에디터 */}
+        <div className={hero.image_url ? "flex-1 min-w-0" : "w-full"}>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <label className="text-xs font-medium text-gray-700">상품 태그 ({hero.tags.length}개)</label>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                {hero.image_url ? "이미지 클릭 → 태그 추가 · 드래그 → 위치 이동" : "이미지 업로드 후 클릭으로 태그 추가"}
+              </p>
             </div>
+            {hero.tags.length > 0 && (
+              <button
+                onClick={() => { onChange({ tags: [] }); setSelectedIdx(null); }}
+                className="text-[11px] text-red-400 hover:text-red-600"
+              >전체 삭제</button>
+            )}
           </div>
-        );
-      })()}
 
-      {/* ── 상품 태그 에디터 (컴팩트) ── */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <label className="text-xs font-medium text-gray-700">상품 태그 ({hero.tags.length}개)</label>
-            <p className="text-[11px] text-gray-400 mt-0.5">
-              {hero.image_url ? "이미지 클릭 → 태그 추가 · 태그 클릭 → 편집 · 태그 드래그 → 위치 이동" : "이미지 업로드 후 클릭으로 태그 추가"}
-            </p>
-          </div>
-          {hero.tags.length > 0 && (
-            <button
-              onClick={() => { onChange({ tags: [] }); setSelectedIdx(null); }}
-              className="text-[11px] text-red-400 hover:text-red-600"
-            >전체 삭제</button>
-          )}
-        </div>
-
-        {/* 2열: 이미지(좌) + 태그 관리(우) */}
-        <div className="flex gap-4">
-          {/* 이미지 클릭 영역 */}
-          <div className="flex-shrink-0" style={{ width: "280px" }}>
-            {/* 모바일/PC 탭 */}
-            <div className="flex gap-1 mb-2">
-              <button type="button" onClick={() => setTagView("mobile")}
-                className={`flex-1 text-[11px] font-semibold py-1.5 rounded-lg border transition-colors ${
-                  tagView === "mobile" ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                }`}>
+          <div className="flex gap-3">
+            {/* 태그 이미지 클릭 영역 */}
+            <div className="flex-shrink-0" style={{ width: "200px" }}>
+              {/* 모바일/PC 탭 */}
+              <div className="flex gap-1 mb-2">
+                <button type="button" onClick={() => setTagView("mobile")}
+                  className={`flex-1 text-[11px] font-semibold py-1.5 rounded-lg border transition-colors ${
+                    tagView === "mobile" ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                  }`}>
                 📱 모바일 태그
               </button>
               <button type="button" onClick={() => setTagView("pc")}
@@ -1390,7 +1861,7 @@ function HeroEditor({ hero, onChange, products }: {
               onClick={handleImageClick}
               className="relative rounded-xl overflow-hidden select-none border border-gray-200"
               style={{
-                width: "280px",
+                width: "200px",
                 aspectRatio: tagView === "mobile" ? "3 / 4" : "8 / 9",
                 background: "#d1d5db",
                 cursor: draggingIdx !== null ? "grabbing" : (hero.image_url ? "crosshair" : "default"),
@@ -1403,8 +1874,8 @@ function HeroEditor({ hero, onChange, products }: {
                   draggable={false}
                   className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
                   style={tagView === "pc"
-                    ? { objectPosition: hero.image_position ?? "50% 0%" }
-                    : { objectPosition: "top" }
+                    ? { objectPosition: `${pcPx}% ${pcPy}%`, ...(pcScale !== 1.0 ? { transform: `scale(${pcScale})`, transformOrigin: `${pcPx}% ${pcPy}%` } : {}) }
+                    : { objectPosition: `${mobilePx}% ${mobilePy}%`, ...(mobileScale !== 1.0 ? { transform: `scale(${mobileScale})`, transformOrigin: `${mobilePx}% ${mobilePy}%` } : {}) }
                   }
                 />
               )}
@@ -1542,6 +2013,8 @@ function HeroEditor({ hero, onChange, products }: {
           </div>
         </div>
       </div>
+    </div>
+
     </div>
   );
 }

@@ -20,12 +20,23 @@ export type EditorialSectionItem = {
   imageUrl?: string;
 };
 
+// 섹션 이미지 위 상품 핫스팟 — PC·모바일 모두 8:9 object-contain이라 단일 좌표
+export type EditorialSectionTag = {
+  x: number;            // left %
+  y: number;            // top %
+  name: string;
+  price: string;
+  productId: string;
+  imageUrl?: string;
+};
+
 export type EditorialSection = {
   sectionBg: string;   // bg class for the 440×495 placeholder image
   title: string;
   desc: string;
   imageUrl?: string;
   items: [EditorialSectionItem, EditorialSectionItem, EditorialSectionItem];
+  tags?: EditorialSectionTag[];
 };
 
 export type Editorial = {
