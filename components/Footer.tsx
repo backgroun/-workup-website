@@ -6,12 +6,6 @@ import { useState } from "react";
 import { DEFAULT_FOOTER, type FooterConfig } from "@/lib/site-content";
 import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
 
-const navLinks = [
-  { label: "고객센터",       href: "/support" },
-  { label: "1:1문의",        href: "/support" },
-  { label: "가맹·창업문의",  href: "/partnership/franchise" },
-  { label: "입점·제휴문의",  href: "/partnership/wholesale" },
-];
 
 const InstagramIcon = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
