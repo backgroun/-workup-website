@@ -81,25 +81,24 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
 
       {/* ══ 데스크탑 푸터 (md 이상) ══ */}
       <div className="hidden md:block px-[70px] py-12">
+        <div className="grid grid-cols-3 gap-16">
 
-        {/* 상단: 로고 + 가로 메뉴 */}
-        <div className="flex items-center justify-between mb-10">
-          <Link href="/" className="flex-shrink-0">
-            <Image src={lg.src} alt={lg.alt} width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
-          </Link>
-          <nav className="flex items-center gap-7 flex-wrap justify-end">
-            {c.navLinks.map((item) => (
-              <Link key={item.id} href={item.href}
-                className="text-[14px] text-[#1A2B4A] hover:opacity-50 transition-opacity whitespace-nowrap">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+          {/* 열 1: 로고 + 내비 */}
+          <div>
+            <Link href="/" className="inline-block mb-8">
+              <Image src={lg.src} alt={lg.alt} width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
+            </Link>
+            <nav className="flex flex-col gap-[18px]">
+              {c.navLinks.map((item) => (
+                <Link key={item.id} href={item.href}
+                  className="text-[15px] text-[#1A2B4A] hover:opacity-50 transition-opacity leading-none">
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-        <div className="border-t border-gray-100 pt-10 grid grid-cols-2 gap-16">
-
-          {/* 열 1: 회사 정보 + 임직원 인증 + 소셜 */}
+          {/* 열 2: 회사 정보 + 임직원 인증 + 소셜 */}
           <div className="flex flex-col">
             <div className="text-[12px] text-gray-500 leading-[1.9]">{bizInfo}</div>
             <Link href="/admin"
@@ -118,7 +117,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
             )}
           </div>
 
-          {/* 열 2: 고객센터 */}
+          {/* 열 3: 고객센터 */}
           <div>
             <p className="text-[12px] text-gray-500 mb-1">고객센터</p>
             <p className="text-[22px] font-bold text-[#1A2B4A] mb-3">{c.cs_phone}</p>
