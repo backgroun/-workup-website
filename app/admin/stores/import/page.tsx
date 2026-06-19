@@ -20,7 +20,7 @@ const COLUMNS = [
   { key: "is_active",         label: "활성여부",           required: false },
 ];
 
-type ParsedRow = Record<string, string> & { _row: number; _error?: string };
+type ParsedRow = { _row: number; _error?: string; [key: string]: string | number | undefined };
 
 function parseRow(row: Record<string, unknown>, idx: number): ParsedRow {
   const name = String(row["매장명"] ?? row["name"] ?? "").trim();

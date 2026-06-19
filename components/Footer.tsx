@@ -90,7 +90,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
             </Link>
             <nav className="flex flex-col gap-[18px]">
               {c.navLinks.map((item) => (
-                <Link key={item.label} href={item.href}
+                <Link key={item.id} href={item.href}
                   className="text-[15px] text-[#1A2B4A] hover:opacity-50 transition-opacity leading-none">
                   {item.label}
                 </Link>
@@ -142,7 +142,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
 
         <nav className="flex flex-col gap-4 mb-6">
           {c.navLinks.map((item) => (
-            <Link key={item.label} href={item.href} className="text-[14px] text-[#1A2B4A]">
+            <Link key={item.id} href={item.href} className="text-[14px] text-[#1A2B4A]">
               {item.label}
             </Link>
           ))}
