@@ -12,6 +12,13 @@ const JOB_SITE_PRESETS = ["건설", "물류", "정비", "배달", "농업", "서
 const MAIN_EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
 const DETAIL_BLOCK_TYPES = ["상품 소개", "착용 컷", "기능 설명", "현장 테스트", "사이즈표", "세탁법", "구매 안내"] as const;
 const CLOTHING_SIZE_PRESETS = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
+// 직접 입력 사이즈 빠른 템플릿 (신발·단독사이즈 등) — 클릭 시 해당 사이즈 세트로 교체
+const SIZE_TEMPLATES: { label: string; sizes: string[] }[] = [
+  { label: "신발 (230–290)", sizes: ["230", "235", "240", "245", "250", "255", "260", "265", "270", "275", "280", "285", "290"] },
+  { label: "허리인치 (28–38)", sizes: ["28", "30", "32", "34", "36", "38"] },
+  { label: "FREE (단독)", sizes: ["FREE"] },
+  { label: "ONE SIZE", sizes: ["ONE SIZE"] },
+];
 const COLOR_PRESETS = [
   { name: "블랙",   hex: "#1C1C1C" },
   { name: "화이트", hex: "#F0F0F0" },
@@ -224,6 +231,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // 카테고리 피커 UI 상태
   const [pickerMain, setPickerMain] = useState<string>(DEFAULT_CAT_LIST[0].name);
   const [pickerSub, setPickerSub] = useState<string>("");
+  const [fieldTestOpen, setFieldTestOpen] = useState(false); // 필드테스트 인증 — 기본 접힘
 
   // AI 이미지 프롬프트
   const [aiPrompt, setAiPrompt] = useState("");
