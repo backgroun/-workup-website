@@ -52,10 +52,18 @@ type Interaction =
   | { mode: "rotate"; id: string; cx: number; cy: number }
   | { mode: "scale"; id: string; cx: number; cy: number; startDist: number; startScale: number };
 
-export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
+export default function TshirtStudio({
+  kakaoUrl,
+  defaultColor,
+  enabledColors = [],
+}: {
+  kakaoUrl: string;
+  defaultColor?: string;
+  enabledColors?: string[];
+}) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [shirtId, setShirtId] = useState<string>(DEFAULT_SHIRT_ID);
+  const [shirtId, setShirtId] = useState<string>(defaultColor ?? DEFAULT_SHIRT_ID);
   const [tab, setTab] = useState<"image" | "text">("image");
   const [showStores, setShowStores] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -66,7 +74,10 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const interaction = useRef<Interaction | null>(null);
 
-  const shirt = SHIRT_COLORS.find((c) => c.id === shirtId) ?? SHIRT_COLORS[0];
+  const availableColors = enabledColors.length === 0
+    ? SHIRT_COLORS
+    : SHIRT_COLORS.filter((c) => enabledColors.includes(c.id));
+  const shirt = availableColors.find((c) => c.id === shirtId) ?? availableColors[0] ?? SHIRT_COLORS[0];
   const selected = layers.find((l) => l.id === selectedId) ?? null;
 
   // 토스트 자동 사라짐
@@ -460,7 +471,7 @@ export default function TshirtStudio({ kakaoUrl }: { kakaoUrl: string }) {
               색상 — <span className="text-[#1A2B4A]">{shirt.label}</span>
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {SHIRT_COLORS.map((c) => (
+              {availableColors.map((c) => (
                 <button
                   key={c.id}
                   type="button"

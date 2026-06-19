@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import TshirtStudio from "@/components/studio/TshirtStudio";
 import { getFooterConfig } from "@/lib/footer-server";
+import { getStudioSettings } from "@/lib/studio-server";
 
 export const metadata: Metadata = {
   title: "나만의 티셔츠 꾸미기 | WORKUP 스튜디오",
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function StudioPage() {
-  const footer = await getFooterConfig();
-  return <TshirtStudio kakaoUrl={footer.kakao_url} />;
+  const [footer, studio] = await Promise.all([getFooterConfig(), getStudioSettings()]);
+  return (
+    <TshirtStudio
+      kakaoUrl={footer.kakao_url}
+      defaultColor={studio.defaultColor}
+      enabledColors={studio.enabledColors}
+    />
+  );
 }
