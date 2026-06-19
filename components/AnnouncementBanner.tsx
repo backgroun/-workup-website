@@ -52,7 +52,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
       <div className="px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
         {/* 좌측 슬로건 */}
         {c.left_link ? (
-          <SmartLink href={c.left_link} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 transition-opacity">
+          <SmartLink href={c.left_link} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
             {leftInner}
           </SmartLink>
         ) : (
@@ -68,7 +68,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
                 <SmartLink
                   href={it.href}
                   newTab={it.newTab}
-                  className="flex items-center gap-1 hover:opacity-60 transition-opacity whitespace-nowrap"
+                  className="flex items-center gap-1 hover:opacity-60 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform] whitespace-nowrap"
                   style={textStyle}
                 >
                   {it.icon !== "none" && <TopbarIcon name={it.icon} style={{ width: iconPx, height: iconPx }} className="flex-shrink-0" />}
