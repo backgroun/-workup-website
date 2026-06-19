@@ -1102,7 +1102,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 3. 기능 태그 & 현장 추천 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <SectionTitle>기능 태그 &amp; 현장 추천</SectionTitle>
+            <SectionTitle>기능 태그</SectionTitle>
             <div className="mb-1">
               <label className="block text-xs font-semibold text-gray-600 mb-2">기능 태그</label>
               <div className="flex flex-wrap gap-2 mb-3">

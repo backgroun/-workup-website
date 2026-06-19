@@ -71,7 +71,7 @@ export default async function RootLayout({
             */}
             <div
               id={isAdmin ? undefined : "scroll-root"}
-              className={isAdmin ? "flex-1" : "flex-1 flex flex-col overflow-y-auto"}
+              className={isAdmin ? "flex-1 overflow-y-auto" : "flex-1 flex flex-col overflow-y-auto"}
             >
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
