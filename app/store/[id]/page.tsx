@@ -81,9 +81,15 @@ export default async function StoreDetailPage({ params }: Props) {
   const store = await getStore(id);
   if (!store) notFound();
 
+  // 카카오는 좌표 순서가 (위도, 경도) — lat, lng
   const kakaoMapUrl = store.lat && store.lng
     ? `https://map.kakao.com/link/to/${encodeURIComponent(store.name)},${store.lat},${store.lng}`
     : `https://map.kakao.com/link/search/${encodeURIComponent(store.address)}`;
+
+  // 네이버는 좌표 순서가 (경도, 위도) — lng, lat (카카오와 반대!)
+  const naverMapUrl = store.lat && store.lng
+    ? `https://map.naver.com/p/directions/-/${store.lng},${store.lat},${encodeURIComponent(store.name)}/-/car`
+    : `https://map.naver.com/p/search/${encodeURIComponent(store.address)}`;
 
   const activeJobs = (store.store_jobs ?? []).filter(
     (j) => j.is_active && !isExpired(j.deadline)
@@ -123,14 +129,25 @@ export default async function StoreDetailPage({ params }: Props) {
               </svg>
               <div>
                 <p className="text-sm text-gray-700">{store.address}</p>
-                <a
-                  href={kakaoMapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-0.5 text-xs font-semibold text-[#3A6DF0] hover:underline"
-                >
-                  카카오지도
-                </a>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <a
+                    href={kakaoMapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-[#3A6DF0] hover:underline"
+                  >
+                    카카오지도
+                  </a>
+                  <span className="text-xs text-gray-300">·</span>
+                  <a
+                    href={naverMapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-[#03C75A] hover:underline"
+                  >
+                    네이버지도
+                  </a>
+                </div>
               </div>
             </div>
             {store.phone && (
