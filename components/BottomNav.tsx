@@ -131,7 +131,7 @@ export default function BottomNav({
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div className="flex items-stretch h-14">
+        <div className="flex items-stretch" style={{ height: "calc(3.5rem - 1px)" }}>
 
           {/* 메뉴 */}
           <button
@@ -153,7 +153,7 @@ export default function BottomNav({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
-            <span className="text-[10px] font-medium">메뉴</span>
+            <span className="text-[11px] font-medium leading-none">메뉴</span>
           </button>
 
           {/* 홈 */}
@@ -167,7 +167,7 @@ export default function BottomNav({
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
             </svg>
-            <span className="text-[10px] font-medium">홈</span>
+            <span className="text-[11px] font-medium leading-none">홈</span>
           </Link>
 
           {/* 전체매장 */}
@@ -182,7 +182,7 @@ export default function BottomNav({
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5h18" />
             </svg>
-            <span className="text-[10px] font-medium">전체매장</span>
+            <span className="text-[11px] font-medium leading-none">전체매장</span>
           </Link>
 
         </div>

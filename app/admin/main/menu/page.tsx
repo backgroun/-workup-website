@@ -205,7 +205,8 @@ export default function HeaderMenuManagePage() {
           내부 페이지는 <span className="font-mono">/products</span> 처럼 / 로 시작하고, 외부 링크는 <span className="font-mono">https://…</span> 형태로 입력하세요.
           메뉴를 모두 삭제하면 사이트에는 기본 메뉴가 표시됩니다.
         </p>
-      </div>
+        </div>{/* 우 끝 */}
+      </div>{/* 2열 끝 */}
     </div>
   );
 }
