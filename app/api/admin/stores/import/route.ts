@@ -14,17 +14,18 @@ export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
 
-  // seed=true 이면 data/stores.ts 정적 데이터를 시드
+  // seed=true 이면 data/stores.ts 정적 데이터를 upsert (중복 방지)
   if (body.seed === true) {
     const supabase = createAdminClient();
     const rows = staticStores.map((s, i) => ({
+      id: s.id,
       name: s.name,
       region: extractRegion(s.address),
       address: s.address,
-      lat: s.lat,
-      lng: s.lng,
-      hours: s.hours,
-      phone: s.phone,
+      lat: s.lat ?? null,
+      lng: s.lng ?? null,
+      hours: s.hours ?? "",
+      phone: s.phone ?? "",
       description: "",
       image_urls: [],
       brands: [],
@@ -33,10 +34,12 @@ export async function POST(req: Request) {
       store_type: inferType(s.name),
       kakao_channel_url: "",
       store_url: "",
-      sort_order: i,
+      sort_order: i + 1,
     }));
-    const { error } = await supabase.from("stores").insert(rows);
+    const { error } = await supabase.from("stores").upsert(rows, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // 시퀀스를 마지막 id 이후로 재설정
+    await supabase.rpc("setval_stores_seq", { val: staticStores.length });
     return NextResponse.json({ ok: true, count: rows.length });
   }
 
