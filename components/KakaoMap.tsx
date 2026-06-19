@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { stores, type Store } from "@/data/stores";
 
 declare global {
-  // 카카오 맵 SDK는 런타임 스크립트로 로드되어 번들 타입이 없으므로 any로 선언.
+  // 카카오 맵 SDK는 런타임 스크립트로 로드되어 별도 타입 패키지가 없다.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface Window { kakao: any; }
 }
 
@@ -129,6 +130,7 @@ function clusterByScreen(pts: XYStore[], gridSize: number): Cluster[] {
 
 export default function KakaoMap({ center, selectedStore, userCoords, onStoreSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
   const initializedRef = useRef(false);
   const mountedRef = useRef(true);
