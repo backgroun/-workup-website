@@ -271,6 +271,7 @@ export default function ProductsGrid() {
     toggleProduct({
       productId: product.id,
       name: product.name,
+      sku: product.sku,
       line: product.line,
       price: product.price,
       size: "",
@@ -278,6 +279,8 @@ export default function ProductsGrid() {
       colorHex: product.colors?.[0]?.hex ?? "#000",
       bg: product.bg,
       imageUrl: product.imageUrl,
+      allSizes: product.sizes,
+      allColors: product.colors,
     });
   };
 

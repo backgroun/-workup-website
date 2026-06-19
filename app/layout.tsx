@@ -13,6 +13,7 @@ import { getFooterConfig } from "@/lib/footer-server";
 import { getHeaderNavConfig } from "@/lib/header-nav-server";
 import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
+import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
 import type { CSSProperties } from "react";
 
@@ -29,10 +30,11 @@ export default async function RootLayout({
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/login");
 
-  const [topbar, footer, headerNav, logo, search] = isAdmin
-    ? [null, null, null, null, null]
+  const [topbar, footer, headerNav, logo, search, studio] = isAdmin
+    ? [null, null, null, null, null, null]
     : await Promise.all([
         getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
+        getStudioSettings(),
       ]);
 
   // 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조하는 탑바 높이(꺼져 있으면 0).
@@ -55,7 +57,7 @@ export default async function RootLayout({
             {!isAdmin && topbar && headerNav && logo && search && (
               <>
                 <AnnouncementBanner config={topbar} />
-                <Header navItems={headerNav.items} logo={logo} search={search} />
+                <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
               </>
             )}
             <div className={isAdmin ? "flex-1" : "relative flex-1 pb-14 md:pb-0"}>
@@ -63,7 +65,7 @@ export default async function RootLayout({
             </div>
             {!isAdmin && <SideBanner />}
             {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
-            {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} />}
+            {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} studioEnabled={studio?.enabled ?? true} />}
           </WishlistProvider>
         </CartProvider>
       </body>

@@ -5,6 +5,7 @@ export type CartItem = {
   cartId: string;
   productId: string;
   name: string;
+  sku?: string;
   line: string;
   price: string;
   size: string;
@@ -12,6 +13,8 @@ export type CartItem = {
   colorHex: string;
   bg: string;
   imageUrl?: string;
+  allSizes?: string[];
+  allColors?: { name: string; hex: string }[];
 };
 
 type CartContextType = {

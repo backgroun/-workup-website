@@ -20,10 +20,12 @@ export default function Header({
   navItems = DEFAULT_HEADER_NAV.items,
   logo = DEFAULT_LOGO,
   search = DEFAULT_SEARCH,
+  studioEnabled = true,
 }: {
   navItems?: NavMenuItem[];
   logo?: LogoConfig;
   search?: SearchConfig;
+  studioEnabled?: boolean;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,8 +90,8 @@ export default function Header({
               </Link>
             ))}
 
-            {/* 티셔츠 꾸미기 스튜디오 — 설정 메뉴와 별개로 항상 노출되는 재미 요소(오렌지로 구분) */}
-            <Link
+            {/* 티셔츠 꾸미기 스튜디오 — 관리자에서 활성화 시 노출 */}
+            {studioEnabled && <Link
               href="/studio"
               className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#ff550c] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
               style={{ fontWeight: 650 }}

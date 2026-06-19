@@ -46,6 +46,7 @@ export default function HomeNewArrivals() {
     toggleProduct({
       productId: p.id,
       name: p.name,
+      sku: p.sku,
       line: p.line,
       price: p.price,
       size: "",
@@ -53,6 +54,8 @@ export default function HomeNewArrivals() {
       colorHex: p.colors?.[0]?.hex ?? "#000",
       bg: p.bg,
       imageUrl: p.imageUrl,
+      allSizes: p.sizes,
+      allColors: p.colors,
     });
   };
 
