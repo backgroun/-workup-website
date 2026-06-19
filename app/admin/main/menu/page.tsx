@@ -39,7 +39,7 @@ function DesktopPreview({ items }: { items: NavMenuItem[] }) {
 // ── 모바일 메뉴 시트 미리보기 (세로 리스트) ──
 function MobilePreview({ items }: { items: NavMenuItem[] }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mx-auto" style={{ maxWidth: 300 }}>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden" style={{ maxWidth: 300 }}>
       <div className="flex justify-center pt-3 pb-1.5"><div className="w-9 h-1 bg-gray-300 rounded-full" /></div>
       <div className="px-5 py-2 border-b border-gray-100">
         <span className="text-[11px] font-bold text-[#1A2B4A] tracking-[0.2em]">MENU</span>
@@ -133,21 +133,26 @@ export default function HeaderMenuManagePage() {
         </div>
       </div>
 
-      {/* 미리보기 */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6 space-y-4">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">미리보기</p>
-        <div>
-          <p className="text-[11px] text-gray-400 mb-1.5">PC 헤더</p>
-          <DesktopPreview items={cfg.items} />
-        </div>
-        <div>
-          <p className="text-[11px] text-gray-400 mb-1.5">모바일 메뉴 시트</p>
-          <MobilePreview items={cfg.items} />
-        </div>
-      </div>
+      {/* 본문: 좌(미리보기) + 우(항목 편집) */}
+      <div className="flex gap-6 items-start">
 
-      {/* 메뉴 항목 편집 */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4 max-w-2xl">
+        {/* 좌: 미리보기 */}
+        <div className="w-[380px] flex-shrink-0 space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">미리보기</p>
+            <div>
+              <p className="text-[11px] text-gray-400 mb-1.5">PC 헤더</p>
+              <DesktopPreview items={cfg.items} />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 mb-1.5">모바일 메뉴 시트</p>
+              <MobilePreview items={cfg.items} />
+            </div>
+          </div>
+        </div>
+
+        {/* 우: 메뉴 항목 편집 */}
+        <div className="flex-1 min-w-0 bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">메뉴 항목 ({cfg.items.length})</p>
           <button onClick={addItem}
