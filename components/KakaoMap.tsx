@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { stores, type Store } from "@/data/stores";
 
 declare global {
-  interface Window { kakao: any; }
+  interface Window { kakao: { maps: unknown }; }
 }
 
 interface Props {
@@ -128,7 +128,7 @@ function clusterByScreen(pts: XYStore[], gridSize: number): Cluster[] {
 
 export default function KakaoMap({ center, selectedStore, userCoords, onStoreSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<unknown>(null);
   const initializedRef = useRef(false);
   const mountedRef = useRef(true);
   const rafRef = useRef<number | null>(null);

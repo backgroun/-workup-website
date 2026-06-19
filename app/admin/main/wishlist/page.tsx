@@ -72,7 +72,7 @@ export default function WishlistManagePage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">피킹리스트(찜 목록) 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900">피팅리스트 관리</h1>
           <p className="mt-1 text-sm text-gray-500">고객이 보는 찜(피팅 리스트) 페이지의 안내 문구·빈 상태·매장 방문 유도 버튼을 관리합니다.</p>
         </div>
         <div className="flex items-center gap-3">

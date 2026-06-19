@@ -133,8 +133,8 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               <div className="flex flex-col items-center justify-center text-center px-6 gap-4">
                 <p className="text-white/60 text-sm">미리보기를 준비 중입니다.</p>
                 <div className="flex gap-3">
-                  <a href="/products" className="bg-[#ff550c] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</a>
-                  <a href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#1A2B4A] transition-colors">매장 찾기</a>
+                  <Link href="/products" className="bg-[#ff550c] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</Link>
+                  <Link href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#1A2B4A] transition-colors">매장 찾기</Link>
                 </div>
               </div>
             )
