@@ -3,6 +3,12 @@
 //    서버 캐시 조회는 lib/footer-server.ts.
 
 // ── 푸터 ───────────────────────────────────────────────────────────────────
+export type FooterNavLink = {
+  id: string;
+  label: string;
+  href: string;
+};
+
 export type FooterConfig = {
   company_name: string;
   ceo: string;
@@ -16,6 +22,7 @@ export type FooterConfig = {
   youtube_url: string;
   kakao_url: string;
   copyright: string;
+  navLinks: FooterNavLink[];
 };
 
 export const DEFAULT_FOOTER: FooterConfig = {
@@ -31,6 +38,12 @@ export const DEFAULT_FOOTER: FooterConfig = {
   youtube_url: "",
   kakao_url: "",
   copyright: "© 2026 (주)트레이딩포스트. All rights reserved.",
+  navLinks: [
+    { id: "nav-cs",          label: "고객센터",      href: "/support" },
+    { id: "nav-inquiry",     label: "1:1문의",       href: "/support" },
+    { id: "nav-franchise",   label: "가맹·창업문의", href: "/partnership/franchise" },
+    { id: "nav-wholesale",   label: "입점·제휴문의", href: "/partnership/wholesale" },
+  ],
 };
 
 function str(v: unknown, fallback: string): string {
@@ -48,6 +61,15 @@ export function safeUrl(v: unknown): string {
 
 export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): FooterConfig {
   const c = raw ?? {};
+  const navLinks: FooterNavLink[] = Array.isArray(c.navLinks)
+    ? c.navLinks
+        .filter((it): it is FooterNavLink => !!it && typeof it === "object" && typeof it.label === "string")
+        .map((it, i) => ({
+          id: typeof it.id === "string" && it.id ? it.id : `nav-${i}`,
+          label: it.label,
+          href: typeof it.href === "string" ? it.href : "/",
+        }))
+    : DEFAULT_FOOTER.navLinks;
   return {
     company_name: str(c.company_name, DEFAULT_FOOTER.company_name),
     ceo: str(c.ceo, DEFAULT_FOOTER.ceo),
@@ -61,6 +83,7 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
     youtube_url: safeUrl(c.youtube_url),
     kakao_url: safeUrl(c.kakao_url),
     copyright: str(c.copyright, DEFAULT_FOOTER.copyright),
+    navLinks,
   };
 }
 
