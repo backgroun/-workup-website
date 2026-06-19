@@ -595,272 +595,271 @@ export default function PopupManagePage() {
                   </div>
                 </div>
 
-                {/* 2. 배경 설정 */}
-                <div className="pb-5 border-b border-slate-100 space-y-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">배경 설정</p>
+                {/* 2. 배경 설정 | 팝업 콘텐츠 + 텍스트 스타일 (2열 나란히) */}
+                <div className="pb-5 border-b border-slate-100">
+                  <div className="grid grid-cols-2 gap-6 items-start">
 
-                  {/* 배경 타입 탭 */}
-                  <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
-                    {(["solid", "gradient", "image"] as BgType[]).map(type => (
-                      <button key={type} type="button" onClick={() => set("bg_type", type)}
-                        className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                          editing.bg_type === type
-                            ? "bg-white text-slate-800 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                        }`}>
-                        {type === "solid" ? "단색" : type === "gradient" ? "그라디언트" : "이미지"}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* 단색 */}
-                  {editing.bg_type === "solid" && (
-                    <div className="flex items-center gap-3">
-                      <input type="color" value={editing.bg_solid}
-                        onChange={e => set("bg_solid", e.target.value)}
-                        className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
-                      <input type="text" value={editing.bg_solid}
-                        onChange={e => set("bg_solid", e.target.value)}
-                        placeholder="#1A2B4A"
-                        className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                      <div className="w-20 h-10 rounded-lg border border-gray-100 flex-shrink-0"
-                        style={{ background: editing.bg_solid }} />
-                    </div>
-                  )}
-
-                  {/* 그라디언트 */}
-                  {editing.bg_type === "gradient" && (
+                    {/* ── 왼쪽: 배경 설정 ── */}
                     <div className="space-y-4">
-                      {/* 프리셋 */}
-                      <div>
-                        <p className="text-xs text-gray-400 mb-2">빠른 선택</p>
-                        <div className="flex flex-wrap gap-2">
-                          {GRADIENT_PRESETS.map(preset => (
-                            <button key={preset.label} type="button"
-                              onClick={() => {
-                                set("bg_gradient_from",  preset.from);
-                                set("bg_gradient_to",    preset.to);
-                                set("bg_gradient_angle", preset.angle);
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">배경 설정</p>
+
+                      {/* 배경 타입 탭 */}
+                      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+                        {(["solid", "gradient", "image"] as BgType[]).map(type => (
+                          <button key={type} type="button" onClick={() => set("bg_type", type)}
+                            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                              editing.bg_type === type
+                                ? "bg-white text-slate-800 shadow-sm"
+                                : "text-slate-500 hover:text-slate-700"
+                            }`}>
+                            {type === "solid" ? "단색" : type === "gradient" ? "그라디언트" : "이미지"}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 단색 */}
+                      {editing.bg_type === "solid" && (
+                        <div className="flex items-center gap-3">
+                          <input type="color" value={editing.bg_solid}
+                            onChange={e => set("bg_solid", e.target.value)}
+                            className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
+                          <input type="text" value={editing.bg_solid}
+                            onChange={e => set("bg_solid", e.target.value)}
+                            placeholder="#1A2B4A"
+                            className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
+                          <div className="w-20 h-10 rounded-lg border border-gray-100 flex-shrink-0"
+                            style={{ background: editing.bg_solid }} />
+                        </div>
+                      )}
+
+                      {/* 그라디언트 */}
+                      {editing.bg_type === "gradient" && (
+                        <div className="space-y-4">
+                          {/* 프리셋 */}
+                          <div>
+                            <p className="text-xs text-gray-400 mb-2">빠른 선택</p>
+                            <div className="flex flex-wrap gap-2">
+                              {GRADIENT_PRESETS.map(preset => (
+                                <button key={preset.label} type="button"
+                                  onClick={() => {
+                                    set("bg_gradient_from",  preset.from);
+                                    set("bg_gradient_to",    preset.to);
+                                    set("bg_gradient_angle", preset.angle);
+                                  }}
+                                  className="group relative flex-shrink-0">
+                                  <div className="w-10 h-10 rounded-lg border-2 border-transparent group-hover:border-blue-400 transition-colors"
+                                    style={{ background: `linear-gradient(135deg, ${preset.from}, ${preset.to})` }} />
+                                  <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] text-gray-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    {preset.label}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 색상 피커 */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-gray-500 mb-1.5 block">시작 색상</label>
+                              <div className="flex items-center gap-2">
+                                <input type="color" value={editing.bg_gradient_from}
+                                  onChange={e => set("bg_gradient_from", e.target.value)}
+                                  className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
+                                <input type="text" value={editing.bg_gradient_from}
+                                  onChange={e => set("bg_gradient_from", e.target.value)}
+                                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-500 mb-1.5 block">끝 색상</label>
+                              <div className="flex items-center gap-2">
+                                <input type="color" value={editing.bg_gradient_to}
+                                  onChange={e => set("bg_gradient_to", e.target.value)}
+                                  className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
+                                <input type="text" value={editing.bg_gradient_to}
+                                  onChange={e => set("bg_gradient_to", e.target.value)}
+                                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 방향 */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs text-gray-500">방향 ({editing.bg_gradient_angle}°)</label>
+                              <div className="flex gap-1">
+                                {ANGLE_DEGS.map((deg, idx) => (
+                                  <button key={deg} type="button"
+                                    onClick={() => set("bg_gradient_angle", deg)}
+                                    title={`${deg}°`}
+                                    className={`w-7 h-7 text-xs flex items-center justify-center rounded border transition-colors ${
+                                      editing.bg_gradient_angle === deg
+                                        ? "bg-slate-800 text-white border-slate-800"
+                                        : "border-slate-200 text-slate-500 hover:border-slate-400 bg-white"
+                                    }`}>
+                                    {ANGLE_ARROWS[idx]}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <input type="range" min={0} max={360} value={editing.bg_gradient_angle}
+                              onChange={e => set("bg_gradient_angle", Number(e.target.value))}
+                              className="w-full accent-slate-700 h-1.5" />
+                          </div>
+
+                          {/* 그라디언트 미리보기 */}
+                          <div className="h-10 rounded-lg border border-gray-100"
+                            style={{ background: `linear-gradient(${editing.bg_gradient_angle}deg, ${editing.bg_gradient_from}, ${editing.bg_gradient_to})` }} />
+                        </div>
+                      )}
+
+                      {/* 이미지 */}
+                      {editing.bg_type === "image" && (
+                        <div className="space-y-4">
+                          {/* PC·모바일 공동 사용 토글 (기본 체크) */}
+                          <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+                            <input type="checkbox" checked={!separateImg}
+                              onChange={e => {
+                                const shared = e.target.checked;
+                                setSeparateImg(!shared);
+                                if (shared) {
+                                  set("bg_image_url_mobile", "");
+                                  set("bg_image_position_mobile", "");
+                                  set("bg_image_scale_mobile", 1);
+                                }
                               }}
-                              className="group relative flex-shrink-0">
-                              <div className="w-10 h-10 rounded-lg border-2 border-transparent group-hover:border-blue-400 transition-colors"
-                                style={{ background: `linear-gradient(135deg, ${preset.from}, ${preset.to})` }} />
-                              <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] text-gray-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                {preset.label}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                              className="w-4 h-4 accent-blue-600" />
+                            <span className="text-sm font-medium text-gray-700">PC·모바일 이미지 공동 사용</span>
+                            <span className="text-[11px] text-slate-400">체크 해제 시 분리 등록</span>
+                          </label>
 
-                      {/* 색상 피커 */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1.5 block">시작 색상</label>
-                          <div className="flex items-center gap-2">
-                            <input type="color" value={editing.bg_gradient_from}
-                              onChange={e => set("bg_gradient_from", e.target.value)}
-                              className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
-                            <input type="text" value={editing.bg_gradient_from}
-                              onChange={e => set("bg_gradient_from", e.target.value)}
-                              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                          </div>
+                          {/* 이미지 피커 — 공용: 단일 / 분리: 세로 2개 */}
+                          {!separateImg ? (
+                            <PopupImagePicker
+                              label="이미지 (PC·모바일 공용)"
+                              sizeHint="권장: 760 × 560px"
+                              sizeColor="blue"
+                              imageUrl={editing.bg_image_url}
+                              position={editing.bg_image_position || "50% 50%"}
+                              scale={editing.bg_image_scale ?? 1}
+                              onImageChange={(url) => set("bg_image_url", url)}
+                              onPositionChange={(pos) => set("bg_image_position", pos)}
+                              onScaleChange={(s) => set("bg_image_scale", s)}
+                              uploading={uploading}
+                              onUpload={uploadBgImage}
+                              aspect="pc"
+                            />
+                          ) : (
+                            <div className="space-y-4">
+                              <PopupImagePicker
+                                label="PC 이미지"
+                                sizeHint="권장: 760 × 560px"
+                                sizeColor="blue"
+                                imageUrl={editing.bg_image_url}
+                                position={editing.bg_image_position || "50% 50%"}
+                                scale={editing.bg_image_scale ?? 1}
+                                onImageChange={(url) => set("bg_image_url", url)}
+                                onPositionChange={(pos) => set("bg_image_position", pos)}
+                                onScaleChange={(s) => set("bg_image_scale", s)}
+                                uploading={uploading}
+                                onUpload={uploadBgImage}
+                                aspect="pc"
+                              />
+                              <PopupImagePicker
+                                label="모바일 이미지"
+                                sizeHint="권장: 750 × 440px"
+                                sizeColor="orange"
+                                imageUrl={editing.bg_image_url_mobile}
+                                position={editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%"}
+                                scale={editing.bg_image_scale_mobile ?? 1}
+                                onImageChange={(url) => set("bg_image_url_mobile", url)}
+                                onPositionChange={(pos) => set("bg_image_position_mobile", pos)}
+                                onScaleChange={(s) => set("bg_image_scale_mobile", s)}
+                                uploading={uploadingMobile}
+                                onUpload={uploadBgImageMobile}
+                                aspect="mobile"
+                              />
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1.5 block">끝 색상</label>
-                          <div className="flex items-center gap-2">
-                            <input type="color" value={editing.bg_gradient_to}
-                              onChange={e => set("bg_gradient_to", e.target.value)}
-                              className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
-                            <input type="text" value={editing.bg_gradient_to}
-                              onChange={e => set("bg_gradient_to", e.target.value)}
-                              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                          </div>
-                        </div>
-                      </div>
+                      )}
+                    </div>
 
-                      {/* 방향 */}
+                    {/* ── 오른쪽: 팝업 콘텐츠 + 텍스트 스타일 ── */}
+                    <div className="space-y-4">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">팝업 콘텐츠</p>
                       <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="text-xs text-gray-500">방향 ({editing.bg_gradient_angle}°)</label>
-                          <div className="flex gap-1">
-                            {ANGLE_DEGS.map((deg, idx) => (
-                              <button key={deg} type="button"
-                                onClick={() => set("bg_gradient_angle", deg)}
-                                title={`${deg}°`}
-                                className={`w-7 h-7 text-xs flex items-center justify-center rounded border transition-colors ${
-                                  editing.bg_gradient_angle === deg
-                                    ? "bg-slate-800 text-white border-slate-800"
-                                    : "border-slate-200 text-slate-500 hover:border-slate-400 bg-white"
-                                }`}>
-                                {ANGLE_ARROWS[idx]}
-                              </button>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">서브 문구</label>
+                        <input type="text" value={editing.subtitle}
+                          onChange={e => set("subtitle", e.target.value)}
+                          placeholder="예: 안는 순간, 시원해지는"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">메인 제목</label>
+                        <textarea value={editing.title}
+                          onChange={e => set("title", e.target.value)}
+                          rows={2}
+                          placeholder={"여름을 위한\n냉감 멀티쿠션"}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
+                      </div>
+
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest pt-2">텍스트 스타일</p>
+                      <div className="grid grid-cols-2 gap-4 items-start">
+                        {/* 텍스트 색상 */}
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">텍스트 색상</label>
+                          <div className="flex items-center gap-2">
+                            <input type="color" value={editing.text_color || "#ffffff"}
+                              onChange={e => set("text_color", e.target.value)}
+                              className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
+                            <input type="text" value={editing.text_color || "#ffffff"}
+                              onChange={e => set("text_color", e.target.value)}
+                              className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
+                            <button type="button" onClick={() => set("text_color", "#ffffff")}
+                              title="흰색" className="w-8 h-8 rounded border border-gray-200 bg-white shrink-0" />
+                            <button type="button" onClick={() => set("text_color", "#1A2B4A")}
+                              title="남색" className="w-8 h-8 rounded border border-gray-200 shrink-0" style={{ background: "#1A2B4A" }} />
+                          </div>
+                        </div>
+                        {/* 텍스트 크기 */}
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                            텍스트 크기 <span className="font-mono text-gray-400">{Math.round((editing.text_scale ?? 1) * 100)}%</span>
+                          </label>
+                          <input type="range" min={0.7} max={1.6} step={0.05} value={editing.text_scale ?? 1}
+                            onChange={e => set("text_scale", Number(e.target.value))}
+                            className="w-full accent-slate-700 h-1.5 mt-2.5" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 items-start">
+                        {/* 가로 정렬 */}
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">가로 정렬</label>
+                          <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+                            {([["left", "왼쪽"], ["center", "가운데"], ["right", "오른쪽"]] as const).map(([v, l]) => (
+                              <button key={v} type="button" onClick={() => set("text_align", v)}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                                  (editing.text_align ?? "left") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                }`}>{l}</button>
                             ))}
                           </div>
                         </div>
-                        <input type="range" min={0} max={360} value={editing.bg_gradient_angle}
-                          onChange={e => set("bg_gradient_angle", Number(e.target.value))}
-                          className="w-full accent-slate-700 h-1.5" />
-                      </div>
-
-                      {/* 그라디언트 미리보기 */}
-                      <div className="h-10 rounded-lg border border-gray-100"
-                        style={{ background: `linear-gradient(${editing.bg_gradient_angle}deg, ${editing.bg_gradient_from}, ${editing.bg_gradient_to})` }} />
-                    </div>
-                  )}
-
-                  {/* 이미지 */}
-                  {editing.bg_type === "image" && (
-                    <div className="space-y-4">
-                      {/* PC·모바일 공동 사용 토글 (기본 체크) */}
-                      <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
-                        <input type="checkbox" checked={!separateImg}
-                          onChange={e => {
-                            const shared = e.target.checked;
-                            setSeparateImg(!shared);
-                            if (shared) {
-                              // 공동 사용으로 전환 → 모바일 전용 값 초기화
-                              set("bg_image_url_mobile", "");
-                              set("bg_image_position_mobile", "");
-                              set("bg_image_scale_mobile", 1);
-                            }
-                          }}
-                          className="w-4 h-4 accent-blue-600" />
-                        <span className="text-sm font-medium text-gray-700">PC·모바일 이미지 공동 사용</span>
-                        <span className="text-[11px] text-slate-400">체크 해제 시 모바일 이미지 분리 등록</span>
-                      </label>
-
-                      {/* 이미지 미리보기 영역 — 공용 고정 400px / 분리 70% */}
-                      <div className={separateImg ? "max-w-[70%]" : "max-w-[400px]"}>
-                      {!separateImg ? (
-                        <PopupImagePicker
-                          label="이미지 (PC·모바일 공용)"
-                          sizeHint="권장: 760 × 560px"
-                          sizeColor="blue"
-                          imageUrl={editing.bg_image_url}
-                          position={editing.bg_image_position || "50% 50%"}
-                          scale={editing.bg_image_scale ?? 1}
-                          onImageChange={(url) => set("bg_image_url", url)}
-                          onPositionChange={(pos) => set("bg_image_position", pos)}
-                          onScaleChange={(s) => set("bg_image_scale", s)}
-                          uploading={uploading}
-                          onUpload={uploadBgImage}
-                          aspect="pc"
-                        />
-                      ) : (
-                        <div className="grid grid-cols-2 gap-4 items-start">
-                          <PopupImagePicker
-                            label="PC 이미지"
-                            sizeHint="권장: 760 × 560px"
-                            sizeColor="blue"
-                            imageUrl={editing.bg_image_url}
-                            position={editing.bg_image_position || "50% 50%"}
-                            scale={editing.bg_image_scale ?? 1}
-                            onImageChange={(url) => set("bg_image_url", url)}
-                            onPositionChange={(pos) => set("bg_image_position", pos)}
-                            onScaleChange={(s) => set("bg_image_scale", s)}
-                            uploading={uploading}
-                            onUpload={uploadBgImage}
-                            aspect="pc"
-                          />
-                          <PopupImagePicker
-                            label="모바일 이미지"
-                            sizeHint="권장: 750 × 440px"
-                            sizeColor="orange"
-                            imageUrl={editing.bg_image_url_mobile}
-                            position={editing.bg_image_position_mobile || editing.bg_image_position || "50% 50%"}
-                            scale={editing.bg_image_scale_mobile ?? 1}
-                            onImageChange={(url) => set("bg_image_url_mobile", url)}
-                            onPositionChange={(pos) => set("bg_image_position_mobile", pos)}
-                            onScaleChange={(s) => set("bg_image_scale_mobile", s)}
-                            uploading={uploadingMobile}
-                            onUpload={uploadBgImageMobile}
-                            aspect="mobile"
-                          />
+                        {/* 세로 위치 */}
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">세로 위치</label>
+                          <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+                            {([["split", "상하 분리"], ["top", "상단"], ["center", "중앙"], ["bottom", "하단"]] as const).map(([v, l]) => (
+                              <button key={v} type="button" onClick={() => set("text_position", v)}
+                                className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                                  (editing.text_position ?? "split") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                }`}>{l}</button>
+                            ))}
+                          </div>
                         </div>
-                      )}
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* 3. 팝업 콘텐츠 */}
-                <div className="pb-5 border-b border-slate-100 space-y-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">팝업 콘텐츠</p>
-                  <div className="grid grid-cols-2 gap-4 items-start">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">서브 문구</label>
-                      <input type="text" value={editing.subtitle}
-                        onChange={e => set("subtitle", e.target.value)}
-                        placeholder="예: 안는 순간, 시원해지는"
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">메인 제목</label>
-                      <textarea value={editing.title}
-                        onChange={e => set("title", e.target.value)}
-                        rows={2}
-                        placeholder={"여름을 위한\n냉감 멀티쿠션"}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3-2. 텍스트 스타일 */}
-                <div className="pb-5 border-b border-slate-100 space-y-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">텍스트 스타일</p>
-                  <div className="grid grid-cols-2 gap-4 items-start">
-                    {/* 텍스트 색상 */}
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">텍스트 색상</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color" value={editing.text_color || "#ffffff"}
-                          onChange={e => set("text_color", e.target.value)}
-                          className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
-                        <input type="text" value={editing.text_color || "#ffffff"}
-                          onChange={e => set("text_color", e.target.value)}
-                          className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                        <button type="button" onClick={() => set("text_color", "#ffffff")}
-                          title="흰색" className="w-8 h-8 rounded border border-gray-200 bg-white shrink-0" />
-                        <button type="button" onClick={() => set("text_color", "#1A2B4A")}
-                          title="남색" className="w-8 h-8 rounded border border-gray-200 shrink-0" style={{ background: "#1A2B4A" }} />
-                      </div>
-                    </div>
-                    {/* 텍스트 크기 */}
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        텍스트 크기 <span className="font-mono text-gray-400">{Math.round((editing.text_scale ?? 1) * 100)}%</span>
-                      </label>
-                      <input type="range" min={0.7} max={1.6} step={0.05} value={editing.text_scale ?? 1}
-                        onChange={e => set("text_scale", Number(e.target.value))}
-                        className="w-full accent-slate-700 h-1.5 mt-2.5" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 items-start">
-                    {/* 가로 정렬 */}
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">가로 정렬</label>
-                      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
-                        {([["left", "왼쪽"], ["center", "가운데"], ["right", "오른쪽"]] as const).map(([v, l]) => (
-                          <button key={v} type="button" onClick={() => set("text_align", v)}
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                              (editing.text_align ?? "left") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                            }`}>{l}</button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* 세로 위치 */}
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">세로 위치</label>
-                      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
-                        {([["split", "상하 분리"], ["top", "상단"], ["center", "중앙"], ["bottom", "하단"]] as const).map(([v, l]) => (
-                          <button key={v} type="button" onClick={() => set("text_position", v)}
-                            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                              (editing.text_position ?? "split") === v ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                            }`}>{l}</button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </div>
 

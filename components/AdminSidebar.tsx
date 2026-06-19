@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
-type NavLeaf = { label: string; href: string; exact?: boolean; icon: ReactNode };
+type NavLeaf = { label: string; href: string; exact?: boolean; newTab?: boolean; icon: ReactNode };
 type NavDropdown = { label: string; icon: ReactNode; children: NavLeaf[] };
 type NavItem = NavLeaf | NavDropdown;
 type NavGroup = { label: string; items: NavItem[] };
@@ -171,6 +171,16 @@ const navGroups: NavGroup[] = [
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        ),
+      },
+      {
+        label: "스튜디오(티셔츠 꾸미기)",
+        href: "/studio",
+        newTab: true,
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
         ),
       },
@@ -436,6 +446,8 @@ export default function AdminSidebar() {
                   <Link
                     key={(item as NavLeaf).href}
                     href={(item as NavLeaf).href}
+                    target={(item as NavLeaf).newTab ? "_blank" : undefined}
+                    rel={(item as NavLeaf).newTab ? "noopener noreferrer" : undefined}
                     className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[15px] font-medium transition-all ${
                       active
                         ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
