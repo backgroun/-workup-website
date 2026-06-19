@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { stores, type Store } from "@/data/stores";
 
 declare global {
-  interface Window { kakao: { maps: unknown }; }
+  // 카카오 맵 SDK는 런타임 스크립트로 로드되어 번들 타입이 없으므로 any로 선언.
+  interface Window { kakao: any; }
 }
 
 interface Props {
