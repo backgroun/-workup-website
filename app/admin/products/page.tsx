@@ -597,58 +597,72 @@ export default function AdminProductsPage() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
 
-          {/* ── 일괄 작업 바 (액션 버튼 + 정렬/페이지수 한 줄) ───────────────── */}
+          {/* ── 일괄 작업 바 (액션 버튼 + 컬럼표시/정렬/페이지수 한 줄) ──────────── */}
           <div className="px-5 py-3 border-b border-gray-200 bg-gray-50 rounded-t-xl">
             <div className="flex items-center gap-2 flex-wrap">
-              {/* 메뉴 토글 — 일괄 작업 버튼 표시/숨김 */}
-              <button onClick={() => setMenuOpen(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[14px] font-semibold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 rounded">
-                일괄 작업
-                <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${menuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* 일괄 액션 버튼 — 메뉴 펼침 시에만 노출 */}
-              {menuOpen && (
-                <>
-                  {selected.size > 0 && (
-                    <span className="text-[15px] font-bold text-[#1A2B4A] mr-1">{selected.size}개 선택</span>
-                  )}
-                  {[
-                    { label: "진열함",   action: () => bulkStatus("판매중") },
-                    { label: "진열안함", action: () => bulkStatus("판매중지") },
-                    { label: "판매함",   action: () => bulkStatus("판매중") },
-                    { label: "판매안함", action: () => bulkStatus("판매중지") },
-                  ].map(btn => (
-                    <button key={btn.label} onClick={btn.action} disabled={!selected.size}
-                      className="px-3 py-1.5 text-[14px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
-                      {btn.label}
-                    </button>
-                  ))}
-                  <div className="w-px h-5 bg-gray-300 mx-1" />
-                  <button onClick={bulkDelete} disabled={!selected.size}
-                    className="px-3 py-1.5 text-[14px] border border-red-200 bg-white text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
-                    삭제
-                  </button>
-                  <div className="w-px h-5 bg-gray-300 mx-1" />
-                  <button onClick={() => selected.size && openCatModal()} disabled={!selected.size}
-                    className="px-3 py-1.5 text-[14px] border border-[#ff550c] bg-white text-[#ff550c] hover:bg-[#ff550c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
-                    카테고리 추가
-                  </button>
-                  <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
-                    className="px-3 py-1.5 text-[14px] border border-[#1A2B4A] bg-white text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
-                    메인진열수정
-                  </button>
-                  <Link href="/admin/products/main-expose"
-                    className="px-3 py-1.5 text-[14px] border border-purple-300 bg-white text-purple-600 hover:bg-purple-50 rounded">
-                    메인진열관리
-                  </Link>
-                </>
+              {selected.size > 0 && (
+                <span className="text-[15px] font-bold text-[#1A2B4A] mr-1">{selected.size}개 선택</span>
               )}
+              {[
+                { label: "진열함",   action: () => bulkStatus("판매중") },
+                { label: "진열안함", action: () => bulkStatus("판매중지") },
+                { label: "판매함",   action: () => bulkStatus("판매중") },
+                { label: "판매안함", action: () => bulkStatus("판매중지") },
+              ].map(btn => (
+                <button key={btn.label} onClick={btn.action} disabled={!selected.size}
+                  className="px-3 py-1.5 text-[14px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
+                  {btn.label}
+                </button>
+              ))}
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+              <button onClick={bulkDelete} disabled={!selected.size}
+                className="px-3 py-1.5 text-[14px] border border-red-200 bg-white text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
+                삭제
+              </button>
+              <div className="w-px h-5 bg-gray-300 mx-1" />
+              <button onClick={() => selected.size && openCatModal()} disabled={!selected.size}
+                className="px-3 py-1.5 text-[14px] border border-[#ff550c] bg-white text-[#ff550c] hover:bg-[#ff550c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
+                카테고리 추가
+              </button>
+              <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
+                className="px-3 py-1.5 text-[14px] border border-[#1A2B4A] bg-white text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
+                메인진열수정
+              </button>
+              <Link href="/admin/products/main-expose"
+                className="px-3 py-1.5 text-[14px] border border-purple-300 bg-white text-purple-600 hover:bg-purple-50 rounded">
+                메인진열관리
+              </Link>
 
-              {/* 정렬 / 페이지수 — 항상 우측 끝 */}
+              {/* 우측: 컬럼 표시/숨김 + 정렬 + 페이지수 */}
               <div className="flex items-center gap-2 ml-auto">
+                {/* 컬럼 표시/숨김 드롭다운 */}
+                <div className="relative">
+                  <button onClick={() => setColMenuOpen(v => !v)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[14px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    컬럼
+                    <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${colMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {colMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setColMenuOpen(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 shadow-lg rounded min-w-[160px] py-2">
+                        <p className="px-3 pb-1.5 mb-1 text-[12px] text-gray-400 border-b border-gray-100">표시할 컬럼</p>
+                        {TOGGLE_COLS.map(c => (
+                          <label key={c} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" checked={visibleCols[c] ?? true} onChange={() => toggleCol(c)}
+                              className="w-3.5 h-3.5 accent-[#1A2B4A]" />
+                            <span className="text-[13px] text-gray-700">{c}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
                 <select value={sortBy} onChange={e => { setSortBy(e.target.value as SortBy); setPage(1); }}
                   className="border border-gray-200 px-3 py-1.5 text-[14px] bg-white rounded focus:outline-none">
                   <option>최신순</option><option>진열순</option><option>이름순</option>
