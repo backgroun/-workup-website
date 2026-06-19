@@ -13,6 +13,7 @@ import { getFooterConfig } from "@/lib/footer-server";
 import { getHeaderNavConfig } from "@/lib/header-nav-server";
 import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
+import { headers } from "next/headers";
 import type { CSSProperties } from "react";
 
 export const metadata: Metadata = {
@@ -25,11 +26,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [topbar, footer, headerNav, logo, search] = await Promise.all([
-    getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
-  ]);
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/login");
+
+  const [topbar, footer, headerNav, logo, search] = isAdmin
+    ? [null, null, null, null, null]
+    : await Promise.all([
+        getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
+      ]);
+
   // 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조하는 탑바 높이(꺼져 있으면 0).
-  const htmlStyle = { "--wu-topbar-h": `${topbar.enabled ? topbar.height : 0}px` } as CSSProperties;
+  const htmlStyle = { "--wu-topbar-h": `${topbar?.enabled ? topbar.height : 0}px` } as CSSProperties;
 
   return (
     <html lang="ko" style={htmlStyle}>
@@ -42,17 +49,21 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Montserrat:wght@400;600;700;900&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@400;600;700&family=Oswald:wght@400;500;700&family=Playfair+Display:wght@400;700;900&display=swap"
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-        <PixelManager />
+        {!isAdmin && <PixelManager />}
         <CartProvider>
           <WishlistProvider>
-            <AnnouncementBanner config={topbar} />
-            <Header navItems={headerNav.items} logo={logo} search={search} />
-            <div className="relative flex-1 pb-14 md:pb-0">
+            {!isAdmin && topbar && headerNav && logo && search && (
+              <>
+                <AnnouncementBanner config={topbar} />
+                <Header navItems={headerNav.items} logo={logo} search={search} />
+              </>
+            )}
+            <div className={isAdmin ? "flex-1" : "relative flex-1 pb-14 md:pb-0"}>
               {children}
             </div>
-            <SideBanner />
-            <Footer config={footer} logo={logo} />
-            <BottomNav navItems={headerNav.items} />
+            {!isAdmin && <SideBanner />}
+            {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
+            {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} />}
           </WishlistProvider>
         </CartProvider>
       </body>
