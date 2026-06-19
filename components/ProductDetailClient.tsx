@@ -131,7 +131,7 @@ export default function ProductDetailClient({
       return;
     }
     if (!selectedSize) { alert("사이즈를 선택해 주세요."); return; }
-    addItem({ productId: product.id, name: product.name, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg });
+    addItem({ productId: product.id, name: product.name, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl });
     setAddedMsg(true);
     setTimeout(() => setAddedMsg(false), 2500);
   };

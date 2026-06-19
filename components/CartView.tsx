@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import { type WishlistConfig } from "@/lib/wishlist";
 

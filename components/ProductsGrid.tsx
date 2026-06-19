@@ -277,6 +277,7 @@ export default function ProductsGrid() {
       color: product.colors?.[0]?.name ?? "",
       colorHex: product.colors?.[0]?.hex ?? "#000",
       bg: product.bg,
+      imageUrl: product.imageUrl,
     });
   };
 

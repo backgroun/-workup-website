@@ -52,6 +52,7 @@ export default function HomeNewArrivals() {
       color: p.colors?.[0]?.name ?? "",
       colorHex: p.colors?.[0]?.hex ?? "#000",
       bg: p.bg,
+      imageUrl: p.imageUrl,
     });
   };
 
