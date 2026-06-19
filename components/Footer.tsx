@@ -89,7 +89,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
               <Image src={lg.src} alt={lg.alt} width={100} height={14} className="h-[14px] w-[100px] opacity-50" />
             </Link>
             <nav className="flex flex-col gap-[18px]">
-              {navLinks.map((item) => (
+              {c.navLinks.map((item) => (
                 <Link key={item.label} href={item.href}
                   className="text-[15px] text-[#1A2B4A] hover:opacity-50 transition-opacity leading-none">
                   {item.label}
@@ -141,7 +141,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
         </Link>
 
         <nav className="flex flex-col gap-4 mb-6">
-          {navLinks.map((item) => (
+          {c.navLinks.map((item) => (
             <Link key={item.label} href={item.href} className="text-[14px] text-[#1A2B4A]">
               {item.label}
             </Link>

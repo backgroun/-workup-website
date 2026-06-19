@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import {
-  DEFAULT_FOOTER, normalizeFooter, type FooterConfig,
+  DEFAULT_FOOTER, normalizeFooter, type FooterConfig, type FooterNavLink,
   DEFAULT_SUPPORT, normalizeSupport, type SupportConfig,
   DEFAULT_TERMS, DEFAULT_PRIVACY, normalizeLegal,
 } from "@/lib/site-content";
@@ -131,6 +131,89 @@ export default function FooterManagePage() {
               <Labeled label="평일 운영시간"><input className={INPUT} value={footer.cs_hours_weekday} onChange={(e) => setF("cs_hours_weekday", e.target.value)} /></Labeled>
               <Labeled label="주말 운영시간"><input className={INPUT} value={footer.cs_hours_weekend} onChange={(e) => setF("cs_hours_weekend", e.target.value)} /></Labeled>
             </div>
+          </div>
+
+          {/* 메뉴 관리 */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">푸터 메뉴 ({footer.navLinks.length})</p>
+              <button
+                onClick={() => {
+                  const newLink: FooterNavLink = { id: `nav-${Date.now()}`, label: "", href: "/" };
+                  setFooter((p) => ({ ...p, navLinks: [...p.navLinks, newLink] }));
+                }}
+                className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                메뉴 추가
+              </button>
+            </div>
+
+            {footer.navLinks.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">메뉴가 없습니다. 위 [+ 메뉴 추가]를 눌러 추가하세요.</p>
+            ) : (
+              <div className="space-y-2">
+                {footer.navLinks.map((link, i) => (
+                  <div key={link.id} className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2 bg-slate-50/50">
+                    <span className="text-[11px] font-semibold text-slate-400 w-5 flex-shrink-0">#{i + 1}</span>
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => {
+                        const next = [...footer.navLinks];
+                        next[i] = { ...next[i], label: e.target.value };
+                        setFooter((p) => ({ ...p, navLinks: next }));
+                      }}
+                      placeholder="메뉴 이름"
+                      className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                    />
+                    <input
+                      type="text"
+                      value={link.href}
+                      onChange={(e) => {
+                        const next = [...footer.navLinks];
+                        next[i] = { ...next[i], href: e.target.value };
+                        setFooter((p) => ({ ...p, navLinks: next }));
+                      }}
+                      placeholder="/support"
+                      className="w-44 flex-shrink-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-blue-400"
+                    />
+                    <button
+                      onClick={() => {
+                        const j = i - 1;
+                        if (j < 0) return;
+                        const next = [...footer.navLinks];
+                        [next[i], next[j]] = [next[j], next[i]];
+                        setFooter((p) => ({ ...p, navLinks: next }));
+                      }}
+                      disabled={i === 0}
+                      title="위로"
+                      className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30 flex-shrink-0"
+                    >↑</button>
+                    <button
+                      onClick={() => {
+                        const j = i + 1;
+                        if (j >= footer.navLinks.length) return;
+                        const next = [...footer.navLinks];
+                        [next[i], next[j]] = [next[j], next[i]];
+                        setFooter((p) => ({ ...p, navLinks: next }));
+                      }}
+                      disabled={i === footer.navLinks.length - 1}
+                      title="아래로"
+                      className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30 flex-shrink-0"
+                    >↓</button>
+                    <button
+                      onClick={() => setFooter((p) => ({ ...p, navLinks: p.navLinks.filter((_, idx) => idx !== i) }))}
+                      title="삭제"
+                      className="w-6 h-6 flex items-center justify-center rounded border border-red-200 text-red-400 hover:bg-red-50 flex-shrink-0"
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-[11px] text-gray-400">저장 버튼을 눌러야 반영됩니다. 링크는 <span className="font-mono">/support</span> 형식(내부) 또는 <span className="font-mono">https://...</span>(외부) 모두 가능합니다.</p>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
