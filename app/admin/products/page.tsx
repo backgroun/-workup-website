@@ -686,15 +686,17 @@ export default function AdminProductsPage() {
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
                       className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                   </th>
-                  {["상품명", "카테고리", "가격", "판매 상태", "등록일", "관리"].map(h => (
-                    <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
+                  {["상품명", "카테고리", "가격", "판매 상태", "등록일", "관리"]
+                    .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
+                    .map(h => (
+                      <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-20 text-center text-[15px] text-gray-400">
+                    <td colSpan={3 + TOGGLE_COLS.filter(c => visibleCols[c]).length} className="py-20 text-center text-[15px] text-gray-400">
                       {products.length === 0 ? "등록된 제품이 없습니다. 상단의 '샘플 10개 추가' 또는 '+ 새 제품 추가'로 시작하세요." : "검색 조건에 맞는 제품이 없습니다."}
                     </td>
                   </tr>
