@@ -37,7 +37,7 @@ export default function ProductDetailClient({
   relatedProducts?: Product[];
   isNewLayout?: boolean;
 }) {
-  const { addItem } = useCart();
+  const { addItem, hasProduct, toggleProduct } = useCart();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
@@ -134,6 +134,28 @@ export default function ProductDetailClient({
     addItem({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
     setAddedMsg(true);
     setTimeout(() => setAddedMsg(false), 2500);
+  };
+
+  // 찜 — 컬러·사이즈 선택 없이 토글 (카드 하트와 동일). 사이즈/컬러는 피팅 리스트에서 선택 가능.
+  const toggleFav = () => {
+    if (!memberSession) {
+      setLoginPromptOpen(true);
+      return;
+    }
+    toggleProduct({
+      productId: product.id,
+      name: product.name,
+      sku: product.sku,
+      line: product.line,
+      price: product.price,
+      size: "",
+      color: "",
+      colorHex: selectedColor?.hex ?? product.colors?.[0]?.hex ?? "#000",
+      bg: product.bg,
+      imageUrl: product.imageUrl,
+      allSizes: product.sizes,
+      allColors: product.colors,
+    });
   };
 
   const StoreList = () => (
@@ -307,13 +329,23 @@ export default function ProductDetailClient({
       <div className="space-y-2.5">
         <div className="flex gap-2.5">
           <button onClick={handleAddToCart}
-            className={`flex-1 py-3.5 text-sm font-bold tracking-wide transition-colors ${
+            className={`flex-1 py-3.5 text-sm font-bold transition-colors ${
               addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
             }`}>
             {addedMsg ? "✓ 담았습니다!" : "피팅 리스트에 담기"}
           </button>
+          <button onClick={toggleFav} aria-label="찜하기" title="찜하기"
+            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 hover:border-[#ff550c] transition-colors">
+            <svg className="w-5 h-5 transition-colors"
+              fill={hasProduct(product.id) ? "#ff550c" : "none"}
+              stroke={hasProduct(product.id) ? "#ff550c" : "#9ca3af"}
+              strokeWidth={1.6} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
           <button onClick={handleShare} aria-label="공유하기" title="공유하기"
-            className="flex-shrink-0 w-[54px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
             {shareCopied ? (
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
