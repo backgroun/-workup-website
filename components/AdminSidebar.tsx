@@ -203,7 +203,50 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  // ── 4. 고객 문의 ──────────────────────────────────────────────────────────
+  // ── 4. 스토어 관리 ────────────────────────────────────────────────────────
+  {
+    label: "스토어 관리",
+    items: [
+      {
+        label: "매장 목록",
+        href: "/admin/stores",
+        exact: true,
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        ),
+      },
+      {
+        label: "매장 추가",
+        href: "/admin/stores/new",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        ),
+      },
+      {
+        label: "Excel 업로드",
+        href: "/admin/stores/import",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        ),
+      },
+      {
+        label: "채용공고 관리",
+        href: "/admin/stores/jobs",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  // ── 5. 고객 문의 ──────────────────────────────────────────────────────────
   {
     label: "고객 문의",
     items: [
@@ -229,7 +272,7 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  // ── 5. 카달로그 ───────────────────────────────────────────────────────────
+  // ── 6. 카달로그 ───────────────────────────────────────────────────────────
   {
     label: "카달로그",
     items: [
@@ -255,7 +298,7 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  // ── 6. 마케팅/분석 ────────────────────────────────────────────────────────
+  // ── 7. 마케팅/분석 ────────────────────────────────────────────────────────
   {
     label: "마케팅/분석",
     items: [
@@ -280,7 +323,7 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  // ── 7. 회원 관리 ──────────────────────────────────────────────────────────
+  // ── 8. 회원 관리 ──────────────────────────────────────────────────────────
   {
     label: "회원 관리",
     items: [
