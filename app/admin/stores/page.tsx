@@ -64,7 +64,7 @@ export default function AdminStoresPage() {
   }, [stores, search, regionFilter, typeFilter, activeFilter]);
 
   const handleSeed = async () => {
-    if (!confirm(`data/stores.ts의 ${stores.length > 0 ? "추가" : "전체"} 데이터를 DB에 삽입합니다. 계속할까요?`)) return;
+    if (!confirm("data/stores.ts의 154개 기존 매장을 DB에 upsert합니다.\n이미 등록된 매장은 덮어씁니다. 계속할까요?")) return;
     setSeeding(true);
     setMsg("");
     const res = await fetch("/api/admin/stores/import", {
@@ -74,7 +74,7 @@ export default function AdminStoresPage() {
     });
     const data = await res.json();
     if (res.ok) {
-      setMsg(`✓ ${data.count}개 매장이 등록됐습니다.`);
+      setMsg(`✓ ${data.count}개 매장이 등록(또는 업데이트)됐습니다.`);
       await load();
     } else {
       setMsg(`✗ 오류: ${data.error}`);

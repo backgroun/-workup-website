@@ -38,8 +38,6 @@ export async function POST(req: Request) {
     }));
     const { error } = await supabase.from("stores").upsert(rows, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    // 시퀀스를 마지막 id 이후로 재설정
-    await supabase.rpc("setval_stores_seq", { val: staticStores.length });
     return NextResponse.json({ ok: true, count: rows.length });
   }
 
