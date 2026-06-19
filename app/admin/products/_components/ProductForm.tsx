@@ -843,61 +843,68 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 1. 기본 정보 ── */}
           <section className="bg-white border border-gray-200 p-7 rounded-xl">
             <SectionTitle>기본 정보</SectionTitle>
-            <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-5">
               <Field label="상품명" required>
                 <input required value={form.name}
                   onChange={(e) => { set("name", e.target.value); if (!isEdit) set("id", slugify(e.target.value)); }}
                   className={INPUT_CLS} placeholder="예: 스트레치 카고 팬츠" />
               </Field>
-              <Field label="상품코드 (SKU)">
-                <input value={form.sku} onChange={(e) => set("sku", e.target.value)}
-                  className={`${INPUT_CLS} font-mono`} placeholder="예: WU-S001" />
-              </Field>
 
-              <Field label="브랜드">
-                <div className="flex gap-2 items-center">
-                  <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={`${SELECT_CLS} flex-1`}>
-                    <option value="">선택 안 함</option>
-                    {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-                    {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
-                  </select>
-                  <a href="/admin/brands" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
-                </div>
-              </Field>
+              {/* 상품코드 · 제품 ID */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="상품코드 (SKU)">
+                  <input value={form.sku} onChange={(e) => set("sku", e.target.value)}
+                    className={`${INPUT_CLS} font-mono`} placeholder="예: WU-S001" />
+                </Field>
+                <Field label="제품 ID">
+                  <input value={form.id} onChange={(e) => set("id", e.target.value)}
+                    className={`${INPUT_CLS} font-mono`} placeholder="자동 생성됨" disabled={isEdit} />
+                </Field>
+              </div>
 
-              <Field label="제품 ID">
-                <input value={form.id} onChange={(e) => set("id", e.target.value)}
-                  className={`${INPUT_CLS} font-mono`} placeholder="자동 생성됨" disabled={isEdit} />
-              </Field>
+              {/* 브랜드 · 제조사 · 원산지 */}
+              <div className="grid grid-cols-3 gap-5">
+                <Field label="브랜드">
+                  <div className="flex gap-2 items-center">
+                    <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={`${SELECT_CLS} flex-1`}>
+                      <option value="">선택 안 함</option>
+                      {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+                      {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
+                    </select>
+                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
+                  </div>
+                </Field>
+                <Field label="제조사">
+                  <div className="flex gap-2 items-center">
+                    <select value={form.manufacturer} onChange={(e) => set("manufacturer", e.target.value)} className={`${SELECT_CLS} flex-1`}>
+                      <option value="">선택 안 함</option>
+                      {manufacturers.map((m) => <option key={m} value={m}>{m}</option>)}
+                      {form.manufacturer && !manufacturers.includes(form.manufacturer) && <option value={form.manufacturer}>{form.manufacturer}</option>}
+                    </select>
+                    <a href="/admin/manufacturers" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
+                  </div>
+                </Field>
+                <Field label="원산지">
+                  <input value={form.origin} onChange={(e) => set("origin", e.target.value)}
+                    className={INPUT_CLS} placeholder="예: 대한민국" />
+                </Field>
+              </div>
 
-              <Field label="제조사">
-                <div className="flex gap-2 items-center">
-                  <select value={form.manufacturer} onChange={(e) => set("manufacturer", e.target.value)} className={`${SELECT_CLS} flex-1`}>
-                    <option value="">선택 안 함</option>
-                    {manufacturers.map((m) => <option key={m} value={m}>{m}</option>)}
-                    {form.manufacturer && !manufacturers.includes(form.manufacturer) && <option value={form.manufacturer}>{form.manufacturer}</option>}
-                  </select>
-                  <a href="/admin/manufacturers" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
-                </div>
-              </Field>
-
-              <Field label="원산지">
-                <input value={form.origin} onChange={(e) => set("origin", e.target.value)}
-                  className={INPUT_CLS} placeholder="예: 대한민국" />
-              </Field>
-
-              <Field label="판매가" required>
-                <input required value={form.price} onChange={(e) => set("price", formatPrice(e.target.value))}
-                  inputMode="numeric" className={INPUT_CLS} placeholder="예: 39,000원" />
-              </Field>
-              <Field label="소비자가">
-                <input value={form.consumerPrice} onChange={(e) => set("consumerPrice", formatPrice(e.target.value))}
-                  inputMode="numeric" className={INPUT_CLS} placeholder="예: 45,000원" />
-              </Field>
-              <Field label="공급가">
-                <input value={form.supplyPrice} onChange={(e) => set("supplyPrice", formatPrice(e.target.value))}
-                  inputMode="numeric" className={INPUT_CLS} placeholder="예: 25,000원" />
-              </Field>
+              {/* 판매가 · 소비자가 · 공급가 */}
+              <div className="grid grid-cols-3 gap-5">
+                <Field label="판매가" required>
+                  <input required value={form.price} onChange={(e) => set("price", formatPrice(e.target.value))}
+                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 39,000원" />
+                </Field>
+                <Field label="소비자가">
+                  <input value={form.consumerPrice} onChange={(e) => set("consumerPrice", formatPrice(e.target.value))}
+                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 45,000원" />
+                </Field>
+                <Field label="공급가">
+                  <input value={form.supplyPrice} onChange={(e) => set("supplyPrice", formatPrice(e.target.value))}
+                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 25,000원" />
+                </Field>
+              </div>
 
               {/* 한줄 소개 */}
               <div className="col-span-2">
