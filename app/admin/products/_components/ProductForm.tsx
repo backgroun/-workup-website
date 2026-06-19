@@ -907,26 +907,33 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
 
               {/* 한줄 소개 */}
-              <div className="col-span-2">
-                <Field label="한줄 소개 (tagline)" required>
-                  <input required value={form.tagline} onChange={(e) => set("tagline", e.target.value)}
-                    className={INPUT_CLS} placeholder="예: 하루 종일 쪼그려 앉아도 안 당깁니다." />
-                </Field>
-              </div>
+              <Field label="한줄 소개 (tagline)" required>
+                <input required value={form.tagline} onChange={(e) => set("tagline", e.target.value)}
+                  className={INPUT_CLS} placeholder="예: 하루 종일 쪼그려 앉아도 안 당깁니다." />
+              </Field>
 
               {/* 주요 특징 */}
-              <div className="col-span-2 pt-1">
-                <Field label="주요 특징 (한 줄에 하나씩)">
-                  <textarea value={form.features} onChange={(e) => set("features", e.target.value)}
-                    rows={4} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
-                    placeholder={"11개 포켓\n무릎 이중 보강\n스트레치율 35%"} />
-                </Field>
-                <div className="mt-3">
-                  <Field label="필드테스트 인증 (선택)">
+              <Field label="주요 특징 (한 줄에 하나씩)">
+                <textarea value={form.features} onChange={(e) => set("features", e.target.value)}
+                  rows={4} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
+                  placeholder={"11개 포켓\n무릎 이중 보강\n스트레치율 35%"} />
+              </Field>
+
+              {/* 필드테스트 인증 — 기본 접힘 */}
+              <div className="border border-gray-100 rounded-lg">
+                <button type="button" onClick={() => setFieldTestOpen(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-gray-500 hover:bg-gray-50 rounded-lg">
+                  <span>필드테스트 인증 (선택){form.fieldTest && <span className="ml-2 text-[#ff550c]">●</span>}</span>
+                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${fieldTestOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {fieldTestOpen && (
+                  <div className="px-4 pb-4 pt-1">
                     <input value={form.fieldTest} onChange={(e) => set("fieldTest", e.target.value)}
                       className={INPUT_CLS} placeholder="예: 카고 팬츠 내구성 1,000회 테스트 통과" />
-                  </Field>
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* ── 다중 카테고리 선택 ── */}
