@@ -129,7 +129,7 @@ function clusterByScreen(pts: XYStore[], gridSize: number): Cluster[] {
 
 export default function KakaoMap({ center, selectedStore, userCoords, onStoreSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<unknown>(null);
+  const mapRef = useRef<any>(null);
   const initializedRef = useRef(false);
   const mountedRef = useRef(true);
   const rafRef = useRef<number | null>(null);
