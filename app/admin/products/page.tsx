@@ -96,6 +96,7 @@ export default function AdminProductsPage() {
   const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최신순");
   const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
   const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
+  const [menuOpen, setMenuOpen] = useState(true); // 일괄 작업 메뉴 표시/숨김
 
   // ─ 메인진열 수정 모달 ──────────────────────────────────────────────────
   const [exposeModal, setExposeModal]     = useState(false);
