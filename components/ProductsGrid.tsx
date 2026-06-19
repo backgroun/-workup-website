@@ -286,15 +286,14 @@ export default function ProductsGrid() {
 
   // ── Product card (shared) ─────────────────────────────
   const ProductCard = ({ product, mobile }: { product: typeof products[0]; mobile?: boolean }) => (
-    <div className={`flex flex-col ${mobile ? "w-[calc(50%-5px)]" : "w-[350px]"}`}>
+    <div className={`flex flex-col ${mobile ? "w-[calc(50%-5px)]" : "w-full"}`}>
       <Link
         href={`/products/${product.id}`}
-        className={`${product.bg} relative overflow-hidden aspect-square flex-shrink-0`}
-        style={mobile ? undefined : { width: 350, height: 350 }}
+        className={`${product.bg} relative overflow-hidden aspect-square flex-shrink-0 w-full`}
       >
         {product.imageUrl ? (
           <Image src={product.imageUrl} alt={product.name} fill className="object-cover"
-            sizes={mobile ? "50vw" : "350px"} />
+            sizes={mobile ? "50vw" : "(min-width: 1280px) 25vw, 33vw"} />
         ) : (
           <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] tracking-widest uppercase">WORKUP</span>
         )}
@@ -625,7 +624,7 @@ export default function ProductsGrid() {
                 {filtered.length === 0 ? (
                   <div className="py-24 text-center text-sm text-gray-400">해당 카테고리의 제품이 없습니다.</div>
                 ) : (
-                  <div className="flex flex-wrap gap-5">
+                  <div className="grid grid-cols-3 xl:grid-cols-4 gap-5">
                     {filtered.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
