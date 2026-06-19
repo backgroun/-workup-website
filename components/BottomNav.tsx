@@ -41,8 +41,11 @@ export default function BottomNav({
         - translateY(0)    : 열린 상태 → 네비바 위에 딱 붙어서 노출
       */}
       <div
-        className="fixed bottom-14 left-0 right-0 z-[59] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out md:hidden"
-        style={{ transform: menuOpen ? "translateY(0)" : "translateY(110%)" }}
+        className="fixed left-0 right-0 z-[59] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out md:hidden"
+        style={{
+          bottom: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
+          transform: menuOpen ? "translateY(0)" : "translateY(110%)",
+        }}
         aria-modal="true"
         role="dialog"
       >
@@ -121,13 +124,19 @@ export default function BottomNav({
       </div>
 
       {/* 하단 네비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-200 h-14 md:hidden">
-        <div className="flex items-stretch h-full">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-200 md:hidden will-change-transform"
+        style={{
+          height: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
+        <div className="flex items-stretch h-14">
 
           {/* 메뉴 */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-[color,transform] active:scale-95 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-[color,background-color,transform] active:scale-95 active:bg-gray-100 ${
               menuOpen ? "text-[#ff550c]" : "text-[#1A2B4A]"
             }`}
             aria-label="메뉴"
@@ -150,7 +159,7 @@ export default function BottomNav({
           {/* 홈 */}
           <Link
             href="/"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] transition-transform active:scale-95"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="홈"
             onClick={() => setMenuOpen(false)}
           >
@@ -164,7 +173,7 @@ export default function BottomNav({
           {/* 전체매장 */}
           <Link
             href="/store"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] transition-transform active:scale-95"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="전체매장"
             onClick={() => setMenuOpen(false)}
           >

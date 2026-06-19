@@ -167,6 +167,7 @@ export default function Header({
                 placeholder={search.placeholder}
                 autoFocus
                 className="flex-1 text-[14px] text-[#1A2B4A] placeholder-gray-400 bg-transparent outline-none"
+                style={{ fontSize: "16px" }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSearch(searchQuery);
                   if (e.key === "Escape") { setSearchOpen(false); setSearchQuery(""); }

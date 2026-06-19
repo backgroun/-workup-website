@@ -12,7 +12,7 @@ export default function PartnershipLayout({ info, panelBg, boardType, children }
 }) {
   return (
     <main>
-      <div className="bg-[#F5F2ED] py-16">
+      <div className="bg-[#F5F2ED] py-8">
         <div className="max-w-6xl mx-auto px-6 space-y-8">
           <div className="grid lg:grid-cols-2 gap-6 items-stretch">
             {/* 좌: 소개 패널 + 폼 (세로 스택) */}
