@@ -10,16 +10,9 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
   return (
     <main>
-      <div className="bg-[#1A2B4A] py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{c.heroEyebrow}</p>
-          <h1 className="text-4xl font-bold text-white mb-2">{c.heroTitle}</h1>
-          <p className="text-gray-300 text-sm">{c.heroDesc}</p>
-        </div>
-      </div>
-
-      <section className="bg-[#F5F2ED] py-16 min-h-[60vh]">
+      <section className="bg-[#F5F2ED] py-12 min-h-[60vh]">
         <div className="max-w-3xl mx-auto px-6">
+          <h1 className="text-xl font-bold text-[#1A2B4A] mb-8">피팅 리스트</h1>
 
           {items.length === 0 ? (
             <div className="text-center py-24">
