@@ -15,20 +15,20 @@ export default function LoginPromptModal({
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative bg-white rounded-sm shadow-xl px-10 py-8 flex flex-col items-center gap-6 min-w-[280px] max-w-[90vw]">
-        <p className="text-[15px] text-[#1A2B4A] font-medium text-center leading-relaxed">
+      <div className="relative bg-white rounded-lg shadow-xl px-9 py-9 flex flex-col items-center gap-7 min-w-[360px] max-w-[90vw]">
+        <p className="text-[16px] text-[#1A2B4A] font-medium text-center leading-relaxed">
           로그인이 필요한 서비스 입니다.<br />로그인 하시겠습니까?
         </p>
         <div className="flex items-center gap-3 w-full">
           <button
             onClick={onCancel}
-            className="flex-1 h-11 border border-gray-300 text-[14px] text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 h-12 rounded-lg border border-gray-300 text-[14px] text-gray-600 font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             취소
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-11 bg-[#1A2B4A] text-white text-[14px] font-medium hover:bg-[#15223b] transition-colors"
+            className="flex-1 h-12 rounded-lg bg-[#1A2B4A] text-white text-[14px] font-medium hover:bg-[#15223b] transition-colors whitespace-nowrap"
           >
             로그인 바로가기
           </button>
