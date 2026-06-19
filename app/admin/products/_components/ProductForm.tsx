@@ -838,7 +838,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
       <div className="grid grid-cols-2 gap-6 items-start">
         {/* ══════════ 왼쪽 컬럼 ══════════ */}
-        <div className="space-y-6 min-w-0">
+        <div className="flex flex-col gap-6 min-w-0">
 
           {/* ── 1. 기본 정보 ── */}
           <section className="bg-white border border-gray-200 p-7 rounded-xl">
