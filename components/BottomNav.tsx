@@ -123,9 +123,9 @@ export default function BottomNav({
         </nav>
       </div>
 
-      {/* 하단 네비게이션 바 */}
+      {/* 하단 네비게이션 바 — fixed 제거, body flex 자식으로 항상 화면 하단 고정 */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-200 md:hidden will-change-transform"
+        className="bg-white border-t border-gray-200 md:hidden flex-shrink-0"
         style={{
           height: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",

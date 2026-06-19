@@ -935,9 +935,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   </div>
                 )}
               </div>
+            </div>
+          </section>
 
-              {/* ── 다중 카테고리 선택 ── */}
-              <div className="col-span-2 pt-1">
+          {/* ── 카테고리 (최상단 박스) ── */}
+          <section className="order-first bg-white border border-gray-200 p-7 rounded-xl">
+            <div className="pt-1">
                 <label className="block text-xs font-medium text-gray-500 mb-2">
                   카테고리 <span className="text-red-400">*</span>
                   <span className="text-gray-400 font-normal ml-1.5">— 여러 카테고리에 동시 등록 가능, 첫 번째 = 대표</span>
@@ -1053,7 +1056,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <p className="text-xs text-red-400 mt-1">카테고리를 하나 이상 선택해 주세요.</p>
                 )}
               </div>
-            </div>
           </section>
 
           {/* ── 2. 판매 설정 ── */}
