@@ -1,5 +1,6 @@
 "use client";
 import { forwardRef, useRef, useState, useEffect } from "react";
+import Link from "next/link";
 import HTMLFlipBook from "react-pageflip";
 
 export type BrandViewModel = {

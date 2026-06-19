@@ -520,14 +520,15 @@ export default function TshirtStudio({
           <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
             {(
               [
-                ["image", "이미지"],
-                ["text", "텍스트"],
-              ] as const
+                ...(designs.length > 0 ? [["design", "디자인"] as const] : []),
+                ["image", "이미지"] as const,
+                ["text", "텍스트"] as const,
+              ]
             ).map(([key, label]) => (
               <button
                 key={key}
                 type="button"
-                onClick={() => setTab(key)}
+                onClick={() => setTab(key as typeof tab)}
                 className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${tab === key ? "bg-white text-[#1A2B4A] shadow-sm" : "text-gray-500"}`}
               >
                 {label}
@@ -536,6 +537,46 @@ export default function TshirtStudio({
           </div>
 
           <div className="mt-4">
+            {/* 디자인 탭 — 관리자가 올린 프리셋 */}
+            {tab === "design" && (
+              <div>
+                <p className="mb-3 text-xs text-gray-500">
+                  클릭하면 티셔츠에 디자인이 추가됩니다. 크기·위치·회전을 자유롭게 조절해 보세요.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {designs.map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      disabled={!!loadingDesign}
+                      onClick={() => addPresetDesign(d)}
+                      className={`relative flex flex-col items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 p-2 transition hover:border-[#ff550c] hover:bg-[#ff550c]/5 ${loadingDesign === d.id ? "opacity-60" : ""}`}
+                    >
+                      <div className="flex h-16 w-full items-center justify-center rounded-lg bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={d.url} alt={d.label} className="max-h-14 max-w-full object-contain" />
+                      </div>
+                      {d.label && (
+                        <span className="text-[10px] text-gray-500 leading-tight text-center line-clamp-1">{d.label}</span>
+                      )}
+                      {loadingDesign === d.id && (
+                        <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
+                          <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTab("image")}
+                  className="mt-4 w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:border-[#ff550c] hover:text-[#ff550c] transition"
+                >
+                  + 내 이미지 직접 올리기
+                </button>
+              </div>
+            )}
+
             {tab === "image" && (
               <div>
                 <button

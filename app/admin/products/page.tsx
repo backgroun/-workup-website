@@ -49,6 +49,9 @@ function fmtDate(iso?: string) {
 const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개월", "1년", "전체"];
 const STATUS_OPTIONS = ["전체", "판매중", "품절", "판매중지", "예약판매", "진열대기"];
 const EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
+// 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명·관리는 항상 표시)
+const TOGGLE_COLS = ["카테고리", "가격", "판매 상태", "등록일"];
+const COL_KEY = "wu-admin-product-cols";
 const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "제조사"];
 
 // ── 컴포넌트 ───────────────────────────────────────────────────────────────────
@@ -89,7 +92,10 @@ export default function AdminProductsPage() {
   const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최신순");
   const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
   const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
-  const [menuOpen, setMenuOpen] = useState(true); // 일괄 작업 메뉴 표시/숨김
+  const [colMenuOpen, setColMenuOpen] = useState(false); // 컬럼 표시/숨김 드롭다운
+  const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>(
+    Object.fromEntries(TOGGLE_COLS.map(c => [c, true]))
+  );
 
   // ─ 메인진열 수정 모달 ──────────────────────────────────────────────────
   const [exposeModal, setExposeModal]     = useState(false);
@@ -140,6 +146,21 @@ export default function AdminProductsPage() {
       .then(d => { if (Array.isArray(d) && d.length) setCatList(d); })
       .catch(() => {});
   }, []);
+
+  // 컬럼 표시/숨김 설정 로드 (localStorage) — 새로고침해도 유지
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(COL_KEY) || "null");
+      if (s && typeof s === "object") setVisibleCols(prev => ({ ...prev, ...s }));
+    } catch { /* noop */ }
+  }, []);
+
+  const toggleCol = (c: string) =>
+    setVisibleCols(prev => {
+      const next = { ...prev, [c]: !prev[c] };
+      try { localStorage.setItem(COL_KEY, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
 
   // 뷰 상태를 세션에 저장 (수정 페이지에서 돌아오면 같은 페이지/필터로 복원)
   useEffect(() => {

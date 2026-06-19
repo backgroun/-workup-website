@@ -19,8 +19,11 @@ export default async function StudioPage() {
   return (
     <TshirtStudio
       kakaoUrl={footer.kakao_url}
+      heading={studio.heading}
+      subheading={studio.subheading}
       defaultColor={studio.defaultColor}
       enabledColors={studio.enabledColors}
+      designs={studio.designs}
     />
   );
 }
