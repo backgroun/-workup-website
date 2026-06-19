@@ -15,6 +15,7 @@ import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
+import ScrollToTop from "@/components/ScrollToTop";
 import type { CSSProperties } from "react";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Montserrat:wght@400;600;700;900&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@400;600;700&family=Oswald:wght@400;500;700&family=Playfair+Display:wght@400;700;900&display=swap"
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+        <ScrollToTop />
         {!isAdmin && <PixelManager />}
         <CartProvider>
           <WishlistProvider>
