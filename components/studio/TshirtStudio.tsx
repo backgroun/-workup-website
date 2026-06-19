@@ -52,19 +52,28 @@ type Interaction =
   | { mode: "rotate"; id: string; cx: number; cy: number }
   | { mode: "scale"; id: string; cx: number; cy: number; startDist: number; startScale: number };
 
+type DesignAsset = { id: string; url: string; label: string };
+
 export default function TshirtStudio({
   kakaoUrl,
+  heading,
+  subheading,
   defaultColor,
   enabledColors = [],
+  designs = [],
 }: {
   kakaoUrl: string;
+  heading?: string;
+  subheading?: string;
   defaultColor?: string;
   enabledColors?: string[];
+  designs?: DesignAsset[];
 }) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [shirtId, setShirtId] = useState<string>(defaultColor ?? DEFAULT_SHIRT_ID);
-  const [tab, setTab] = useState<"image" | "text">("image");
+  const [tab, setTab] = useState<"design" | "image" | "text">(designs.length > 0 ? "design" : "image");
+  const [loadingDesign, setLoadingDesign] = useState<string | null>(null);
   const [showStores, setShowStores] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -176,6 +185,22 @@ export default function TshirtStudio({
       weight: TEXT_FONTS[0].weight,
       color: shirt.id === "white" || shirt.id === "ivory" || shirt.id === "sand" || shirt.id === "sky" ? "#1A2B4A" : "#FFFFFF",
     });
+
+  // 프리셋 디자인 → fetch → File → handleFiles 경유 (canvas CORS 안전)
+  async function addPresetDesign(asset: DesignAsset) {
+    if (loadingDesign) return;
+    setLoadingDesign(asset.id);
+    try {
+      const resp = await fetch(asset.url);
+      const blob = await resp.blob();
+      const file = new File([blob], asset.label || "design", { type: blob.type || "image/png" });
+      handleFiles([file]);
+    } catch {
+      setNotice("디자인을 불러오는 중 오류가 발생했어요.");
+    } finally {
+      setLoadingDesign(null);
+    }
+  }
 
   // 업로드 이미지 → (필요시 다운스케일) → 레이어 추가
   function handleFiles(files: FileList | File[]) {
@@ -430,8 +455,12 @@ export default function TshirtStudio({
       {/* 헤더 */}
       <div className="mb-6 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff550c]">WORKUP STUDIO</p>
-        <h1 className="mt-1 text-2xl font-extrabold text-[#1A2B4A] md:text-3xl">나만의 티셔츠 꾸미기</h1>
-        <p className="mt-2 text-sm text-gray-500">사진·이미지를 올리고 텍스트를 더해 디자인하고, 매장에서 제작 상담받아 보세요.</p>
+        <h1 className="mt-1 text-2xl font-extrabold text-[#1A2B4A] md:text-3xl">
+          {heading ?? "나만의 티셔츠 꾸미기"}
+        </h1>
+        <p className="mt-2 text-sm text-gray-500">
+          {subheading ?? "사진·이미지를 올리고 텍스트를 더해 디자인하고, 매장에서 제작 상담받아 보세요."}
+        </p>
       </div>
 
       <input

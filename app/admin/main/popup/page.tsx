@@ -864,10 +864,10 @@ export default function PopupManagePage() {
                 </div>
 
                 {/* 4. 링크 설정 */}
-                <div className="pb-5 border-b border-slate-100 space-y-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">링크 설정</p>
-                  {/* 링크 유형: 제품 선택 | URL */}
-                  <div className="flex gap-5">
+                <div className="pb-5 border-b border-slate-100 space-y-3">
+                  {/* 섹션 라벨 + 라디오 버튼 한 줄 */}
+                  <div className="flex items-center gap-5">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest shrink-0">링크 설정</p>
                     {(["product", "url"] as LinkType[]).map(t => (
                       <label key={t} className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" checked={editing.link_type === t}
@@ -877,7 +877,7 @@ export default function PopupManagePage() {
                       </label>
                     ))}
                   </div>
-                  {/* 링크 입력 | 버튼 텍스트 (입력박스 동일 크기) */}
+                  {/* 링크 입력 | 버튼 텍스트 */}
                   <div className="grid grid-cols-2 gap-4 items-start">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">
