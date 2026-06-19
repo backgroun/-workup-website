@@ -559,76 +559,37 @@ export default function ProductsGrid() {
               </div>
             )}
 
-            <div className="flex gap-10 items-start">
-
-              {/* ── 사이드바: 카테고리 아코디언만 ── */}
-              <aside className="flex-shrink-0 w-[180px] sticky top-4">
-                <nav>
-                  {/* 전체 */}
-                  <button
-                    onClick={() => handleCategoryChange("전체")}
-                    className={`w-full text-left py-3 text-[14px] transition-colors border-b border-gray-200 ${
-                      activeCategory === "전체" ? "font-bold text-[#1A2B4A]" : "text-gray-500 hover:text-[#1A2B4A]"
-                    }`}
-                  >
-                    전체
+            {/* ── 카테고리 가로 탭 (모바일 메뉴 스타일) ── */}
+            <div className="flex items-center border-b border-gray-200 mb-5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+              {allCats.map((cat) => {
+                const isActive = activeCategory === cat;
+                return (
+                  <button key={cat} onClick={() => handleCategoryChange(cat)}
+                    className={`flex-shrink-0 px-5 py-3 text-[15px] whitespace-nowrap transition-colors border-b-2 -mb-px ${
+                      isActive ? "border-[#1A2B4A] text-[#1A2B4A] font-bold" : "border-transparent text-gray-500 hover:text-[#1A2B4A]"
+                    }`}>
+                    {cat}
                   </button>
+                );
+              })}
+            </div>
 
-                  {/* 대카테고리 아코디언 */}
-                  {mainCategories.map((cat) => {
-                    const isActive = activeCategory === cat;
-                    const subs = subCategoriesByMain[cat] ?? [];
-                    return (
-                      <div key={cat} className="border-b border-gray-200">
-                        <button
-                          onClick={() => handleCategoryChange(cat)}
-                          className={`w-full flex items-center justify-between py-3 text-[14px] transition-colors ${
-                            isActive ? "font-bold text-[#1A2B4A]" : "text-gray-500 hover:text-[#1A2B4A]"
-                          }`}
-                        >
-                          <span>{cat}</span>
-                          {subs.length > 0 && (
-                            <svg
-                              className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isActive ? "rotate-90" : ""}`}
-                              fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                          )}
-                        </button>
+            {/* ── 하위 카테고리 탭 ── */}
+            {subCats.length > 0 && (
+              <div className="flex items-center gap-6 mb-6 flex-wrap">
+                {(["전체", ...subCats] as (SubCategory | "전체")[]).map((sub) => (
+                  <button key={sub} onClick={() => setActiveSubCategory(sub)}
+                    className={`text-[14px] whitespace-nowrap transition-colors pb-0.5 ${
+                      activeSubCategory === sub ? "font-bold text-[#1A2B4A] border-b-2 border-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
+                    }`}>
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            )}
 
-                        {/* 하위 카테고리 — 선택된 카테고리만 펼침 */}
-                        {isActive && subs.length > 0 && (
-                          <div className="pb-3 pl-3 space-y-0.5">
-                            <button
-                              onClick={() => setActiveSubCategory("전체")}
-                              className={`block w-full text-left py-1.5 text-[12px] transition-colors ${
-                                activeSubCategory === "전체" ? "font-semibold text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
-                              }`}
-                            >
-                              전체
-                            </button>
-                            {subs.map((sub) => (
-                              <button
-                                key={sub}
-                                onClick={() => setActiveSubCategory(sub)}
-                                className={`block w-full text-left py-1.5 text-[12px] transition-colors ${
-                                  activeSubCategory === sub ? "font-semibold text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
-                                }`}
-                              >
-                                {sub}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </nav>
-              </aside>
-
-              {/* ── 우측 콘텐츠 ── */}
-              <div className="flex-1 min-w-0">
+            {/* ── 콘텐츠 (전체 폭) ── */}
+            <div>
 
                 {/* 정렬 + 필터 드롭다운 바 */}
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 gap-4 flex-wrap">
@@ -671,7 +632,6 @@ export default function ProductsGrid() {
                   </div>
                 )}
               </div>
-            </div>
           </div>
         </div>
       </div>
