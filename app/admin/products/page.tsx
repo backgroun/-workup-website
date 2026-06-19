@@ -735,7 +735,8 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
 
-                    {/* 카테고리 (인라인 추가/삭제) */}
+                    {/* 카테고리 (인라인 추가/삭제) — 컬럼 표시 토글 */}
+                    {visibleCols["카테고리"] && (
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap items-center gap-1 min-w-[150px]">
                         {getProductCats(p).map((c, i) => (
@@ -765,8 +766,10 @@ export default function AdminProductsPage() {
                         )}
                       </div>
                     </td>
+                    )}
 
-                    {/* 가격 (인라인 수정) */}
+                    {/* 가격 (인라인 수정) — 컬럼 표시 토글 */}
+                    {visibleCols["가격"] && (
                     <td className="px-5 py-3 whitespace-nowrap">
                       <InlineText
                         value={p.price ?? ""}
@@ -778,8 +781,10 @@ export default function AdminProductsPage() {
                         <p className="text-[12px] text-gray-400 line-through">{p.consumerPrice}</p>
                       )}
                     </td>
+                    )}
 
-                    {/* 판매 상태 (인라인 수정) */}
+                    {/* 판매 상태 (인라인 수정) — 컬럼 표시 토글 */}
+                    {visibleCols["판매 상태"] && (
                     <td className="px-5 py-3 whitespace-nowrap">
                       <select
                         value={p.status ?? "판매중"}
