@@ -35,28 +35,33 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
           ) : (
             <>
               {/* 매장 방문 안내 배너 */}
-              <div className="bg-[#ff550c] text-white px-6 py-5 mb-8">
-                <p className="font-bold mb-1">{c.noticeTitle}</p>
-                <p className="text-sm text-orange-100 leading-relaxed">{c.noticeDesc}</p>
-                <Link
-                  href={c.noticeCtaHref}
-                  className="inline-block mt-3 text-xs border border-white text-white px-4 py-2 hover:bg-white hover:text-[#ff550c] transition-colors"
-                >
-                  {c.noticeCtaLabel}
-                </Link>
+              <div className="bg-gray-100 border border-gray-200 px-6 py-5 mb-8">
+                <p className="font-bold text-gray-800 mb-1">{c.noticeTitle}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{c.noticeDesc}</p>
               </div>
 
               {/* 아이템 목록 */}
               <div className="space-y-3 mb-8">
                 {items.map((item) => (
                   <div key={item.cartId} className="bg-white border border-gray-200 flex items-center gap-4 px-5 py-4">
-                    {/* 컬러 칩 */}
-                    <div
-                      className="w-10 h-10 flex-shrink-0 border border-gray-200"
-                      style={{ backgroundColor: item.colorHex }}
-                    />
+                    {/* 제품 이미지 */}
+                    <div className="w-16 h-16 flex-shrink-0 border border-gray-100 overflow-hidden relative bg-gray-50">
+                      {item.imageUrl ? (
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full"
+                          style={{ backgroundColor: item.colorHex }}
+                        />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-0.5">WORKUP {item.line}</p>
                       <p className="text-sm font-bold text-[#1A2B4A] truncate">{item.name}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-xs text-gray-500">사이즈 <strong>{item.size || "매장 문의"}</strong></span>
