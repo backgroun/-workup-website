@@ -796,11 +796,14 @@ export default function AdminProductsPage() {
                         {SORTABLE_STATUSES.map((s) => <option key={s} value={s} className="bg-white text-gray-700">{s}</option>)}
                       </select>
                     </td>
+                    )}
 
-                    {/* 등록일 */}
+                    {/* 등록일 — 컬럼 표시 토글 */}
+                    {visibleCols["등록일"] && (
                     <td className="px-5 py-4 whitespace-nowrap text-[13px] text-gray-400">
                       {fmtDate(p.createdAt)}
                     </td>
+                    )}
 
                     {/* 관리 */}
                     <td className="px-5 py-4">
