@@ -1134,38 +1134,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   className="px-4 py-2 text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">추가</button>
               </div>
             </div>
-
-            <div className="border-t border-gray-100 mt-5 pt-5">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">현장 추천</label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {JOB_SITE_PRESETS.map((site) => (
-                  <button key={site} type="button" onClick={() => toggleArr("jobSites", site)}
-                    className={`px-3 py-1.5 text-xs border transition-colors rounded ${
-                      form.jobSites.includes(site) ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
-                    }`}>
-                    {site}
-                  </button>
-                ))}
-              </div>
-              {form.jobSites.filter((s) => !JOB_SITE_PRESETS.includes(s)).length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {form.jobSites.filter((s) => !JOB_SITE_PRESETS.includes(s)).map((site) => (
-                    <span key={site} className="flex items-center gap-1 px-3 py-1 text-xs bg-[#ff550c] text-white rounded">
-                      {site}
-                      <button type="button" onClick={() => toggleArr("jobSites", site)} className="hover:opacity-70">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input value={form.customJobSite} onChange={(e) => set("customJobSite", e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag("jobSites", "customJobSite"); } }}
-                  placeholder="직접 입력 후 추가 (예: 제조)"
-                  className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
-                <button type="button" onClick={() => addCustomTag("jobSites", "customJobSite")}
-                  className="px-4 py-2 text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">추가</button>
-              </div>
-            </div>
           </section>
 
           {/* ── 4. 메인 노출 ── */}
