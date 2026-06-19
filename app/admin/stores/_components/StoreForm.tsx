@@ -6,9 +6,8 @@ export type StoreFormData = {
   name: string;
   region: string;
   address: string;
-  lat: string;
-  lng: string;
-  hours: string;
+  hoursWeekday: string;
+  hoursWeekend: string;
   phone: string;
   store_type: string;
   description: string;
@@ -21,45 +20,73 @@ export type StoreFormData = {
   image_urls: string[];
 };
 
-const EMPTY: StoreFormData = {
-  name: "", region: "", address: "", lat: "", lng: "",
-  hours: "", phone: "", store_type: "직영점", description: "",
-  brands: "", parking: false, kakao_channel_url: "", store_url: "",
-  is_active: true, sort_order: "0", image_urls: [],
-};
+function parseHours(hours: string): { weekday: string; weekend: string; same: boolean } {
+  if (!hours) return { weekday: "", weekend: "", same: true };
+  if (hours.includes("(평일)") && hours.includes("(주말)")) {
+    const [wdPart, wePart] = hours.split(" / ");
+    const weekday = wdPart.replace(" (평일)", "").trim();
+    const weekend = wePart.replace(" (주말)", "").trim();
+    return { weekday, weekend, same: weekday === weekend };
+  }
+  const clean = hours.replace(/\s*\(.*?\)\s*/g, "").trim();
+  return { weekday: clean, weekend: clean, same: true };
+}
+
+function buildHours(weekday: string, weekend: string, same: boolean): string {
+  const wd = weekday.trim();
+  const we = same ? wd : weekend.trim();
+  if (!wd && !we) return "";
+  if (same || wd === we) return wd ? `${wd} (매일)` : "";
+  return `${wd} (평일) / ${we} (주말)`;
+}
 
 const STORE_TYPES = ["직영점", "대리점", "아울렛", "복합쇼핑몰", "기타"];
+
+type InitialData = Partial<{
+  name: string; region: string; address: string; hours: string; phone: string;
+  store_type: string; description: string; brands: string[] | string;
+  parking: boolean; kakao_channel_url: string; store_url: string;
+  is_active: boolean; sort_order: number | string; image_urls: string[];
+  lat: unknown; lng: unknown;
+}>;
 
 export default function StoreForm({
   storeId,
   initialData,
 }: {
   storeId?: number;
-  initialData?: Partial<StoreFormData & { image_urls: string[]; brands: string[] | string }>;
+  initialData?: InitialData;
 }) {
   const router = useRouter();
   const isEdit = !!storeId;
 
-  const normalize = (d: typeof initialData): StoreFormData => ({
-    name: d?.name ?? "",
-    region: d?.region ?? "",
-    address: d?.address ?? "",
-    lat: d?.lat ?? "",
-    lng: d?.lng ?? "",
-    hours: d?.hours ?? "",
-    phone: d?.phone ?? "",
-    store_type: d?.store_type ?? "직영점",
-    description: d?.description ?? "",
-    brands: Array.isArray(d?.brands) ? d.brands.join(";") : (d?.brands ?? ""),
-    parking: d?.parking ?? false,
-    kakao_channel_url: d?.kakao_channel_url ?? "",
-    store_url: d?.store_url ?? "",
-    is_active: d?.is_active ?? true,
-    sort_order: String(d?.sort_order ?? "0"),
-    image_urls: Array.isArray(d?.image_urls) ? d.image_urls : [],
-  });
+  const normalize = (d: InitialData | undefined): { form: StoreFormData; same: boolean } => {
+    const parsed = parseHours(d?.hours ?? "");
+    return {
+      form: {
+        name: d?.name ?? "",
+        region: d?.region ?? "",
+        address: d?.address ?? "",
+        hoursWeekday: parsed.weekday,
+        hoursWeekend: parsed.weekend,
+        phone: d?.phone ?? "",
+        store_type: d?.store_type ?? "직영점",
+        description: d?.description ?? "",
+        brands: Array.isArray(d?.brands) ? d.brands.join(";") : (d?.brands ?? ""),
+        parking: d?.parking ?? false,
+        kakao_channel_url: d?.kakao_channel_url ?? "",
+        store_url: d?.store_url ?? "",
+        is_active: d?.is_active ?? true,
+        sort_order: String(d?.sort_order ?? "0"),
+        image_urls: Array.isArray(d?.image_urls) ? d.image_urls : [],
+      },
+      same: parsed.same,
+    };
+  };
 
-  const [form, setForm] = useState<StoreFormData>(() => normalize(initialData));
+  const { form: initForm, same: initSame } = normalize(initialData);
+  const [form, setForm] = useState<StoreFormData>(initForm);
+  const [hoursSame, setHoursSame] = useState(initSame);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -68,12 +95,25 @@ export default function StoreForm({
   const set = (k: keyof StoreFormData, v: string | boolean | string[]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
 
+  const handleSameChange = (checked: boolean) => {
+    setHoursSame(checked);
+    if (checked) setForm((prev) => ({ ...prev, hoursWeekend: prev.hoursWeekday }));
+  };
+
+  const handleWeekdayChange = (v: string) => {
+    setForm((prev) => ({
+      ...prev,
+      hoursWeekday: v,
+      hoursWeekend: hoursSame ? v : prev.hoursWeekend,
+    }));
+  };
+
   const uploadImage = async (file: File) => {
     setUploading(true);
     try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
       if (res.ok) {
         const { url } = await res.json();
         setForm((prev) => ({ ...prev, image_urls: [...prev.image_urls, url] }));
@@ -94,10 +134,10 @@ export default function StoreForm({
     if (!form.address.trim()) return setError("주소를 입력하세요.");
     setSaving(true);
     setError("");
+    const { hoursWeekday, hoursWeekend, ...rest } = form;
     const payload = {
-      ...form,
-      lat: form.lat ? Number(form.lat) : null,
-      lng: form.lng ? Number(form.lng) : null,
+      ...rest,
+      hours: buildHours(hoursWeekday, hoursWeekend, hoursSame),
       sort_order: Number(form.sort_order) || 0,
       brands: form.brands.split(";").map((b) => b.trim()).filter(Boolean),
     };
@@ -175,28 +215,6 @@ export default function StoreForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">위도 (lat)</label>
-            <input
-              type="number"
-              step="any"
-              value={form.lat}
-              onChange={(e) => set("lat", e.target.value)}
-              placeholder="37.7834706370167"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">경도 (lng)</label>
-            <input
-              type="number"
-              step="any"
-              value={form.lng}
-              onChange={(e) => set("lng", e.target.value)}
-              placeholder="127.121414777823"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
-            />
-          </div>
-          <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">전화번호</label>
             <input
               type="text"
@@ -206,17 +224,52 @@ export default function StoreForm({
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
             />
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">영업시간</label>
-            <input
-              type="text"
-              value={form.hours}
-              onChange={(e) => set("hours", e.target.value)}
-              placeholder="10:00 - 20:00 (매일)"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
-            />
-          </div>
         </div>
+
+        {/* 영업시간 */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-semibold text-gray-700">영업시간</label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={hoursSame}
+                onChange={(e) => handleSameChange(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+              />
+              <span className="text-sm text-gray-600">평일 · 주말 동일</span>
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-gray-500 mb-1.5 font-medium">평일</p>
+              <input
+                type="text"
+                value={form.hoursWeekday}
+                onChange={(e) => handleWeekdayChange(e.target.value)}
+                placeholder="10:00 - 20:00"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 mb-1.5 font-medium">주말 · 공휴일</p>
+              <input
+                type="text"
+                value={hoursSame ? form.hoursWeekday : form.hoursWeekend}
+                onChange={(e) => set("hoursWeekend", e.target.value)}
+                placeholder="10:00 - 19:00"
+                disabled={hoursSame}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A] disabled:bg-gray-50 disabled:text-gray-400"
+              />
+            </div>
+          </div>
+          {(form.hoursWeekday || (!hoursSame && form.hoursWeekend)) && (
+            <p className="text-xs text-gray-400">
+              저장값: {buildHours(form.hoursWeekday, form.hoursWeekend, hoursSame)}
+            </p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">매장 소개</label>
           <textarea
