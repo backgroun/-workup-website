@@ -1599,7 +1599,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 옵션 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <SectionTitle>옵션</SectionTitle>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-5">
+              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">옵션</h2>
+              <button type="button" onClick={() => { set("sizes", []); set("colors", []); }}
+                disabled={form.sizes.length === 0 && form.colors.length === 0}
+                className="px-3 py-1 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors">
+                옵션 전체 해제
+              </button>
+            </div>
             <div className="mb-5">
               <Field label="기본 사이즈 (의류)" hint="클릭으로 포함/제외 전환. 취소선 = 제외">
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -1619,6 +1626,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <label className="block text-xs font-medium text-gray-500 mb-1">직접 입력 사이즈</label>
                 <p className="text-[11px] text-gray-400 mb-2">신발·악세사리 등 비표준 사이즈 — 예: 240, 245, Free, One Size</p>
+                {/* 빠른 템플릿 — 클릭 시 해당 사이즈 세트로 교체 */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
+                  {SIZE_TEMPLATES.map((t) => (
+                    <button key={t.label} type="button" onClick={() => set("sizes", [...t.sizes])}
+                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="flex gap-2">
                   <input value={form.customSizeInput} onChange={(e) => set("customSizeInput", e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
