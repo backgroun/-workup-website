@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -17,6 +17,12 @@ import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
 import type { CSSProperties } from "react";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "WORKUP — 일하는 사람을 위한 옷",
@@ -62,7 +68,7 @@ export default async function RootLayout({
                 <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
               </>
             )}
-            <div className={isAdmin ? "flex-1" : "relative flex-1 pb-14 md:pb-0"}>
+            <div className={isAdmin ? "flex-1" : "relative flex-1 wu-mobile-content-pad"}>
               {children}
             </div>
             {!isAdmin && <SideBanner />}

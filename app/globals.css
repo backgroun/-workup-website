@@ -124,6 +124,16 @@ html {
   .store-cta:active svg { animation: none; }
 }
 
+/* 모바일 콘텐츠 하단 패딩 — iOS safe area 포함, 데스크탑은 0 */
+.wu-mobile-content-pad {
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .wu-mobile-content-pad {
+    padding-bottom: 0;
+  }
+}
+
 /* 어드민 페이지 타이틀 축소 */
 .admin-content h1 {
   font-size: 1.125rem;
