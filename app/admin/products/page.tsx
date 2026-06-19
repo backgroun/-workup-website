@@ -26,13 +26,6 @@ const STATUS_COLOR: Record<string, string> = {
   진열대기: "bg-amber-100 text-amber-600",
 };
 
-const EXPOSE_COLOR: Record<string, string> = {
-  신상품:  "bg-[#ff550c] text-white",
-  추천상품: "bg-purple-100 text-purple-700",
-  베스트:  "bg-amber-100 text-amber-700",
-  기획전:  "bg-blue-100 text-blue-700",
-};
-
 function getDateCutoff(preset: DatePreset): Date | null {
   const now = new Date();
   switch (preset) {
