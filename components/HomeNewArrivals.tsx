@@ -1,6 +1,9 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/contexts/CartContext";
+import LoginPromptModal from "@/components/LoginPromptModal";
 import { mainCategories, type MainCategory, type Product } from "@/data/products";
 
 export default function HomeNewArrivals() {
@@ -10,6 +13,10 @@ export default function HomeNewArrivals() {
   const [title, setTitle] = useState("신상품이 입고 되었어요");
   const [loading, setLoading] = useState(true);
   const pcRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { hasProduct, toggleProduct } = useCart();
+  const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -21,6 +28,32 @@ export default function HomeNewArrivals() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
+
+  // 회원 로그인 세션 — 찜(카드 하트) 게이팅용
+  useEffect(() => {
+    fetch("/api/member/me")
+      .then((r) => r.json())
+      .then((d) => setMemberSession(d ?? null))
+      .catch(() => setMemberSession(null));
+  }, []);
+
+  // 카드 하트 = 찜(피팅 리스트) 토글. 로그인 필요 — 제품 리스트와 동일 정책.
+  const toggleFav = (p: Product) => {
+    if (!memberSession) {
+      setLoginPromptOpen(true);
+      return;
+    }
+    toggleProduct({
+      productId: p.id,
+      name: p.name,
+      line: p.line,
+      price: p.price,
+      size: "",
+      color: p.colors?.[0]?.name ?? "",
+      colorHex: p.colors?.[0]?.hex ?? "#000",
+      bg: p.bg,
+    });
+  };
 
   const newCategories = new Set(products.filter((p) => p.isNew).map((p) => p.category));
   const availableTabs: (MainCategory | "전체")[] = [
@@ -119,7 +152,7 @@ export default function HomeNewArrivals() {
             {newItems.map((p) => (
               <Link key={p.id} href={`/products/${p.id}`} className="flex-shrink-0 group" style={{ width: "280px" }}>
                 <div
-                  className="flex items-center justify-center overflow-hidden bg-[#f0f0f0]"
+                  className="relative flex items-center justify-center overflow-hidden bg-[#f0f0f0]"
                   style={{ width: "280px", height: "280px" }}
                 >
                   {p.imageUrl ? (
@@ -128,6 +161,19 @@ export default function HomeNewArrivals() {
                   ) : (
                     <span className="text-[#1A2B4A]/10 text-6xl font-black select-none">WU</span>
                   )}
+                  <button
+                    onClick={(e) => { e.preventDefault(); toggleFav(p); }}
+                    className="absolute bottom-2 right-2 w-9 h-9 flex items-center justify-center z-10"
+                    aria-label="찜하기"
+                  >
+                    <svg className="w-7 h-7 transition-colors duration-150"
+                      fill={hasProduct(p.id) ? "#ff550c" : "none"}
+                      stroke={hasProduct(p.id) ? "#ff550c" : "white"}
+                      strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="pt-3">
                   {p.isNew && (
@@ -153,7 +199,7 @@ export default function HomeNewArrivals() {
             {newItems.map((p) => (
               <Link key={p.id} href={`/products/${p.id}`} className="flex-shrink-0 group" style={{ width: "220px" }}>
                 <div
-                  className="flex items-center justify-center overflow-hidden bg-[#f0f0f0]"
+                  className="relative flex items-center justify-center overflow-hidden bg-[#f0f0f0]"
                   style={{ width: "220px", height: "220px" }}
                 >
                   {p.imageUrl ? (
@@ -161,6 +207,19 @@ export default function HomeNewArrivals() {
                   ) : (
                     <span className="text-[#1A2B4A]/10 text-5xl font-black select-none">WU</span>
                   )}
+                  <button
+                    onClick={(e) => { e.preventDefault(); toggleFav(p); }}
+                    className="absolute bottom-2 right-2 w-9 h-9 flex items-center justify-center z-10"
+                    aria-label="찜하기"
+                  >
+                    <svg className="w-7 h-7 transition-colors duration-150"
+                      fill={hasProduct(p.id) ? "#ff550c" : "none"}
+                      stroke={hasProduct(p.id) ? "#ff550c" : "white"}
+                      strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="pt-2.5">
                   {p.isNew && (
@@ -175,6 +234,13 @@ export default function HomeNewArrivals() {
           </div>
         </div>
       </div>
+
+      {/* 비로그인 시 로그인 유도 모달 */}
+      <LoginPromptModal
+        open={loginPromptOpen}
+        onCancel={() => setLoginPromptOpen(false)}
+        onConfirm={() => router.push("/member/login?from=cart")}
+      />
     </section>
   );
 }
