@@ -44,51 +44,53 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
               <div className="space-y-3 mb-8">
                 {items.map((item) => (
                   <div key={item.cartId} className="bg-white border border-gray-200 flex items-center gap-4 px-5 py-4">
-                    {/* 제품 이미지 */}
-                    <div className="w-16 h-16 flex-shrink-0 border border-gray-100 overflow-hidden relative bg-gray-50">
-                      {item.imageUrl ? (
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full"
-                          style={{ backgroundColor: item.colorHex }}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-[#1A2B4A] leading-tight">{item.name}</p>
-                      {item.sku && (
-                        <p className="text-xs text-gray-400 mt-0.5">품번 {item.sku}</p>
-                      )}
-                      {item.allSizes && item.allSizes.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.allSizes.map((s) => (
-                            <span key={s} className="text-[10px] border border-gray-300 text-gray-600 px-1.5 py-0.5 leading-none">
-                              {s}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {item.allColors && item.allColors.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
-                          {item.allColors.map((c) => (
-                            <span key={c.name} className="flex items-center gap-1">
-                              <span
-                                className="w-3 h-3 rounded-full border border-gray-200 flex-shrink-0"
-                                style={{ backgroundColor: c.hex }}
-                              />
-                              <span className="text-[10px] text-gray-500">{c.name}</span>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <Link href={`/products/${item.productId}`} className="flex items-center gap-4 flex-1 min-w-0 group">
+                      {/* 제품 이미지 */}
+                      <div className="w-16 h-16 flex-shrink-0 border border-gray-100 overflow-hidden relative bg-gray-50">
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt={item.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-200"
+                            sizes="64px"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full"
+                            style={{ backgroundColor: item.colorHex }}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[#1A2B4A] leading-tight group-hover:text-[#ff550c] transition-colors">{item.name}</p>
+                        {item.sku && (
+                          <p className="text-xs text-gray-400 mt-0.5">품번 {item.sku}</p>
+                        )}
+                        {item.allSizes && item.allSizes.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.allSizes.map((s) => (
+                              <span key={s} className="text-[10px] border border-gray-300 text-gray-600 px-1.5 py-0.5 leading-none">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {item.allColors && item.allColors.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
+                            {item.allColors.map((c) => (
+                              <span key={c.name} className="flex items-center gap-1">
+                                <span
+                                  className="w-3 h-3 rounded-full border border-gray-200 flex-shrink-0"
+                                  style={{ backgroundColor: c.hex }}
+                                />
+                                <span className="text-[10px] text-gray-500">{c.name}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                     <div className="text-right flex-shrink-0">
                       <p className="text-sm font-bold text-[#1A2B4A] mb-2">{item.price}</p>
                       <button
