@@ -124,12 +124,10 @@ export default function BottomNav({
       </div>
 
       {/* 하단 네비게이션 바 — fixed 제거, body flex 자식으로 항상 화면 하단 고정 */}
+      {/* safe-area는 아래 별도 div로 처리 → 아이콘/텍스트가 nav 내 중앙 배치, 빈 gap 없음 */}
       <nav
         className="bg-white border-t border-gray-200 md:hidden flex-shrink-0"
-        style={{
-          height: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
+        style={{ height: "3.5rem" }}
       >
         <div className="flex items-stretch" style={{ height: "calc(3.5rem - 1px)" }}>
 
@@ -187,6 +185,12 @@ export default function BottomNav({
 
         </div>
       </nav>
+      {/* iPhone Face ID safe-area fill — iOS 홈 인디케이터 영역을 nav와 같은 흰 배경으로 채움 */}
+      <div
+        className="md:hidden flex-shrink-0 bg-white"
+        style={{ height: "env(safe-area-inset-bottom, 0px)" }}
+        aria-hidden="true"
+      />
     </>
   );
 }
