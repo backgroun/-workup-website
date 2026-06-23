@@ -44,7 +44,9 @@ export default function AdminStudioPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ text: "", ok: true });
   const [uploadingDesign, setUploadingDesign] = useState(false);
+  const [uploadingShirt, setUploadingShirt] = useState(false);
   const designFileRef = useRef<HTMLInputElement>(null);
+  const shirtFileRef = useRef<HTMLInputElement>(null);
 
   // ── 로드 ──
   useEffect(() => {

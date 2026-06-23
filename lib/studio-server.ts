@@ -11,6 +11,7 @@ export type StudioSettings = {
   enabled: boolean;
   heading: string;
   subheading: string;
+  shirtImageUrl: string;   // 관리자가 올린 커스텀 티셔츠 배경 이미지 (없으면 SVG 사용)
   defaultColor: string;
   enabledColors: string[]; // 빈 배열 = 전체 활성
   designs: DesignAsset[];  // 관리자가 올린 프리셋 디자인 소스
@@ -20,6 +21,7 @@ export const DEFAULT_STUDIO_SETTINGS: StudioSettings = {
   enabled: true,
   heading: "나만의 티셔츠 꾸미기",
   subheading: "사진·이미지를 올리고 텍스트를 더해 디자인하고, 매장에서 제작 상담받아 보세요.",
+  shirtImageUrl: "",
   defaultColor: "teal",
   enabledColors: [],
   designs: [],
@@ -40,6 +42,7 @@ export const getStudioSettings = unstable_cache(
         enabled: typeof raw.enabled === "boolean" ? raw.enabled : DEFAULT_STUDIO_SETTINGS.enabled,
         heading: typeof raw.heading === "string" && raw.heading ? raw.heading : DEFAULT_STUDIO_SETTINGS.heading,
         subheading: typeof raw.subheading === "string" ? raw.subheading : DEFAULT_STUDIO_SETTINGS.subheading,
+        shirtImageUrl: typeof raw.shirtImageUrl === "string" ? raw.shirtImageUrl : DEFAULT_STUDIO_SETTINGS.shirtImageUrl,
         defaultColor:
           typeof raw.defaultColor === "string" && raw.defaultColor
             ? raw.defaultColor
