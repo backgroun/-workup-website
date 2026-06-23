@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase-server";
+import DirectionButtons from "./_components/DirectionButtons";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -267,32 +268,12 @@ export default async function StoreDetailPage({ params }: Props) {
 
         {/* CTA 섹션 */}
         <div className="px-5 py-6 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <a
-              href={kakaoMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-4 bg-[#1A2B4A] text-white font-bold text-base rounded-xl hover:bg-[#243a63] transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              카카오맵
-            </a>
-            <a
-              href={naverMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-4 bg-[#03C75A] text-white font-bold text-base rounded-xl hover:bg-[#02b350] transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              네이버맵
-            </a>
-          </div>
+          <DirectionButtons
+            name={store.name}
+            address={store.address}
+            lat={store.lat}
+            lng={store.lng}
+          />
           {store.phone && (
             <a
               href={`tel:${store.phone}`}

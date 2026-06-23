@@ -76,6 +76,55 @@ function KakaoDirBtn({ store, userCoords: passedCoords }: {
   );
 }
 
+// 네이버맵 길찾기 버튼 — 출발지를 내 위치로 자동 설정 (네이버는 경도,위도 순서)
+function NaverDirBtn({ store, userCoords: passedCoords }: {
+  store: Store;
+  userCoords?: { lat: number; lng: number } | null;
+}) {
+  const [coords, setCoords] = useState(passedCoords ?? null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => { setCoords(passedCoords ?? null); }, [passedCoords]);
+
+  const openNaver = (c: { lat: number; lng: number } | null) => {
+    const goal = `${store.lng},${store.lat},${encodeURIComponent(store.name)}`;
+    const url = c
+      ? `https://map.naver.com/p/directions/${c.lng},${c.lat},${encodeURIComponent("내 위치")}/${goal}/-/car`
+      : `https://map.naver.com/p/directions/-/${goal}/-/car`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleClick = () => {
+    if (coords) { openNaver(coords); return; }
+    if (!navigator.geolocation) { openNaver(null); return; }
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(c);
+        setLoading(false);
+        openNaver(c);
+      },
+      () => { setLoading(false); openNaver(null); },
+      { timeout: 5000, maximumAge: 30000, enableHighAccuracy: true }
+    );
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="flex items-center gap-1.5 bg-[#03C75A] text-white text-xs px-3 py-2 hover:bg-[#02b350] transition-colors disabled:opacity-60"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+      </svg>
+      {loading ? "위치 확인 중..." : "네이버맵 길찾기"}
+    </button>
+  );
+}
+
 export default function StoreLocator({ id }: { id?: string }) {
   const [locStatus, setLocStatus] = useState<LocStatus>("idle");
   const [locError, setLocError] = useState("");
@@ -569,6 +618,9 @@ export default function StoreLocator({ id }: { id?: string }) {
 
                         {/* 카카오맵 길찾기 */}
                         <KakaoDirBtn store={store} userCoords={userCoords} />
+
+                        {/* 네이버맵 길찾기 */}
+                        <NaverDirBtn store={store} userCoords={userCoords} />
                       </div>
                     </div>
                   )}
