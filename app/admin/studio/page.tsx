@@ -58,6 +58,7 @@ export default function AdminStudioPage() {
             enabled: data.enabled ?? true,
             heading: data.heading ?? DEFAULT.heading,
             subheading: data.subheading ?? DEFAULT.subheading,
+            shirtImageUrl: data.shirtImageUrl ?? "",
             defaultColor: data.defaultColor ?? "teal",
             enabledColors: Array.isArray(data.enabledColors) ? data.enabledColors : [],
             designs: Array.isArray(data.designs) ? data.designs : [],
@@ -101,6 +102,22 @@ export default function AdminStudioPage() {
   };
   const isColorEnabled = (id: string) =>
     settings.enabledColors.length === 0 || settings.enabledColors.includes(id);
+
+  // ── 티셔츠 배경 이미지 업로드 ──
+  const handleShirtUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) return flash("이미지 파일만 업로드할 수 있어요.", false);
+    setUploadingShirt(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      if (!res.ok) return flash("업로드에 실패했습니다.", false);
+      const { url } = await res.json();
+      setSettings((p) => ({ ...p, shirtImageUrl: url }));
+    } finally {
+      setUploadingShirt(false);
+    }
+  };
 
   // ── 디자인 업로드 ──
   const handleDesignUpload = async (file: File) => {
