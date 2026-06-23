@@ -319,7 +319,7 @@ export default function FeatureHeroLayout({
     <>
       {/* ── PC 레이아웃 (xl+) ── */}
       <div
-        className="hidden xl:flex bg-white"
+        className="hidden xl:flex xl:items-start bg-white"
         style={reversed ? { position: "relative", zIndex: 1 } : undefined}
       >
         {reversed ? (
