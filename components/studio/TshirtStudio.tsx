@@ -519,30 +519,41 @@ export default function TshirtStudio({
             className="relative mx-auto w-full max-w-[440px] overflow-hidden rounded-xl bg-[#f3f3f4] ring-1 ring-gray-200"
             style={{ aspectRatio: `1 / ${STAGE_RATIO}` }}
           >
-            <div className="pointer-events-none absolute inset-0" dangerouslySetInnerHTML={{ __html: shirtSvg(shirt.value) }} />
+            {shirtImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={shirtImageUrl}
+                alt="티셔츠"
+                className="pointer-events-none absolute inset-0 w-full h-full object-contain"
+              />
+            ) : (
+              <div className="pointer-events-none absolute inset-0" dangerouslySetInnerHTML={{ __html: shirtSvg(shirt.value) }} />
+            )}
             <div className="pointer-events-none absolute rounded-md border border-dashed border-black/15" style={{ left: "30%", top: "28%", width: "40%", height: "34%" }} aria-hidden />
             {stageW > 0 && layers.map((l) => renderLayer(l, stageW))}
           </div>
 
-          {/* 셔츠 색상 */}
-          <div className="mt-4">
-            <p className="mb-2 text-center text-xs font-semibold text-gray-500">
-              색상 — <span className="text-[#1A2B4A]">{shirt.label}</span>
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {availableColors.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setShirtId(c.id)}
-                  className={`h-8 w-8 rounded-full ring-1 transition ${shirtId === c.id ? "ring-2 ring-[#ff550c] ring-offset-2" : "ring-gray-300"}`}
-                  style={{ backgroundColor: c.value }}
-                  aria-label={c.label}
-                  aria-pressed={shirtId === c.id}
-                />
-              ))}
+          {/* 셔츠 색상 — 커스텀 이미지 설정 시 숨김 */}
+          {!shirtImageUrl && (
+            <div className="mt-4">
+              <p className="mb-2 text-center text-xs font-semibold text-gray-500">
+                색상 — <span className="text-[#1A2B4A]">{shirt.label}</span>
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {availableColors.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setShirtId(c.id)}
+                    className={`h-8 w-8 rounded-full ring-1 transition ${shirtId === c.id ? "ring-2 ring-[#ff550c] ring-offset-2" : "ring-gray-300"}`}
+                    style={{ backgroundColor: c.value }}
+                    aria-label={c.label}
+                    aria-pressed={shirtId === c.id}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* 컨트롤 패널 */}

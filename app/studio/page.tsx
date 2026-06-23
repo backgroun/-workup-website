@@ -21,6 +21,7 @@ export default async function StudioPage() {
       kakaoUrl={footer.kakao_url}
       heading={studio.heading}
       subheading={studio.subheading}
+      shirtImageUrl={studio.shirtImageUrl}
       defaultColor={studio.defaultColor}
       enabledColors={studio.enabledColors}
       designs={studio.designs}
