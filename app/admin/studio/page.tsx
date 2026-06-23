@@ -9,6 +9,7 @@ const DEFAULT: StudioSettings = {
   enabled: true,
   heading: "나만의 티셔츠 꾸미기",
   subheading: "사진·이미지를 올리고 텍스트를 더해 디자인하고, 매장에서 제작 상담받아 보세요.",
+  shirtImageUrl: "",
   defaultColor: "teal",
   enabledColors: [],
   designs: [],
