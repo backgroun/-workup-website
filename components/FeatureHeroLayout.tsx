@@ -182,6 +182,26 @@ export default function FeatureHeroLayout({
   const [hoveredTag, setHoveredTag] = useState<number | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  // PC 히어로(고정 패널) 높이 — 콘텐츠가 짧을 때 100vh가 섹션을 늘려 생기는 하단 공백을 방지.
+  // 히어로 높이를 min(뷰포트, 콘텐츠 자연높이)로 맞춰 콘텐츠가 길면 100vh 고정·스크롤,
+  // 짧으면 콘텐츠 높이에 맞춰 공백이 생기지 않게 한다.
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [heroHeight, setHeroHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const update = () => setHeroHeight(Math.min(window.innerHeight, el.offsetHeight));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
   useEffect(() => {
     if (sheetOpen) {
       document.body.style.overflow = "hidden";
@@ -197,13 +217,10 @@ export default function FeatureHeroLayout({
   const imgPos = editorial.heroImagePosition ?? "50% 0%";
   const heroPanel = (
     <div
-      className="relative"
-      style={{ flex: "0 0 49.947%", minWidth: 0 }}
+      className="sticky top-0 self-start overflow-hidden bg-gray-100"
+      style={{ flex: "0 0 49.947%", minWidth: 0, height: heroHeight ? `${heroHeight}px` : "100vh" }}
     >
-      <div
-        className="sticky top-0 overflow-hidden bg-gray-100"
-        style={{ height: "100vh" }}
-      >
+      <>
         {editorial.heroImageUrl && (
           <img
             src={editorial.heroImageUrl}
