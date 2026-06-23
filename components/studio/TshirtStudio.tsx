@@ -58,6 +58,7 @@ export default function TshirtStudio({
   kakaoUrl,
   heading,
   subheading,
+  shirtImageUrl,
   defaultColor,
   enabledColors = [],
   designs = [],
@@ -65,6 +66,7 @@ export default function TshirtStudio({
   kakaoUrl: string;
   heading?: string;
   subheading?: string;
+  shirtImageUrl?: string;
   defaultColor?: string;
   enabledColors?: string[];
   designs?: DesignAsset[];
@@ -74,6 +76,8 @@ export default function TshirtStudio({
   const [shirtId, setShirtId] = useState<string>(defaultColor ?? DEFAULT_SHIRT_ID);
   const [tab, setTab] = useState<"design" | "image" | "text">(designs.length > 0 ? "design" : "image");
   const [loadingDesign, setLoadingDesign] = useState<string | null>(null);
+  // 커스텀 셔츠 이미지를 data URL로 변환해두면 캔버스에서 CORS 없이 사용 가능
+  const [shirtDataUrl, setShirtDataUrl] = useState<string | null>(null);
   const [showStores, setShowStores] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -95,6 +99,29 @@ export default function TshirtStudio({
     const t = setTimeout(() => setNotice(null), 3200);
     return () => clearTimeout(t);
   }, [notice]);
+
+  // 커스텀 셔츠 이미지 → data URL 변환 (canvas export에 사용)
+  useEffect(() => {
+    if (!shirtImageUrl) {
+      setShirtDataUrl(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(shirtImageUrl)
+      .then((r) => r.blob())
+      .then(
+        (blob) =>
+          new Promise<string>((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(String(reader.result));
+            reader.onerror = rej;
+            reader.readAsDataURL(blob);
+          })
+      )
+      .then((url) => { if (!cancelled) setShirtDataUrl(url); })
+      .catch(() => { if (!cancelled) setShirtDataUrl(null); });
+    return () => { cancelled = true; };
+  }, [shirtImageUrl]);
 
   // 스테이지 가로폭 측정(레이어 px 계산용)
   useEffect(() => {
@@ -302,8 +329,11 @@ export default function TshirtStudio({
         /* noop */
       }
     }
-    // 셔츠
-    const shirtImg = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(shirtSvg(shirt.value, EXPORT_W, EXPORT_H))}`);
+    // 셔츠 — 커스텀 이미지 우선, 없으면 SVG
+    const shirtSrc = shirtDataUrl
+      ? shirtDataUrl
+      : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(shirtSvg(shirt.value, EXPORT_W, EXPORT_H))}`;
+    const shirtImg = await loadImage(shirtSrc);
     ctx.drawImage(shirtImg, 0, 0, EXPORT_W, EXPORT_H);
     // 이미지 레이어 미리 로드
     const imgs = new Map<string, HTMLImageElement>();
