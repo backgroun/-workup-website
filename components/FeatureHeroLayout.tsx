@@ -275,13 +275,14 @@ export default function FeatureHeroLayout({
           <p className="text-sm mb-2 opacity-80 tracking-wide">{editorial.heroSubtitle}</p>
           <h1 className="text-3xl font-bold leading-tight">{editorial.title}</h1>
         </div>
-      </div>
+      </>
     </div>
   );
 
   // ── 콘텐츠 패널 (우측 4카드) ────────────────────────────────
   const contentPanel = (
     <div
+      ref={contentRef}
       style={{
         flex: "0 0 50.053%",
         minWidth: 0,
