@@ -1191,21 +1191,6 @@ function BannerEditor({ banner, label, onChange, products }: {
         </div>
       </div>
 
-      {/* AI 이미지 프롬프트 빌더 */}
-      <PromptBuilder
-        buildFn={(shotType, clothingType, season, extras, scene) =>
-          buildBannerPrompt(banner.title, banner.desc, shotType, clothingType, season, extras, scene, banner.image_url || undefined)
-        }
-        buildShowcaseFn={(mode, repIndex, clothingType, season, extras, scene) =>
-          buildShowcasePrompt(banner.title, banner.desc, items3, mode, repIndex, clothingType, season, extras, scene)
-        }
-        enableShowcase
-        items={items3}
-        sizeLabel="440 × 495px"
-        ratioLabel="8 : 9"
-        refImageUrl={banner.image_url || undefined}
-      />
-
       {/* 섹션 이미지 + 연결상품 탭 — 한 줄 배치 */}
       <div className="flex gap-4 items-start">
         {/* 좌: 섹션 이미지 — 8:9 비율 (440×495px 실제 노출 비율) */}
@@ -1218,6 +1203,9 @@ function BannerEditor({ banner, label, onChange, products }: {
             compact
             aspectRatio="8/9"
           />
+          <p className="mt-2 text-[11px] text-gray-500 leading-relaxed">
+            이미지 배치 후 ChatGPT로 기획 이미지 생성
+          </p>
         </div>
 
         {/* 우: 연결상품 3개 탭 */}
