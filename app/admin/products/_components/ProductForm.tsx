@@ -911,17 +911,28 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </Field>
               </div>
 
-              {/* 한줄 소개 */}
-              <Field label="한줄 소개 (tagline)" required>
-                <input required value={form.tagline} onChange={(e) => set("tagline", e.target.value)}
-                  className={INPUT_CLS} placeholder="예: 하루 종일 쪼그려 앉아도 안 당깁니다." />
-              </Field>
-
-              {/* 주요 특징 */}
-              <Field label="주요 특징 (한 줄에 하나씩)">
-                <textarea value={form.features} onChange={(e) => set("features", e.target.value)}
-                  rows={4} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
-                  placeholder={"11개 포켓\n무릎 이중 보강\n스트레치율 35%"} />
+              {/* 주요 특징 — 최대 3가지 (한 줄에 하나) */}
+              <Field label="주요 특징 (최대 3가지)">
+                <div className="space-y-2">
+                  {[0, 1, 2].map((i) => {
+                    const lines = form.features.split("\n");
+                    const ph = ["11개 포켓", "무릎 이중 보강", "스트레치율 35%"];
+                    return (
+                      <input
+                        key={i}
+                        value={lines[i] ?? ""}
+                        onChange={(e) => {
+                          const next = form.features.split("\n");
+                          while (next.length < 3) next.push("");
+                          next[i] = e.target.value;
+                          set("features", next.slice(0, 3).join("\n"));
+                        }}
+                        className={INPUT_CLS}
+                        placeholder={`특징 ${i + 1} — 예: ${ph[i]}`}
+                      />
+                    );
+                  })}
+                </div>
               </Field>
 
               {/* 필드테스트 인증 — 기본 접힘 */}
