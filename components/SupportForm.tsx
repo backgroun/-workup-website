@@ -78,20 +78,20 @@ export default function SupportForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-gray-500 mb-1.5">이름<span className="text-[#ff550c] ml-0.5">*</span></label>
-          <input type="text" required placeholder="홍길동" value={form.name}
+          <label htmlFor="support-name" className="block text-xs text-gray-500 mb-1.5">이름<span className="text-[#ff550c] ml-0.5">*</span></label>
+          <input id="support-name" type="text" required placeholder="홍길동" value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={cls} />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1.5">연락처<span className="text-[#ff550c] ml-0.5">*</span></label>
-          <input type="tel" required placeholder="010-0000-0000" value={form.phone}
+          <label htmlFor="support-phone" className="block text-xs text-gray-500 mb-1.5">연락처<span className="text-[#ff550c] ml-0.5">*</span></label>
+          <input id="support-phone" type="tel" required placeholder="010-0000-0000" value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className={cls} />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs text-gray-500 mb-1.5">문의 내용<span className="text-[#ff550c] ml-0.5">*</span></label>
-        <textarea required rows={5} placeholder="궁금하신 내용을 자유롭게 적어주세요."
+        <label htmlFor="support-message" className="block text-xs text-gray-500 mb-1.5">문의 내용<span className="text-[#ff550c] ml-0.5">*</span></label>
+        <textarea id="support-message" required rows={5} placeholder="궁금하신 내용을 자유롭게 적어주세요."
           value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
           className={cls + " resize-none"} />
       </div>
