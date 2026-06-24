@@ -88,17 +88,31 @@ export default function AdminInquiriesPage() {
   useEffect(() => { loadInquiries(); }, []);
 
   const changeStatus = async (id: string, status: InquiryStatus) => {
+    const snapshot = inquiries;   // 실패 시 되돌릴 스냅샷
     setInquiries(prev => prev.map(q => q.id === id ? { ...q, status } : q));
-    await fetch(`/api/admin/inquiries/${id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
-    });
+    try {
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setInquiries(snapshot);
+      flash("상태 변경에 실패했습니다.");
+    }
   };
 
   const deleteInquiry = async (id: string) => {
     if (!confirm("이 문의를 삭제할까요?")) return;
+    const snapshot = inquiries;   // 실패 시 되돌릴 스냅샷
     setInquiries(prev => prev.filter(q => q.id !== id));
-    await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" });
-    flash("삭제됐습니다.");
+    try {
+      const res = await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      flash("삭제됐습니다.");
+    } catch {
+      setInquiries(snapshot);
+      flash("삭제에 실패했습니다.");
+    }
   };
 
   const filtered = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);

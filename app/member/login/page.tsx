@@ -21,18 +21,23 @@ function LoginContent() {
       setError("이메일과 비밀번호를 입력해주세요."); return;
     }
     setSaving(true);
-    const res = await fetch("/api/member/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: form.email.trim(), password: form.password }),
-    });
-    setSaving(false);
-    if (res.ok) {
-      router.push(from === "cart" ? "/cart" : "/mypage");
-      router.refresh();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "로그인에 실패했습니다.");
+    try {
+      const res = await fetch("/api/member/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email.trim(), password: form.password }),
+      });
+      if (res.ok) {
+        router.push(from === "cart" ? "/cart" : "/mypage");
+        router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "로그인에 실패했습니다.");
+      }
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSaving(false);
     }
   };
 
