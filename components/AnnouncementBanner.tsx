@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Fragment, type ReactNode, type CSSProperties } from "react";
-import { Oxanium } from "next/font/google";
 import TopbarIcon from "./TopbarIcon";
 import { DEFAULT_TOPBAR, safeHref, normalizeTopbar, type TopbarConfig } from "@/lib/topbar";
 
-const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+const OXANIUM: CSSProperties = { fontFamily: "'Oxanium', sans-serif" };
 
 function SmartLink({ href, newTab, className, style, children }: {
   href: string; newTab?: boolean; className?: string; style?: CSSProperties; children: ReactNode;
@@ -58,7 +57,7 @@ export default function AnnouncementBanner({ config: serverConfig }: { config?: 
   const leftInner = (
     <>
       {c.left_icon !== "none" && <TopbarIcon name={c.left_icon} style={{ width: iconPx, height: iconPx }} className="flex-shrink-0" />}
-      <span className={`${oxanium.className} whitespace-nowrap`} style={textStyle}>
+      <span className="whitespace-nowrap" style={{ ...OXANIUM, ...textStyle }}>
         {c.left_text}
       </span>
     </>
