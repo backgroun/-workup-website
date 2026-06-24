@@ -236,6 +236,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // AI 이미지 프롬프트
   const [aiPrompt, setAiPrompt] = useState("");
   const [showAiPrompt, setShowAiPrompt] = useState(false);
+  const [promptPanelOpen, setPromptPanelOpen] = useState(false); // AI 이미지 생성 프롬프트 — 기본 접힘
   const [promptCopied, setPromptCopied] = useState(false);
   const [promptType, setPromptType] = useState<PromptTypeKey>("대표반신컷");
   const [promptClothingType, setPromptClothingType] = useState<"작업복" | "일상복">("작업복");
@@ -1401,9 +1402,19 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
             {/* ── AI 이미지 생성 프롬프트 ── */}
             <div className="mt-5 pt-5 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-700 mb-0.5">AI 이미지 생성 프롬프트</p>
-              <p className="text-[11px] text-gray-400 mb-3">이미지 유형 선택 후 생성 — Midjourney · DALL·E 3 · Firefly 등에 붙여넣기</p>
+              <button type="button" onClick={() => setPromptPanelOpen((v) => !v)}
+                className="w-full flex items-center justify-between gap-2 text-left">
+                <span className="min-w-0">
+                  <span className="block text-xs font-semibold text-gray-700">AI 이미지 생성 프롬프트</span>
+                  <span className="block text-[11px] text-gray-400">이미지 유형 선택 후 생성 — Midjourney · DALL·E 3 · Firefly 등에 붙여넣기</span>
+                </span>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${promptPanelOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
+              {promptPanelOpen && (
+              <div className="mt-3">
               {/* 이미지 유형 선택 */}
               <div className="grid grid-cols-3 gap-1.5 mb-3">
                 {PROMPT_TYPES.map((pt) => {
