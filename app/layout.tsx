@@ -6,7 +6,6 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import SideBanner from "@/components/SideBanner";
 import BottomNav from "@/components/BottomNav";
 import { CartProvider } from "@/contexts/CartContext";
-import { WishlistProvider } from "@/contexts/WishlistContext";
 import PixelManager from "@/components/PixelManager";
 import { getTopbarConfig } from "@/lib/topbar-server";
 import { getFooterConfig } from "@/lib/footer-server";
@@ -61,7 +60,6 @@ export default async function RootLayout({
         <ScrollToTop />
         {!isAdmin && <PixelManager />}
         <CartProvider>
-          <WishlistProvider>
             {/*
               #scroll-root: 모바일에서 body 대신 이 컨테이너가 스크롤.
               globals.css의 @media (max-width:767px)에서 html/body를 overflow:hidden으로 고정하고
@@ -86,7 +84,6 @@ export default async function RootLayout({
               {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
             </div>
             {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} studioEnabled={studio?.enabled ?? true} />}
-          </WishlistProvider>
         </CartProvider>
       </body>
     </html>
