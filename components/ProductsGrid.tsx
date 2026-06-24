@@ -600,7 +600,6 @@ export default function ProductsGrid() {
 
                   {/* 필터 드롭다운 + 상품 수 */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <FilterDropdown label="시즌" options={SEASONS} selected={selectedSeasons} onToggle={toggleSeason} activeCount={selectedSeasons.length} />
                     <FilterDropdown label="사이즈" options={SIZES} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
                     <FilterDropdown label="가격" options={PRICE_RANGES} selected={selectedPrices} onToggle={togglePrice} activeCount={selectedPrices.length} />
                     {(selectedSeasons.length + selectedSizes.length + selectedPrices.length) > 0 && (
