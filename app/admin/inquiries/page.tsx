@@ -9,7 +9,7 @@ import { DEFAULT_NOTIFICATIONS, normalizeNotifications, type NotificationConfig 
 const FIELD_LABELS: Record<string, string> = {
   name: "이름", phone: "연락처", region: "창업 희망 지역", message: "문의 내용",
   brand: "브랜드명", manager: "담당자명", category: "취급 품목", link: "브랜드 링크",
-  subject: "문의 구분",
+  subject: "문의 구분", privacyAgree: "개인정보 동의",
 };
 
 // 문의 유형 라벨/배지 (가맹·입점 + 고객 1:1)
