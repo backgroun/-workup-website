@@ -43,7 +43,7 @@ export default function BottomNav({
       <div
         className="fixed left-0 right-0 z-[59] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out md:hidden"
         style={{
-          bottom: "calc(64px + env(safe-area-inset-bottom, 0px))",
+          bottom: "64px",
           transform: menuOpen ? "translateY(0)" : "translateY(110%)",
         }}
         aria-modal="true"
@@ -183,12 +183,6 @@ export default function BottomNav({
 
         </div>
       </nav>
-      {/* iPhone Face ID safe-area fill — iOS 홈 인디케이터 영역을 nav와 같은 흰 배경으로 채움 */}
-      <div
-        className="md:hidden flex-shrink-0 bg-white"
-        style={{ height: "env(safe-area-inset-bottom, 0px)" }}
-        aria-hidden="true"
-      />
     </>
   );
 }
