@@ -34,11 +34,12 @@ function Field({
   const cls = "w-full border border-gray-200 px-4 py-2.5 text-sm text-[#1A2B4A] placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white";
   return (
     <div>
-      <label className="block text-xs text-gray-500 mb-1.5">
+      <label htmlFor={`pf-${name}`} className="block text-xs text-gray-500 mb-1.5">
         {label}{required && <span className="text-[#ff550c] ml-0.5">*</span>}
       </label>
       {type === "textarea" ? (
         <textarea
+          id={`pf-${name}`}
           name={name}
           rows={4}
           required={required}
@@ -49,6 +50,7 @@ function Field({
         />
       ) : (
         <input
+          id={`pf-${name}`}
           type={type}
           name={name}
           required={required}

@@ -109,10 +109,11 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              <label htmlFor="reg-name" className="block text-xs font-semibold text-gray-600 mb-1.5">
                 이름 <span className="text-red-500">*</span>
               </label>
               <input
+                id="reg-name"
                 type="text" value={form.name} onChange={e => set("name", e.target.value)}
                 placeholder="홍길동"
                 autoComplete="name"
@@ -120,8 +121,9 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">전화번호</label>
+              <label htmlFor="reg-phone" className="block text-xs font-semibold text-gray-600 mb-1.5">전화번호</label>
               <input
+                id="reg-phone"
                 type="tel" value={form.phone}
                 onChange={e => set("phone", formatPhone(e.target.value))}
                 placeholder="010-0000-0000"
@@ -133,10 +135,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="reg-email" className="block text-xs font-semibold text-gray-600 mb-1.5">
               이메일 <span className="text-red-500">*</span>
             </label>
             <input
+              id="reg-email"
               type="email" value={form.email} onChange={e => set("email", e.target.value)}
               placeholder="example@email.com"
               inputMode="email"

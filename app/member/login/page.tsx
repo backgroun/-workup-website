@@ -79,10 +79,11 @@ function LoginContent() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="login-email" className="block text-xs font-semibold text-gray-600 mb-1.5">
               이메일 <span className="text-red-500">*</span>
             </label>
             <input
+              id="login-email"
               type="email" value={form.email} onChange={e => set("email", e.target.value)}
               placeholder="example@email.com"
               inputMode="email" autoComplete="email" autoCapitalize="none"
@@ -91,10 +92,11 @@ function LoginContent() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="login-password" className="block text-xs font-semibold text-gray-600 mb-1.5">
               비밀번호 <span className="text-red-500">*</span>
             </label>
             <input
+              id="login-password"
               type="password" value={form.password} onChange={e => set("password", e.target.value)}
               placeholder="비밀번호 입력"
               autoComplete="current-password"
