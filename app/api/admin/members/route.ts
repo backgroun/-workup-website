@@ -8,6 +8,7 @@ async function checkAuth() {
 }
 
 export async function GET(req: Request) {
+  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { searchParams } = new URL(req.url);
   const status    = searchParams.get("status");
   const search    = searchParams.get("search");
