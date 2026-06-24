@@ -377,7 +377,7 @@ export default function ProductsGrid() {
 
           <h1 className="text-[16px] font-bold text-[#1A2B4A] tracking-tight">{currentTitle}</h1>
 
-          <Link href="/cart" className="relative p-1 text-[#1A2B4A]" aria-label="장바구니">
+          <Link href="/cart" className="relative p-1 text-[#1A2B4A]" aria-label="찜 목록">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                 d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" />
