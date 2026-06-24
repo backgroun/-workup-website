@@ -169,11 +169,11 @@ const SELECT_CLS = `${INPUT_CLS} bg-white`;
 
 function SaveBar({ saving, isEdit, onCancel, status, onStatusChange }: {
   saving: boolean; isEdit?: boolean; onCancel: () => void;
-  status: (typeof STATUS_OPTIONS)[number]; onStatusChange: (s: (typeof STATUS_OPTIONS)[number]) => void;
+  status: string; onStatusChange: (s: string) => void;
 }) {
   return (
     <div className="flex items-center gap-3">
-      <select value={status} onChange={(e) => onStatusChange(e.target.value as (typeof STATUS_OPTIONS)[number])}
+      <select value={status} onChange={(e) => onStatusChange(e.target.value)}
         title="판매 상태"
         className="border border-gray-200 px-3 py-2.5 text-sm bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
         {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
