@@ -26,16 +26,6 @@ const COLOR_PRESETS = [
   { name: "그레이", hex: "#7A7A7A" },
   { name: "베이지", hex: "#C9B99A" },
   { name: "카키",   hex: "#4A5240" },
-  { name: "올리브", hex: "#556B2F" },
-  { name: "브라운", hex: "#6B4226" },
-  { name: "레드",   hex: "#CC2020" },
-  { name: "블루",   hex: "#1E6FCC" },
-  { name: "그린",   hex: "#2D7A3A" },
-  { name: "오렌지", hex: "#E05A10" },
-  { name: "옐로우", hex: "#D4AA00" },
-  { name: "퍼플",   hex: "#6B3FA0" },
-  { name: "핑크",   hex: "#CC4080" },
-  { name: "민트",   hex: "#40A08A" },
 ];
 const DEFAULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
 
@@ -177,9 +167,17 @@ function Field({ label, required, hint, children }: {
 const INPUT_CLS = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded";
 const SELECT_CLS = `${INPUT_CLS} bg-white`;
 
-function SaveBar({ saving, isEdit, onCancel }: { saving: boolean; isEdit?: boolean; onCancel: () => void }) {
+function SaveBar({ saving, isEdit, onCancel, status, onStatusChange }: {
+  saving: boolean; isEdit?: boolean; onCancel: () => void;
+  status: (typeof STATUS_OPTIONS)[number]; onStatusChange: (s: (typeof STATUS_OPTIONS)[number]) => void;
+}) {
   return (
-    <div className="flex gap-3">
+    <div className="flex items-center gap-3">
+      <select value={status} onChange={(e) => onStatusChange(e.target.value as (typeof STATUS_OPTIONS)[number])}
+        title="판매 상태"
+        className="border border-gray-200 px-3 py-2.5 text-sm bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+        {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+      </select>
       <button type="submit" disabled={saving}
         className="px-8 py-2.5 bg-[#ff550c] text-white text-sm font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded">
         {saving ? "저장 중..." : isEdit ? "수정 완료" : "제품 추가"}
