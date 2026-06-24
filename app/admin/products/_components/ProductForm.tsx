@@ -791,8 +791,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       detailBlocks: form.detailBlocks as DetailBlock[],
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
       featureTags: form.featureTags,
-      jobTypes: [],
+      jobTypes: initial?.jobTypes ?? [],   // 폼에서 편집하지 않는 필드는 기존 값 보존 (덮어쓰기로 인한 손실 방지)
       jobSites: form.jobSites,
+      wearerQuote: initial?.wearerQuote,   // 착용자 후기도 폼 밖 필드 — 보존
       mainExpose: form.mainExpose as MainExpose[],
       isNew: form.mainExpose.includes("신상품"),
       fieldTest: form.fieldTest || undefined,
@@ -805,19 +806,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     };
 
     const url = isEdit ? `/api/admin/products/${initial!.id}` : "/api/admin/products";
-    const res = await fetch(url, {
-      method: isEdit ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    setSaving(false);
-    if (res.ok) {
-      alert(isEdit ? "수정이 완료되었습니다." : "제품이 등록되었습니다.");
-      router.push("/admin/products");
-      router.refresh();
-    } else {
-      const d = await res.json();
-      setError(d.error ?? "저장 중 오류가 발생했습니다.");
+    try {
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        alert(isEdit ? "수정이 완료되었습니다." : "제품이 등록되었습니다.");
+        router.push("/admin/products");
+        router.refresh();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "저장 중 오류가 발생했습니다.");
+      }
+    } catch {
+      setError("저장 중 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSaving(false);   // 네트워크 실패 시에도 버튼 잠금 해제 (영구 "저장 중" 방지)
     }
   };
 
