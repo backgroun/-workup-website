@@ -109,6 +109,7 @@ async function submitInquiry(type: "franchise" | "wholesale", payload: FormState
 export function FranchiseForm() {
   const init: FormState = { name: "", phone: "", region: "", message: "" };
   const [form, setForm] = useState(init);
+  const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -118,9 +119,11 @@ export function FranchiseForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
     setSubmitting(true); setError("");
     try {
-      await submitInquiry("franchise", form);
+      // 동의값을 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
+      await submitInquiry("franchise", { ...form, privacyAgree: "동의" });
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "접수에 실패했습니다. 잠시 후 다시 시도해주세요.");
@@ -129,7 +132,7 @@ export function FranchiseForm() {
     }
   };
 
-  if (submitted) return <SuccessMessage onReset={() => { setForm(init); setSubmitted(false); }} />;
+  if (submitted) return <SuccessMessage onReset={() => { setForm(init); setAgreed(false); setSubmitted(false); }} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -139,11 +142,12 @@ export function FranchiseForm() {
       </div>
       <Field label="창업 희망 지역" name="region" placeholder="예) 서울 강남, 경기 수원 등" value={form.region} onChange={handleChange} />
       <Field label="문의 내용" name="message" type="textarea" placeholder="창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요." value={form.message} onChange={handleChange} />
+      <PrivacyConsent checked={agreed} onChange={setAgreed} />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
-        disabled={submitting}
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
+        disabled={submitting || !agreed}
+        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50 disabled:hover:bg-[#1A2B4A] disabled:cursor-not-allowed"
       >
         {submitting ? "접수 중..." : "가맹 문의 접수하기 →"}
       </button>

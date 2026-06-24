@@ -39,6 +39,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
   }
 
+  // 가맹·창업 문의는 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증한다.
+  // (클라이언트 우회 방지 — 입점·제휴 / 고객 1:1 폼은 영향받지 않음)
+  if (type === "franchise") {
+    const agreed = String((payload as Record<string, unknown>).privacyAgree ?? "").trim();
+    if (!agreed) {
+      return NextResponse.json({ error: "개인정보 수집·이용에 동의해주세요." }, { status: 400 });
+    }
+  }
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new" });
