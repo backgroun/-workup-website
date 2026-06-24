@@ -16,6 +16,7 @@ function connectedProjectRef() {
 
 // 카탈로그 페이지 전체 조회 (순서대로)
 export async function GET() {
+  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("catalog_pages")

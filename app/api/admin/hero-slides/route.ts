@@ -8,6 +8,7 @@ async function isAuthed() {
 }
 
 export async function GET(req: Request) {
+  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") ?? "main";
   const supabase = createAdminClient();

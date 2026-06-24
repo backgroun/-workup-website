@@ -9,6 +9,7 @@ async function isAuthed() {
 }
 
 export async function GET() {
+  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("brands").select("*").order("name");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

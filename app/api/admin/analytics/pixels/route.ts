@@ -8,6 +8,7 @@ async function checkAuth() {
 }
 
 export async function GET() {
+  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const sb = createAdminClient();
     const { data, error } = await sb.from("pixel_settings").select("*").order("id");
