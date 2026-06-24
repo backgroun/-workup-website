@@ -16,7 +16,6 @@ const CLOTHING_SIZE_PRESETS = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
 const SIZE_TEMPLATES: { label: string; sizes: string[] }[] = [
   { label: "신발 (230–290)", sizes: ["230", "235", "240", "245", "250", "255", "260", "265", "270", "275", "280", "285", "290"] },
   { label: "허리인치 (28–38)", sizes: ["28", "30", "32", "34", "36", "38"] },
-  { label: "FREE (단독)", sizes: ["FREE"] },
   { label: "ONE SIZE", sizes: ["ONE SIZE"] },
 ];
 const COLOR_PRESETS = [
@@ -1074,67 +1073,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
           </section>
 
-          {/* ── 2. 기능 태그 & 시즌 ── */}
-          <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <SectionTitle>기능 태그 &amp; 시즌</SectionTitle>
-            <div className="mb-1">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">기능 태그</label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {FEATURE_TAG_PRESETS.map((tag) => (
-                  <button key={tag} type="button" onClick={() => toggleArr("featureTags", tag)}
-                    className={`px-3 py-1.5 text-xs border transition-colors rounded ${
-                      form.featureTags.includes(tag) ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
-                    }`}>
-                    {tag}
-                  </button>
-                ))}
-              </div>
-              {form.featureTags.filter((t) => !FEATURE_TAG_PRESETS.includes(t)).length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {form.featureTags.filter((t) => !FEATURE_TAG_PRESETS.includes(t)).map((tag) => (
-                    <span key={tag} className="flex items-center gap-1 px-3 py-1 text-xs bg-[#ff550c] text-white rounded">
-                      {tag}
-                      <button type="button" onClick={() => toggleArr("featureTags", tag)} className="hover:opacity-70">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input value={form.customFeatureTag} onChange={(e) => set("customFeatureTag", e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag("featureTags", "customFeatureTag"); } }}
-                  placeholder="직접 입력 후 추가 (예: 방염)"
-                  className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
-                <button type="button" onClick={() => addCustomTag("featureTags", "customFeatureTag")}
-                  className="px-4 py-2 text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">추가</button>
-              </div>
-            </div>
-
-            {/* 시즌 */}
-            <div className="mt-6 pt-5 border-t border-gray-100">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">시즌 <span className="text-gray-400 font-normal">(선택)</span></label>
-              <div className="flex gap-2">
-                {SEASON_OPTIONS.map((s) => (
-                  <button key={s} type="button" onClick={() => toggleArr("seasons", s)}
-                    className={`px-4 py-1.5 text-xs border transition-colors rounded ${
-                      form.seasons.includes(s) ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
-                    }`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-              {form.status === "예약판매" && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg mt-4">
-                  <p className="col-span-2 text-xs font-semibold text-blue-700">예약 노출 기간 설정</p>
-                  <Field label="노출 시작일">
-                    <input type="date" value={form.promoStart} onChange={(e) => set("promoStart", e.target.value)} className={INPUT_CLS} />
-                  </Field>
-                  <Field label="노출 종료일">
-                    <input type="date" value={form.promoEnd} onChange={(e) => set("promoEnd", e.target.value)} className={INPUT_CLS} />
-                  </Field>
-                </div>
-              )}
-            </div>
-          </section>
 
           {/* ── 5. 연관 상품 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
@@ -1622,7 +1560,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </Field>
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <label className="block text-xs font-medium text-gray-500 mb-1">직접 입력 사이즈</label>
-                <p className="text-[11px] text-gray-400 mb-2">신발·악세사리 등 비표준 사이즈 — 예: 240, 245, Free, One Size</p>
                 {/* 빠른 템플릿 — 클릭 시 해당 사이즈 세트로 교체 */}
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
