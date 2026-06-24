@@ -199,7 +199,7 @@ export default function TopbarManagePage() {
                 <label className="text-sm font-medium text-gray-700">높이</label>
                 <span className="text-sm font-mono text-slate-500">{cfg.height}px</span>
               </div>
-              <input type="range" min={24} max={80} value={cfg.height} onChange={(e) => set("height", Number(e.target.value))} className="w-full accent-blue-600 h-1.5" />
+              <input type="range" min={40} max={80} value={cfg.height} onChange={(e) => set("height", Number(e.target.value))} className="w-full accent-blue-600 h-1.5" />
               <p className="text-[11px] text-gray-400 mt-1">높이를 바꾸면 헤더 위치와 카탈로그 뷰어 높이가 자동으로 따라갑니다.</p>
             </div>
           </div>

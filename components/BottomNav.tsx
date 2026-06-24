@@ -43,7 +43,7 @@ export default function BottomNav({
       <div
         className="fixed left-0 right-0 z-[59] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out md:hidden"
         style={{
-          bottom: "calc(3.5rem + env(safe-area-inset-bottom, 0px))",
+          bottom: "calc(64px + env(safe-area-inset-bottom, 0px))",
           transform: menuOpen ? "translateY(0)" : "translateY(110%)",
         }}
         aria-modal="true"
