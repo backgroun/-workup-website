@@ -152,10 +152,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="reg-password" className="block text-xs font-semibold text-gray-600 mb-1.5">
               비밀번호 <span className="text-red-500">*</span>
             </label>
             <input
+              id="reg-password"
               type="password" value={form.password} onChange={e => set("password", e.target.value)}
               placeholder="8자 이상"
               className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
@@ -163,10 +164,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="reg-password-confirm" className="block text-xs font-semibold text-gray-600 mb-1.5">
               비밀번호 확인 <span className="text-red-500">*</span>
             </label>
             <input
+              id="reg-password-confirm"
               type="password" value={form.passwordConfirm} onChange={e => set("passwordConfirm", e.target.value)}
               placeholder="비밀번호 재입력"
               className={`w-full border px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-colors ${
