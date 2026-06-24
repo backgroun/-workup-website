@@ -44,6 +44,6 @@ export async function PUT(
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   // 캐시된 섹션(예: 탑바)을 즉시 갱신 — getTopbarConfig 가 tags:["topbar"]로 캐싱됨.
   // Next 16: 라우트 핸들러에서는 revalidateTag(tag, "max") 형태로 호출(updateTag 는 서버액션 전용).
-  revalidateTag(section);
+  revalidateTag(section, "max");
   return NextResponse.json({ ok: true });
 }
