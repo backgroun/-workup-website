@@ -1611,6 +1611,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   </div>
                 </div>
               )}
+              </div>
+              )}
             </div>
           </section>
 
