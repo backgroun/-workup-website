@@ -62,6 +62,38 @@ function Field({
   );
 }
 
+// ── 개인정보 수집·이용 동의 (로그인 없이 접수하므로 필수) ──
+function PrivacyConsent({
+  checked, onChange,
+}: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-start gap-2.5 cursor-pointer select-none py-1">
+      <input
+        type="checkbox"
+        name="privacyAgree"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[#1A2B4A]"
+      />
+      <span className="text-xs text-gray-500 leading-relaxed">
+        <span className="text-[#ff550c] font-medium">[필수]</span> 개인정보 수집·이용에 동의합니다.{" "}
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="underline text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+        >
+          내용 보기
+        </a>
+        <span className="block text-gray-400 mt-0.5">
+          이름·연락처는 문의 접수 및 상담 안내 목적으로만 사용됩니다.
+        </span>
+      </span>
+    </label>
+  );
+}
+
 // ── 문의 제출 헬퍼 ──
 async function submitInquiry(type: "franchise" | "wholesale", payload: FormState) {
   const res = await fetch("/api/inquiries", {
