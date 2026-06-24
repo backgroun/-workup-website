@@ -44,7 +44,7 @@ export type TopbarConfig = {
 // 현재 사이트의 기본 탑바와 동일한 모습(주황 36px, 슬로건 + 카탈로그/문의 링크).
 export const DEFAULT_TOPBAR: TopbarConfig = {
   enabled: true,
-  height: 36,
+  height: 40,
   bg_color: "#ff550c",
   text_color: "#ffffff",
   font_size: 11,
@@ -126,7 +126,7 @@ export function normalizeTopbar(raw: Partial<TopbarConfig> | null | undefined): 
 
   return {
     enabled: typeof c.enabled === "boolean" ? c.enabled : DEFAULT_TOPBAR.enabled,
-    height: clampNum(c.height, 36, 80, DEFAULT_TOPBAR.height),
+    height: clampNum(c.height, 40, 80, DEFAULT_TOPBAR.height),
     bg_color: typeof c.bg_color === "string" && c.bg_color ? c.bg_color : DEFAULT_TOPBAR.bg_color,
     text_color: typeof c.text_color === "string" && c.text_color ? c.text_color : DEFAULT_TOPBAR.text_color,
     font_size: clampNum(c.font_size, 9, 24, DEFAULT_TOPBAR.font_size),
