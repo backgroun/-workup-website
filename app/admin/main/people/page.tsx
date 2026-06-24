@@ -46,6 +46,7 @@ export default function AdminMainPeoplePage() {
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
 
   const saveAll = async (list: Person[]) => {
+    const rollback = items;   // 호출 시점의 이전 목록 — 낙관적 갱신 실패 시 복원
     setSaving(true);
     try {
       const r = await fetch("/api/admin/site-settings/people_page", {
@@ -53,7 +54,11 @@ export default function AdminMainPeoplePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ header, items: list }),
       });
+      if (!r.ok) setItems(rollback);
       flash(r.ok ? "저장됐습니다." : "저장에 실패했습니다.");
+    } catch {
+      setItems(rollback);
+      flash("저장에 실패했습니다.");
     } finally { setSaving(false); }
   };
 

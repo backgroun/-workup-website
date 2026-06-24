@@ -129,6 +129,7 @@ export default function AdminCatalogPage() {
     if (!confirm(`"${label || id}" 페이지를 삭제할까요?`)) return;
     const res = await fetch(`/api/admin/catalog/${id}`, { method: "DELETE" });
     if (res.ok) { flash("삭제됐습니다."); if (editing?.id === id) setEditing(null); load(); }
+    else { const err = await res.json().catch(() => ({})); flash(err.error ?? "삭제 실패", "err"); }
   };
 
   const handleDuplicate = async (page: CatalogPage) => {
