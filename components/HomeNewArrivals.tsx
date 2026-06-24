@@ -98,7 +98,7 @@ export default function HomeNewArrivals() {
   if (newItems.length === 0) return null;
 
   return (
-    <section className="bg-white pt-12 pb-14 overflow-x-hidden">
+    <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
         <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-5">{title}</h2>
 
