@@ -1063,51 +1063,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
           </section>
 
-          {/* ── 2. 판매 설정 ── */}
-          <section className="bg-white border border-gray-200 p-7 rounded-xl">
-            <SectionTitle>판매 설정</SectionTitle>
-            <div className="space-y-5">
-              <Field label="판매 상태">
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {STATUS_OPTIONS.map((s) => (
-                    <button key={s} type="button" onClick={() => set("status", s)}
-                      className={`px-4 py-1.5 text-xs border transition-colors rounded ${
-                        form.status === s ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
-                      }`}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-              <Field label="시즌">
-                <div className="flex gap-2 mt-1">
-                  {SEASON_OPTIONS.map((s) => (
-                    <button key={s} type="button" onClick={() => toggleArr("seasons", s)}
-                      className={`px-4 py-1.5 text-xs border transition-colors rounded ${
-                        form.seasons.includes(s) ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
-                      }`}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-              {form.status === "예약판매" && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="col-span-2 text-xs font-semibold text-blue-700">예약 노출 기간 설정</p>
-                  <Field label="노출 시작일">
-                    <input type="date" value={form.promoStart} onChange={(e) => set("promoStart", e.target.value)} className={INPUT_CLS} />
-                  </Field>
-                  <Field label="노출 종료일">
-                    <input type="date" value={form.promoEnd} onChange={(e) => set("promoEnd", e.target.value)} className={INPUT_CLS} />
-                  </Field>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* ── 3. 기능 태그 & 현장 추천 ── */}
+          {/* ── 2. 기능 태그 & 시즌 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <SectionTitle>기능 태그</SectionTitle>
+            <SectionTitle>기능 태그 &amp; 시즌</SectionTitle>
             <div className="mb-1">
               <label className="block text-xs font-semibold text-gray-600 mb-2">기능 태그</label>
               <div className="flex flex-wrap gap-2 mb-3">
