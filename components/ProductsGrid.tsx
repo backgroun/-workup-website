@@ -16,7 +16,8 @@ import {
 type SortOption = "신상품순" | "낮은 가격순" | "높은 가격순";
 
 const SORT_OPTIONS: SortOption[] = ["신상품순", "낮은 가격순", "높은 가격순"];
-const SEASONS = ["SS (봄/여름)", "FW (가을/겨울)", "상시"];
+// 제품 데이터의 seasons 값("봄/가을"|"여름"|"겨울")과 일치시켜야 필터가 동작한다.
+const SEASONS = ["봄/가을", "여름", "겨울"];
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 const PRICE_RANGES = ["3만원 이하", "3~5만원", "5~8만원", "8만원 이상"];
 
@@ -178,6 +179,12 @@ export default function ProductsGrid() {
       }
       if (selectedPrices.length > 0) {
         if (!selectedPrices.some((r) => priceInRange(p.price, r))) return false;
+      }
+      if (selectedSizes.length > 0) {
+        if (!selectedSizes.some((s) => (p.sizes ?? []).includes(s))) return false;
+      }
+      if (selectedSeasons.length > 0) {
+        if (!selectedSeasons.some((s) => (p.seasons ?? []).some((ps) => ps === s))) return false;
       }
       return true;
     })

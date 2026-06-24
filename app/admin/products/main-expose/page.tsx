@@ -54,11 +54,12 @@ export default function MainExposePage() {
     setProducts(prev => prev.map(p => p.id === product.id ? updated : p));
 
     try {
-      await fetch(`/api/admin/products/${product.id}`, {
+      const res = await fetch(`/api/admin/products/${product.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
       });
+      if (!res.ok) throw new Error();   // HTTP 에러도 catch로 보내 롤백 (거짓 "설정됨" 방지)
       showMsg(`"${product.name}" ${section} ${curr.includes(section) ? "해제" : "설정"}됨`);
     } catch {
       setProducts(prev => prev.map(p => p.id === product.id ? product : p));
