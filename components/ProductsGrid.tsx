@@ -216,18 +216,6 @@ export default function ProductsGrid() {
         </button>
       </div>
 
-      <Accordion label="시즌" open={seasonOpen} onToggle={() => setSeasonOpen(!seasonOpen)}>
-        <div className="flex flex-col gap-3">
-          {SEASONS.map((s) => (
-            <label key={s} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="checkbox" checked={selectedSeasons.includes(s)} onChange={() => toggleSeason(s)}
-                className="w-[14px] h-[14px] accent-[#1A2B4A] flex-shrink-0" />
-              <span className="text-[13px] text-gray-700">{s}</span>
-            </label>
-          ))}
-        </div>
-      </Accordion>
-
       <Accordion label="사이즈" open={sizeOpen} onToggle={() => setSizeOpen(!sizeOpen)}>
         <div className="flex flex-wrap gap-2">
           {SIZES.map((s) => (
