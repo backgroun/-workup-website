@@ -1,13 +1,14 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Fragment, type ReactNode, type CSSProperties } from "react";
 import { Oxanium } from "next/font/google";
 import TopbarIcon from "./TopbarIcon";
-import { DEFAULT_TOPBAR, safeHref, type TopbarConfig } from "@/lib/topbar";
+import { DEFAULT_TOPBAR, safeHref, normalizeTopbar, type TopbarConfig } from "@/lib/topbar";
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
-// 내부 경로(/·#)는 next/link, 그 외(tel:·mailto:·http…)는 일반 <a>.
-// safeHref 로 한 번 더 스킴 검증(javascript:/data: 등 차단).
 function SmartLink({ href, newTab, className, style, children }: {
   href: string; newTab?: boolean; className?: string; style?: CSSProperties; children: ReactNode;
 }) {
@@ -22,10 +23,29 @@ function SmartLink({ href, newTab, className, style, children }: {
   );
 }
 
-// 상단 탑바(공지바). 설정은 app/layout.tsx 가 서버에서 읽어 prop 으로 내려준다.
-// 높이가 바뀌면 layout 이 <html> 의 --wu-topbar-h 도 함께 갱신 → 헤더 sticky 오프셋이 따라온다.
-export default function AnnouncementBanner({ config }: { config?: TopbarConfig | null }) {
-  const c = config ?? DEFAULT_TOPBAR;
+// 상단 탑바(공지바).
+// SSR 초기값(serverConfig)으로 즉시 렌더링 → 마운트 후 API에서 최신값을 가져와 반영.
+// 이렇게 하면 Next.js 클라이언트 라우터 캐시나 iOS Safari 캐시와 무관하게
+// 관리자 저장 직후 새로고침 한 번으로 반영됨.
+export default function AnnouncementBanner({ config: serverConfig }: { config?: TopbarConfig | null }) {
+  const [c, setC] = useState<TopbarConfig>(serverConfig ?? DEFAULT_TOPBAR);
+
+  useEffect(() => {
+    fetch("/api/admin/site-settings/topbar", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(raw => {
+        if (!raw) return;
+        const fresh = normalizeTopbar(raw);
+        setC(fresh);
+        // 헤더 sticky 오프셋이 참조하는 CSS 변수도 클라이언트에서 갱신
+        document.documentElement.style.setProperty(
+          "--wu-topbar-h",
+          fresh.enabled ? `${fresh.height}px` : "0px"
+        );
+      })
+      .catch(() => {});
+  }, []);
+
   if (!c.enabled) return null;
 
   const iconPx = Math.max(11, Math.round(c.height * 0.4));
@@ -50,7 +70,6 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
       style={{ height: c.height, backgroundColor: c.bg_color, color: c.text_color }}
     >
       <div className="px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
-        {/* 좌측 슬로건 */}
         {c.left_link ? (
           <SmartLink href={c.left_link} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
             {leftInner}
@@ -59,7 +78,6 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
           <div className="flex items-center gap-1.5 min-w-0">{leftInner}</div>
         )}
 
-        {/* 우측 링크들(텍스트 + 아이콘) */}
         {c.items.length > 0 && (
           <div className="flex items-center gap-2 md:gap-2.5 flex-shrink-0">
             {c.items.map((it, idx) => (
