@@ -838,7 +838,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       {/* ── 상단 저장 버튼 ── */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <p className="text-sm text-gray-500">{isEdit ? "상품 수정 중" : "새 상품 등록"}</p>
-        <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} />
+        <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} status={form.status} onStatusChange={(s) => set("status", s)} />
       </div>
 
       <div className="grid grid-cols-2 gap-6 items-start">
