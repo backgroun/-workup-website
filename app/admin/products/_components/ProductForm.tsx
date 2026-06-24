@@ -1246,7 +1246,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 하단 저장 버튼 ── */}
           <div className="flex gap-3 pb-8">
-            <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} />
+            <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} status={form.status} onStatusChange={(s) => set("status", s)} />
           </div>
 
         </div>{/* end left col */}
