@@ -127,60 +127,58 @@ export default function BottomNav({
       {/* safe-area는 아래 별도 div로 처리 → 아이콘/텍스트가 nav 내 중앙 배치, 빈 gap 없음 */}
       <nav
         className="bg-white border-t border-gray-200 md:hidden flex-shrink-0"
-        style={{ height: "3.5rem" }}
+        style={{ height: "64px" }}
       >
-        <div className="flex items-stretch" style={{ height: "calc(3.5rem - 1px)" }}>
+        <div className="flex h-full">
 
           {/* 메뉴 */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-[color,background-color,transform] active:scale-95 active:bg-gray-100 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[color,background-color,transform] active:scale-95 active:bg-gray-100 ${
               menuOpen ? "text-[#ff550c]" : "text-[#1A2B4A]"
             }`}
             aria-label="메뉴"
             aria-expanded={menuOpen}
           >
             {menuOpen ? (
-              /* 열린 상태: X 아이콘 */
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              /* 닫힌 상태: 햄버거 */
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
-            <span className="text-[11px] font-medium leading-none">메뉴</span>
+            <span className="text-[11px] font-semibold leading-none tracking-tight">메뉴</span>
           </button>
 
           {/* 홈 */}
           <Link
             href="/"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="홈"
             onClick={() => setMenuOpen(false)}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
             </svg>
-            <span className="text-[11px] font-medium leading-none">홈</span>
+            <span className="text-[11px] font-semibold leading-none tracking-tight">홈</span>
           </Link>
 
           {/* 전체매장 */}
           <Link
             href="/store"
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#1A2B4A] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="전체매장"
             onClick={() => setMenuOpen(false)}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5h18" />
             </svg>
-            <span className="text-[11px] font-medium leading-none">전체매장</span>
+            <span className="text-[11px] font-semibold leading-none tracking-tight">전체매장</span>
           </Link>
 
         </div>

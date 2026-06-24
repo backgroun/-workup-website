@@ -76,7 +76,7 @@ export default function HomeNewArrivals() {
 
   if (loading) {
     return (
-      <section className="bg-white pt-12 pb-14">
+      <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14">
         <div className="px-[15px] md:px-[70px]">
           <div className="h-7 w-52 bg-gray-100 rounded animate-pulse mb-5" />
           <div className="hidden md:flex gap-4">
