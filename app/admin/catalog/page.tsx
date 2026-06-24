@@ -148,8 +148,15 @@ export default function AdminCatalogPage() {
 
   const toggleVisible = async (page: CatalogPage) => {
     const next = !page.is_visible;
+    const snapshot = pages;   // 실패 시 되돌릴 스냅샷
     setPages((prev) => prev.map((p) => (p.id === page.id ? { ...p, is_visible: next } : p)));
-    await fetch(`/api/admin/catalog/${page.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_visible: next }) });
+    try {
+      const res = await fetch(`/api/admin/catalog/${page.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_visible: next }) });
+      if (!res.ok) throw new Error();
+    } catch {
+      setPages(snapshot);
+      flash("노출 설정 변경에 실패했습니다.", "err");
+    }
   };
 
   const uploadImage = async (file: File) => {
@@ -168,11 +175,17 @@ export default function AdminCatalogPage() {
     const [moved] = next.splice(dragIndex, 1);
     next.splice(targetIndex, 0, moved);
     const updated = next.map((p, i) => ({ ...p, sort_order: i }));
+    const snapshot = pages;   // 실패 시 되돌릴 스냅샷
     setPages(updated);
     setDragIndex(null); setDragOver(null);
-    await Promise.all(updated.map((p) =>
+    const results = await Promise.allSettled(updated.map((p) =>
       fetch(`/api/admin/catalog/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: p.sort_order }) })
+        .then((r) => { if (!r.ok) throw new Error(); })
     ));
+    if (results.some((r) => r.status === "rejected")) {
+      setPages(snapshot);
+      flash("순서 저장에 실패했습니다.", "err");
+    }
   };
 
   const d = editing?.data ?? {};

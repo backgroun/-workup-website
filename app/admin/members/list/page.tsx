@@ -179,36 +179,40 @@ export default function MemberListPage() {
 
   const doBulkUpdate = async (updates: Partial<Member>) => {
     if (!selected.size) return;
-    await Promise.all(
+    const total = selected.size;
+    const results = await Promise.allSettled(
       members.filter(m => selected.has(m.id)).map(m =>
         fetch(`/api/admin/members/${m.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...m, ...updates }),
-        })
+        }).then(r => { if (!r.ok) throw new Error(); })
       )
     );
-    showMsg(`${selected.size}명 일괄 업데이트 완료`);
+    const failed = results.filter(r => r.status === "rejected").length;
+    showMsg(failed ? `${total - failed}명 완료 · ${failed}명 실패` : `${total}명 일괄 업데이트 완료`);
     setSelected(new Set()); load();
   };
 
   const doBulkDelete = async () => {
     if (!selected.size) return;
-    if (!confirm(`${selected.size}명을 삭제하시겠습니까?`)) return;
-    await Promise.all([...selected].map(id =>
-      fetch(`/api/admin/members/${id}`, { method: "DELETE" })
+    const total = selected.size;
+    if (!confirm(`${total}명을 삭제하시겠습니까?`)) return;
+    const results = await Promise.allSettled([...selected].map(id =>
+      fetch(`/api/admin/members/${id}`, { method: "DELETE" }).then(r => { if (!r.ok) throw new Error(); })
     ));
-    showMsg(`${selected.size}명 삭제 완료`);
+    const failed = results.filter(r => r.status === "rejected").length;
+    showMsg(failed ? `${total - failed}명 삭제 · ${failed}명 실패` : `${total}명 삭제 완료`);
     setSelected(new Set()); load();
   };
 
   const saveEdit = async (m: Member) => {
-    await fetch(`/api/admin/members/${m.id}`, {
+    const res = await fetch(`/api/admin/members/${m.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(m),
     });
-    showMsg("저장됐습니다.");
+    showMsg(res.ok ? "저장됐습니다." : "저장에 실패했습니다.");
     setEditTarget(null); load();
   };
 
