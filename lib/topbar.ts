@@ -28,26 +28,32 @@ export type TopbarItem = {
 };
 
 export type TopbarConfig = {
-  enabled: boolean;       // 탑바 표시 여부
-  height: number;         // px (24~80)
-  bg_color: string;       // 배경색 hex
-  text_color: string;     // 글자·아이콘 색 hex
-  font_size: number;      // 글자 크기 px (9~24)
-  font_weight: number;    // 굵기 (100~900)
-  letter_spacing: number; // 자간 em (0~0.5)
-  left_text: string;      // 좌측 문구(브랜드 슬로건)
+  enabled: boolean;
+  // PC 설정
+  height: number;           // px (40~80)
+  font_size: number;        // px (9~24)
+  // 모바일 설정
+  mobile_height: number;    // px (28~56)
+  mobile_font_size: number; // px (8~14)
+  // 공통
+  bg_color: string;
+  text_color: string;
+  font_weight: number;
+  letter_spacing: number;
+  left_text: string;
   left_icon: TopbarIconName;
-  left_link: string;      // 좌측 문구 클릭 시 이동(빈 값이면 링크 없음)
-  items: TopbarItem[];    // 우측 링크들(텍스트 + 아이콘)
+  left_link: string;
+  items: TopbarItem[];
 };
 
-// 현재 사이트의 기본 탑바와 동일한 모습(주황 36px, 슬로건 + 카탈로그/문의 링크).
 export const DEFAULT_TOPBAR: TopbarConfig = {
   enabled: true,
-  height: 40,
+  height: 56,
+  mobile_height: 40,
   bg_color: "#ff550c",
   text_color: "#ffffff",
   font_size: 11,
+  mobile_font_size: 10,
   font_weight: 600,
   letter_spacing: 0.14,
   left_text: "EVERY WORKER EVERY WEAR",
@@ -96,8 +102,6 @@ function safeIcon(v: unknown): TopbarIconName {
   return typeof v === "string" && ICON_SET.has(v) ? (v as TopbarIconName) : "none";
 }
 
-// 링크 스킴 화이트리스트 — javascript:/data:/vbscript: 등 XSS 스킴 차단.
-// 내부 경로(/)·앵커(#)·http(s)·tel·mailto 만 허용. 그 외는 빈 문자열로 무력화.
 const SAFE_SCHEME_RE = /^(https?:|tel:|mailto:)/i;
 export function safeHref(v: unknown): string {
   if (typeof v !== "string") return "";
@@ -107,7 +111,6 @@ export function safeHref(v: unknown): string {
   return SAFE_SCHEME_RE.test(h) ? h : "";
 }
 
-// 저장된 JSON(부분/구버전 가능)을 안전한 완전체 설정으로 보정한다.
 export function normalizeTopbar(raw: Partial<TopbarConfig> | null | undefined): TopbarConfig {
   const c = raw ?? {};
   const items = Array.isArray(c.items)
@@ -120,16 +123,17 @@ export function normalizeTopbar(raw: Partial<TopbarConfig> | null | undefined): 
           icon: safeIcon(it.icon),
           newTab: !!it.newTab,
         }))
-        // 라벨도 링크도 없는 깨진 항목 제거
         .filter((it) => it.label.trim() !== "" || it.href !== "")
     : DEFAULT_TOPBAR.items;
 
   return {
     enabled: typeof c.enabled === "boolean" ? c.enabled : DEFAULT_TOPBAR.enabled,
     height: clampNum(c.height, 40, 80, DEFAULT_TOPBAR.height),
+    mobile_height: clampNum(c.mobile_height, 28, 56, DEFAULT_TOPBAR.mobile_height),
     bg_color: typeof c.bg_color === "string" && c.bg_color ? c.bg_color : DEFAULT_TOPBAR.bg_color,
     text_color: typeof c.text_color === "string" && c.text_color ? c.text_color : DEFAULT_TOPBAR.text_color,
     font_size: clampNum(c.font_size, 9, 24, DEFAULT_TOPBAR.font_size),
+    mobile_font_size: clampNum(c.mobile_font_size, 8, 14, DEFAULT_TOPBAR.mobile_font_size),
     font_weight: clampNum(c.font_weight, 100, 900, DEFAULT_TOPBAR.font_weight),
     letter_spacing: clampFloat(c.letter_spacing, 0, 0.5, DEFAULT_TOPBAR.letter_spacing),
     left_text: typeof c.left_text === "string" ? c.left_text : DEFAULT_TOPBAR.left_text,
