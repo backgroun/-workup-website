@@ -140,19 +140,19 @@ export default function ProductTabs({ product }: { product: Product }) {
             // 행·열 표로 등록한 경우
             <div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[320px] max-w-3xl border border-gray-100">
+                <table className="w-full text-sm border-t border-gray-300">
                   <thead>
-                    <tr className="bg-[#1A2B4A] text-white">
+                    <tr className="bg-[#f5f5f5] border-b border-gray-200">
                       {sgCols.map((h, i) => (
-                        <th key={i} className="px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">{h}</th>
+                        <th key={i} className="px-3 py-4 text-center text-[13px] md:text-sm font-bold text-[#1A2B4A] whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {sgRows.map((row, ri) => (
-                      <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <tr key={ri} className="border-b border-gray-100">
                         {sgCols.map((_, ci) => (
-                          <td key={ci} className={`px-4 py-3 text-xs ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-gray-500"}`}>
+                          <td key={ci} className={`px-3 py-4 text-center text-[13px] md:text-sm whitespace-nowrap ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-slate-500"}`}>
                             {row.cells[ci] ?? ""}
                           </td>
                         ))}
