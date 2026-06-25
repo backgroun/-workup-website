@@ -243,16 +243,31 @@ export default function TopbarManagePage() {
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">텍스트</p>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700">글자 크기</label>
-                <span className="text-sm font-mono text-slate-500">{cfg.font_size}px</span>
+            {/* 글자 크기 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-gray-700">PC 글자 크기</label>
+                  <span className="text-sm font-mono text-slate-500">{cfg.font_size}px</span>
+                </div>
+                <input type="range" min={9} max={24} value={cfg.font_size}
+                  onChange={(e) => set("font_size", Number(e.target.value))}
+                  className="w-full accent-blue-600 h-1.5" />
+                <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>9px</span><span>24px</span>
+                </div>
               </div>
-              <input type="range" min={9} max={24} value={cfg.font_size}
-                onChange={(e) => set("font_size", Number(e.target.value))}
-                className="w-full accent-blue-600 h-1.5" />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
-                <span>9px</span><span>24px</span>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-gray-700">모바일 글자 크기</label>
+                  <span className="text-sm font-mono text-slate-500">{cfg.mobile_font_size}px</span>
+                </div>
+                <input type="range" min={8} max={14} value={cfg.mobile_font_size}
+                  onChange={(e) => set("mobile_font_size", Number(e.target.value))}
+                  className="w-full accent-blue-600 h-1.5" />
+                <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>8px</span><span>14px</span>
+                </div>
               </div>
             </div>
 
