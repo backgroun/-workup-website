@@ -111,19 +111,6 @@ export default function ProductInquiryModal({
               className="w-full border border-gray-300 rounded p-3 text-sm focus:outline-none focus:border-[#1A2B4A] placeholder:text-gray-300 resize-y" />
           </div>
 
-          {/* 답변시 휴대폰 알림받기 */}
-          <div className="mb-3">
-            <label className="block text-sm font-bold text-[#1A2B4A] mb-2">답변시 휴대폰 알림받기</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" placeholder="- 없이 입력하세요."
-              className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] placeholder:text-gray-300" />
-          </div>
-
-          {/* 알림 동의 */}
-          <label className="flex items-center gap-2 mb-6 cursor-pointer w-fit">
-            <input type="checkbox" checked={notifyConsent} onChange={(e) => setNotifyConsent(e.target.checked)} className="accent-[#1A2B4A] w-4 h-4" />
-            <span className="text-sm text-[#1A2B4A]">SMS/카카오 알림톡 알림받기</span>
-          </label>
-
           {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
 
           {/* 버튼 */}

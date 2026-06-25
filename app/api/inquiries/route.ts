@@ -32,14 +32,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "문의 내용이 너무 깁니다. 줄여서 다시 시도해주세요." }, { status: 400 });
   }
 
-  // 필수값 최소 검증 (연락처) — 자릿수만 관대하게 확인
-  const phone = String((payload as Record<string, unknown>).phone ?? "").trim();
-  if (!phone) {
-    return NextResponse.json({ error: "연락처를 입력해주세요." }, { status: 400 });
-  }
-  const phoneDigits = phone.replace(/\D/g, "").length;
-  if (phoneDigits < 8 || phoneDigits > 15) {
-    return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
+  // 필수값 최소 검증 (연락처) — 자릿수만 관대하게 확인.
+  // 상품 문의(product)는 연락처를 받지 않으므로 검증에서 제외한다.
+  if (type !== "product") {
+    const phone = String((payload as Record<string, unknown>).phone ?? "").trim();
+    if (!phone) {
+      return NextResponse.json({ error: "연락처를 입력해주세요." }, { status: 400 });
+    }
+    const phoneDigits = phone.replace(/\D/g, "").length;
+    if (phoneDigits < 8 || phoneDigits > 15) {
+      return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
+    }
   }
 
   // 가맹·창업 문의는 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증한다.
