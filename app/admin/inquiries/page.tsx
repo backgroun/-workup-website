@@ -10,11 +10,14 @@ const FIELD_LABELS: Record<string, string> = {
   name: "이름", phone: "연락처", region: "창업 희망 지역", message: "문의 내용",
   brand: "브랜드명", manager: "담당자명", category: "취급 품목", link: "브랜드 링크",
   subject: "문의 구분", privacyAgree: "개인정보 동의",
+  // 상품 문의 payload
+  productName: "문의 상품", productId: "상품 ID", sku: "제품번호",
+  title: "제목", content: "내용", secret: "공개 여부", notifyConsent: "알림 동의",
 };
 
-// 문의 유형 라벨/배지 (가맹·입점 + 고객 1:1)
-const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "고객 1:1" };
-const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#1A2B4A] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white" };
+// 문의 유형 라벨/배지 (가맹·입점 + 고객 1:1 + 상품 문의)
+const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "고객 1:1", product: "상품 문의" };
+const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#1A2B4A] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white", product: "bg-emerald-600 text-white" };
 
 const STATUS_STYLE: Record<InquiryStatus, string> = {
   new: "bg-green-100 text-green-700",
@@ -172,7 +175,7 @@ export default function AdminInquiriesPage() {
       {tab === "list" && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            {([["all", "전체"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"], ["support", "고객 1:1"]] as const).map(([f, label]) => (
+            {([["all", "전체"], ["product", "상품 문의"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"], ["support", "고객 1:1"]] as const).map(([f, label]) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
                 {label}
