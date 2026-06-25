@@ -61,8 +61,9 @@ function parseInfo(txt) {
 }
 
 // ── 이미지 수집 ──
-// 대표 우선순위: "썸네일/"폴더 → 루트 이미지 → 상세/갤러리 첫 장
-// 상세(추가) : "상세/"·"detail/"·"갤러리/"·"gallery/" 폴더 + 루트 잔여 (폴더명·파일명 유연)
+// 대표(썸네일): "썸네일/"·"대표/" 폴더 → 없으면 루트 이미지        → image_url
+// 갤러리(썸네일 스트립): "갤러리/"·"gallery/" 폴더                  → sub_images
+// 상세(상세 영역 전용): "상세/"·"detail/" 폴더 + 루트 잔여          → detail_blocks (썸네일엔 안 뜸)
 const IMG_RE = /\.(jpe?g|png|webp)$/i;
 const THUMB_DIRS = ["썸네일", "대표", "thumb", "thumbnail", "main"];
 const DETAIL_DIRS = ["상세", "상세페이지", "detail"];
@@ -84,12 +85,17 @@ function collectImages(dir) {
   const galleryFolder = flat(GALLERY_DIRS);
   const rootImgs = entries.filter((e) => e.isFile() && IMG_RE.test(e.name)).map((e) => path.join(dir, e.name)).sort(natSort);
 
+  // 대표(썸네일): 썸네일폴더 → 루트 → 상세 첫 장
   const thumbPool = thumbFolder.length ? thumbFolder : rootImgs.length ? rootImgs : [...detailFolder, ...galleryFolder];
   const thumb = thumbPool[0] || null;
 
-  const all = [...detailFolder, ...galleryFolder, ...thumbFolder, ...rootImgs];
-  const details = [...new Set(all)].filter((p) => p && p !== thumb);
-  return { thumb, details };
+  // 갤러리(썸네일 스트립): 명시적 "갤러리/" 폴더만 → sub_images
+  const gallery = [...new Set(galleryFolder)].filter((p) => p && p !== thumb);
+
+  // 상세(상세 영역 전용): 상세폴더 + 썸네일폴더 잔여 + 루트 잔여 → detail_blocks
+  const used = new Set([thumb, ...gallery]);
+  const details = [...new Set([...detailFolder, ...thumbFolder, ...rootImgs])].filter((p) => p && !used.has(p));
+  return { thumb, gallery, details };
 }
 
 async function uploadImage(filePath, publicId, isThumb) {
@@ -124,18 +130,23 @@ async function processFolder(dir, folderName) {
   if (cat.includes(">")) { const [a, b] = cat.split(">").map((s) => s.trim()); category = category || a; subCategory = subCategory || b; }
   category = category || "소품"; subCategory = subCategory || "기타";
 
-  // 이미지 수집 (썸네일/ · 상세/ 하위폴더 우선, 없으면 루트 파일명으로 분류)
-  const { thumb, details } = collectImages(dir);
-  if (!thumb && details.length === 0 && !infoPath) {
+  // 이미지 수집: 대표→image_url, 갤러리→sub_images(썸네일), 상세→detail_blocks(상세 영역)
+  const { thumb, gallery, details } = collectImages(dir);
+  if (!thumb && gallery.length === 0 && details.length === 0 && !infoPath) {
     console.log(`  ⚠ ${folderName}: 이미지·정보 없음 → 건너뜀`);
     return false;
   }
-  console.log(`  ▶ ${name} (${id}) — 썸네일:${thumb ? "O" : "X"} 상세:${details.length}장`);
+  console.log(`  ▶ ${name} (${id}) — 대표:${thumb ? "O" : "X"} 갤러리:${gallery.length}장 상세:${details.length}장`);
 
   const image_url = thumb ? await uploadImage(thumb, `${id}_thumb`, true) : null;
   const sub_images = [];
+  for (let i = 0; i < gallery.length; i++) {
+    sub_images.push(await uploadImage(gallery[i], `${id}_gal${i + 1}`, false));
+  }
+  const detail_blocks = [];
   for (let i = 0; i < details.length; i++) {
-    sub_images.push(await uploadImage(details[i], `${id}_img${i + 1}`, false));
+    const url = await uploadImage(details[i], `${id}_detail${i + 1}`, false);
+    detail_blocks.push({ id: `d${i + 1}`, type: "상품 소개", content: "", imageUrl: url });
   }
 
   const colors = listSplit(get("색상", "colors")).map((n) => ({ name: n, hex: COLOR_HEX[n] || "#888888" }));
@@ -164,7 +175,7 @@ async function processFolder(dir, folderName) {
     bg: "bg-[#1A2B4A]",
     colors,
     sizes: listSplit(get("사이즈", "sizes")),
-    image_url, sub_images, detail_blocks: [],
+    image_url, sub_images, detail_blocks,
     meta_title: get("메타타이틀", "metaTitle") || `${name} | WORKUP`,
     meta_desc: get("메타설명", "metaDesc") || get("한줄소개", "tagline") || null,
   };
