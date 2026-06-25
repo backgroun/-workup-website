@@ -9,6 +9,16 @@ export type DetailBlock = {
   content: string;
   imageUrl?: string;
 };
+// 사이즈 및 소재 탭 — 이미지 등록 또는 행·열 표 직접 생성
+export type SizeGuide = {
+  mode: "image" | "table";
+  image?: string;                       // mode="image"
+  columns?: string[];                   // mode="table" 헤더, 예: ["항목","S","M","L","XL","XXL"]
+  rows?: { cells: string[] }[];         // 각 행의 셀(첫 셀 = 행 라벨), columns 길이에 맞춤
+  note?: string;                        // 안내 문구, 예: "본 사이즈는 실측이며 ±1-2cm 오차 (단위:cm)"
+};
+// 상세 정보 탭 — 라벨/값 텍스트 항목
+export type DetailInfoItem = { label: string; value: string };
 export type MainCategory = "공용" | "남성" | "여성" | "소품" | "현장" | "일상";
 export type SubCategory =
   // 공용
@@ -56,6 +66,8 @@ export type Product = {
   bg: string;
   colors: { name: string; hex: string }[];
   sizes?: string[];
+  sizeGuide?: SizeGuide;
+  detailInfo?: DetailInfoItem[];
   imageUrl?: string;
   subImages?: string[];
   detailBlocks?: DetailBlock[];
