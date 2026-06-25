@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
+import { normalizeProductBanners, type ProductBanner } from "@/lib/product-banners";
 import { stores } from "@/data/stores";
 import type { Product } from "@/data/products";
 
@@ -46,12 +47,21 @@ export default function ProductDetailClient({
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [banners, setBanners] = useState<ProductBanner[]>([]);
 
   useEffect(() => {
     fetch("/api/member/me")
       .then((r) => r.json())
       .then((data) => setMemberSession(data ?? null))
       .catch(() => setMemberSession(null));
+  }, []);
+
+  // "가까운 매장 찾기" 하단 배너 (관리자 설정) — 이미지 있는 배너만
+  useEffect(() => {
+    fetch("/api/admin/site-settings/product_detail_banners")
+      .then((r) => r.json())
+      .then((d) => setBanners(normalizeProductBanners(d).banners.filter((b) => b.imageUrl)))
+      .catch(() => {});
   }, []);
 
   const [showStorePanel, setShowStorePanel] = useState(false);
@@ -332,6 +342,25 @@ export default function ProductDetailClient({
           가까운 매장 찾기
         </button>
       </div>
+
+      {/* 가까운 매장 찾기 하단 배너 (관리자 설정) */}
+      {banners.length > 0 && (
+        <div className="space-y-3">
+          {banners.map((b, i) => (
+            b.link ? (
+              <a key={i} href={b.link} target={b.link.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer" className="block overflow-hidden rounded-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.imageUrl} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
+              </a>
+            ) : (
+              <div key={i} className="overflow-hidden rounded-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.imageUrl} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
+              </div>
+            )
+          ))}
+        </div>
+      )}
 
       {/* 데스크탑 인라인 매장 패널 */}
       {showStorePanel && (
