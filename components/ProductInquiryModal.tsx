@@ -9,10 +9,12 @@ export default function ProductInquiryModal({
   product,
   open,
   onClose,
+  onSubmitted,
 }: {
   product: Product;
   open: boolean;
   onClose: () => void;
+  onSubmitted?: () => void;
 }) {
   const [inquiryType, setInquiryType] = useState(INQUIRY_TYPES[0]);
   const [title, setTitle] = useState("");
@@ -50,6 +52,7 @@ export default function ProductInquiryModal({
       if (res.ok) {
         alert("문의가 접수되었습니다. 빠른 시일 내 답변드리겠습니다.");
         setTitle(""); setContent("");
+        onSubmitted?.();
         onClose();
       } else {
         const d = await res.json().catch(() => ({}));

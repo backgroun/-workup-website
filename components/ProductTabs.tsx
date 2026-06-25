@@ -202,19 +202,51 @@ export default function ProductTabs({ product }: { product: Product }) {
 
         {/* ── 상품문의 ── */}
         <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100`}>
-          <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-200">
+          <div className="flex items-center justify-between gap-4 pb-5 border-b border-gray-200">
             <p className="text-[15px] md:text-base font-bold text-[#1A2B4A]">
-              문의 <span className="text-[#ff550c]">0</span>건
+              문의 <span className="text-[#ff550c]">{inquiries.length}</span>건
             </p>
             <button type="button" onClick={() => setInquiryOpen(true)}
               className="text-sm text-[#1A2B4A] border border-gray-300 px-6 py-3 rounded hover:border-[#1A2B4A] transition-colors">
               상품 문의하기
             </button>
           </div>
+
+          {inquiries.length === 0 ? (
+            <p className="text-sm text-gray-400 py-12 text-center">아직 등록된 문의가 없습니다. 궁금한 점을 남겨주세요.</p>
+          ) : (
+            <ul>
+              {inquiries.map((q) => {
+                const st = INQ_STATUS[q.status] ?? INQ_STATUS.new;
+                return (
+                  <li key={q.id} className="py-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${st.cls}`}>{st.label}</span>
+                      {q.subject && <span className="text-xs text-gray-400">{q.subject}</span>}
+                      <span className="text-xs text-gray-300 ml-auto">{fmtInqDate(q.createdAt)}</span>
+                    </div>
+                    {q.secret ? (
+                      <p className="text-sm text-gray-400 flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        비밀글입니다.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-sm font-semibold text-[#1A2B4A]">{q.title || "(제목 없음)"}</p>
+                        {q.content && <p className="text-sm text-gray-500 mt-1 whitespace-pre-line line-clamp-4">{q.content}</p>}
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
-      <ProductInquiryModal product={product} open={inquiryOpen} onClose={() => setInquiryOpen(false)} />
+      <ProductInquiryModal product={product} open={inquiryOpen} onClose={() => setInquiryOpen(false)} onSubmitted={loadInquiries} />
     </div>
   );
 }
