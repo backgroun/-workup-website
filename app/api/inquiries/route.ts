@@ -10,6 +10,45 @@ function typeLabelOf(type: string): string {
     : "가맹·창업";
 }
 
+// 공개 GET: 특정 상품(productId)의 상품문의 목록.
+// 서비스롤로 조회하되 안전 필드만 반환하고, 비밀글은 제목·내용을 마스킹한다(연락처 등 비노출).
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const productId = (searchParams.get("productId") ?? "").trim();
+  if (!productId) return NextResponse.json([]);
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("inquiries")
+      .select("id, created_at, status, payload")
+      .eq("type", "product")
+      .eq("payload->>productId", productId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) {
+      console.error("[inquiries] GET 실패:", error.message);
+      return NextResponse.json([]);
+    }
+    const list = (data ?? []).map((r) => {
+      const payload = (r.payload ?? {}) as Record<string, unknown>;
+      const secret = !!String(payload.secret ?? "").trim();
+      return {
+        id: r.id,
+        createdAt: r.created_at,
+        status: r.status,
+        secret,
+        subject: String(payload.subject ?? ""),
+        title: secret ? "" : String(payload.title ?? ""),
+        content: secret ? "" : String(payload.content ?? ""),
+      };
+    });
+    return NextResponse.json(list);
+  } catch (e) {
+    console.error("[inquiries] GET 오류:", e instanceof Error ? e.message : String(e));
+    return NextResponse.json([]);
+  }
+}
+
 // 공개 엔드포인트: 가맹·창업 / 입점·제휴 문의 폼 제출을 저장한다.
 export async function POST(req: Request) {
   let body: { type?: string; payload?: Record<string, unknown> };
