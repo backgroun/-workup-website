@@ -90,7 +90,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
       <div className="hidden md:flex h-screen sticky top-0">
         {/* 썸네일 스트립 */}
         {images.length > 1 && (
-          <div className="w-[72px] bg-[#f4f4f4] flex flex-col gap-0 overflow-y-auto flex-shrink-0">
+          <div className="w-[80px] bg-[#f4f4f4] flex flex-col gap-2 p-2 overflow-y-auto flex-shrink-0">
             {images.map((src, i) => (
               <button key={i} onClick={() => go(i, i > activeIdx ? "down" : "up")}
                 className={`relative w-full aspect-[4/5] flex-shrink-0 overflow-hidden transition-opacity ${
