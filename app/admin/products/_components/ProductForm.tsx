@@ -217,6 +217,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingSubIdx, setUploadingSubIdx] = useState<number | null>(null);
   const [uploadingBlockIdx, setUploadingBlockIdx] = useState<number | null>(null);
+  const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const mainInputRef = useRef<HTMLInputElement>(null);
