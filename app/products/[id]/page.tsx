@@ -15,11 +15,31 @@ export async function generateStaticParams() {
   return staticProducts.map((p) => ({ id: p.id }));
 }
 
+// DB 스키마엔 없는 리치 상세 필드 — static(data/products.ts)에서 오버레이로 보강
+const RICH_FIELDS = [
+  "coreValues", "recommendedFor", "keyFeatures", "sizeRecs", "fitNote",
+  "materialSpecs", "washCare", "productReviews", "detailPoints", "lifestyleScenes", "sizePrices",
+] as const;
+
+function withRichOverlay(base: Product, id: string): Product {
+  const staticP = getProductById(id);
+  if (!staticP) return base;
+  const s = staticP as unknown as Record<string, unknown>;
+  const merged = { ...base } as unknown as Record<string, unknown>;
+  for (const f of RICH_FIELDS) {
+    const sv = s[f];
+    const bv = merged[f];
+    const bvEmpty = bv === undefined || bv === null || (Array.isArray(bv) && bv.length === 0);
+    if (sv !== undefined && bvEmpty) merged[f] = sv;
+  }
+  return merged as unknown as Product;
+}
+
 async function fetchProduct(id: string) {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase.from("products").select("*").eq("id", id).single();
-    if (data) return mapFromDb(data);
+    if (data) return withRichOverlay(mapFromDb(data), id);
   } catch {}
   return getProductById(id);
 }
