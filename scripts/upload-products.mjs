@@ -108,15 +108,13 @@ async function uploadImage(filePath, publicId, isThumb) {
 }
 
 async function processFolder(dir, folderName) {
+  // info.txt 는 선택사항 — 없으면 폴더 이름을 상품명으로 사용
   const infoPath = ["info.txt", "정보.txt"].map((f) => path.join(dir, f)).find((p) => fs.existsSync(p));
-  if (!infoPath) { console.log(`  ⚠ ${folderName}: info.txt 없음 → 건너뜀`); return false; }
-  const info = parseInfo(fs.readFileSync(infoPath, "utf8"));
+  const info = infoPath ? parseInfo(fs.readFileSync(infoPath, "utf8")) : {};
   const get = (...keys) => { for (const k of keys) if (info[k]) return info[k]; return ""; };
 
-  const name = get("상품명", "name", "이름");
-  const price = get("판매가", "price");
-  if (!name) { console.log(`  ⚠ ${folderName}: 상품명 없음 → 건너뜀`); return false; }
-  if (!price) { console.log(`  ⚠ ${name}: 판매가 없음 → 건너뜀`); return false; }
+  const name = get("상품명", "name", "이름") || folderName.replace(/[-_]+/g, " ").trim();
+  const price = get("판매가", "price"); // 선택 — 없으면 빈 값(나중에 관리자에서 입력 가능)
   const id = get("id") || slugify(name);
 
   // 카테고리: "소품 > 기타" 또는 대/중 분리 입력 모두 지원
@@ -128,6 +126,10 @@ async function processFolder(dir, folderName) {
 
   // 이미지 수집 (썸네일/ · 상세/ 하위폴더 우선, 없으면 루트 파일명으로 분류)
   const { thumb, details } = collectImages(dir);
+  if (!thumb && details.length === 0 && !infoPath) {
+    console.log(`  ⚠ ${folderName}: 이미지·정보 없음 → 건너뜀`);
+    return false;
+  }
   console.log(`  ▶ ${name} (${id}) — 썸네일:${thumb ? "O" : "X"} 상세:${details.length}장`);
 
   const image_url = thumb ? await uploadImage(thumb, `${id}_thumb`, true) : null;
