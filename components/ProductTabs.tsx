@@ -74,35 +74,11 @@ export default function ProductTabs({ product }: { product: Product }) {
       <div className="max-w-screen-xl mx-auto">
         {/* ── 상세 정보 ── */}
         <div ref={detailRef} data-tab="상세 정보" className={sectionClass}>
-          {/* 핵심 기능 */}
-          <ul className="space-y-3 mb-8">
-            {product.features.map((f) => (
-              <li key={f} className="flex items-start gap-3 text-sm text-[#1A2B4A]">
-                <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">✓</span>
-                {f}
-              </li>
-            ))}
-          </ul>
-
           {/* 필드 테스트 */}
           {product.fieldTest && (
             <div className="flex items-start gap-2.5 bg-amber-50 px-4 py-3 border-l-2 border-[#ff550c] mb-8">
               <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
               <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
-            </div>
-          )}
-
-          {/* 제품 정보 표 */}
-          {specs.length > 0 && (
-            <div className="border-t border-gray-100 pt-6 mb-8">
-              <dl className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
-                {specs.map((s) => (
-                  <div key={s.label} className="flex text-sm">
-                    <dt className="w-28 flex-shrink-0 bg-gray-50 px-4 py-3 text-gray-500 font-medium">{s.label}</dt>
-                    <dd className="flex-1 px-4 py-3 text-gray-700">{s.value}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
           )}
 
