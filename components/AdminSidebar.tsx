@@ -38,6 +38,15 @@ const navGroups: NavGroup[] = [
           </svg>
         ),
       },
+      {
+        label: "상세 배너 관리",
+        href: "/admin/main/product-banners",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="6" rx="1" /><rect x="3" y="13" width="18" height="6" rx="1" />
+          </svg>
+        ),
+      },
     ],
   },
   // ── 2. 메인 관리 ──────────────────────────────────────────────────────────
