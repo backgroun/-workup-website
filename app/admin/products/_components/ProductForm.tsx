@@ -1775,13 +1775,17 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
-                {(["image", "table"] as const).map((m) => (
-                  <button key={m} type="button" onClick={() => setSG({ mode: m })}
-                    className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:text-[#1A2B4A]"}`}>
-                    {m === "image" ? "이미지" : "행·열 표"}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+                  {(["image", "table"] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => setSG({ mode: m })}
+                      className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:text-[#1A2B4A]"}`}>
+                      {m === "image" ? "이미지" : "행·열 표"}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" onClick={sgClearAll}
+                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">전체 삭제</button>
               </div>
             </div>
 
