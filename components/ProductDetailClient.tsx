@@ -385,15 +385,6 @@ export default function ProductDetailClient({
         </div>
       )}
 
-      {/* 피팅리스트 안내 — 구 레이아웃만 */}
-      {!isNewLayout && (
-        <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
-          <p className="text-xs font-semibold text-[#1A2B4A] mb-1">피팅 리스트란?</p>
-          <p className="text-xs text-gray-500 leading-relaxed">원하는 제품을 미리 담아두고 매장 방문 시 직원에게 보여주세요.</p>
-          <Link href="/cart" className="text-xs text-[#ff550c] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
-        </div>
-      )}
-
     </div>
 
     {/* 모바일 바텀시트 매장 패널 — 전 상품 공통 */}
