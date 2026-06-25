@@ -15,7 +15,6 @@ import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
-import type { CSSProperties } from "react";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -42,12 +41,14 @@ export default async function RootLayout({
         getStudioSettings(),
       ]);
 
-  // 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조하는 탑바 높이(꺼져 있으면 0).
-  const htmlStyle = { "--wu-topbar-h": `${topbar?.enabled ? topbar.height : 0}px` } as CSSProperties;
+  // PC/모바일 탑바 높이를 CSS 변수로 주입 — 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조.
+  const tbMobile = topbar?.enabled ? topbar.mobile_height : 0;
+  const tbPc     = topbar?.enabled ? topbar.height : 0;
 
   return (
-    <html lang="ko" style={htmlStyle}>
+    <html lang="ko">
       <body className="min-h-full flex flex-col">
+        <style>{`:root{--wu-topbar-h:${tbMobile}px}@media(min-width:768px){:root{--wu-topbar-h:${tbPc}px}}`}</style>
         {/* 웹폰트 라이브러리 (한글+영문) — 슬라이딩 메뉴 텍스트 캔버스용 · 실제 사용 시에만 폰트 파일 다운로드 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
