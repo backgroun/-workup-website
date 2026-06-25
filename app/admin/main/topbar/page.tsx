@@ -174,17 +174,19 @@ export default function TopbarManagePage() {
           {!cfg.enabled && <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">탑바 꺼짐 — 사이트에 표시되지 않습니다</span>}
         </div>
         <div className={cfg.enabled ? "" : "opacity-40"}>
-          <p className="text-[11px] text-gray-400 mb-1.5">PC</p>
+          <p className="text-[11px] text-gray-400 mb-1.5">PC <span className="text-slate-400">({cfg.height}px · {cfg.font_size}px)</span></p>
           <div className="rounded-lg overflow-hidden border border-gray-100 shadow-sm"><TopbarPreview cfg={cfg} /></div>
-          <p className="text-[11px] text-gray-400 mt-4 mb-1.5">모바일</p>
-          <div className="rounded-lg overflow-hidden border border-gray-100 shadow-sm mx-auto" style={{ maxWidth: 380 }}><TopbarPreview cfg={cfg} narrow /></div>
+          <p className="text-[11px] text-gray-400 mt-4 mb-1.5">모바일 <span className="text-slate-400">({cfg.mobile_height}px · {cfg.mobile_font_size}px)</span></p>
+          <div className="rounded-lg overflow-hidden border border-gray-100 shadow-sm mx-auto" style={{ maxWidth: 380 }}>
+            <TopbarPreview cfg={{ ...cfg, height: cfg.mobile_height, font_size: cfg.mobile_font_size }} narrow />
+          </div>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 items-start">
         {/* 왼쪽: 기본/디자인 */}
         <div className="space-y-6">
-          {/* 표시 + 높이 */}
+          {/* 표시 + 크기 (PC / 모바일 분리) */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">표시 · 크기</p>
 
@@ -194,14 +196,34 @@ export default function TopbarManagePage() {
               <span className="text-xs text-gray-400">끄면 사이트 최상단 띠가 사라지고 헤더가 맨 위로 붙습니다.</span>
             </label>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700">높이</label>
-                <span className="text-sm font-mono text-slate-500">{cfg.height}px</span>
+            {/* 높이 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-gray-700">PC 높이</label>
+                  <span className="text-sm font-mono text-slate-500">{cfg.height}px</span>
+                </div>
+                <input type="range" min={40} max={80} value={cfg.height}
+                  onChange={(e) => set("height", Number(e.target.value))}
+                  className="w-full accent-blue-600 h-1.5" />
+                <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>40px</span><span>80px</span>
+                </div>
               </div>
-              <input type="range" min={40} max={80} value={cfg.height} onChange={(e) => set("height", Number(e.target.value))} className="w-full accent-blue-600 h-1.5" />
-              <p className="text-[11px] text-gray-400 mt-1">높이를 바꾸면 헤더 위치와 카탈로그 뷰어 높이가 자동으로 따라갑니다.</p>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-gray-700">모바일 높이</label>
+                  <span className="text-sm font-mono text-slate-500">{cfg.mobile_height}px</span>
+                </div>
+                <input type="range" min={28} max={56} value={cfg.mobile_height}
+                  onChange={(e) => set("mobile_height", Number(e.target.value))}
+                  className="w-full accent-blue-600 h-1.5" />
+                <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>28px</span><span>56px</span>
+                </div>
+              </div>
             </div>
+            <p className="text-[11px] text-gray-400 -mt-2">높이를 바꾸면 헤더 위치와 카탈로그 뷰어 높이가 자동으로 따라갑니다.</p>
           </div>
 
           {/* 색상 */}
