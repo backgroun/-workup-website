@@ -295,15 +295,33 @@ export default function ProductDetailClient({
 
       <div className="h-px bg-gray-100" />
 
-      {/* CTA: 피팅 리스트 + 공유(1줄) → 매장 찾기(2) */}
+      {/* CTA: 가까운 매장 찾기 + 찜·공유 (1줄) → 피팅 리스트 안내 */}
       <div className="space-y-2.5">
         <div className="flex gap-2.5">
-          <button onClick={handleAddToCart}
-            className={`flex-1 py-3.5 text-sm font-bold transition-colors ${
-              addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
-            }`}>
-            {addedMsg ? "✓ 담았습니다!" : "피팅 리스트에 담기"}
+          {/* 가까운 매장 찾기 — 모바일: 바텀시트 / 데스크탑: 인라인 */}
+          <button
+            onClick={() => setShowStorePanel(!showStorePanel)}
+            className="store-cta flex-1 py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            가까운 매장 찾기
           </button>
+
+          {/* 찜(하트) — 피팅 리스트 담기 */}
+          <button onClick={toggleFav} aria-label="찜하기" title="찜하기"
+            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 hover:border-[#ff550c] transition-colors">
+            <svg className="w-5 h-5 transition-colors"
+              fill={hasProduct(product.id) ? "#ff550c" : "none"}
+              stroke={hasProduct(product.id) ? "#ff550c" : "#9ca3af"}
+              strokeWidth={1.6} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+
+          {/* 공유 */}
           <button onClick={handleShare} aria-label="공유하기" title="공유하기"
             className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
             {shareCopied ? (
@@ -318,16 +336,12 @@ export default function ProductDetailClient({
           </button>
         </div>
 
-        {/* 매장 찾기 — 모바일: 바텀시트 / 데스크탑: 인라인 */}
-        <button
-          onClick={() => setShowStorePanel(!showStorePanel)}
-          className="store-cta w-full py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          가까운 매장 찾기
-        </button>
+        {/* 피팅 리스트 안내 — 버튼 바로 아래 */}
+        <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
+          <p className="text-xs font-semibold text-[#1A2B4A] mb-1">피팅 리스트란?</p>
+          <p className="text-xs text-gray-500 leading-relaxed">하트(♡)로 원하는 제품을 담아두고 매장 방문 시 직원에게 보여주세요.</p>
+          <Link href="/cart" className="text-xs text-[#ff550c] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
+        </div>
       </div>
 
       {/* 가까운 매장 찾기 하단 배너 (관리자 설정) */}
