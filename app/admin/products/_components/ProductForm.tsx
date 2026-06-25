@@ -224,6 +224,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingSubIdx, setUploadingSubIdx] = useState<number | null>(null);
   const [uploadingBlockIdx, setUploadingBlockIdx] = useState<number | null>(null);
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
+  const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
+  const [ocrProgress, setOcrProgress] = useState(0);
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -771,6 +773,28 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const sgClearAll = () => {
     if (!confirm("사이즈 가이드를 전체 삭제할까요?")) return;
     setSG({ columns: [], rows: [], image: "", note: "" });
+  };
+  // 무료 OCR — 사이즈표 이미지에서 행·열 자동 추출 (브라우저 내 실행, 검수 필요)
+  const handleSizeOcr = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setOcrBusy(true); setOcrProgress(0);
+    try {
+      const { extractSizeTableFromImage } = await import("@/lib/sizeGuideOcr");
+      const table = await extractSizeTableFromImage(file, (p) => setOcrProgress(p));
+      if (!table.columns.length) {
+        alert("표를 인식하지 못했습니다. 더 선명한(글자가 큰) 캡쳐를 사용해 주세요.");
+        return;
+      }
+      if (sgRows.length > 0 && !confirm("인식 결과로 현재 표를 교체할까요?")) return;
+      setSG({ mode: "table", columns: table.columns, rows: table.rows });
+      alert("자동 추출 완료! 인식 오류가 있을 수 있으니 값을 꼭 확인·수정해 주세요.");
+    } catch {
+      alert("OCR 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setOcrBusy(false); setOcrProgress(0);
+    }
   };
   const handleSizeGuideFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
