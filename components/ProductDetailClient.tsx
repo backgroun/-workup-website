@@ -38,11 +38,10 @@ export default function ProductDetailClient({
   relatedProducts?: Product[];
   isNewLayout?: boolean;
 }) {
-  const { addItem } = useCart();
+  const { hasProduct, toggleProduct } = useCart();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  const [addedMsg, setAddedMsg] = useState(false);
   // 회원 로그인 세션 — 피팅 리스트 담기 게이팅용 (null = 비로그인)
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
@@ -135,15 +134,13 @@ export default function ProductDetailClient({
     } catch { /* noop */ }
   };
 
-  const handleAddToCart = () => {
+  // 찜(하트) — 피팅 리스트 토글. 선택한 사이즈/컬러가 있으면 함께 담김. 로그인 필요.
+  const toggleFav = () => {
     if (!memberSession) {
       setLoginPromptOpen(true);
       return;
     }
-    if (!selectedSize) { alert("사이즈를 선택해 주세요."); return; }
-    addItem({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
-    setAddedMsg(true);
-    setTimeout(() => setAddedMsg(false), 2500);
+    toggleProduct({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
   };
 
   const StoreList = () => (
