@@ -5,6 +5,10 @@ import { useEffect } from "react";
 // 워크업 공식 인스타그램 프로필
 const IG_PROFILE = "https://www.instagram.com/workup_official_kr/";
 
+// Behold.so 피드 ID — 위젯에 공개적으로 노출되는 공개 식별자(비밀값 아님).
+// 환경변수 NEXT_PUBLIC_BEHOLD_FEED_ID 로 덮어쓸 수 있고, 없으면 이 값을 사용한다.
+const DEFAULT_BEHOLD_FEED_ID = "ZNUmKPgmgkl9x5xyKChS";
+
 // Behold 미설정 시 보여줄 폴백 타일 (정사각형 1:1, 텍스트 없는 순수 비주얼).
 // Behold feed ID가 설정되면 이 그리드 대신 실시간 인스타 피드가 자동 렌더링됩니다.
 const FALLBACK_POSTS: { image?: string }[] = [
@@ -23,9 +27,9 @@ const InstagramGlyph = ({ className }: { className?: string }) => (
 );
 
 export default function HomeInstagramFeed() {
-  // Behold.so 피드 ID — Vercel 환경변수 NEXT_PUBLIC_BEHOLD_FEED_ID 로 주입.
-  // 설정되면 실시간 인스타 피드가 자동으로 채워지고, 새 게시물도 자동 반영된다.
-  const feedId = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID;
+  // 실시간 인스타 피드가 자동으로 채워지고, 새 게시물도 자동 반영된다.
+  // (환경변수로 덮어쓰지 않으면 DEFAULT_BEHOLD_FEED_ID 사용)
+  const feedId = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID || DEFAULT_BEHOLD_FEED_ID;
 
   useEffect(() => {
     if (!feedId) return;
