@@ -71,6 +71,9 @@ export type Product = {
   materialSpecs?: { label: string; value: string }[];
   washCare?: { icon: "cold" | "no-dry" | "no-bleach" | "low-iron" | "hand-wash"; text: string }[];
   productReviews?: { stars: number; text: string; job: string; period?: string }[];
+  detailPoints?: string[];
+  lifestyleScenes?: { tag: string; title: string; desc: string }[];
+  sizePrices?: { size: string; weight?: string; price: string }[];
 };
 
 export const mainCategories: MainCategory[] = [
