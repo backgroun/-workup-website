@@ -91,6 +91,16 @@ export default function ProductTabs({ product }: { product: Product }) {
             </div>
           )}
 
+          {/* 상세 이미지 (detail_blocks) — 상세 영역 전용 (갤러리 썸네일엔 안 뜸) */}
+          {(product.detailBlocks ?? []).some((b) => b.imageUrl) && (
+            <div className="space-y-3 max-w-3xl mx-auto mb-10">
+              {product.detailBlocks!.filter((b) => b.imageUrl).map((b, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={b.id ?? i} src={b.imageUrl} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
+              ))}
+            </div>
+          )}
+
           {/* 상세 이미지 — 원본 비율 그대로 (긴 상세페이지 이미지도 잘리지 않음) */}
           {(product.subImages ?? []).length > 0 && (
             <div className="space-y-3 max-w-3xl mx-auto mb-10">
