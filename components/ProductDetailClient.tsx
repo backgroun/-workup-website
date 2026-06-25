@@ -244,17 +244,14 @@ export default function ProductDetailClient({
           ))}
         </ul>
       ) : (
-        <>
-          <p className="text-sm text-gray-500 leading-relaxed italic">&ldquo;{product.tagline}&rdquo;</p>
-          <ul className="space-y-2.5">
-            {product.features.map((f) => (
-              <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
-                <span className="w-1 h-1 bg-[#ff550c] rounded-full flex-shrink-0" />
-                {f}
-              </li>
-            ))}
-          </ul>
-        </>
+        <ul className="space-y-2.5">
+          {product.features.slice(0, 3).map((f) => (
+            <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
+              <span className="w-1 h-1 bg-[#ff550c] rounded-full flex-shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
       )}
 
       {/* 필드 테스트 */}
@@ -270,7 +267,6 @@ export default function ProductDetailClient({
       {/* 컬러 */}
       {product.colors.length > 0 && (
         <div>
-          <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">컬러</p>
           <div className="flex items-center gap-3 flex-wrap">
             {product.colors.map((c) => (
               <button key={c.name} onClick={() => setSelectedColor(c)} title={c.name}
