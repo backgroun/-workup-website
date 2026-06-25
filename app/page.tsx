@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment, type ReactNode } from "react";
 import Hero from "@/components/Hero";
 import HomeNewArrivals from "@/components/HomeNewArrivals";
 import HomeCategoryGrid from "@/components/HomeCategoryGrid";
@@ -6,6 +7,8 @@ import HomeEditorial from "@/components/HomeEditorial";
 import HomePeopleTeaser from "@/components/HomePeopleTeaser";
 import HomeInstagramFeed from "@/components/HomeInstagramFeed";
 import PopupBanner from "@/components/PopupBanner";
+import { getHomeLayout } from "@/lib/home-layout-server";
+import type { HomeSectionKey } from "@/lib/home-layout";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +23,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+// 섹션 키 → 렌더러. 관리자 "메인 배치"에서 정한 순서·노출에 따라 렌더링된다.
+const SECTION_RENDERERS: Record<HomeSectionKey, () => ReactNode> = {
+  hero: () => <Hero />,
+  newArrivals: () => <HomeNewArrivals />,
+  category: () => <HomeCategoryGrid />,
+  editorial: () => <HomeEditorial />,
+  people: () => <HomePeopleTeaser />,
+  instagram: () => <HomeInstagramFeed />,
+};
+
+export default async function Home() {
+  const { sections } = await getHomeLayout();
   return (
     <main>
+      {/* 팝업은 오버레이라 배치 대상에서 제외 — 항상 렌더 */}
       <PopupBanner />
-      <Hero />
-      <HomeNewArrivals />
-      <div className="px-[15px] md:px-[70px]">
-        <hr className="border-t border-gray-200" />
-      </div>
-      <HomeCategoryGrid />
-      <HomeEditorial />
-      <HomePeopleTeaser />
-      <HomeInstagramFeed />
+      {sections
+        .filter((s) => s.visible)
+        .map((s) => {
+          const render = SECTION_RENDERERS[s.key];
+          return render ? <Fragment key={s.key}>{render()}</Fragment> : null;
+        })}
     </main>
   );
 }
