@@ -1,11 +1,13 @@
+"use client";
+
+import { useEffect } from "react";
+
 // 워크업 공식 인스타그램 프로필
 const IG_PROFILE = "https://www.instagram.com/workup_official_kr/";
 
-// 그리드에 노출할 게시물 (정사각형 1:1).
-// - image : 텍스트 없는 순수 비주얼 (실제 인스타 이미지로 교체하세요. 예: /images/insta/01.jpg)
-// - href  : 해당 게시물 링크 (생략 시 프로필로 이동)
-// 이미지가 없는 칸은 브랜드 플레이스홀더(WU)로 표시되며, image 경로만 채우면 바로 반영됩니다.
-const POSTS: { image?: string; href?: string }[] = [
+// Behold 미설정 시 보여줄 폴백 타일 (정사각형 1:1, 텍스트 없는 순수 비주얼).
+// Behold feed ID가 설정되면 이 그리드 대신 실시간 인스타 피드가 자동 렌더링됩니다.
+const FALLBACK_POSTS: { image?: string }[] = [
   { image: "/images/people-construction.jpg" },
   {},
   {},
@@ -21,6 +23,19 @@ const InstagramGlyph = ({ className }: { className?: string }) => (
 );
 
 export default function HomeInstagramFeed() {
+  // Behold.so 피드 ID — Vercel 환경변수 NEXT_PUBLIC_BEHOLD_FEED_ID 로 주입.
+  // 설정되면 실시간 인스타 피드가 자동으로 채워지고, 새 게시물도 자동 반영된다.
+  const feedId = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID;
+
+  useEffect(() => {
+    if (!feedId) return;
+    if (document.querySelector('script[src*="behold.so"]')) return;
+    const script = document.createElement("script");
+    script.src = "https://w.behold.so/widget.js";
+    script.type = "module";
+    document.head.appendChild(script);
+  }, [feedId]);
+
   return (
     <section className="bg-white py-14 border-t border-gray-100">
       <div className="px-[15px] md:px-[70px]">
@@ -41,36 +56,40 @@ export default function HomeInstagramFeed() {
           </a>
         </div>
 
-        {/* 피드 그리드 — 데스크탑 6열 1줄 / 모바일 3열 2줄 */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2">
-          {POSTS.map((post, i) => (
-            <a
-              key={i}
-              href={post.href || IG_PROFILE}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative block aspect-square overflow-hidden bg-gray-100"
-              aria-label="워크업 인스타그램에서 보기"
-            >
-              {post.image ? (
-                <img
-                  src={post.image}
-                  alt="워크업 작업복 현장 이야기"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <span className="absolute inset-0 flex items-center justify-center text-gray-300 text-2xl font-black select-none">
-                  WU
+        {feedId ? (
+          /* 실시간 인스타 피드 (Behold.so 위젯 — 새 게시물 자동 반영) */
+          /* @ts-expect-error — Behold 커스텀 웹 컴포넌트 */
+          <behold-widget feed-id={feedId} />
+        ) : (
+          /* Behold 미설정 시 폴백 — 섹션이 비지 않도록 브랜드 그리드 + 팔로우 유도 */
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2">
+            {FALLBACK_POSTS.map((post, i) => (
+              <a
+                key={i}
+                href={IG_PROFILE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block aspect-square overflow-hidden bg-gray-100"
+                aria-label="워크업 인스타그램에서 보기"
+              >
+                {post.image ? (
+                  <img
+                    src={post.image}
+                    alt="워크업 작업복 현장 이야기"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-gray-300 text-2xl font-black select-none">
+                    WU
+                  </span>
+                )}
+                <span className="absolute inset-0 flex items-center justify-center bg-[#1A2B4A]/0 opacity-0 transition-all duration-300 group-hover:bg-[#1A2B4A]/35 group-hover:opacity-100">
+                  <InstagramGlyph className="w-7 h-7 text-white" />
                 </span>
-              )}
-
-              {/* 호버 오버레이 — 인스타로 연결됨을 시각적으로 표시 */}
-              <span className="absolute inset-0 flex items-center justify-center bg-[#1A2B4A]/0 opacity-0 transition-all duration-300 group-hover:bg-[#1A2B4A]/35 group-hover:opacity-100">
-                <InstagramGlyph className="w-7 h-7 text-white" />
-              </span>
-            </a>
-          ))}
-        </div>
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* 모바일 팔로우 CTA */}
         <div className="mt-8 text-center sm:hidden">
