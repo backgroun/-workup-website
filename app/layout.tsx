@@ -64,7 +64,7 @@ export default async function RootLayout({
             {/* BottomNav는 position:fixed 로 화면 최하단 고정. scroll-root는 스크롤 컨테이너 */}
             <div
               id={isAdmin ? undefined : "scroll-root"}
-              className={isAdmin ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col overflow-y-auto md:overflow-y-visible"}
+              className={isAdmin ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col"}
             >
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
