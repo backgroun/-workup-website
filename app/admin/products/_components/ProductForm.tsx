@@ -264,7 +264,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // 외부 데이터
   const [brands, setBrands] = useState<string[]>([]);
   const [manufacturers, setManufacturers] = useState<string[]>([]);
-  const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string; imageUrl?: string }[]>([]);
   const [relatedCatFilter, setRelatedCatFilter] = useState("");
   const [relatedSearch, setRelatedSearch] = useState("");
   const [relatedModalOpen, setRelatedModalOpen] = useState(false);
@@ -301,8 +301,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       .then((data: unknown) => {
         if (Array.isArray(data)) {
           setAllProducts(
-            (data as { id: string; name: string; category: string }[]).map((p) => ({
-              id: p.id, name: p.name, category: p.category,
+            (data as { id: string; name: string; category: string; imageUrl?: string }[]).map((p) => ({
+              id: p.id, name: p.name, category: p.category, imageUrl: p.imageUrl,
             }))
           );
         }
@@ -1210,6 +1210,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       <label key={p.id} className="flex items-center gap-3 px-6 py-2.5 hover:bg-gray-50 cursor-pointer">
                         <input type="checkbox" checked={form.relatedIds.includes(p.id)} onChange={() => toggleRelated(p.id)}
                           className="w-4 h-4 accent-[#1A2B4A]" />
+                        <span className="w-9 h-9 bg-[#f4f4f4] rounded overflow-hidden flex-shrink-0">
+                          {p.imageUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                          )}
+                        </span>
                         <span className="text-sm text-gray-800 flex-1">{p.name}</span>
                         <span className="text-xs text-gray-400 shrink-0">{p.category}</span>
                       </label>
