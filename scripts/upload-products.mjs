@@ -60,6 +60,42 @@ function parseInfo(txt) {
   return o;
 }
 
+// ── 이미지 수집 ──
+// 우선순위: "썸네일/" · "상세/" 하위폴더(파일명 무관) → 없으면 루트 파일명으로 분류
+const IMG_RE = /\.(jpe?g|png|webp)$/i;
+const THUMB_DIRS = ["썸네일", "대표", "thumb", "thumbnail", "main"];
+const DETAIL_DIRS = ["상세", "상세페이지", "detail", "갤러리", "gallery"];
+
+function imagesIn(d) {
+  if (!d || !fs.existsSync(d)) return [];
+  return fs.readdirSync(d).filter((f) => IMG_RE.test(f)).sort(natSort).map((f) => path.join(d, f));
+}
+
+function collectImages(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const findDir = (names) => {
+    const e = entries.find((en) => en.isDirectory() && names.some((n) => en.name.toLowerCase() === n.toLowerCase()));
+    return e ? path.join(dir, e.name) : null;
+  };
+  const thumbDir = findDir(THUMB_DIRS);
+  const detailDir = findDir(DETAIL_DIRS);
+  let thumbs = imagesIn(thumbDir);
+  let details = imagesIn(detailDir);
+
+  const rootImgs = entries.filter((e) => e.isFile() && IMG_RE.test(e.name)).map((e) => e.name).sort(natSort);
+  if (!thumbDir && !detailDir) {
+    // 하위폴더 없음 → 루트 파일명으로 분류(이전 방식 호환)
+    const tf = rootImgs.find((f) => /썸네일|thumb|대표|main/i.test(f)) || rootImgs[0];
+    if (tf) { thumbs = [path.join(dir, tf)]; details = rootImgs.filter((f) => f !== tf).map((f) => path.join(dir, f)); }
+  } else {
+    // 하위폴더 사용 — 루트에 흩어진 이미지는 상세로 추가
+    details = [...details, ...rootImgs.map((f) => path.join(dir, f))];
+  }
+  const thumb = thumbs[0] || null;
+  if (thumbs.length > 1) details = [...thumbs.slice(1), ...details]; // 썸네일 폴더에 여러 장이면 첫 장만 대표
+  return { thumb, details };
+}
+
 async function uploadImage(filePath, publicId, isThumb) {
   let buf = fs.readFileSync(filePath);
   if (isThumb) {
@@ -94,16 +130,14 @@ async function processFolder(dir, folderName) {
   if (cat.includes(">")) { const [a, b] = cat.split(">").map((s) => s.trim()); category = category || a; subCategory = subCategory || b; }
   category = category || "소품"; subCategory = subCategory || "기타";
 
-  // 이미지 분류
-  const files = fs.readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort(natSort);
-  const thumbFile = files.find((f) => /썸네일|thumb|대표|main/i.test(f)) || files[0];
-  const detailFiles = files.filter((f) => f !== thumbFile);
-  console.log(`  ▶ ${name} (${id}) — 썸네일:${thumbFile ? "O" : "X"} 상세:${detailFiles.length}장`);
+  // 이미지 수집 (썸네일/ · 상세/ 하위폴더 우선, 없으면 루트 파일명으로 분류)
+  const { thumb, details } = collectImages(dir);
+  console.log(`  ▶ ${name} (${id}) — 썸네일:${thumb ? "O" : "X"} 상세:${details.length}장`);
 
-  const image_url = thumbFile ? await uploadImage(path.join(dir, thumbFile), `${id}_thumb`, true) : null;
+  const image_url = thumb ? await uploadImage(thumb, `${id}_thumb`, true) : null;
   const sub_images = [];
-  for (let i = 0; i < detailFiles.length; i++) {
-    sub_images.push(await uploadImage(path.join(dir, detailFiles[i]), `${id}_img${i + 1}`, false));
+  for (let i = 0; i < details.length; i++) {
+    sub_images.push(await uploadImage(details[i], `${id}_img${i + 1}`, false));
   }
 
   const colors = listSplit(get("색상", "colors")).map((n) => ({ name: n, hex: COLOR_HEX[n] || "#888888" }));
