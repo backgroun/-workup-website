@@ -175,13 +175,16 @@ export default function ProductTabs({ product }: { product: Product }) {
         </div>
 
         {/* ── 상품문의 ── */}
-        <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100 text-center`}>
-          <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-4">상품문의</p>
-          <p className="text-sm text-gray-500 mb-5">상품에 대한 궁금한 점이 있으신가요?</p>
-          <button type="button" onClick={() => setInquiryOpen(true)}
-            className="inline-block text-sm text-[#1A2B4A] border border-[#1A2B4A] px-8 py-3 hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
-            문의하기
-          </button>
+        <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100`}>
+          <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-200">
+            <p className="text-[15px] md:text-base font-bold text-[#1A2B4A]">
+              문의 <span className="text-[#ff550c]">0</span>건
+            </p>
+            <button type="button" onClick={() => setInquiryOpen(true)}
+              className="text-sm text-[#1A2B4A] border border-gray-300 px-6 py-3 rounded hover:border-[#1A2B4A] transition-colors">
+              상품 문의하기
+            </button>
+          </div>
         </div>
       </div>
 
