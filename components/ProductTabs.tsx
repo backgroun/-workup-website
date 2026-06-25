@@ -75,8 +75,6 @@ export default function ProductTabs({ product }: { product: Product }) {
       <div className="max-w-screen-xl mx-auto">
         {/* ── 상세 정보 ── */}
         <div ref={detailRef} data-tab="상세 정보" className={sectionClass}>
-          <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-6">상세 정보</p>
-
           {/* 핵심 기능 */}
           <ul className="space-y-3 mb-8">
             {product.features.map((f) => (
@@ -98,7 +96,6 @@ export default function ProductTabs({ product }: { product: Product }) {
           {/* 제품 정보 표 */}
           {specs.length > 0 && (
             <div className="border-t border-gray-100 pt-6 mb-8">
-              <p className="text-sm font-bold text-[#1A2B4A] mb-3">제품 정보</p>
               <dl className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
                 {specs.map((s) => (
                   <div key={s.label} className="flex text-sm">
