@@ -17,3 +17,7 @@ start-sync.bat
 
 .playwright-mcp/
 studio-*.png
+
+# 이미지 작업용 폴더 (원본 레퍼런스 · 생성 결과물 — GitHub 미동기화)
+refs/
+generated/
