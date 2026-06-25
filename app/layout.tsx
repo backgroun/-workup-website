@@ -61,13 +61,7 @@ export default async function RootLayout({
         <ScrollToTop />
         {!isAdmin && <PixelManager />}
         <CartProvider>
-            {/*
-              #scroll-root: 모바일에서 body 대신 이 컨테이너가 스크롤.
-              globals.css의 @media (max-width:767px)에서 html/body를 overflow:hidden으로 고정하고
-              이 div가 flex-1 overflow-y-auto로 스크롤을 담당.
-              BottomNav는 이 컨테이너 바깥(body flex 마지막 자식)에 위치해
-              position:fixed 없이도 항상 화면 하단에 고정됨.
-            */}
+            {/* BottomNav는 position:fixed 로 화면 최하단 고정. scroll-root는 스크롤 컨테이너 */}
             <div
               id={isAdmin ? undefined : "scroll-root"}
               className={isAdmin ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col overflow-y-auto md:overflow-y-visible"}

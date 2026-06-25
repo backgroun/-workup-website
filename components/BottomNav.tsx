@@ -123,11 +123,10 @@ export default function BottomNav({
         </nav>
       </div>
 
-      {/* 하단 네비게이션 바 — body flex 자식으로 화면 하단 고정
-          height: 64px 콘텐츠 + safe-area-inset-bottom(iPhone 홈 인디케이터 영역)
-          padding-bottom 으로 아이콘·텍스트를 64px 안에 유지 */}
+      {/* 하단 네비게이션 바 — position:fixed 로 항상 화면 최하단 고정
+          safe-area-inset-bottom: iPhone 홈 인디케이터 영역까지 배경 확장 */}
       <nav
-        className="bg-white border-t border-gray-200 md:hidden flex-shrink-0"
+        className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-200 md:hidden"
         style={{
           height: "calc(64px + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
