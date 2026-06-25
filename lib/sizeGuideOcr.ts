@@ -101,3 +101,46 @@ export async function extractSizeTableFromImage(
     await worker.terminate();
   }
 }
+
+// 값(숫자 포함 토큰)만 행별로 추출 — 한글 라벨/헤더 텍스트는 무시한다.
+// 관리자가 만든 표의 "수치 칸"만 채우는 용도(행·열 제목은 그대로 유지).
+function buildValueRows(words: W[]): string[][] {
+  if (words.length === 0) return [];
+  const hs = words.map((w) => w.h).sort((a, b) => a - b);
+  const medH = hs[Math.floor(hs.length / 2)] || 12;
+  const rowThresh = medH * 0.7;
+  const sorted = [...words].sort((a, b) => a.y - b.y);
+  const rows: { yRef: number; ws: W[] }[] = [];
+  for (const w of sorted) {
+    const last = rows[rows.length - 1];
+    if (last && Math.abs(w.y - last.yRef) <= rowThresh) {
+      last.ws.push(w);
+      last.yRef = (last.yRef * (last.ws.length - 1) + w.y) / last.ws.length;
+    } else {
+      rows.push({ yRef: w.y, ws: [w] });
+    }
+  }
+  const hasDigit = (s: string) => /\d/.test(s);
+  return rows
+    .map((r) => [...r.ws].sort((a, b) => a.x - b.x).filter((w) => hasDigit(w.text)).map((w) => w.text))
+    .filter((vals) => vals.length > 0);
+}
+
+export async function extractSizeValuesFromImage(
+  file: File | string,
+  onProgress?: OcrProgress
+): Promise<string[][]> {
+  const Tesseract = await import("tesseract.js");
+  const worker = await Tesseract.createWorker("kor+eng", 1, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger: (m: any) => {
+      if (m?.status === "recognizing text" && onProgress) onProgress(Math.round((m.progress ?? 0) * 100));
+    },
+  });
+  try {
+    const { data } = await worker.recognize(file, {}, { blocks: true });
+    return buildValueRows(collectWords(data));
+  } finally {
+    await worker.terminate();
+  }
+}
