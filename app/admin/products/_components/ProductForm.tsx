@@ -742,6 +742,34 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("customSizeInput", "");
   };
 
+  // ── 사이즈 가이드 (이미지 / 행·열 표) ──────────────────────────────────────
+  const sg = form.sizeGuide;
+  const setSG = (patch: Partial<SizeGuide>) => set("sizeGuide", { ...sg, ...patch });
+  const sgCols = sg.columns ?? [];
+  const sgRows = sg.rows ?? [];
+  const sgAddColumn = () => setSG({ columns: [...sgCols, ""], rows: sgRows.map((r) => ({ cells: [...r.cells, ""] })) });
+  const sgRemoveColumn = (ci: number) => setSG({ columns: sgCols.filter((_, i) => i !== ci), rows: sgRows.map((r) => ({ cells: r.cells.filter((_, i) => i !== ci) })) });
+  const sgSetColumn = (ci: number, v: string) => setSG({ columns: sgCols.map((c, i) => (i === ci ? v : c)) });
+  const sgAddRow = () => setSG({ rows: [...sgRows, { cells: sgCols.map(() => "") }] });
+  const sgRemoveRow = (ri: number) => setSG({ rows: sgRows.filter((_, i) => i !== ri) });
+  const sgSetCell = (ri: number, ci: number, v: string) =>
+    setSG({ rows: sgRows.map((r, i) => (i === ri ? { cells: r.cells.map((c, j) => (j === ci ? v : c)) } : r)) });
+  const handleSizeGuideFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploadError(""); setUploadingSizeGuide(true);
+    const url = await uploadFile(file);
+    setUploadingSizeGuide(false);
+    if (url) setSG({ image: url });
+    e.target.value = "";
+  };
+
+  // ── 상세 정보 (라벨/값 텍스트) ─────────────────────────────────────────────
+  const diAdd = () => set("detailInfo", [...form.detailInfo, { label: "", value: "" }]);
+  const diRemove = (i: number) => set("detailInfo", form.detailInfo.filter((_, idx) => idx !== i));
+  const diSet = (i: number, key: "label" | "value", v: string) =>
+    set("detailInfo", form.detailInfo.map((it, idx) => (idx === i ? { ...it, [key]: v } : it)));
+  const diLoadDefaults = () => set("detailInfo", DETAIL_INFO_DEFAULTS.map((label) => ({ label, value: "" })));
+
   // ── 색상 ──────────────────────────────────────────────────────────────────
   const toggleColor = (preset: { name: string; hex: string }) => {
     const exists = form.colors.some((c) => c.name === preset.name);
