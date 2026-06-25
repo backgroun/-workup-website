@@ -61,10 +61,12 @@ function parseInfo(txt) {
 }
 
 // ── 이미지 수집 ──
-// 우선순위: "썸네일/" · "상세/" 하위폴더(파일명 무관) → 없으면 루트 파일명으로 분류
+// 대표 우선순위: "썸네일/"폴더 → 루트 이미지 → 상세/갤러리 첫 장
+// 상세(추가) : "상세/"·"detail/"·"갤러리/"·"gallery/" 폴더 + 루트 잔여 (폴더명·파일명 유연)
 const IMG_RE = /\.(jpe?g|png|webp)$/i;
 const THUMB_DIRS = ["썸네일", "대표", "thumb", "thumbnail", "main"];
-const DETAIL_DIRS = ["상세", "상세페이지", "detail", "갤러리", "gallery"];
+const DETAIL_DIRS = ["상세", "상세페이지", "detail"];
+const GALLERY_DIRS = ["갤러리", "gallery", "sub", "서브"];
 
 function imagesIn(d) {
   if (!d || !fs.existsSync(d)) return [];
@@ -73,26 +75,20 @@ function imagesIn(d) {
 
 function collectImages(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const findDir = (names) => {
-    const e = entries.find((en) => en.isDirectory() && names.some((n) => en.name.toLowerCase() === n.toLowerCase()));
-    return e ? path.join(dir, e.name) : null;
-  };
-  const thumbDir = findDir(THUMB_DIRS);
-  const detailDir = findDir(DETAIL_DIRS);
-  let thumbs = imagesIn(thumbDir);
-  let details = imagesIn(detailDir);
+  const flat = (names) =>
+    entries
+      .filter((e) => e.isDirectory() && names.some((n) => e.name.toLowerCase() === n.toLowerCase()))
+      .flatMap((e) => imagesIn(path.join(dir, e.name)));
+  const thumbFolder = flat(THUMB_DIRS);
+  const detailFolder = flat(DETAIL_DIRS);
+  const galleryFolder = flat(GALLERY_DIRS);
+  const rootImgs = entries.filter((e) => e.isFile() && IMG_RE.test(e.name)).map((e) => path.join(dir, e.name)).sort(natSort);
 
-  const rootImgs = entries.filter((e) => e.isFile() && IMG_RE.test(e.name)).map((e) => e.name).sort(natSort);
-  if (!thumbDir && !detailDir) {
-    // 하위폴더 없음 → 루트 파일명으로 분류(이전 방식 호환)
-    const tf = rootImgs.find((f) => /썸네일|thumb|대표|main/i.test(f)) || rootImgs[0];
-    if (tf) { thumbs = [path.join(dir, tf)]; details = rootImgs.filter((f) => f !== tf).map((f) => path.join(dir, f)); }
-  } else {
-    // 하위폴더 사용 — 루트에 흩어진 이미지는 상세로 추가
-    details = [...details, ...rootImgs.map((f) => path.join(dir, f))];
-  }
-  const thumb = thumbs[0] || null;
-  if (thumbs.length > 1) details = [...thumbs.slice(1), ...details]; // 썸네일 폴더에 여러 장이면 첫 장만 대표
+  const thumbPool = thumbFolder.length ? thumbFolder : rootImgs.length ? rootImgs : [...detailFolder, ...galleryFolder];
+  const thumb = thumbPool[0] || null;
+
+  const all = [...detailFolder, ...galleryFolder, ...thumbFolder, ...rootImgs];
+  const details = [...new Set(all)].filter((p) => p && p !== thumb);
   return { thumb, details };
 }
 
