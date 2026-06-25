@@ -11,6 +11,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
   const [slideDir, setSlideDir] = useState<"up" | "down" | "left" | "right">("down");
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
 
   const go = (i: number, dir?: typeof slideDir) => {
     if (i === activeIdx || i < 0 || i >= images.length) return;
@@ -90,17 +91,38 @@ export default function ProductImageGallery({ product }: { product: Product }) {
       <div className="hidden md:flex h-screen sticky top-0">
         {/* 썸네일 스트립 */}
         {images.length > 1 && (
-          <div className="w-[80px] bg-[#f4f4f4] flex flex-col gap-2 p-2 overflow-y-auto flex-shrink-0">
-            {images.map((src, i) => (
-              <button key={i} onClick={() => go(i, i > activeIdx ? "down" : "up")}
-                className={`relative w-full aspect-[4/5] flex-shrink-0 overflow-hidden transition-opacity ${
-                  i === activeIdx ? "opacity-100" : "opacity-50 hover:opacity-80"
-                }`}
-                style={{ outline: i === activeIdx ? "2px solid #1A2B4A" : "none", outlineOffset: "-2px" }}
-              >
-                <Image src={src} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="72px" />
-              </button>
-            ))}
+          <div className="w-[80px] bg-white flex flex-col flex-shrink-0">
+            {/* 위 화살표 (배경 없음) */}
+            <button type="button" aria-label="이전 썸네일"
+              onClick={() => stripRef.current?.scrollBy({ top: -180, behavior: "smooth" })}
+              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+
+            {/* 썸네일 목록 */}
+            <div ref={stripRef} className="flex flex-col gap-2 px-2 overflow-y-auto flex-1" style={{ scrollbarWidth: "none" }}>
+              {images.map((src, i) => (
+                <button key={i} onClick={() => go(i, i > activeIdx ? "down" : "up")}
+                  className={`relative w-full aspect-[4/5] flex-shrink-0 overflow-hidden transition-opacity ${
+                    i === activeIdx ? "opacity-100" : "opacity-50 hover:opacity-80"
+                  }`}
+                  style={{ outline: i === activeIdx ? "2px solid #1A2B4A" : "none", outlineOffset: "-2px" }}
+                >
+                  <Image src={src} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="72px" />
+                </button>
+              ))}
+            </div>
+
+            {/* 아래 화살표 (배경 없음) */}
+            <button type="button" aria-label="다음 썸네일"
+              onClick={() => stripRef.current?.scrollBy({ top: 180, behavior: "smooth" })}
+              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
         )}
 
