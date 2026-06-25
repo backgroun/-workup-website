@@ -249,6 +249,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string }[]>([]);
   const [relatedCatFilter, setRelatedCatFilter] = useState("");
   const [relatedSearch, setRelatedSearch] = useState("");
+  const [relatedModalOpen, setRelatedModalOpen] = useState(false);
+  const [blockMenuOpen, setBlockMenuOpen] = useState(false); // 상세설명 "블록 추가" 드롭다운
 
   useEffect(() => {
     fetch("/api/admin/site-settings/categories")
@@ -665,10 +667,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleDragEnd = () => { setDragSubIdx(null); setDragOverSubIdx(null); };
 
   // ── 상세 설명 블록 ──────────────────────────────────────────────────────────
-  const addBlock = () => {
+  const addBlock = (type: (typeof DETAIL_BLOCK_TYPES)[number] = "상품 소개") => {
     set("detailBlocks", [
       ...form.detailBlocks,
-      { id: `block-${Date.now()}`, type: "상품 소개", content: "", imageUrl: "" },
+      { id: `block-${Date.now()}`, type, content: "", imageUrl: "" },
     ]);
   };
 
@@ -1076,9 +1078,15 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 5. 연관 상품 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <SectionTitle>연관 상품</SectionTitle>
-            {form.relatedIds.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">연관 상품</h2>
+              <button type="button" onClick={() => setRelatedModalOpen(true)}
+                className="px-3 py-1.5 text-xs font-semibold border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">
+                + 연관 상품 추가
+              </button>
+            </div>
+            {form.relatedIds.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
                 {form.relatedIds.map((id) => {
                   const p = allProducts.find((ap) => ap.id === id);
                   return (
@@ -1089,43 +1097,88 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   );
                 })}
               </div>
+            ) : (
+              <p className="text-xs text-gray-400">아직 선택된 연관 상품이 없습니다. &quot;+ 연관 상품 추가&quot; 버튼으로 선택하세요.</p>
             )}
-            <div className="flex gap-2 mb-2">
-              <div className="relative flex-1">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" value={relatedSearch} onChange={(e) => setRelatedSearch(e.target.value)}
-                  placeholder="상품명 검색..."
-                  className="w-full border border-gray-200 pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
-              </div>
-              <select value={relatedCatFilter} onChange={(e) => setRelatedCatFilter(e.target.value)}
-                className={`${SELECT_CLS} w-auto min-w-[110px] flex-shrink-0`}>
-                <option value="">전체</option>
-                {dynMainCats.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-              {filteredRelatedProducts.length === 0 ? (
-                <p className="text-xs text-gray-400 px-4 py-6 text-center">
-                  {allProducts.length === 0 ? "등록된 상품이 없습니다." : "검색 결과가 없습니다."}
-                </p>
-              ) : (
-                filteredRelatedProducts.map((p) => (
-                  <label key={p.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={form.relatedIds.includes(p.id)} onChange={() => toggleRelated(p.id)}
-                      className="w-4 h-4 accent-[#1A2B4A]" />
-                    <span className="text-sm text-gray-800 flex-1">{p.name}</span>
-                    <span className="text-xs text-gray-400 shrink-0">{p.category}</span>
-                  </label>
-                ))
-              )}
-            </div>
-            <p className="text-xs text-gray-400 mt-1.5">
+            <p className="text-xs text-gray-400 mt-3">
               {form.relatedIds.length > 0 ? `${form.relatedIds.length}개 선택됨 · ` : ""}
               제품 상세 페이지에 연관 상품으로 표시됩니다.
             </p>
           </section>
+
+          {/* 연관 상품 선택 모달 — 카테고리별 + 검색 */}
+          {relatedModalOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+              onClick={() => setRelatedModalOpen(false)}>
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}>
+                {/* 헤더 */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900">연관 상품 선택</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">{form.relatedIds.length}개 선택됨</p>
+                  </div>
+                  <button type="button" onClick={() => setRelatedModalOpen(false)} className="text-gray-400 hover:text-gray-700 p-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* 검색 + 카테고리별 선택 */}
+                <div className="px-6 py-3 border-b border-gray-100 flex-shrink-0 space-y-2.5">
+                  <div className="relative">
+                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" value={relatedSearch}
+                      onChange={(e) => setRelatedSearch(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+                      placeholder="상품명 검색..."
+                      className="w-full border border-gray-200 pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button type="button" onClick={() => setRelatedCatFilter("")}
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === "" ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"}`}>
+                      전체
+                    </button>
+                    {dynMainCats.map((c) => (
+                      <button key={c} type="button" onClick={() => setRelatedCatFilter(c)}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === c ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"}`}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 상품 리스트 */}
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                  {filteredRelatedProducts.length === 0 ? (
+                    <p className="text-xs text-gray-400 px-4 py-10 text-center">
+                      {allProducts.length === 0 ? "등록된 상품이 없습니다." : "검색 결과가 없습니다."}
+                    </p>
+                  ) : (
+                    filteredRelatedProducts.map((p) => (
+                      <label key={p.id} className="flex items-center gap-3 px-6 py-2.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" checked={form.relatedIds.includes(p.id)} onChange={() => toggleRelated(p.id)}
+                          className="w-4 h-4 accent-[#1A2B4A]" />
+                        <span className="text-sm text-gray-800 flex-1">{p.name}</span>
+                        <span className="text-xs text-gray-400 shrink-0">{p.category}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+
+                {/* 푸터 */}
+                <div className="px-6 py-3 border-t border-gray-200 flex justify-end flex-shrink-0">
+                  <button type="button" onClick={() => setRelatedModalOpen(false)}
+                    className="px-6 py-2 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d5e] transition-colors">
+                    완료 ({form.relatedIds.length})
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── 6. SEO ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
@@ -1642,12 +1695,44 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 상세 설명 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 설명</h2>
-              <button type="button" onClick={addBlock}
-                className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white hover:bg-[#243d5e] transition-colors rounded">
-                + 블록 추가
-              </button>
+              <div className="flex items-center gap-2">
+                {/* 우선 옵션 — 바로 추가 */}
+                <button type="button" onClick={() => addBlock("착용 컷")}
+                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+                  + 착용컷
+                </button>
+                <button type="button" onClick={() => addBlock("상품 소개")}
+                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+                  + 상품 소개
+                </button>
+                {/* 그 외 유형 — 드롭다운 */}
+                <div className="relative">
+                  <button type="button" onClick={() => setBlockMenuOpen((v) => !v)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[#1A2B4A] text-white hover:bg-[#243d5e] transition-colors rounded">
+                    블록 추가
+                    <svg className={`w-3 h-3 transition-transform ${blockMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {blockMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setBlockMenuOpen(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 shadow-lg rounded min-w-[140px] py-1">
+                        <p className="px-3 pb-1 mb-1 text-[11px] text-gray-400 border-b border-gray-100">기타 블록 유형</p>
+                        {DETAIL_BLOCK_TYPES.filter((t) => t !== "착용 컷" && t !== "상품 소개").map((t) => (
+                          <button key={t} type="button"
+                            onClick={() => { addBlock(t); setBlockMenuOpen(false); }}
+                            className="block w-full text-left px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50">
+                            + {t}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
             {form.detailBlocks.length === 0 && (
               <p className="text-xs text-gray-400 py-6 text-center border border-dashed border-gray-200 rounded">

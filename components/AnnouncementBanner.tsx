@@ -1,12 +1,10 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Fragment, type ReactNode, type CSSProperties } from "react";
+import { Oxanium } from "next/font/google";
 import TopbarIcon from "./TopbarIcon";
-import { DEFAULT_TOPBAR, safeHref, normalizeTopbar, type TopbarConfig } from "@/lib/topbar";
+import { DEFAULT_TOPBAR, safeHref, type TopbarConfig } from "@/lib/topbar";
 
-const OXANIUM: CSSProperties = { fontFamily: "'Oxanium', sans-serif" };
+const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 function SmartLink({ href, newTab, className, style, children }: {
   href: string; newTab?: boolean; className?: string; style?: CSSProperties; children: ReactNode;
@@ -22,29 +20,8 @@ function SmartLink({ href, newTab, className, style, children }: {
   );
 }
 
-// 상단 탑바(공지바).
-// SSR 초기값(serverConfig)으로 즉시 렌더링 → 마운트 후 API에서 최신값을 가져와 반영.
-// 이렇게 하면 Next.js 클라이언트 라우터 캐시나 iOS Safari 캐시와 무관하게
-// 관리자 저장 직후 새로고침 한 번으로 반영됨.
-export default function AnnouncementBanner({ config: serverConfig }: { config?: TopbarConfig | null }) {
-  const [c, setC] = useState<TopbarConfig>(serverConfig ?? DEFAULT_TOPBAR);
-
-  useEffect(() => {
-    fetch("/api/admin/site-settings/topbar", { cache: "no-store" })
-      .then(r => r.ok ? r.json() : null)
-      .then(raw => {
-        if (!raw) return;
-        const fresh = normalizeTopbar(raw);
-        setC(fresh);
-        // 헤더 sticky 오프셋이 참조하는 CSS 변수도 클라이언트에서 갱신
-        document.documentElement.style.setProperty(
-          "--wu-topbar-h",
-          fresh.enabled ? `${fresh.height}px` : "0px"
-        );
-      })
-      .catch(() => {});
-  }, []);
-
+export default function AnnouncementBanner({ config }: { config?: TopbarConfig | null }) {
+  const c = config ?? DEFAULT_TOPBAR;
   if (!c.enabled) return null;
 
   const iconPx = Math.max(11, Math.round(c.height * 0.4));
@@ -57,7 +34,7 @@ export default function AnnouncementBanner({ config: serverConfig }: { config?: 
   const leftInner = (
     <>
       {c.left_icon !== "none" && <TopbarIcon name={c.left_icon} style={{ width: iconPx, height: iconPx }} className="flex-shrink-0" />}
-      <span className="whitespace-nowrap" style={{ ...OXANIUM, ...textStyle }}>
+      <span className={`${oxanium.className} whitespace-nowrap`} style={textStyle}>
         {c.left_text}
       </span>
     </>
