@@ -1,15 +1,32 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { Product } from "@/data/products";
 import ProductInquiryModal from "./ProductInquiryModal";
 
 const TABS = ["상세 정보", "사이즈 및 소재", "상품문의"] as const;
 type Tab = typeof TABS[number];
 
+type ProductInquiry = {
+  id: string; createdAt: string; status: string; secret: boolean;
+  subject: string; title: string; content: string;
+};
+const INQ_STATUS: Record<string, { label: string; cls: string }> = {
+  new: { label: "답변대기", cls: "bg-gray-100 text-gray-500" },
+  processing: { label: "처리중", cls: "bg-blue-50 text-blue-600" },
+  done: { label: "답변완료", cls: "bg-emerald-50 text-emerald-600" },
+};
+const fmtInqDate = (iso: string) => {
+  try {
+    const d = new Date(iso);
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  } catch { return ""; }
+};
+
 // 한 페이지에 3개 섹션을 쌓고, 상단 sticky 탭바 클릭 시 해당 섹션으로 스크롤 이동.
 export default function ProductTabs({ product }: { product: Product }) {
   const [active, setActive] = useState<Tab>("상세 정보");
   const [inquiryOpen, setInquiryOpen] = useState(false);
+  const [inquiries, setInquiries] = useState<ProductInquiry[]>([]);
   const detailRef = useRef<HTMLDivElement>(null);
   const sizeRef = useRef<HTMLDivElement>(null);
   const qnaRef = useRef<HTMLDivElement>(null);
@@ -33,6 +50,15 @@ export default function ProductTabs({ product }: { product: Product }) {
     [detailRef.current, sizeRef.current, qnaRef.current].forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
   }, []);
+
+  // 상품문의 목록 — 해당 상품 문의 조회 (제출 후 갱신용으로 재호출)
+  const loadInquiries = useCallback(() => {
+    fetch(`/api/inquiries?productId=${encodeURIComponent(product.id)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setInquiries(Array.isArray(d) ? d : []))
+      .catch(() => setInquiries([]));
+  }, [product.id]);
+  useEffect(() => { loadInquiries(); }, [loadInquiries]);
 
   // 사이즈 가이드 / 상세 정보 — 관리자 등록 데이터
   const sizeGuide = product.sizeGuide;
