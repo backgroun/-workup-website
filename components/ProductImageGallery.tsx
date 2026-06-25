@@ -87,8 +87,8 @@ export default function ProductImageGallery({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* ── 데스크탑: 썸네일 스트립 + 메인 이미지 ── */}
-      <div className="hidden md:flex h-screen sticky top-0">
+      {/* ── 데스크탑: 썸네일 스트립 + 메인 이미지 (좌측 컬럼과 함께 스크롤) ── */}
+      <div className="hidden md:flex h-screen">
         {/* 썸네일 스트립 */}
         {images.length > 1 && (
           <div className="w-[80px] bg-white flex flex-col flex-shrink-0">

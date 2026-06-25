@@ -6,6 +6,7 @@ import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductTabs from "@/components/ProductTabs";
+import StickyAside from "@/components/StickyAside";
 import MobileProductNav from "@/components/MobileProductNav";
 
 type Props = { params: Promise<{ id: string }> };
@@ -120,18 +121,32 @@ export default async function ProductDetailPage({ params }: Props) {
         </nav>
       </div>
 
-      {/* 갤러리 + 정보 패널 */}
+      {/* 갤러리(+데스크탑 상세 탭) 좌측 스크롤 / 정보·배너 우측 고정 */}
       <div className="md:flex md:items-start max-w-screen-2xl mx-auto">
-        <div className="w-full md:w-[58%] lg:w-[62%] md:sticky md:top-0 md:h-screen">
+        {/* 좌측: 갤러리 + 상세 탭(데스크탑) — 함께 스크롤 */}
+        <div className="w-full md:w-[58%] lg:w-[62%]">
           <ProductImageGallery product={product} />
+          {!isNewLayout && (
+            <div className="hidden md:block">
+              <ProductTabs product={product} />
+            </div>
+          )}
         </div>
-        <div className="w-full md:w-[42%] lg:w-[38%]">
+        {/* 우측: 정보 + 배너 — 끝(마지막 배너)까지 스크롤 후 고정 */}
+        <StickyAside className="w-full md:w-[42%] lg:w-[38%]">
           <ProductDetailClient product={product} relatedProducts={relatedProducts} isNewLayout={isNewLayout} />
-        </div>
+        </StickyAside>
       </div>
 
+      {/* 모바일: 상세 탭을 정보 패널 아래에 (구 레이아웃) */}
+      {!isNewLayout && (
+        <div className="md:hidden">
+          <ProductTabs product={product} />
+        </div>
+      )}
+
       {/* === 신규 레이아웃 10섹션 === */}
-      {isNewLayout ? (
+      {isNewLayout && (
         <>
           {/* S2: 이런 분께 추천합니다 */}
           {product.recommendedFor && product.recommendedFor.length > 0 && (
@@ -369,8 +384,6 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </section>
         </>
-      ) : (
-        <ProductTabs product={product} />
       )}
 
       {/* 모바일 하단 고정 CTA바 — 신규 레이아웃 / 매장 찾기만 */}
