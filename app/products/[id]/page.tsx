@@ -66,7 +66,7 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound();
 
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
-  const isNewLayout = product.id === "lightweight-windproof-jacket";
+  const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);
 
   return (
     <main className={`bg-white min-h-screen${isNewLayout ? " pb-20 md:pb-0" : ""}`}>
