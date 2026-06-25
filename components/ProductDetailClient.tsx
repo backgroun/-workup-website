@@ -221,36 +221,26 @@ export default function ProductDetailClient({
 
       <div className="h-px bg-gray-100" />
 
-      {/* 핵심 가치 3줄 (신규) 또는 기존 소개+특징 */}
-      {isNewLayout && product.coreValues ? (
-        <ul className="space-y-3">
-          {product.coreValues.map((v) => (
-            <li key={v} className="flex items-start gap-3 text-sm text-[#1A2B4A] font-medium leading-relaxed">
-              <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
-              {v}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <ul className="space-y-2.5">
-          {product.features.slice(0, 3).map((f) => (
-            <li key={f} className="flex items-center gap-3 text-sm text-gray-700">
-              <span className="w-1 h-1 bg-[#ff550c] rounded-full flex-shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
+      {/* 핵심 가치 — 신규 레이아웃만. 구 레이아웃의 상세·제품 정보는 하단 "상세 정보" 탭으로 일원화 */}
+      {isNewLayout && product.coreValues && (
+        <>
+          <ul className="space-y-3">
+            {product.coreValues.map((v) => (
+              <li key={v} className="flex items-start gap-3 text-sm text-[#1A2B4A] font-medium leading-relaxed">
+                <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
+                {v}
+              </li>
+            ))}
+          </ul>
+          {product.fieldTest && (
+            <div className="flex items-start gap-2.5 bg-orange-50 px-4 py-3 border-l-2 border-[#ff550c]">
+              <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
+              <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
+            </div>
+          )}
+          <div className="h-px bg-gray-100" />
+        </>
       )}
-
-      {/* 필드 테스트 */}
-      {product.fieldTest && (
-        <div className="flex items-start gap-2.5 bg-orange-50 px-4 py-3 border-l-2 border-[#ff550c]">
-          <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
-          <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
-        </div>
-      )}
-
-      <div className="h-px bg-gray-100" />
 
       {/* 컬러 */}
       {product.colors.length > 0 && (
