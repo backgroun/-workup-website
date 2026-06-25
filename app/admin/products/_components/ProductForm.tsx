@@ -1797,6 +1797,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
             ) : (
               <div>
+                {/* 무료 OCR — 이미지에서 수치 자동 추출 (브라우저 내 실행, 키 불필요) */}
+                <div className="mb-3 p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                  <label className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${ocrBusy ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleSizeOcr} disabled={ocrBusy} />
+                    {ocrBusy ? (
+                      <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />인식 중… {ocrProgress}%</>
+                    ) : (
+                      "📷 이미지에서 수치 자동 추출 (무료)"
+                    )}
+                  </label>
+                  <p className="text-[11px] text-gray-400 mt-1.5">사이즈표 캡쳐를 올리면 표를 자동으로 채웁니다. 정확도 보조 수단 — 추출 후 값을 꼭 확인·수정하세요.</p>
+                </div>
                 {/* 항목 템플릿 — 클릭 시 측정 항목(행) 자동 구성 */}
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
