@@ -19,6 +19,12 @@ const SIZE_GUIDE_DEFAULT: SizeGuide = {
   rows: [],
   note: SIZE_NOTE_DEFAULT,
 };
+// 사이즈 가이드 행(측정 항목) 템플릿 — 클릭 시 항목 행 자동 구성 (사이즈 열은 기존 값 유지)
+const SIZE_GUIDE_ROW_TEMPLATES: { label: string; firstCol: string; rows: string[] }[] = [
+  { label: "티셔츠", firstCol: "항목", rows: ["총장", "어깨너비", "가슴둘레", "밑단너비", "소매길이", "전체 팔길이", "밑단둘레", "가슴너비"] },
+  { label: "바지", firstCol: "항목", rows: ["허리", "힙", "밑위", "인심(다리길이)", "허벅지너비", "밑단 너비"] },
+  { label: "상하세트", firstCol: "사이즈", rows: ["총장", "어깨너비", "가슴둘레", "허리둘레", "소매길이", "전체 팔길이", "인심(다리길이)", "허리", "밑단둘레"] },
+];
 const SEASON_OPTIONS: Season[] = ["봄/가을", "여름", "겨울"];
 const FEATURE_TAG_PRESETS = ["냉감", "방수", "방풍", "스트레치", "고내구성", "UV차단", "흡한속건", "경량", "보온", "반사"];
 const JOB_SITE_PRESETS = ["건설", "물류", "정비", "배달", "농업", "서비스", "캠핑"];
@@ -754,6 +760,19 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const sgRemoveRow = (ri: number) => setSG({ rows: sgRows.filter((_, i) => i !== ri) });
   const sgSetCell = (ri: number, ci: number, v: string) =>
     setSG({ rows: sgRows.map((r, i) => (i === ri ? { cells: r.cells.map((c, j) => (j === ci ? v : c)) } : r)) });
+  const sgApplyTemplate = (tpl: { firstCol: string; rows: string[] }) => {
+    if (sgRows.length > 0 && !confirm("현재 표의 행(항목)을 선택한 템플릿으로 교체할까요?")) return;
+    const sizeCols = sgCols.length > 1 ? sgCols.slice(1) : ["S", "M", "L", "XL", "XXL"];
+    setSG({
+      mode: "table",
+      columns: [tpl.firstCol, ...sizeCols],
+      rows: tpl.rows.map((label) => ({ cells: [label, ...sizeCols.map(() => "")] })),
+    });
+  };
+  const sgClearAll = () => {
+    if (!confirm("사이즈 가이드를 전체 삭제할까요?")) return;
+    setSG({ columns: [], rows: [], image: "", note: "" });
+  };
   const handleSizeGuideFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploadError(""); setUploadingSizeGuide(true);
@@ -769,6 +788,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const diSet = (i: number, key: "label" | "value", v: string) =>
     set("detailInfo", form.detailInfo.map((it, idx) => (idx === i ? { ...it, [key]: v } : it)));
   const diLoadDefaults = () => set("detailInfo", DETAIL_INFO_DEFAULTS.map((label) => ({ label, value: "" })));
+  const diClearAll = () => {
+    if (form.detailInfo.length === 0) return;
+    if (!confirm("상세 정보를 전체 삭제할까요?")) return;
+    set("detailInfo", []);
+  };
 
   // ── 색상 ──────────────────────────────────────────────────────────────────
   const toggleColor = (preset: { name: string; hex: string }) => {
