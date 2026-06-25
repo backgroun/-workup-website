@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import type { Product } from "@/data/products";
+import ProductInquiryModal from "./ProductInquiryModal";
 
 const TABS = ["상세 정보", "사이즈 및 소재", "상품문의"] as const;
 type Tab = typeof TABS[number];
@@ -9,6 +9,7 @@ type Tab = typeof TABS[number];
 // 한 페이지에 3개 섹션을 쌓고, 상단 sticky 탭바 클릭 시 해당 섹션으로 스크롤 이동.
 export default function ProductTabs({ product }: { product: Product }) {
   const [active, setActive] = useState<Tab>("상세 정보");
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const detailRef = useRef<HTMLDivElement>(null);
   const sizeRef = useRef<HTMLDivElement>(null);
   const qnaRef = useRef<HTMLDivElement>(null);
@@ -177,12 +178,14 @@ export default function ProductTabs({ product }: { product: Product }) {
         <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100 text-center`}>
           <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-4">상품문의</p>
           <p className="text-sm text-gray-500 mb-5">상품에 대한 궁금한 점이 있으신가요?</p>
-          <Link href="/partnership"
+          <button type="button" onClick={() => setInquiryOpen(true)}
             className="inline-block text-sm text-[#1A2B4A] border border-[#1A2B4A] px-8 py-3 hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
             문의하기
-          </Link>
+          </button>
         </div>
       </div>
+
+      <ProductInquiryModal product={product} open={inquiryOpen} onClose={() => setInquiryOpen(false)} />
     </div>
   );
 }
