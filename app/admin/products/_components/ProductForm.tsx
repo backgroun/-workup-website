@@ -2,10 +2,23 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { Product, DetailBlock, MainExpose, Season } from "@/data/products";
+import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem } from "@/data/products";
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ["판매중", "품절", "판매중지", "예약판매", "진열대기"] as const;
+// 상세 정보 탭 기본 라벨 (필요 항목만 값 입력 → 빈 값은 노출 안 됨)
+const DETAIL_INFO_DEFAULTS = [
+  "제품정보", "품명 및 모델명", "소재", "색상", "사이즈", "제조국·제조지",
+  "세탁방법 및 취급시 주의사항", "제조연월", "품질보증기준",
+  "A/S 책임자와 전화번호 / 소비자상담관련 전화번호",
+];
+const SIZE_NOTE_DEFAULT = "본 사이즈는 상품의 실제 측정사이즈이며 ±1-2cm의 오차가 있을 수 있습니다. (단위:cm)";
+const SIZE_GUIDE_DEFAULT: SizeGuide = {
+  mode: "table",
+  columns: ["항목", "S", "M", "L", "XL", "XXL"],
+  rows: [],
+  note: SIZE_NOTE_DEFAULT,
+};
 const SEASON_OPTIONS: Season[] = ["봄/가을", "여름", "겨울"];
 const FEATURE_TAG_PRESETS = ["냉감", "방수", "방풍", "스트레치", "고내구성", "UV차단", "흡한속건", "경량", "보온", "반사"];
 const JOB_SITE_PRESETS = ["건설", "물류", "정비", "배달", "농업", "서비스", "캠핑"];
@@ -81,6 +94,8 @@ type FormData = {
   customJobSite: string;
   mainExpose: string[];
   sizes: string[];
+  sizeGuide: SizeGuide;
+  detailInfo: DetailInfoItem[];
   customSizeInput: string;
   colorName: string;
   colorHex: string;
@@ -128,6 +143,8 @@ function toForm(p?: Product): FormData {
     customJobSite: "",
     mainExpose: p?.mainExpose ?? (p?.isNew ? ["신상품"] : []),
     sizes: (p?.sizes ?? DEFAULT_SIZES),
+    sizeGuide: p?.sizeGuide ?? { ...SIZE_GUIDE_DEFAULT },
+    detailInfo: p?.detailInfo ?? [],
     customSizeInput: "",
     colorName: "",
     colorHex: "#1A2B4A",
@@ -800,6 +817,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       bg: "bg-[#1A2B4A]",
       colors: form.colors,
       sizes: form.sizes,
+      sizeGuide: form.sizeGuide,
+      detailInfo: form.detailInfo.filter((d) => d.label.trim() || d.value.trim()),
       relatedIds: form.relatedIds,
       metaTitle: form.metaTitle || undefined,
       metaDesc: form.metaDesc || undefined,
