@@ -37,7 +37,7 @@ export default function ProductDetailClient({
   relatedProducts?: Product[];
   isNewLayout?: boolean;
 }) {
-  const { addItem, hasProduct, toggleProduct } = useCart();
+  const { addItem } = useCart();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
@@ -134,28 +134,6 @@ export default function ProductDetailClient({
     addItem({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
     setAddedMsg(true);
     setTimeout(() => setAddedMsg(false), 2500);
-  };
-
-  // 찜 — 컬러·사이즈 선택 없이 토글 (카드 하트와 동일). 사이즈/컬러는 피팅 리스트에서 선택 가능.
-  const toggleFav = () => {
-    if (!memberSession) {
-      setLoginPromptOpen(true);
-      return;
-    }
-    toggleProduct({
-      productId: product.id,
-      name: product.name,
-      sku: product.sku,
-      line: product.line,
-      price: product.price,
-      size: "",
-      color: "",
-      colorHex: selectedColor?.hex ?? product.colors?.[0]?.hex ?? "#000",
-      bg: product.bg,
-      imageUrl: product.imageUrl,
-      allSizes: product.sizes,
-      allColors: product.colors,
-    });
   };
 
   const StoreList = () => (
