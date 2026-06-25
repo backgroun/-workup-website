@@ -1121,7 +1121,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 {form.relatedIds.map((id) => {
                   const p = allProducts.find((ap) => ap.id === id);
                   return (
-                    <span key={id} className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-[#1A2B4A] text-white rounded">
+                    <span key={id} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-[#1A2B4A] text-white rounded">
+                      <span className="w-5 h-5 bg-white/20 rounded overflow-hidden flex-shrink-0">
+                        {p?.imageUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.imageUrl} alt={p?.name ?? ""} className="w-full h-full object-cover" />
+                        )}
+                      </span>
                       {p?.name ?? id}
                       <button type="button" onClick={() => toggleRelated(id)} className="hover:opacity-70">×</button>
                     </span>
