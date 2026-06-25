@@ -176,9 +176,9 @@ export default function BottomNav({
             onClick={() => setMenuOpen(false)}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 2H3L1 9h22l-2-7h-3" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M1 9v11a1 1 0 001 1h20a1 1 0 001-1V9" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V13h6v8" />
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
             </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">매장</span>
           </Link>
