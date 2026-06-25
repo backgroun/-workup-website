@@ -64,7 +64,7 @@ export default function Header({
 
   return (
     <header
-      className={`sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`}
+      className={`md:sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`}
       style={{ top: "var(--wu-topbar-h, 36px)" }}
     >
       <div className="px-[15px] md:px-[70px]">
