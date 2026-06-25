@@ -774,22 +774,37 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     if (!confirm("사이즈 가이드를 전체 삭제할까요?")) return;
     setSG({ columns: [], rows: [], image: "", note: "" });
   };
-  // 무료 OCR — 사이즈표 이미지에서 행·열 자동 추출 (브라우저 내 실행, 검수 필요)
+  // 무료 OCR — 표 구조는 관리자가 만들고, 가운데 "수치 칸"만 자동으로 채운다.
+  // (한글 항목/사이즈 제목은 건드리지 않음 → 라벨 깨짐 없음. 인식 오류는 검수)
   const handleSizeOcr = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    if (sgRows.length === 0 || sgCols.length < 2) {
+      alert("먼저 템플릿(티셔츠·바지·상하세트)이나 ‘+ 열 추가 / + 행 추가’로 표 구조(항목·사이즈)를 만든 뒤 사용하세요.\n수치 칸만 채워집니다.");
+      return;
+    }
     setOcrBusy(true); setOcrProgress(0);
     try {
-      const { extractSizeTableFromImage } = await import("@/lib/sizeGuideOcr");
-      const table = await extractSizeTableFromImage(file, (p) => setOcrProgress(p));
-      if (!table.columns.length) {
-        alert("표를 인식하지 못했습니다. 더 선명한(글자가 큰) 캡쳐를 사용해 주세요.");
+      const { extractSizeValuesFromImage } = await import("@/lib/sizeGuideOcr");
+      const valueRows = await extractSizeValuesFromImage(file, (p) => setOcrProgress(p));
+      if (!valueRows.length) {
+        alert("수치를 인식하지 못했습니다. 더 선명한(글자가 큰) 캡쳐를 사용해 주세요.");
         return;
       }
-      if (sgRows.length > 0 && !confirm("인식 결과로 현재 표를 교체할까요?")) return;
-      setSG({ mode: "table", columns: table.columns, rows: table.rows });
-      alert("자동 추출 완료! 인식 오류가 있을 수 있으니 값을 꼭 확인·수정해 주세요.");
+      // 기존 행/열 제목은 유지하고, 각 행의 첫 칸(라벨)을 제외한 수치 칸만 채움
+      const newRows = sgRows.map((row, ri) => {
+        const vals = valueRows[ri] ?? [];
+        const cells = [...row.cells];
+        while (cells.length < sgCols.length) cells.push("");
+        for (let ci = 1; ci < sgCols.length; ci++) {
+          const v = vals[ci - 1];
+          if (v != null && v !== "") cells[ci] = v;
+        }
+        return { cells };
+      });
+      setSG({ rows: newRows });
+      alert("수치를 채웠습니다. 인식 오류가 있을 수 있으니 값을 꼭 확인·수정해 주세요.");
     } catch {
       alert("OCR 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
