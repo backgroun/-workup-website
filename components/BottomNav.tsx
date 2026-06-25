@@ -3,61 +3,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 
-const IC = "#666666";   // inactive color
-const AC = "#ff550c";   // active color
-
-function IconMenu({ open }: { open: boolean }) {
-  return open ? (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  ) : (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  );
-}
-
-function IconHome() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-      <path d="M9 22V12h6v10" />
-    </svg>
-  );
-}
-
-// 상품 아이콘 — 후드티 실루엣
-function IconProducts() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      {/* 칼라 사각형 */}
-      <rect x="8" y="2" width="8" height="5" rx="1" />
-      {/* 후드 V 형태 */}
-      <path d="M10 2c-.5 2.5 2 4 2 4s2.5-1.5 2-4" />
-      {/* 왼쪽 어깨·소매 */}
-      <path d="M8 4C5.5 4 3 6 3 9v3h4" />
-      {/* 오른쪽 어깨·소매 */}
-      <path d="M16 4c2.5 0 5 2 5 5v3h-4" />
-      {/* 몸통 */}
-      <path d="M7 12h10v9a1 1 0 01-1 1H8a1 1 0 01-1-1z" />
-      {/* 끈 */}
-      <path d="M11 7v3M13 7v3" />
-    </svg>
-  );
-}
-
-// 매장 아이콘 — 쇼핑카트
-function IconStore() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="21" r="1" />
-      <circle cx="19" cy="21" r="1" />
-      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 001.96 1.58h9.59a2 2 0 001.95-1.57l1.54-7.43H5.12" />
-    </svg>
-  );
-}
-
 export default function BottomNav({
   navItems = DEFAULT_HEADER_NAV.items,
   studioEnabled = true,
@@ -178,48 +123,66 @@ export default function BottomNav({
           {/* 메뉴 */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
-            style={{ color: menuOpen ? AC : IC }}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[color,background-color,transform] active:scale-95 active:bg-gray-100 ${
+              menuOpen ? "text-[#ff550c]" : "text-[#666666]"
+            }`}
             aria-label="메뉴"
             aria-expanded={menuOpen}
           >
-            <IconMenu open={menuOpen} />
+            {menuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
             <span className="text-[10px] font-semibold leading-none tracking-tight">메뉴</span>
           </button>
 
           {/* 홈 */}
           <Link
             href="/"
-            className="flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
-            style={{ color: IC }}
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#666666] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="홈"
             onClick={() => setMenuOpen(false)}
           >
-            <IconHome />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
+            </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">홈</span>
           </Link>
 
           {/* 상품 */}
           <Link
             href="/products"
-            className="flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
-            style={{ color: IC }}
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#666666] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="상품"
             onClick={() => setMenuOpen(false)}
           >
-            <IconProducts />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 2h8v5l-4 2.5L8 7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 3.5C5.5 3.5 3 6 3 9v3h5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 3.5c2.5 0 5 2.5 5 5.5v3h-5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h8v9a1 1 0 01-1 1H9a1 1 0 01-1-1z" />
+            </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">상품</span>
           </Link>
 
           {/* 매장 */}
           <Link
             href="/store"
-            className="flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
-            style={{ color: IC }}
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#666666] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
             aria-label="매장"
             onClick={() => setMenuOpen(false)}
           >
-            <IconStore />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 2H3L1 9h22l-2-7h-3" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M1 9v11a1 1 0 001 1h20a1 1 0 001-1V9" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V13h6v8" />
+            </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">매장</span>
           </Link>
 

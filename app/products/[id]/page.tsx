@@ -127,7 +127,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="w-full md:w-[58%] lg:w-[62%]">
           <ProductImageGallery product={product} />
           {!isNewLayout && (
-            <div className="hidden md:block">
+            <div className="hidden md:block mt-[210px]">
               <ProductTabs product={product} />
             </div>
           )}
