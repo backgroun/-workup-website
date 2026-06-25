@@ -6,14 +6,6 @@ import type { Product } from "@/data/products";
 const TABS = ["상세 정보", "사이즈 및 소재", "상품문의"] as const;
 type Tab = typeof TABS[number];
 
-const SIZE_GUIDE = [
-  { size: "S",   chest: "88-92",   waist: "72-76", hip: "90-94" },
-  { size: "M",   chest: "92-96",   waist: "76-80", hip: "94-98" },
-  { size: "L",   chest: "96-100",  waist: "80-84", hip: "98-102" },
-  { size: "XL",  chest: "100-104", waist: "84-88", hip: "102-106" },
-  { size: "2XL", chest: "104-108", waist: "88-92", hip: "106-110" },
-];
-
 // 한 페이지에 3개 섹션을 쌓고, 상단 sticky 탭바 클릭 시 해당 섹션으로 스크롤 이동.
 export default function ProductTabs({ product }: { product: Product }) {
   const [active, setActive] = useState<Tab>("상세 정보");
@@ -41,7 +33,14 @@ export default function ProductTabs({ product }: { product: Product }) {
     return () => obs.disconnect();
   }, []);
 
-  // 스펙 표 — 제품 데이터 기반 (값 없으면 행 생략)
+  // 사이즈 가이드 / 상세 정보 — 관리자 등록 데이터
+  const sizeGuide = product.sizeGuide;
+  const sgCols = sizeGuide?.columns ?? [];
+  const sgRows = sizeGuide?.rows ?? [];
+  const hasSizeTable = sizeGuide?.mode === "table" && sgRows.length > 0 && sgCols.length > 0;
+  const hasSizeImage = sizeGuide?.mode === "image" && !!sizeGuide.image;
+  const detailInfo = (product.detailInfo ?? []).filter((d) => d.value?.trim());
+
   const tabClass = (t: Tab) =>
     `flex-1 py-4 text-[15px] md:text-[17px] font-bold transition-colors relative ${
       active === t ? "text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
@@ -94,10 +93,22 @@ export default function ProductTabs({ product }: { product: Product }) {
 
           {/* 상세 이미지 — 원본 비율 그대로 (긴 상세페이지 이미지도 잘리지 않음) */}
           {(product.subImages ?? []).length > 0 && (
-            <div className="space-y-3 max-w-3xl mx-auto">
+            <div className="space-y-3 max-w-3xl mx-auto mb-10">
               {product.subImages!.map((src, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={i} src={src} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
+              ))}
+            </div>
+          )}
+
+          {/* 제품 정보 — 관리자 등록 텍스트 (값 있는 항목만) */}
+          {detailInfo.length > 0 && (
+            <div className="space-y-5 max-w-3xl mx-auto">
+              {detailInfo.map((it, i) => (
+                <div key={`${it.label}-${i}`}>
+                  <p className="text-sm font-bold text-[#1A2B4A] mb-1">{it.label}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{it.value}</p>
+                </div>
               ))}
             </div>
           )}
