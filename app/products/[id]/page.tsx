@@ -153,14 +153,14 @@ export default async function ProductDetailPage({ params }: Props) {
             </section>
           )}
 
-          {/* S4: 디테일 클로즈업 — 갤러리 이미지 활용 */}
-          {product.imageUrl && (
+          {/* S4: 디테일 포인트 */}
+          {product.detailPoints && product.detailPoints.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20 bg-gray-50">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
                 <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">DETAIL</p>
-                <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-8">디테일 클로즈업</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-8">디테일 포인트</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {["YKK 방수 지퍼", "발수 원단", "파우치 수납", "조절 밴드"].map((label) => (
+                  {product.detailPoints.map((label) => (
                     <div key={label} className="aspect-square bg-[#1A2B4A] flex items-end p-4">
                       <span className="text-xs text-white/80 font-medium">{label}</span>
                     </div>
@@ -170,25 +170,24 @@ export default async function ProductDetailPage({ params }: Props) {
             </section>
           )}
 
-          {/* S5: WORK + LIFE 착용 씬 */}
-          <section className="border-t border-gray-100 py-16 md:py-20">
-            <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-              <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">LIFESTYLE</p>
-              <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-8">현장에서도, 일상에서도</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-[#1A2B4A] p-8 md:p-12 flex flex-col justify-end min-h-[240px]">
-                  <p className="text-[10px] tracking-[0.3em] text-[#ff550c] uppercase mb-2">WORK</p>
-                  <p className="text-lg font-bold text-white mb-1">현장에서</p>
-                  <p className="text-sm text-gray-300 leading-relaxed">거친 환경에서도 흔들리지 않는 방풍·발수 성능</p>
-                </div>
-                <div className="bg-gray-100 p-8 md:p-12 flex flex-col justify-end min-h-[240px]">
-                  <p className="text-[10px] tracking-[0.3em] text-[#ff550c] uppercase mb-2">LIFE</p>
-                  <p className="text-lg font-bold text-[#1A2B4A] mb-1">일상에서</p>
-                  <p className="text-sm text-gray-500 leading-relaxed">슬림한 실루엣으로 출퇴근길, 주말 모두 활용</p>
+          {/* S5: 라이프스타일 착용 씬 */}
+          {product.lifestyleScenes && product.lifestyleScenes.length > 0 && (
+            <section className="border-t border-gray-100 py-16 md:py-20">
+              <div className="max-w-screen-xl mx-auto px-6 md:px-12">
+                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">LIFESTYLE</p>
+                <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-8">이렇게 활용하세요</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {product.lifestyleScenes.map((scene, i) => (
+                    <div key={scene.tag} className={`${i % 2 === 0 ? "bg-[#1A2B4A]" : "bg-gray-100"} p-8 md:p-12 flex flex-col justify-end min-h-[240px]`}>
+                      <p className="text-[10px] tracking-[0.3em] text-[#ff550c] uppercase mb-2">{scene.tag}</p>
+                      <p className={`text-lg font-bold mb-1 ${i % 2 === 0 ? "text-white" : "text-[#1A2B4A]"}`}>{scene.title}</p>
+                      <p className={`text-sm leading-relaxed ${i % 2 === 0 ? "text-gray-300" : "text-gray-500"}`}>{scene.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* S6: 사이즈 가이드 (신체 치수 기반) */}
           <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">
@@ -198,7 +197,28 @@ export default async function ProductDetailPage({ params }: Props) {
               {product.fitNote && (
                 <p className="text-xs text-gray-400 mb-6">{product.fitNote}</p>
               )}
-              {product.sizeRecs && product.sizeRecs.length > 0 ? (
+              {product.sizePrices && product.sizePrices.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[360px] max-w-xl text-sm">
+                    <thead>
+                      <tr className="bg-[#1A2B4A] text-white">
+                        {["사이즈", "적용 체중", "판매가"].map((h) => (
+                          <th key={h} className="px-5 py-3 text-left text-xs font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {product.sizePrices.map((row, i) => (
+                        <tr key={row.size} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                          <td className="px-5 py-3 font-bold text-[#1A2B4A] text-xs">{row.size}</td>
+                          <td className="px-5 py-3 text-gray-500 text-xs">{row.weight ?? "-"}</td>
+                          <td className="px-5 py-3 text-[#ff550c] font-semibold text-xs">{row.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : product.sizeRecs && product.sizeRecs.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[360px] max-w-xl text-sm">
                     <thead>
