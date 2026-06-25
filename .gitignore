@@ -21,3 +21,6 @@ studio-*.png
 # 이미지 작업용 폴더 (원본 레퍼런스 · 생성 결과물 — GitHub 미동기화)
 refs/
 generated/
+
+# 상품 업로드 작업 폴더 (원본 이미지·정보 — GitHub 미동기화)
+products-inbox/
