@@ -42,7 +42,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
 
   return (
     <div
-      className="sticky top-0 z-[60] flex items-center"
+      className="sticky top-0 z-[60] flex items-center flex-shrink-0"
       style={{ height: c.height, backgroundColor: c.bg_color, color: c.text_color }}
     >
       <div className="px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
