@@ -42,15 +42,6 @@ export default function ProductTabs({ product }: { product: Product }) {
   }, []);
 
   // 스펙 표 — 제품 데이터 기반 (값 없으면 행 생략)
-  const specs: { label: string; value: string }[] = [
-    { label: "소재", value: (product.materialSpecs ?? []).map((m) => `${m.label} ${m.value}`).join(" · ") },
-    { label: "색상", value: product.colors.map((c) => c.name).join(", ") },
-    { label: "사이즈", value: (product.sizes ?? []).join(", ") },
-    { label: "제조국", value: product.origin ?? "" },
-    { label: "제조사", value: product.manufacturer ?? "" },
-    { label: "제조연월", value: product.createdAt ? product.createdAt.slice(0, 7) : "" },
-  ].filter((s) => s.value);
-
   const tabClass = (t: Tab) =>
     `flex-1 py-4 text-[15px] md:text-[17px] font-bold transition-colors relative ${
       active === t ? "text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
