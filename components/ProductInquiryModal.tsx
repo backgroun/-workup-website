@@ -18,20 +18,17 @@ export default function ProductInquiryModal({
   const [title, setTitle] = useState("");
   const [secret, setSecret] = useState(true);
   const [content, setContent] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notifyConsent, setNotifyConsent] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   if (!open) return null;
 
-  const canSubmit = !!title.trim() && !!content.trim() && !!phone.trim() && !submitting;
+  const canSubmit = !!title.trim() && !!content.trim() && !submitting;
 
   const submit = async () => {
     setError("");
     if (!title.trim()) { setError("문의 제목을 입력해 주세요."); return; }
     if (!content.trim()) { setError("문의 내용을 입력해 주세요."); return; }
-    if (!phone.trim()) { setError("답변받으실 휴대폰 번호를 입력해 주세요."); return; }
     setSubmitting(true);
     try {
       const res = await fetch("/api/inquiries", {
@@ -47,14 +44,12 @@ export default function ProductInquiryModal({
             title: title.trim(),
             content: content.trim(),
             secret: secret ? "비밀글" : "",
-            phone: phone.trim(),
-            notifyConsent: notifyConsent ? "SMS/카카오 알림 동의" : "",
           },
         }),
       });
       if (res.ok) {
         alert("문의가 접수되었습니다. 빠른 시일 내 답변드리겠습니다.");
-        setTitle(""); setContent(""); setPhone("");
+        setTitle(""); setContent("");
         onClose();
       } else {
         const d = await res.json().catch(() => ({}));
