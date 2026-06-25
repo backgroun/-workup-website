@@ -338,11 +338,10 @@ export default function ProductsGrid() {
       {/* ══════════════════ MOBILE ══════════════════════ */}
       <div className="md:hidden">
 
-        {/* 상단 컨트롤 고정 — 타이틀·카테고리·하위카테고리·정렬/필터까지 sticky(헤더 바로 아래),
-            상품 리스트만 스크롤. top = 공지바 높이(--wu-topbar-h) + 헤더 높이(56px) */}
+        {/* 상단 컨트롤 고정 — 모바일: 헤더가 non-sticky이므로 탑바 높이만 오프셋 */}
         <div
           className="sticky z-40 bg-white"
-          style={{ top: "calc(var(--wu-topbar-h, 36px) + 56px)" }}
+          style={{ top: "var(--wu-topbar-h, 36px)" }}
         >
 
         {/* Top bar: ← Title Cart */}
