@@ -262,7 +262,7 @@ export default function ProductDetailClient({
       {/* 사이즈 */}
       <div>
         <div className="flex gap-2 flex-wrap">
-          {SIZES.map((s) => (
+          {(product.sizes && product.sizes.length > 0 ? product.sizes : SIZES).map((s) => (
             <button key={s} onClick={() => setSelectedSize(s)}
               className={`min-w-[48px] h-10 px-3 text-sm border transition-colors ${
                 selectedSize === s
