@@ -1808,6 +1808,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
             ) : (
               <div>
+                {/* 항목 템플릿 — 클릭 시 측정 항목(행) 자동 구성 */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
+                  {SIZE_GUIDE_ROW_TEMPLATES.map((t) => (
+                    <button key={t.label} type="button" onClick={() => sgApplyTemplate(t)}
+                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="flex gap-2 mb-3">
                   <button type="button" onClick={sgAddColumn}
                     className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 열 추가</button>
@@ -1867,6 +1877,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <div className="flex items-center gap-2">
                 <button type="button" onClick={diLoadDefaults}
                   className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors">기본 항목 불러오기</button>
+                <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
+                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
                 <button type="button" onClick={diAdd}
                   className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
               </div>
