@@ -4,7 +4,10 @@ import { getSiteSection } from "@/lib/site-settings";
 import { normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
 
 function typeLabelOf(type: string): string {
-  return type === "wholesale" ? "입점·제휴" : type === "support" ? "고객 1:1" : "가맹·창업";
+  return type === "wholesale" ? "입점·제휴"
+    : type === "support" ? "고객 1:1"
+    : type === "product" ? "상품 문의"
+    : "가맹·창업";
 }
 
 // 공개 엔드포인트: 가맹·창업 / 입점·제휴 문의 폼 제출을 저장한다.
@@ -19,8 +22,8 @@ export async function POST(req: Request) {
   const type = body.type;
   const payload = body.payload ?? {};
 
-  // 허용 유형: 가맹·창업 / 입점·제휴 / 고객(1:1)
-  if (type !== "franchise" && type !== "wholesale" && type !== "support") {
+  // 허용 유형: 가맹·창업 / 입점·제휴 / 고객(1:1) / 상품 문의
+  if (type !== "franchise" && type !== "wholesale" && type !== "support" && type !== "product") {
     return NextResponse.json({ error: "문의 유형이 올바르지 않습니다." }, { status: 400 });
   }
 
