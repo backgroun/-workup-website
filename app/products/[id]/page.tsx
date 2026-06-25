@@ -5,6 +5,7 @@ import { products as staticProducts, getProductById, type Product } from "@/data
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductTabs from "@/components/ProductTabs";
 import MobileProductNav from "@/components/MobileProductNav";
 
 type Props = { params: Promise<{ id: string }> };
@@ -369,80 +370,7 @@ export default async function ProductDetailPage({ params }: Props) {
           </section>
         </>
       ) : (
-        <>
-          {/* 착용자 인터뷰 — 구 레이아웃 */}
-          {product.wearerQuote && (
-            <section className="border-t border-gray-100 py-16 md:py-24">
-              <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-8">실제 착용자 이야기</p>
-                <div className="max-w-2xl">
-                  <blockquote className="text-2xl md:text-4xl font-bold text-[#1A2B4A] leading-snug mb-8">
-                    &ldquo;{product.wearerQuote.text}&rdquo;
-                  </blockquote>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#1A2B4A] flex items-center justify-center text-white text-base font-bold flex-shrink-0">
-                      {product.wearerQuote.job[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#1A2B4A]">{product.wearerQuote.job}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{product.wearerQuote.years}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-8">
-                  <Link href="/people" className="text-sm text-[#1A2B4A] border-b border-[#1A2B4A] hover:text-[#ff550c] hover:border-[#ff550c] transition-colors pb-0.5">
-                    더 많은 착용자 이야기 →
-                  </Link>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* 핵심 기능 — 구 레이아웃 */}
-          <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">
-            <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-              <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-8">제품 특징</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {product.features.map((f) => (
-                  <div key={f} className="flex items-start gap-4 py-4 border-b border-gray-200">
-                    <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">✓</span>
-                    <span className="text-sm text-[#1A2B4A] leading-relaxed">{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* 사이즈 가이드 — 구 레이아웃 */}
-          <section className="border-t border-gray-100 py-16 md:py-20">
-            <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-              <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-6">사이즈 가이드</p>
-              <p className="text-xs text-gray-400 mb-4">단위: cm</p>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[320px] max-w-lg text-sm">
-                  <thead>
-                    <tr className="bg-[#1A2B4A] text-white">
-                      {["사이즈", "가슴둘레", "허리둘레", "엉덩이둘레"].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {SIZE_GUIDE.map((row, i) => (
-                      <tr key={row.size} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="px-4 py-3 font-bold text-[#1A2B4A] text-xs">{row.size}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{row.chest}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{row.waist}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{row.hip}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-gray-400 mt-4">* 사이즈가 고민된다면 매장에서 직접 입어보세요.</p>
-            </div>
-          </section>
-        </>
+        <ProductTabs product={product} />
       )}
 
       {/* 모바일 하단 고정 CTA바 — 신규 레이아웃 / 매장 찾기만 */}
