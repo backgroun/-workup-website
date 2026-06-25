@@ -283,7 +283,6 @@ export default function ProductDetailClient({
 
       {/* 사이즈 */}
       <div>
-        <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">사이즈 선택</p>
         <div className="flex gap-2 flex-wrap">
           {SIZES.map((s) => (
             <button key={s} onClick={() => setSelectedSize(s)}
@@ -301,7 +300,7 @@ export default function ProductDetailClient({
       {/* 연관 상품 */}
       {relatedProducts.length > 0 && (
         <div>
-          <p className="text-[11px] text-gray-400 tracking-[0.2em] uppercase mb-3">연관 상품</p>
+          <p className="text-[15px] font-bold text-[#1A2B4A] mb-3">연관 상품</p>
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
             {relatedProducts.map((rp) => (
               <Link key={rp.id} href={`/products/${rp.id}`} className="flex-shrink-0 w-[88px] group">
@@ -329,16 +328,6 @@ export default function ProductDetailClient({
               addedMsg ? "bg-green-600 text-white" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"
             }`}>
             {addedMsg ? "✓ 담았습니다!" : "피팅 리스트에 담기"}
-          </button>
-          <button onClick={toggleFav} aria-label="찜하기" title="찜하기"
-            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 hover:border-[#ff550c] transition-colors">
-            <svg className="w-5 h-5 transition-colors"
-              fill={hasProduct(product.id) ? "#ff550c" : "none"}
-              stroke={hasProduct(product.id) ? "#ff550c" : "#9ca3af"}
-              strokeWidth={1.6} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
           </button>
           <button onClick={handleShare} aria-label="공유하기" title="공유하기"
             className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
