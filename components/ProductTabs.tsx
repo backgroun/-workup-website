@@ -126,13 +126,12 @@ export default function ProductTabs({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* 서브 이미지 */}
+          {/* 상세 이미지 — 원본 비율 그대로 (긴 상세페이지 이미지도 잘리지 않음) */}
           {(product.subImages ?? []).length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-3 max-w-3xl mx-auto">
               {product.subImages!.map((src, i) => (
-                <div key={i} className="relative w-full aspect-[4/5] md:aspect-[16/10] bg-[#f4f4f4]">
-                  <Image src={src} alt={`${product.name} 상세 ${i + 1}`} fill className="object-cover" sizes="(min-width:768px) 70vw, 100vw" />
-                </div>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src={src} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
               ))}
             </div>
           )}
