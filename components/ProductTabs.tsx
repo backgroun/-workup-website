@@ -116,30 +116,51 @@ export default function ProductTabs({ product }: { product: Product }) {
 
         {/* ── 사이즈 및 소재 ── */}
         <div ref={sizeRef} data-tab="사이즈 및 소재" className={`${sectionClass} border-t border-gray-100`}>
-          <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-2">사이즈 가이드</p>
-          <p className="text-xs text-gray-400 mb-4">단위: cm</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[320px] max-w-2xl">
-              <thead>
-                <tr className="bg-[#1A2B4A] text-white">
-                  {["사이즈", "가슴둘레", "허리둘레", "엉덩이둘레"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {SIZE_GUIDE.map((row, i) => (
-                  <tr key={row.size} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                    <td className="px-4 py-3 font-bold text-[#1A2B4A] text-xs">{row.size}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{row.chest}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{row.waist}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{row.hip}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-xs text-gray-400 mt-4">* 사이즈가 고민된다면 매장에서 직접 입어보세요.</p>
+          <p className="text-base md:text-lg font-bold text-[#1A2B4A] mb-5">사이즈 가이드</p>
+
+          {hasSizeImage ? (
+            // 이미지로 등록한 경우
+            <div className="max-w-3xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={sizeGuide!.image} alt={`${product.name} 사이즈 가이드`} className="block w-full h-auto" loading="lazy" />
+              {sizeGuide!.note && <p className="text-xs text-gray-400 mt-4">{sizeGuide!.note}</p>}
+            </div>
+          ) : hasSizeTable ? (
+            // 행·열 표로 등록한 경우
+            <div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[320px] max-w-3xl border border-gray-100">
+                  <thead>
+                    <tr className="bg-[#1A2B4A] text-white">
+                      {sgCols.map((h, i) => (
+                        <th key={i} className="px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sgRows.map((row, ri) => (
+                      <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                        {sgCols.map((_, ci) => (
+                          <td key={ci} className={`px-4 py-3 text-xs ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-gray-500"}`}>
+                            {row.cells[ci] ?? ""}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {sizeGuide!.note && <p className="text-xs text-gray-400 mt-4">{sizeGuide!.note}</p>}
+            </div>
+          ) : (
+            // 미등록 — 매장 문의 유도
+            <div className="text-sm text-gray-500">
+              {(product.sizes ?? []).length > 0 && (
+                <p className="mb-2"><span className="font-semibold text-[#1A2B4A]">사이즈</span> · {product.sizes!.join(", ")}</p>
+              )}
+              <p className="text-gray-400">정확한 치수는 매장에서 직접 확인하거나 문의해 주세요.</p>
+            </div>
+          )}
         </div>
 
         {/* ── 상품문의 ── */}
