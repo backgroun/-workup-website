@@ -53,8 +53,8 @@ export default function ProductTabs({ product }: { product: Product }) {
   ].filter((s) => s.value);
 
   const tabClass = (t: Tab) =>
-    `flex-1 py-4 text-[12px] md:text-sm font-medium transition-colors relative ${
-      active === t ? "text-[#1A2B4A] font-bold" : "text-gray-400 hover:text-[#1A2B4A]"
+    `flex-1 py-4 text-[15px] md:text-[17px] font-bold transition-colors relative ${
+      active === t ? "text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
     }`;
   const sectionClass = "scroll-mt-[108px] md:scroll-mt-[150px] px-5 md:px-12 py-10 md:py-14";
 
