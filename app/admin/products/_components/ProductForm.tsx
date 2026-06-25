@@ -252,7 +252,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // 카테고리 피커 UI 상태
   const [pickerMain, setPickerMain] = useState<string>(DEFAULT_CAT_LIST[0].name);
   const [pickerSub, setPickerSub] = useState<string>("");
-  const [fieldTestOpen, setFieldTestOpen] = useState(false); // 필드테스트 인증 — 기본 접힘
 
   // AI 이미지 프롬프트
   const [aiPrompt, setAiPrompt] = useState("");
@@ -1348,8 +1347,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </span>
               </div>
 
-              {/* 이미지 그리드 (드래그 순서 변경 가능) */}
-              <div className="grid grid-cols-5 gap-2">
+              {/* 이미지 목록 (가로 스크롤 · 드래그 순서 변경 가능) — 5장 초과 시 옆으로 스크롤 */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 {Array.from({ length: 9 }).map((_, idx) => {
                   const url = form.subImages[idx];
                   const isUploading = uploadingSubIdx === idx;
@@ -1357,7 +1356,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   const isDragOver  = dragOverSubIdx === idx && dragSubIdx !== null && dragSubIdx !== idx;
 
                   return (
-                    <div key={idx} className="flex flex-col gap-1 select-none"
+                    <div key={idx} className="flex flex-col gap-1 select-none w-[80px] flex-shrink-0"
                       draggable={!!url}
                       onDragStart={() => url && handleDragStart(idx)}
                       onDragOver={(e) => handleDragOver(e, idx)}
