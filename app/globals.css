@@ -124,17 +124,8 @@ html {
   .store-cta:active svg { animation: none; }
 }
 
-/* 모바일: body 스크롤 잠금 + scroll-root가 스크롤 담당
-   BottomNav는 position:fixed 로 오버레이, padding-bottom으로 콘텐츠 가림 방지 */
+/* 모바일: BottomNav position:fixed 오버레이, 콘텐츠 가림 방지 */
 @media (max-width: 767px) {
-  html {
-    height: 100dvh;
-    overflow: hidden;
-  }
-  body {
-    height: 100dvh;
-    overflow: hidden;
-  }
   #scroll-root {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
