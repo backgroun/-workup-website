@@ -1895,6 +1895,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <table className="text-xs">
                       <thead>
                         <tr className="bg-gray-50">
+                          <th className="p-1.5 border-b border-r border-gray-100 w-8" />
                           {sgCols.map((c, ci) => (
                             <th key={ci} className="p-1.5 border-b border-r border-gray-100">
                               <div className="flex items-center gap-1">
@@ -1904,21 +1905,20 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                               </div>
                             </th>
                           ))}
-                          <th className="p-1.5 border-b border-gray-100" />
                         </tr>
                       </thead>
                       <tbody>
                         {sgRows.map((r, ri) => (
                           <tr key={ri}>
+                            <td className="p-1.5 border-r border-b border-gray-100 text-center">
+                              <button type="button" onClick={() => sgRemoveRow(ri)} className="text-gray-300 hover:text-red-500" title="행 삭제">×</button>
+                            </td>
                             {sgCols.map((_, ci) => (
                               <td key={ci} className="p-1.5 border-r border-b border-gray-100">
                                 <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
                                   className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A]" />
                               </td>
                             ))}
-                            <td className="p-1.5 border-b border-gray-100 text-center">
-                              <button type="button" onClick={() => sgRemoveRow(ri)} className="text-gray-300 hover:text-red-500">×</button>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
