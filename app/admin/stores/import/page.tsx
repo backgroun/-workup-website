@@ -257,6 +257,11 @@ export default function StoreImportPage() {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-bold text-gray-900">컬럼 가이드</h2>
           <p className="text-sm text-gray-400 mt-0.5">엑셀 1행(헤더)에 아래 컬럼명을 그대로 사용하세요.</p>
+          <ul className="mt-3 space-y-1 text-xs text-gray-500 leading-relaxed">
+            <li>· <strong className="text-gray-700">영업시간</strong>은 시작/종료만 입력하면 됩니다. <code className="bg-gray-100 px-1 rounded">10</code> → <code className="bg-gray-100 px-1 rounded">10:00</code>, <code className="bg-gray-100 px-1 rounded">10:30</code>도 가능.</li>
+            <li>· <strong className="text-gray-700">주말 시작·종료를 비워두면</strong> 평일 시간과 동일하게 등록됩니다.</li>
+            <li>· <strong className="text-gray-700">ID</strong> 열이 있으면(다운로드 파일) 해당 매장을 <strong className="text-blue-600">수정</strong>하고, 비어 있으면 <strong className="text-emerald-600">신규</strong> 등록합니다. 좌표·사진은 수정 시 그대로 유지됩니다.</li>
+          </ul>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
