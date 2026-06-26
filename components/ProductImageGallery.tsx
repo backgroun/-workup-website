@@ -1,10 +1,47 @@
-﻿"use client";
+"use client";
 import { useState, useRef } from "react";
 import Image from "next/image";
 import type { Product } from "@/data/products";
 
+type Media = { kind: "image" | "video"; url: string };
+
+// 영상 URL → 임베드/포스터 추출 (YouTube·Vimeo. 그 외는 직접 파일로 간주)
+function ytId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+function vimeoId(url: string): string | null {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : null;
+}
+function videoEmbedSrc(url: string): string | null {
+  const y = ytId(url); if (y) return `https://www.youtube.com/embed/${y}`;
+  const v = vimeoId(url); if (v) return `https://player.vimeo.com/video/${v}`;
+  return null; // 직접 파일(mp4 등)
+}
+function videoPoster(url: string): string | null {
+  const y = ytId(url); if (y) return `https://img.youtube.com/vi/${y}/hqdefault.jpg`;
+  return null;
+}
+
+function PlayBadge({ size = 24 }: { size?: number }) {
+  return (
+    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span className="rounded-full bg-black/55 flex items-center justify-center" style={{ width: size, height: size }}>
+        <svg width={size * 0.45} height={size * 0.45} viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+      </span>
+    </span>
+  );
+}
+
 export default function ProductImageGallery({ product }: { product: Product }) {
-  const images = [product.imageUrl, ...(product.subImages ?? [])].filter(Boolean) as string[];
+  // 이미지(대표+추가) 먼저, 영상은 맨 뒤 썸네일로
+  const media: Media[] = [
+    ...(([product.imageUrl, ...(product.subImages ?? [])].filter(Boolean) as string[]).map(
+      (url): Media => ({ kind: "image", url })
+    )),
+    ...(product.videoUrl?.trim() ? [{ kind: "video" as const, url: product.videoUrl.trim() }] : []),
+  ];
 
   const [activeIdx, setActiveIdx] = useState(0);
   const [animKey, setAnimKey] = useState(0);
@@ -14,7 +51,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
   const stripRef = useRef<HTMLDivElement>(null);
 
   const go = (i: number, dir?: typeof slideDir) => {
-    if (i === activeIdx || i < 0 || i >= images.length) return;
+    if (i === activeIdx || i < 0 || i >= media.length) return;
     setSlideDir(dir ?? (i > activeIdx ? "down" : "up"));
     setAnimKey((k) => k + 1);
     setActiveIdx(i);
@@ -35,7 +72,23 @@ export default function ProductImageGallery({ product }: { product: Product }) {
     touchStartY.current = null;
   };
 
-  const noImage = images.length === 0;
+  const noMedia = media.length === 0;
+  const active = media[activeIdx];
+
+  // 메인 영역 렌더 (이미지/영상 공통)
+  const renderMain = (sizes: string) => {
+    if (!active) return null;
+    if (active.kind === "video") {
+      const embed = videoEmbedSrc(active.url);
+      return embed ? (
+        <iframe src={embed} title={product.name} allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+          allowFullScreen className="absolute inset-0 w-full h-full bg-black" />
+      ) : (
+        <video src={active.url} controls playsInline className="absolute inset-0 w-full h-full object-contain bg-black" />
+      );
+    }
+    return <Image src={active.url} alt={product.name} fill className="object-cover" priority sizes={sizes} />;
+  };
 
   return (
     <>
@@ -57,7 +110,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          {noImage ? (
+          {noMedia ? (
             <div className={`absolute inset-0 ${product.bg} flex items-center justify-center`}>
               <span className="text-white/20 text-xs tracking-widest uppercase">WORKUP</span>
             </div>
@@ -65,7 +118,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
             <div key={animKey} className={`absolute inset-0 ${
               slideDir === "left" ? "gal-left" : slideDir === "right" ? "gal-right" : "gal-down"
             }`}>
-              <Image src={images[activeIdx]} alt={product.name} fill className="object-cover" priority sizes="100vw" />
+              {renderMain("100vw")}
             </div>
           )}
 
@@ -74,25 +127,25 @@ export default function ProductImageGallery({ product }: { product: Product }) {
               NEW
             </span>
           )}
-
         </div>
 
         {/* 도트 인디케이터 */}
         <div className="flex justify-center gap-2 pt-3 min-h-[20px]">
-          {images.length > 1 && images.map((_, i) => (
-            <button key={i} onClick={() => go(i)}
-              className={`w-2 h-2 rounded-full transition-all ${i === activeIdx ? "bg-[#1A2B4A] scale-125" : "bg-gray-300"}`}
+          {media.length > 1 && media.map((m, i) => (
+            <button key={i} onClick={() => go(i)} aria-label={`미디어 ${i + 1}`}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === activeIdx ? "bg-[#1A2B4A] scale-125" : "bg-gray-300"
+              } ${m.kind === "video" ? "ring-1 ring-[#ff550c] ring-offset-1" : ""}`}
             />
           ))}
         </div>
       </div>
 
-      {/* ── 데스크탑: 썸네일 스트립 + 메인 이미지 (좌측 컬럼과 함께 스크롤) ── */}
+      {/* ── 데스크탑: 썸네일 스트립 + 메인 (좌측 컬럼과 함께 스크롤) ── */}
       <div className="hidden md:flex h-screen">
         {/* 썸네일 스트립 */}
-        {images.length > 1 && (
+        {media.length > 1 && (
           <div className="w-[80px] bg-white flex flex-col flex-shrink-0">
-            {/* 위 화살표 (배경 없음) */}
             <button type="button" aria-label="이전 썸네일"
               onClick={() => stripRef.current?.scrollBy({ top: -180, behavior: "smooth" })}
               className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
@@ -101,21 +154,29 @@ export default function ProductImageGallery({ product }: { product: Product }) {
               </svg>
             </button>
 
-            {/* 썸네일 목록 */}
             <div ref={stripRef} className="flex flex-col gap-2 px-2 overflow-y-auto flex-1" style={{ scrollbarWidth: "none" }}>
-              {images.map((src, i) => (
+              {media.map((m, i) => (
                 <button key={i} onClick={() => go(i, i > activeIdx ? "down" : "up")}
                   className={`relative w-full aspect-[4/5] flex-shrink-0 overflow-hidden transition-opacity ${
                     i === activeIdx ? "opacity-100" : "opacity-50 hover:opacity-80"
                   }`}
                   style={{ outline: i === activeIdx ? "2px solid #1A2B4A" : "none", outlineOffset: "-2px" }}
                 >
-                  <Image src={src} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="72px" />
+                  {m.kind === "video" ? (
+                    <span className="absolute inset-0 bg-black">
+                      {videoPoster(m.url) && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={videoPoster(m.url)!} alt="" className="w-full h-full object-cover opacity-80" />
+                      )}
+                      <PlayBadge size={26} />
+                    </span>
+                  ) : (
+                    <Image src={m.url} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="72px" />
+                  )}
                 </button>
               ))}
             </div>
 
-            {/* 아래 화살표 (배경 없음) */}
             <button type="button" aria-label="다음 썸네일"
               onClick={() => stripRef.current?.scrollBy({ top: 180, behavior: "smooth" })}
               className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
@@ -126,9 +187,9 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* 메인 이미지 */}
+        {/* 메인 영역 */}
         <div className="relative flex-1 bg-[#f4f4f4] overflow-hidden">
-          {noImage ? (
+          {noMedia ? (
             <div className={`absolute inset-0 ${product.bg} flex items-center justify-center`}>
               <span className="text-white/20 text-xs tracking-widest uppercase">WORKUP {product.line}</span>
             </div>
@@ -137,7 +198,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
               slideDir === "down" ? "gal-down" : slideDir === "up" ? "gal-up" :
               slideDir === "left" ? "gal-left" : "gal-right"
             }`}>
-              <Image src={images[activeIdx]} alt={product.name} fill className="object-cover" priority sizes="60vw" />
+              {renderMain("60vw")}
             </div>
           )}
 
