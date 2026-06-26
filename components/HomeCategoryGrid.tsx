@@ -15,12 +15,26 @@ type QuickCategoryItem = {
 type QuickCategoriesConfig = {
   is_section_visible: boolean;
   display_count: number;
+  pc_columns?: number;
+  pc_gap?: number;
+  mobile_columns?: number;
+  mobile_gap?: number;
   items: QuickCategoryItem[];
 };
+
+// 레이아웃 기본값 (기존 저장 데이터에 필드가 없을 때 사용)
+const DEFAULT_PC_COLUMNS = 6;
+const DEFAULT_PC_GAP = 32;
+const DEFAULT_MOBILE_COLUMNS = 4;
+const DEFAULT_MOBILE_GAP = 16;
 
 const FALLBACK: QuickCategoriesConfig = {
   is_section_visible: true,
   display_count: 6,
+  pc_columns: DEFAULT_PC_COLUMNS,
+  pc_gap: DEFAULT_PC_GAP,
+  mobile_columns: DEFAULT_MOBILE_COLUMNS,
+  mobile_gap: DEFAULT_MOBILE_GAP,
   items: [
     { id: "1", name: "공용",  emoji: "👥", icon_url: "", bg_color: "#f0f0f0", link: "/products?category=공용", open_in_new_tab: false, is_visible: true },
     { id: "2", name: "남성",  emoji: "👔", icon_url: "", bg_color: "#f0f0f0", link: "/products?category=남성", open_in_new_tab: false, is_visible: true },
@@ -55,12 +69,25 @@ export default async function HomeCategoryGrid() {
     .filter((c) => c.is_visible)
     .slice(0, cfg.display_count);
 
+  // 관리자 레이아웃 설정 (값 없으면 기본값)
+  const pcColumns = cfg.pc_columns ?? DEFAULT_PC_COLUMNS;
+  const pcGap = cfg.pc_gap ?? DEFAULT_PC_GAP;
+  const mobileColumns = cfg.mobile_columns ?? DEFAULT_MOBILE_COLUMNS;
+  const mobileGap = cfg.mobile_gap ?? DEFAULT_MOBILE_GAP;
+
   return (
     <section className="bg-white py-10 md:py-14">
       <div className="px-[15px] md:px-[70px]">
 
         {/* PC */}
-        <div className="hidden md:flex items-start justify-center gap-8">
+        <div
+          className="hidden md:grid items-start"
+          style={{
+            gridTemplateColumns: `repeat(${pcColumns}, max-content)`,
+            justifyContent: "center",
+            gap: `${pcGap}px`,
+          }}
+        >
           {visible.map((cat) => (
             <Link
               key={cat.id}
@@ -93,7 +120,13 @@ export default async function HomeCategoryGrid() {
         </div>
 
         {/* 모바일 */}
-        <div className="md:hidden grid grid-cols-4 gap-y-6 gap-x-2">
+        <div
+          className="md:hidden grid"
+          style={{
+            gridTemplateColumns: `repeat(${mobileColumns}, minmax(0, 1fr))`,
+            gap: `${mobileGap}px`,
+          }}
+        >
           {visible.map((cat) => (
             <Link
               key={cat.id}
