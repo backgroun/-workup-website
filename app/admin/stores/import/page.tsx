@@ -200,7 +200,7 @@ export default function StoreImportPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    {["행", "상태", "매장명", "지역", "주소", "전화", "유형", "오류"].map((h) => (
+                    {["행", "상태", "ID", "매장명", "지역", "주소", "전화", "영업시간", "유형", "오류"].map((h) => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -212,13 +212,17 @@ export default function StoreImportPage() {
                       <td className="px-4 py-4">
                         {row._error
                           ? <span className="px-2.5 py-1 text-xs bg-red-100 text-red-600 font-semibold rounded-full">오류</span>
-                          : <span className="px-2.5 py-1 text-xs bg-emerald-100 text-emerald-600 font-semibold rounded-full">정상</span>
+                          : row.id
+                          ? <span className="px-2.5 py-1 text-xs bg-blue-100 text-blue-600 font-semibold rounded-full">수정</span>
+                          : <span className="px-2.5 py-1 text-xs bg-emerald-100 text-emerald-600 font-semibold rounded-full">신규</span>
                         }
                       </td>
+                      <td className="px-4 py-4 text-gray-400 font-mono text-xs">{row.id || "-"}</td>
                       <td className="px-4 py-4 font-medium text-gray-900">{row.name || <span className="text-red-400 italic">없음</span>}</td>
                       <td className="px-4 py-4 text-gray-600">{row.region || "-"}</td>
                       <td className="px-4 py-4 text-gray-500 text-xs max-w-[200px] truncate">{row.address || "-"}</td>
                       <td className="px-4 py-4 text-gray-600 font-mono text-xs">{row.phone || "-"}</td>
+                      <td className="px-4 py-4 text-gray-600 text-xs whitespace-nowrap">{row.hours || "-"}</td>
                       <td className="px-4 py-4 text-gray-600">{row.store_type || "직영점"}</td>
                       <td className="px-4 py-4 text-xs text-red-500">{row._error || ""}</td>
                     </tr>
