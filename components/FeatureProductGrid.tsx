@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { Product } from "@/data/products";
+import { productDisplayName, type Product } from "@/data/products";
 import NearbyStoreModal from "@/components/NearbyStoreModal";
 
 export default function FeatureProductGrid({ products }: { products: Product[] }) {
@@ -43,7 +43,7 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
               </p>
               <h3 className="text-base font-bold text-[#1A2B4A] mb-3">
                 <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">
-                  {product.name}
+                  {productDisplayName(product)}
                 </Link>
               </h3>
               <p className="text-sm text-gray-500 leading-relaxed mb-4 italic">

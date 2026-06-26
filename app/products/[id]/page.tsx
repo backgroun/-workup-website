@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products as staticProducts, getProductById, type Product } from "@/data/products";
+import { products as staticProducts, getProductById, productDisplayName, type Product } from "@/data/products";
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import ProductImageGallery from "@/components/ProductImageGallery";
