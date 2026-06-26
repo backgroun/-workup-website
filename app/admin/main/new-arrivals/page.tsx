@@ -59,15 +59,20 @@ export default function AdminNewArrivalsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [settingsRes, productsRes] = await Promise.all([
+      const [settingsRes, productsRes, catsRes] = await Promise.all([
         fetch(`/api/admin/site-settings/${SECTION}`),
         fetch("/api/products"),
+        fetch("/api/admin/site-settings/categories"),
       ]);
       if (!settingsRes.ok) { setDbMissing(true); setLoading(false); return; }
       const data = await settingsRes.json();
       if (data) setCfg({ ...DEFAULT, ...data });
       const prods = await productsRes.json();
       if (Array.isArray(prods)) setAllProducts(prods);
+      const catsData = catsRes.ok ? await catsRes.json() : null;
+      if (catsData?.categories && Array.isArray(catsData.categories) && catsData.categories.length > 0) {
+        setCats(catsData.categories as CatItem[]);
+      }
     } catch {
       setDbMissing(true);
     }
@@ -239,7 +244,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
 
           <Section title="카테고리 필터">
             <div className="flex flex-wrap gap-2">
-              {(["전체", ...mainCategories] as (MainCategory | "전체")[]).map((cat) => (
+              {["전체", ...cats.map((c) => c.name)].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => set("category_filter", cat)}
