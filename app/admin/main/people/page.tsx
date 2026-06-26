@@ -361,6 +361,8 @@ export default function AdminMainPeoplePage() {
           )}
         </div>
       </div>
+      </div>
+      )}
     </div>
   );
 }

@@ -64,28 +64,27 @@ function ReelCard({ reel }: { reel: Reel }) {
   );
 }
 
+// MATE 페이지 흐름 안에 임베드되는 하위 영역(독립 섹션 아님 — 부모 컨테이너/배경을 공유).
 export default function MateZone({ config }: { config: MateZoneConfig }) {
-  // 릴스가 없으면 섹션 자체를 노출하지 않는다(데이터가 쌓이면 표시).
+  // 릴스가 없으면 노출하지 않는다(데이터가 쌓이면 표시).
   if (!config.reels.length) return null;
 
   return (
-    <section className="py-16 bg-white border-t border-gray-200">
-      <div className="px-[15px] md:px-[70px]">
-        <div className="mb-8">
-          <p className="text-[11px] tracking-[0.25em] text-[#ff550c] font-bold uppercase mb-2">MATE ZONE</p>
-          <h2 className="text-[24px] md:text-[30px] font-bold text-[#1A2B4A] leading-tight">{config.title}</h2>
-          {config.subtitle && (
-            <p className="mt-2 text-[14px] text-gray-500">{config.subtitle}</p>
-          )}
-        </div>
-
-        {/* 가로 스크롤 릴스 */}
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [scrollbar-width:thin]">
-          {config.reels.map((reel) => (
-            <ReelCard key={reel.id} reel={reel} />
-          ))}
-        </div>
+    <div className="mt-16 pt-12 border-t border-gray-200">
+      <div className="mb-8">
+        <p className="text-[11px] tracking-[0.25em] text-[#ff550c] font-bold uppercase mb-2">MATE ZONE</p>
+        <h2 className="text-[24px] md:text-[30px] font-bold text-[#1A2B4A] leading-tight">{config.title}</h2>
+        {config.subtitle && (
+          <p className="mt-2 text-[14px] text-gray-500">{config.subtitle}</p>
+        )}
       </div>
-    </section>
+
+      {/* 가로 스크롤 릴스 */}
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [scrollbar-width:thin]">
+        {config.reels.map((reel) => (
+          <ReelCard key={reel.id} reel={reel} />
+        ))}
+      </div>
+    </div>
   );
 }
