@@ -1875,11 +1875,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     </button>
                   ))}
                 </div>
-                <div className="flex gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 mb-3 items-center">
                   <button type="button" onClick={sgAddColumn}
                     className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 열 추가</button>
                   <button type="button" onClick={sgAddRow} disabled={sgCols.length === 0}
                     className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">+ 행 추가</button>
+                  <span className="w-px h-5 bg-gray-200 mx-1" />
+                  <input value={bulkColInput} onChange={(e) => setBulkColInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddColumns(); } }}
+                    placeholder="XL, 2XL, 3XL (쉼표·공백 구분)"
+                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
+                  <button type="button" onClick={sgBulkAddColumns} disabled={!bulkColInput.trim()}
+                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
                 </div>
                 {sgCols.length === 0 ? (
                   <p className="text-xs text-gray-400">＋ 열 추가로 헤더(항목·S·M·L…)를 먼저 만들고, ＋ 행 추가로 값을 입력하세요.</p>
