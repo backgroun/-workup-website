@@ -4,7 +4,6 @@
 export type Reel = {
   id: string;
   video_url: string;    // Cloudinary 등 업로드된 영상 URL (mp4)
-  poster_url?: string;  // 첫 프레임 대신 보여줄 썸네일(선택)
   caption?: string;     // 영상 설명(선택)
   link?: string;        // 인스타그램 등 원본 링크(선택)
 };
@@ -30,7 +29,6 @@ export function normalizeMateZone(raw: Partial<MateZoneConfig> | null | undefine
         .map((r, i) => ({
           id: typeof r.id === "string" && r.id ? r.id : `reel-${i}`,
           video_url: r.video_url.trim(),
-          poster_url: typeof r.poster_url === "string" ? r.poster_url.trim() : undefined,
           caption: typeof r.caption === "string" ? r.caption.trim() : undefined,
           link: typeof r.link === "string" ? r.link.trim() : undefined,
         }))
