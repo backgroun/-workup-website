@@ -93,6 +93,7 @@ type FormData = {
   promoEnd: string;
   imageUrl: string;
   subImages: string[];
+  videoUrl: string;
   detailBlocks: (Omit<DetailBlock, "id"> & { id: string })[];
   features: string;
   featureTags: string[];
@@ -144,6 +145,7 @@ function toForm(p?: Product): FormData {
     promoEnd: p?.promoEnd ?? "",
     imageUrl: p?.imageUrl ?? "",
     subImages: p?.subImages ?? [],
+    videoUrl: p?.videoUrl ?? "",
     detailBlocks: p?.detailBlocks ?? [],
     features: (p?.features ?? []).join("\n"),
     featureTags: p?.featureTags ?? [],
@@ -966,6 +968,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       promoEnd: form.status === "예약판매" ? (form.promoEnd || undefined) : undefined,
       imageUrl: form.imageUrl || undefined,
       subImages: form.subImages.filter(Boolean),
+      videoUrl: form.videoUrl.trim() || undefined,
       detailBlocks: form.detailBlocks as DetailBlock[],
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
       featureTags: form.featureTags,
