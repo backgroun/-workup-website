@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSiteSection } from "@/lib/site-settings";
 import { normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
-
-async function isAuthed() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 // 관리자: 구글시트/이메일 웹훅을 동기로 테스트 호출하고 결과를 그대로 반환한다.
 // "수집 안 됨"의 원인(환경변수 미설정 / Apps Script 배포·권한 오류 / 타임아웃)을 즉시 확인하기 위함.
 export async function POST() {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const webhook = process.env.GOOGLE_SHEET_WEBHOOK_URL;
   if (!webhook) {

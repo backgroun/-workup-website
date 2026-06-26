@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
-
-async function isAuthed() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
 
 function connectedProjectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
@@ -14,7 +9,7 @@ function connectedProjectRef() {
 
 // 브랜드 카탈로그 전체 조회 (순서대로) — 관리자 전용(숨긴 항목 포함하므로 인증 필요)
 export async function GET() {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("brand_catalogs")
@@ -27,7 +22,7 @@ export async function GET() {
 
 // 브랜드 카탈로그 생성
 export async function POST(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("brand_catalogs").insert(body).select().single();

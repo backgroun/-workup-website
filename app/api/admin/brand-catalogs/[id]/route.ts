@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { v2 as cloudinary } from "cloudinary";
+import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 
 cloudinary.config({
@@ -9,14 +9,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-async function isAuthed() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
-
 // 브랜드 카탈로그 수정 (부분 업데이트: 노출 토글·순서 변경 등)
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const body = await req.json();
   const supabase = createAdminClient();
