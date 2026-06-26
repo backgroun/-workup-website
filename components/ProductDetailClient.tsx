@@ -42,6 +42,10 @@ export default function ProductDetailClient({
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  // 사이즈별 가격 — 선택 사이즈에 지정가가 있으면 그 가격, 없으면 기본 판매가
+  const sizePriceMap = new Map((product.sizePrices ?? []).filter((sp) => sp.price?.trim()).map((sp) => [sp.size, sp.price]));
+  const hasSizePrices = sizePriceMap.size > 0;
+  const displayPrice = (selectedSize && sizePriceMap.get(selectedSize)) || product.price;
   // 회원 로그인 세션 — 피팅 리스트 담기 게이팅용 (null = 비로그인)
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
@@ -201,7 +205,10 @@ export default function ProductDetailClient({
           </div>
         )}
         <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-2">{product.name}</h1>
-        <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{product.price}</p>
+        <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{displayPrice}</p>
+        {hasSizePrices && (
+          <p className="text-xs text-gray-400 mt-1">사이즈에 따라 가격이 다릅니다{selectedSize ? "" : " — 사이즈를 선택하면 해당 가격이 표시됩니다"}.</p>
+        )}
         {(product.brand || product.sku) && (
           <div className="flex items-center gap-2.5 flex-wrap mt-3.5">
             {product.brand && (
