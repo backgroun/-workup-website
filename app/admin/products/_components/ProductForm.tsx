@@ -2016,7 +2016,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 설명</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* 여러 장 업로드 — 선택한 이미지들이 각각 블록으로 추가 (이미지 중심 에디터) */}
+                <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${uploadingBlocksMulti ? "bg-gray-200 text-gray-400 pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
+                  {uploadingBlocksMulti ? <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />업로드 중…</> : "+ 여러 장 업로드"}
+                </label>
                 {/* 착용컷 — 등록된 썸네일(대표·추가 이미지) 일괄 추가 */}
                 <button type="button" onClick={addWornCutsFromThumbnails}
                   title="등록된 썸네일(대표·추가 이미지)을 착용컷으로 일괄 추가합니다"
@@ -2061,8 +2066,17 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             )}
             <div className="space-y-3">
               {form.detailBlocks.map((block, idx) => (
-                <div key={block.id} className="border border-gray-200 p-4 bg-gray-50 space-y-3 rounded-lg">
-                  <div className="flex items-center gap-3">
+                <div key={block.id}
+                  onDragOver={(e) => onBlockDragOver(e, idx)} onDrop={(e) => onBlockDrop(e, idx)} onDragEnd={onBlockDragEnd}
+                  className={`border p-4 space-y-3 rounded-lg transition-all ${
+                    dragOverBlockIdx === idx && dragBlockIdx !== null && dragBlockIdx !== idx
+                      ? "border-violet-400 ring-2 ring-violet-300 bg-violet-50"
+                      : dragBlockIdx === idx ? "border-dashed border-gray-400 opacity-50 bg-gray-50" : "border-gray-200 bg-gray-50"
+                  }`}>
+                  <div className="flex items-center gap-2">
+                    <span draggable onDragStart={() => setDragBlockIdx(idx)}
+                      title="드래그해 순서 변경"
+                      className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-[#1A2B4A] select-none px-1 text-base leading-none">⠿</span>
                     <span className="text-xs text-gray-400 font-mono w-5 text-center">{idx + 1}</span>
                     <select value={block.type} onChange={(e) => updateBlock(idx, "type", e.target.value)}
                       className="border border-gray-200 px-2 py-1.5 text-xs bg-white focus:outline-none focus:border-[#1A2B4A] rounded">
