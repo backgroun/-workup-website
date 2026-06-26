@@ -3,17 +3,18 @@ import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useAdminUI } from "./admin-ui-context";
 
-type NavLeaf = { label: string; href: string; exact?: boolean; newTab?: boolean; icon: ReactNode };
-type NavDropdown = { label: string; icon: ReactNode; children: NavLeaf[] };
-type NavItem = NavLeaf | NavDropdown;
-type NavGroup = { label: string; items: NavItem[] };
+export type NavLeaf = { label: string; href: string; exact?: boolean; newTab?: boolean; icon: ReactNode };
+export type NavDropdown = { label: string; icon: ReactNode; children: NavLeaf[] };
+export type NavItem = NavLeaf | NavDropdown;
+export type NavGroup = { label: string; items: NavItem[] };
 
-function isDropdown(item: NavItem): item is NavDropdown {
+export function isDropdown(item: NavItem): item is NavDropdown {
   return "children" in item;
 }
 
-const navGroups: NavGroup[] = [
+export const navGroups: NavGroup[] = [
   // ── 1. 제품 관리 (최상단) ─────────────────────────────────────────────────
   {
     label: "제품 관리",
