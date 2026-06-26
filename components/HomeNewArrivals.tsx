@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
-import { mainCategories, productDisplayName, type MainCategory, type Product } from "@/data/products";
+import { productDisplayName, type Product } from "@/data/products";
 
 export default function HomeNewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
