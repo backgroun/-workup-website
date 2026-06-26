@@ -432,136 +432,231 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
+function StarIcon({ filled }: { filled: boolean }) {
+  return filled ? (
+    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.36 4.18a1 1 0 00.95.69h4.4c.97 0 1.37 1.24.59 1.81l-3.56 2.59a1 1 0 00-.36 1.12l1.36 4.18c.3.92-.76 1.69-1.54 1.12l-3.56-2.59a1 1 0 00-1.18 0l-3.56 2.59c-.78.57-1.84-.2-1.54-1.12l1.36-4.18a1 1 0 00-.36-1.12L2.1 9.61c-.78-.57-.38-1.81.59-1.81h4.4a1 1 0 00.95-.69z" />
+    </svg>
+  ) : (
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.5l2.2 4.46 4.92.72-3.56 3.47.84 4.9-4.4-2.31-4.4 2.31.84-4.9L4.9 8.68l4.92-.72z" />
+    </svg>
+  );
+}
+
+/** 사이드바 단일 메뉴 항목 (별표 토글 포함) */
+function LeafRow({
+  leaf,
+  active,
+  fav,
+  onToggleFav,
+}: {
+  leaf: NavLeaf;
+  active: boolean;
+  fav: boolean;
+  onToggleFav: () => void;
+}) {
+  return (
+    <div className="group/leaf relative flex items-center">
+      <Link
+        href={leaf.href}
+        target={leaf.newTab ? "_blank" : undefined}
+        rel={leaf.newTab ? "noopener noreferrer" : undefined}
+        className={`flex-1 min-w-0 flex items-center gap-3 pl-4 pr-9 py-2.5 rounded-lg text-[14px] font-medium transition-all ${
+          active
+            ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
+            : "text-slate-400 hover:text-white hover:bg-white/8"
+        }`}
+      >
+        <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>{leaf.icon}</span>
+        <span className="truncate">{leaf.label}</span>
+      </Link>
+      <button
+        type="button"
+        onClick={onToggleFav}
+        title={fav ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+        aria-label={fav ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+        className={`absolute right-2 p-1 rounded transition-opacity ${
+          fav
+            ? "opacity-100 text-amber-400 hover:text-amber-300"
+            : "opacity-0 group-hover/leaf:opacity-100 text-slate-500 hover:text-amber-400"
+        }`}
+      >
+        <StarIcon filled={fav} />
+      </button>
+    </div>
+  );
+}
+
 export default function AdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchStr = searchParams.toString();
+  const { favorites, isFavorite, toggleFavorite } = useAdminUI();
 
-  // 활성 자식을 가진 드롭다운을 초기에 펼침
-  const getInitialOpen = () => {
-    const open = new Set<string>();
+  // 현재 활성 항목이 속한 그룹 계산
+  const activeGroup = (() => {
     for (const group of navGroups) {
       for (const item of group.items) {
         if (isDropdown(item)) {
-          const hasActive = item.children.some((c) => isLeafActive(c, pathname, searchParams.toString()));
-          if (hasActive) open.add(item.label);
+          if (item.children.some((c) => isLeafActive(c, pathname, searchStr))) return group.label;
+        } else if (isLeafActive(item, pathname, searchStr)) {
+          return group.label;
         }
       }
     }
-    return open;
-  };
+    return null;
+  })();
 
-  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(() => getInitialOpen());
+  // 아코디언: 한 번에 한 그룹만 펼침
+  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
+  // 활성 자식을 가진 드롭다운 펼침
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setOpenDropdowns(getInitialOpen());
+    if (activeGroup) setOpenGroup(activeGroup);
+    const dd = new Set<string>();
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (isDropdown(item) && item.children.some((c) => isLeafActive(c, pathname, searchStr))) {
+          dd.add(item.label);
+        }
+      }
+    }
+    setOpenDropdowns(dd);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, searchParams]);
+  }, [pathname, searchStr]);
 
-  const toggleDropdown = (label: string) => {
+  const toggleGroup = (label: string) =>
+    setOpenGroup((prev) => (prev === label ? null : label));
+
+  const toggleDropdown = (label: string) =>
     setOpenDropdowns((prev) => {
       const next = new Set(prev);
       next.has(label) ? next.delete(label) : next.add(label);
       return next;
     });
-  };
+
+  // 즐겨찾기 메뉴 메타 해석
+  const favoriteLeaves = favorites
+    .map((href) => getNavLeafByHref(href))
+    .filter((l): l is NavLeaf => Boolean(l));
 
   return (
     <aside className="w-72 flex-shrink-0 bg-[#0f172a] min-h-full flex flex-col">
-      <nav className="flex-1 py-6 overflow-y-auto">
-        {navGroups.map((group) => (
-          <div key={group.label} className="mb-4">
-            <p className="px-6 pt-4 pb-3 text-[11px] font-bold text-slate-500 uppercase tracking-[0.18em]">
-              {group.label}
+      <nav className="flex-1 py-4 overflow-y-auto">
+        {/* 즐겨찾기 */}
+        {favoriteLeaves.length > 0 && (
+          <div className="mb-3 px-3">
+            <p className="px-3 pt-2 pb-2 text-[11px] font-bold text-amber-400/80 uppercase tracking-[0.18em] flex items-center gap-1.5">
+              <StarIcon filled />
+              즐겨찾기
             </p>
-            <div className="space-y-0.5 px-3">
-              {group.items.map((item) => {
-                if (isDropdown(item)) {
-                  const isOpen = openDropdowns.has(item.label);
-                  const hasActive = item.children.some((c) =>
-                    isLeafActive(c, pathname, searchParams.toString())
-                  );
-                  return (
-                    <div key={item.label}>
-                      <button
-                        onClick={() => toggleDropdown(item.label)}
-                        className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-[15px] font-medium transition-all ${
-                          hasActive
-                            ? "text-white bg-white/8"
-                            : "text-slate-400 hover:text-white hover:bg-white/8"
-                        }`}
-                      >
-                        <span className={`flex-shrink-0 ${hasActive ? "text-blue-400" : "text-slate-500"}`}>
-                          {item.icon}
-                        </span>
-                        <span className="flex-1 text-left">{item.label}</span>
-                        <svg
-                          className={`w-4 h-4 flex-shrink-0 text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                          fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {isOpen && (
-                        <div className="ml-4 mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
-                          {item.children.map((child) => {
-                            const active = isLeafActive(child, pathname, searchParams.toString());
-                            return (
-                              <Link
-                                key={child.href}
-                                href={child.href}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all ${
-                                  active
-                                    ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
-                                    : "text-slate-400 hover:text-white hover:bg-white/8"
-                                }`}
-                              >
-                                <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>
-                                  {child.icon}
-                                </span>
-                                {child.label}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                // 일반 링크
-                const active = isLeafActive(item as NavLeaf, pathname, searchParams.toString());
-                return (
-                  <Link
-                    key={(item as NavLeaf).href}
-                    href={(item as NavLeaf).href}
-                    target={(item as NavLeaf).newTab ? "_blank" : undefined}
-                    rel={(item as NavLeaf).newTab ? "noopener noreferrer" : undefined}
-                    className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[15px] font-medium transition-all ${
-                      active
-                        ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
-                        : "text-slate-400 hover:text-white hover:bg-white/8"
-                    }`}
-                  >
-                    <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>
-                      {item.icon}
-                    </span>
-                    {(item as NavLeaf).label}
-                  </Link>
-                );
-              })}
+            <div className="space-y-0.5">
+              {favoriteLeaves.map((leaf) => (
+                <LeafRow
+                  key={leaf.href}
+                  leaf={leaf}
+                  active={isLeafActive(leaf, pathname, searchStr)}
+                  fav
+                  onToggleFav={() => toggleFavorite(leaf.href)}
+                />
+              ))}
             </div>
+            <div className="mt-3 mx-3 border-t border-white/5" />
           </div>
-        ))}
+        )}
+
+        {/* 그룹 (아코디언) */}
+        {navGroups.map((group) => {
+          const isGroupOpen = openGroup === group.label;
+          const groupActive = activeGroup === group.label;
+          return (
+            <div key={group.label} className="mb-0.5 px-3">
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-[0.16em] transition-colors ${
+                  groupActive ? "text-blue-300" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                <span>{group.label}</span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${isGroupOpen ? "rotate-180" : ""}`}
+                  fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isGroupOpen && (
+                <div className="space-y-0.5 mt-0.5 pb-1">
+                  {group.items.map((item) => {
+                    if (isDropdown(item)) {
+                      const isOpen = openDropdowns.has(item.label);
+                      const hasActive = item.children.some((c) => isLeafActive(c, pathname, searchStr));
+                      return (
+                        <div key={item.label}>
+                          <button
+                            type="button"
+                            onClick={() => toggleDropdown(item.label)}
+                            className={`w-full flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-lg text-[14px] font-medium transition-all ${
+                              hasActive ? "text-white bg-white/8" : "text-slate-400 hover:text-white hover:bg-white/8"
+                            }`}
+                          >
+                            <span className={`flex-shrink-0 ${hasActive ? "text-blue-400" : "text-slate-500"}`}>
+                              {item.icon}
+                            </span>
+                            <span className="flex-1 text-left truncate">{item.label}</span>
+                            <svg
+                              className={`w-4 h-4 flex-shrink-0 text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                              fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {isOpen && (
+                            <div className="ml-4 mt-0.5 space-y-0.5 border-l border-white/10 pl-2">
+                              {item.children.map((child) => (
+                                <LeafRow
+                                  key={child.href}
+                                  leaf={child}
+                                  active={isLeafActive(child, pathname, searchStr)}
+                                  fav={isFavorite(child.href)}
+                                  onToggleFav={() => toggleFavorite(child.href)}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <LeafRow
+                        key={item.href}
+                        leaf={item}
+                        active={isLeafActive(item, pathname, searchStr)}
+                        fav={isFavorite(item.href)}
+                        onToggleFav={() => toggleFavorite(item.href)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
-      <div className="px-6 py-5 border-t border-white/5">
+      <div className="px-6 py-4 border-t border-white/5">
         <p className="text-[12px] text-slate-600 font-medium">WORKUP Admin v1.0</p>
       </div>
     </aside>
   );
 }
 
-function isLeafActive(item: NavLeaf, pathname: string, searchParamsStr: string): boolean {
+export function isLeafActive(item: NavLeaf, pathname: string, searchParamsStr: string): boolean {
   const [itemPath, itemQuery] = item.href.split("?");
   if (item.exact) {
     if (pathname !== itemPath) return false;
@@ -583,4 +678,66 @@ function isLeafActive(item: NavLeaf, pathname: string, searchParamsStr: string):
     if (currentParams.get(k) !== v) return false;
   }
   return true;
+}
+
+/** href(쿼리 포함)로 메뉴 항목을 찾는다. 정확 매칭 우선, 없으면 쿼리 없는 경로 매칭. */
+export function getNavLeafByHref(href: string): NavLeaf | null {
+  for (const group of navGroups) {
+    for (const item of group.items) {
+      if (isDropdown(item)) {
+        for (const c of item.children) if (c.href === href) return c;
+      } else if (item.href === href) {
+        return item;
+      }
+    }
+  }
+  const path = href.split("?")[0];
+  for (const group of navGroups) {
+    for (const item of group.items) {
+      if (isDropdown(item)) {
+        for (const c of item.children) if (!c.href.includes("?") && c.href === path) return c;
+      } else if (!item.href.includes("?") && item.href === path) {
+        return item;
+      }
+    }
+  }
+  return null;
+}
+
+// 사이드바에 없는 동적 경로의 탭 라벨
+const DYNAMIC_ROUTE_LABELS: { test: (p: string) => boolean; label: string }[] = [
+  { test: (p) => p === "/admin", label: "대시보드" },
+  { test: (p) => p === "/admin/products/new", label: "제품 등록" },
+  { test: (p) => /^\/admin\/products\/[^/]+\/edit$/.test(p), label: "제품 수정" },
+  { test: (p) => p === "/admin/products/import", label: "제품 가져오기" },
+  { test: (p) => p === "/admin/products/main-expose", label: "메인 노출 관리" },
+  { test: (p) => /^\/admin\/stores\/[^/]+\/edit$/.test(p), label: "매장 수정" },
+];
+
+/** 경로(+쿼리)에 대한 탭 표시용 라벨을 해석한다. */
+export function getRouteLabel(pathname: string, searchStr = ""): string {
+  const href = pathname + (searchStr ? `?${searchStr}` : "");
+  const exact = getNavLeafByHref(href);
+  if (exact && exact.href === href) return exact.label;
+  for (const d of DYNAMIC_ROUTE_LABELS) if (d.test(pathname)) return d.label;
+  const byPath = getNavLeafByHref(pathname);
+  if (byPath) return byPath.label;
+  // 최장 접두사 매칭
+  let best: NavLeaf | null = null;
+  let bestLen = 0;
+  for (const group of navGroups) {
+    for (const item of group.items) {
+      const leaves = isDropdown(item) ? item.children : [item];
+      for (const l of leaves) {
+        const p = l.href.split("?")[0];
+        if (p !== "/admin" && (pathname === p || pathname.startsWith(p + "/")) && p.length > bestLen) {
+          best = l;
+          bestLen = p.length;
+        }
+      }
+    }
+  }
+  if (best) return best.label;
+  const seg = pathname.split("/").filter(Boolean).pop();
+  return seg ? decodeURIComponent(seg) : "관리자";
 }
