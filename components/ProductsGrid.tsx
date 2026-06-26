@@ -9,6 +9,7 @@ import {
   products as staticProducts,
   mainCategories,
   subCategoriesByMain,
+  productDisplayName,
   type MainCategory,
   type SubCategory,
 } from "@/data/products";
@@ -322,7 +323,7 @@ export default function ProductsGrid() {
           </div>
         )}
         <h3 className={`font-medium text-[#1A2B4A] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
-          <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">{product.name}</Link>
+          <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">{productDisplayName(product)}</Link>
         </h3>
         {product.sku && (
           <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{product.sku}</p>
