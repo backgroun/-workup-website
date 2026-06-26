@@ -192,6 +192,9 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
           </p>
         )}
 
+        {/* MATE ZONE — 같은 페이지 흐름 안의 릴스 영역(릴스 없으면 자동 숨김) */}
+        {mateZone && <MateZone config={mateZone} />}
+
       </div>
 
       {/* 데스크톱 우하단 고정 CTA — 글을 읽는 내내 매장 방문 유도(모바일은 전역 하단바 '매장' 탭이 담당) */}

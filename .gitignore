@@ -3,6 +3,7 @@ node_modules/
 .pnp.js
 .next/
 out/
+*.tsbuildinfo
 .env
 .env*.local
 .DS_Store
