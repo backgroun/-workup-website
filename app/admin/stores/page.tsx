@@ -171,6 +171,16 @@ export default function AdminStoresPage() {
             Excel 업로드
           </Link>
           <button
+            onClick={downloadExcel}
+            disabled={stores.length === 0}
+            className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-200 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors rounded disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Excel 다운로드
+          </button>
+          <button
             onClick={handleSeed}
             disabled={seeding}
             className="flex items-center gap-2 px-4 py-2.5 border-2 border-amber-300 text-sm font-semibold text-amber-700 hover:border-amber-500 hover:text-amber-800 transition-colors rounded"
