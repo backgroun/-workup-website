@@ -10,8 +10,17 @@ type QuickCategoryItem = {
   bg_color: string; link: string; open_in_new_tab: boolean; is_visible: boolean;
 };
 type QuickCategoriesConfig = {
-  is_section_visible: boolean; display_count: number; items: QuickCategoryItem[];
+  is_section_visible: boolean; display_count: number;
+  pc_columns?: number; pc_gap?: number;
+  mobile_columns?: number; mobile_gap?: number;
+  items: QuickCategoryItem[];
 };
+
+// 레이아웃 기본값 (HomeCategoryGrid 와 동일하게 유지)
+const QC_PC_COLUMNS = 6;
+const QC_PC_GAP = 32;
+const QC_MOBILE_COLUMNS = 4;
+const QC_MOBILE_GAP = 16;
 
 // ── 기본값 ─────────────────────────────────────────────────────
 const DEFAULT_CATS: CatItem[] = [
@@ -26,6 +35,10 @@ const DEFAULT_CATS: CatItem[] = [
 const DEFAULT_QC: QuickCategoriesConfig = {
   is_section_visible: true,
   display_count: 6,
+  pc_columns: QC_PC_COLUMNS,
+  pc_gap: QC_PC_GAP,
+  mobile_columns: QC_MOBILE_COLUMNS,
+  mobile_gap: QC_MOBILE_GAP,
   items: [
     { id: "1", name: "공용",  emoji: "👥", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
     { id: "2", name: "남성",  emoji: "👔", icon_url: "", bg_color: "#f0f0f0", link: "/products", open_in_new_tab: false, is_visible: true },
@@ -209,6 +222,13 @@ export default function AdminCombinedCategoriesPage() {
   }
 
   const visibleCount = qcConfig.items.filter(it => it.is_visible).length;
+
+  // 레이아웃 미리보기용 파생값
+  const previewItems = qcConfig.items.filter(it => it.is_visible).slice(0, qcConfig.display_count);
+  const qcPcCols = qcConfig.pc_columns ?? QC_PC_COLUMNS;
+  const qcPcGap = qcConfig.pc_gap ?? QC_PC_GAP;
+  const qcMobileCols = qcConfig.mobile_columns ?? QC_MOBILE_COLUMNS;
+  const qcMobileGap = qcConfig.mobile_gap ?? QC_MOBILE_GAP;
 
   // ── 로딩 ──
   if (catLoading || qcLoading) {
