@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 // 카탈로그 페이지 수정 (부분 업데이트 지원: 노출 토글·순서 변경 등)
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -15,6 +16,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "catalog",
+    resourceLabel: "카탈로그",
+    target: data?.title ?? data?.name ?? body?.title ?? body?.name,
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 

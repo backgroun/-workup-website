@@ -22,6 +22,13 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "manufacturers",
+    resourceLabel: "제조사",
+    target: data?.name ?? name.trim(),
+    targetId: data?.id,
+  });
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -37,6 +44,13 @@ export async function PUT(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "manufacturers",
+    resourceLabel: "제조사",
+    target: data?.name ?? name.trim(),
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 
@@ -46,5 +60,11 @@ export async function DELETE(req: Request) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("manufacturers").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "manufacturers",
+    resourceLabel: "제조사",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }

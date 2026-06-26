@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 // 문의 상태 변경 (신규/처리중/완료)
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,6 +14,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const supabase = createAdminClient();
   const { error } = await supabase.from("inquiries").update({ status }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "inquiries",
+    resourceLabel: "문의",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }
 
@@ -23,5 +30,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const supabase = createAdminClient();
   const { error } = await supabase.from("inquiries").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "inquiries",
+    resourceLabel: "문의",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,6 +30,12 @@ export async function PUT(req: Request) {
       }, { onConflict: "platform" })
       .select().single();
     if (error) throw error;
+    await logAudit({
+      action: "update",
+      resource: "analytics",
+      resourceLabel: "분석/픽셀",
+      summary: "픽셀/광고 설정 수정",
+    });
     return NextResponse.json(data);
   } catch (e: unknown) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

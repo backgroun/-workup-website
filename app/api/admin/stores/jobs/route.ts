@@ -37,5 +37,12 @@ export async function POST(req: Request) {
     .select("*, stores(id, name, region)")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "jobs",
+    resourceLabel: "채용공고",
+    target: data?.title ?? body?.title ?? data?.name,
+    targetId: data?.id,
+  });
   return NextResponse.json(data);
 }

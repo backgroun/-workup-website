@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { makeDummy } from "@/data/inquiryDummy";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 function connectedProjectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/^https?:\/\//, "").split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
@@ -96,6 +97,12 @@ export async function POST(req: Request) {
     const { error } = await supabase.from("inquiry_dummies").insert(rows.slice(i, i + CHUNK));
     if (error) return NextResponse.json({ error: error.message, added: i }, { status: 500 });
   }
+  await logAudit({
+    action: "create",
+    resource: "inquiries",
+    resourceLabel: "문의",
+    summary: "문의 더미 생성",
+  });
   return NextResponse.json({ ok: true, added: rows.length });
 }
 

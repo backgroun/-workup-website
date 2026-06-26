@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 // 앱이 실제로 연결된 Supabase 프로젝트 ref (진단용 — NEXT_PUBLIC_ 값이라 비밀 아님)
 function connectedProjectRef() {
@@ -39,5 +40,12 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "catalog",
+    resourceLabel: "카탈로그",
+    target: data?.title ?? data?.name ?? body?.title ?? body?.name,
+    targetId: data?.id,
+  });
   return NextResponse.json(data);
 }
