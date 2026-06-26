@@ -11,6 +11,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
+  const ADMIN_GRADE = "관리자";
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 

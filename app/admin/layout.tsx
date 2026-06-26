@@ -1,12 +1,13 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/AdminSidebar";
+import AdminLogoutButton from "@/components/AdminLogoutButton";
+import { getAdminMember } from "@/lib/admin-auth";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const store = await cookies();
-  const token = store.get("wu-auth")?.value;
-  if (token !== (process.env.AUTH_TOKEN ?? "wu-session-ok")) {
-    redirect("/login");
+  // 통합 회원 인증: 로그인한 회원 중 grade="관리자" 인 경우만 접근 허용.
+  const admin = await getAdminMember();
+  if (!admin) {
+    redirect("/member/login?from=admin");
   }
   return (
     <div className="min-h-screen bg-[#f1f5f9] flex flex-col">
@@ -24,6 +25,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </div>
         <div className="flex items-center gap-6">
+          <span className="text-slate-400 text-sm hidden sm:inline">
+            {admin.name} <span className="text-slate-600">·</span> 관리자
+          </span>
           <a
             href="/"
             target="_blank"
@@ -34,6 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </svg>
             사이트 미리보기
           </a>
+          <AdminLogoutButton />
         </div>
       </header>
 
