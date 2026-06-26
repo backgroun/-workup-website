@@ -171,27 +171,31 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
           </div>
         </article>
 
-        {/* 이전 / 다음 이야기 — 글이 2편 이상일 때만 */}
-        {hasMultiple ? (
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => goTo(current - 1)}
-              className="flex flex-col items-start border border-gray-200 bg-white px-5 py-4 text-left hover:border-[#ff550c] transition-colors min-h-[44px]"
-            >
-              <span className="text-[11px] text-gray-400 mb-1">← 이전 이야기</span>
-              <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
-                {people[((current - 1) % total + total) % total].job}
-              </span>
-            </button>
-            <button
-              onClick={() => goTo(current + 1)}
-              className="flex flex-col items-end border border-gray-200 bg-white px-5 py-4 text-right hover:border-[#ff550c] transition-colors min-h-[44px]"
-            >
-              <span className="text-[11px] text-gray-400 mb-1">다음 이야기 →</span>
-              <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
-                {people[(current + 1) % total].job}
-              </span>
-            </button>
+        {/* 이전 / 다음 이야기 — 해당 방향에 글이 있을 때만 버튼 노출 */}
+        {hasPrev || hasNext ? (
+          <div className="mt-6 flex gap-3">
+            {hasPrev && (
+              <button
+                onClick={() => goTo(current - 1)}
+                className="flex-1 flex flex-col items-start border border-gray-200 bg-white px-5 py-4 text-left hover:border-[#ff550c] transition-colors min-h-[44px]"
+              >
+                <span className="text-[11px] text-gray-400 mb-1">← 이전 이야기</span>
+                <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
+                  {people[current - 1].job}
+                </span>
+              </button>
+            )}
+            {hasNext && (
+              <button
+                onClick={() => goTo(current + 1)}
+                className="flex-1 flex flex-col items-end border border-gray-200 bg-white px-5 py-4 text-right hover:border-[#ff550c] transition-colors min-h-[44px]"
+              >
+                <span className="text-[11px] text-gray-400 mb-1">다음 이야기 →</span>
+                <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
+                  {people[current + 1].job}
+                </span>
+              </button>
+            )}
           </div>
         ) : (
           <p className="mt-6 text-center text-[13px] text-gray-400">
