@@ -221,6 +221,20 @@ export default function AdminCombinedCategoriesPage() {
     } finally { setUploadingId(null); }
   }
 
+  // 레이아웃 숫자 입력 (임의 값) — 빈 값/잘못된 값은 무시. 수량은 최소 1, 간격은 최소 0
+  function setColumns(key: "pc_columns" | "mobile_columns", raw: string) {
+    if (raw.trim() === "") return;
+    const n = Math.max(1, Math.round(Number(raw)));
+    if (!Number.isFinite(n)) return;
+    setQcConfig(p => ({ ...p, [key]: n }));
+  }
+  function setGap(key: "pc_gap" | "mobile_gap", raw: string) {
+    if (raw.trim() === "") return;
+    const n = Math.max(0, Math.round(Number(raw)));
+    if (!Number.isFinite(n)) return;
+    setQcConfig(p => ({ ...p, [key]: n }));
+  }
+
   const visibleCount = qcConfig.items.filter(it => it.is_visible).length;
 
   // 레이아웃 미리보기용 파생값
@@ -488,20 +502,16 @@ export default function AdminCombinedCategoriesPage() {
               <p className="text-xs font-bold text-gray-500 mb-2">💻 PC</p>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량</span>
-                  <select value={qcPcCols}
-                    onChange={e => setQcConfig(p => ({ ...p, pc_columns: Number(e.target.value) }))}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
-                    {[4, 5, 6, 7, 8, 10].map(n => <option key={n} value={n}>{n}개씩</option>)}
-                  </select>
+                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량 (개)</span>
+                  <input type="number" inputMode="numeric" min={1} step={1} value={qcPcCols}
+                    onChange={e => setColumns("pc_columns", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">간격</span>
-                  <select value={qcPcGap}
-                    onChange={e => setQcConfig(p => ({ ...p, pc_gap: Number(e.target.value) }))}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
-                    {[16, 24, 32, 40, 48, 56, 64].map(n => <option key={n} value={n}>{n}px</option>)}
-                  </select>
+                  <span className="block text-[11px] text-gray-500 mb-1">간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGap}
+                    onChange={e => setGap("pc_gap", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
               </div>
             </div>
@@ -511,20 +521,16 @@ export default function AdminCombinedCategoriesPage() {
               <p className="text-xs font-bold text-gray-500 mb-2">📱 모바일</p>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량</span>
-                  <select value={qcMobileCols}
-                    onChange={e => setQcConfig(p => ({ ...p, mobile_columns: Number(e.target.value) }))}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
-                    {[2, 3, 4, 5].map(n => <option key={n} value={n}>{n}개씩</option>)}
-                  </select>
+                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량 (개)</span>
+                  <input type="number" inputMode="numeric" min={1} step={1} value={qcMobileCols}
+                    onChange={e => setColumns("mobile_columns", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">간격</span>
-                  <select value={qcMobileGap}
-                    onChange={e => setQcConfig(p => ({ ...p, mobile_gap: Number(e.target.value) }))}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
-                    {[8, 12, 16, 20, 24, 32].map(n => <option key={n} value={n}>{n}px</option>)}
-                  </select>
+                  <span className="block text-[11px] text-gray-500 mb-1">간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGap}
+                    onChange={e => setGap("mobile_gap", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
               </div>
             </div>
