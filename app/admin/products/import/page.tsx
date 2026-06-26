@@ -93,17 +93,12 @@ function downloadTemplate() {
     "45,000원",
     "25,000원",
     "판매중",
-    "하루 종일 쪼그려 앉아도 안 당깁니다.",
-    "11개 포켓;무릎 이중 보강;스트레치율 35%",
-    "스트레치;경량",
-    "건설;물류",
-    "봄/가을;여름",
-    "신상품",
-    "",
-    "",
+    "S;M;L;XL;2XL",
+    "스트레치 카고 팬츠 | WORKUP",
+    "현장 작업자를 위한 스트레치 카고 팬츠",
   ];
   const ws = XLSX.utils.aoa_to_sheet([header, sample]);
-  ws["!cols"] = COLUMNS.map((_, i) => ({ wch: i === 0 ? 24 : i === 11 ? 30 : 16 }));
+  ws["!cols"] = COLUMNS.map((_, i) => ({ wch: i === 0 ? 24 : 16 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "상품목록");
   XLSX.writeFile(wb, "workup_products_template.xlsx");
@@ -330,12 +325,7 @@ export default function ProductImportPage() {
                 { label: "소비자가",         desc: "소비자가",             req: false, ex: "45,000원" },
                 { label: "공급가",          desc: "공급가",               req: false, ex: "25,000원" },
                 { label: "판매상태",         desc: "판매중/품절/판매중지/예약판매/진열대기", req: false, ex: "판매중" },
-                { label: "한줄소개",         desc: "제품 tagline",        req: false, ex: "하루 종일 쪼그려 앉아도..." },
-                { label: "주요특징(;구분)",  desc: "세미콜론으로 여러 특징",   req: false, ex: "11개 포켓;무릎 이중 보강" },
-                { label: "기능태그(;구분)",  desc: "냉감/방수/방풍 등",      req: false, ex: "스트레치;경량" },
-                { label: "현장추천(;구분)",  desc: "건설/물류/정비 등",      req: false, ex: "건설;물류" },
-                { label: "시즌(;구분)",     desc: "봄/가을 / 여름 / 겨울",  req: false, ex: "봄/가을;여름" },
-                { label: "메인노출(;구분)",  desc: "신상품/추천상품/베스트/기획전", req: false, ex: "신상품" },
+                { label: "사이즈(;구분)",   desc: "세미콜론으로 여러 사이즈",   req: false, ex: "S;M;L;XL;2XL" },
                 { label: "메타타이틀",       desc: "SEO 타이틀",           req: false, ex: "스트레치 카고 팬츠 | WORKUP" },
                 { label: "메타설명",         desc: "SEO 설명",             req: false, ex: "현장 작업자를 위한 스트레치..." },
               ].map((col) => (
