@@ -751,6 +751,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("customSizeInput", "");
   };
 
+  // ── 사이즈별 가격 ──────────────────────────────────────────────────────────
+  const sizePriceOf = (size: string) => form.sizePrices.find((sp) => sp.size === size)?.price ?? "";
+  const setSizePrice = (size: string, price: string) => {
+    const others = form.sizePrices.filter((sp) => sp.size !== size);
+    set("sizePrices", price.trim() ? [...others, { size, price: price.trim() }] : others);
+  };
+
   // ── 사이즈 가이드 (이미지 / 행·열 표) ──────────────────────────────────────
   const sg = form.sizeGuide;
   const setSG = (patch: Partial<SizeGuide>) => set("sizeGuide", { ...sg, ...patch });
