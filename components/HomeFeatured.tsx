@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { getProductById } from "@/data/products";
+import { getProductById, productDisplayName } from "@/data/products";
 
 const MAIN_ID = "stretch-cargo-pants";
 const SUB_IDS = ["reflective-safety-jacket", "multi-pocket-vest"];
@@ -79,7 +79,7 @@ export default function HomeFeatured() {
                     {p.category} · {p.subCategory}
                   </p>
                   <h3 className="text-sm font-bold text-[#1A2B4A] mb-1 group-hover:underline underline-offset-2">
-                    {p.name}
+                    {productDisplayName(p)}
                   </h3>
                   <p className="text-xs text-gray-400 italic mb-3 line-clamp-1">"{p.tagline}"</p>
                   <div className="flex items-center justify-between">
