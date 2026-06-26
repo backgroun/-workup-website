@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,5 +27,12 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "hero-slides",
+    resourceLabel: "메인 비주얼",
+    target: data?.title ?? body?.title ?? null,
+    targetId: data?.id,
+  });
   return NextResponse.json(data);
 }

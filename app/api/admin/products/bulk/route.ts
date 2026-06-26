@@ -23,5 +23,11 @@ export async function POST(req: Request) {
     .select("id");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "products",
+    resourceLabel: "상품",
+    summary: `상품 ${data?.length ?? rows.length}건 일괄 등록`,
+  });
   return NextResponse.json({ ok: true, count: data?.length ?? 0 });
 }

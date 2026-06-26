@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,5 +42,12 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "stores",
+    resourceLabel: "매장",
+    target: data?.name ?? body?.name,
+    targetId: data?.id,
+  });
   return NextResponse.json(data);
 }

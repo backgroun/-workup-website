@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,6 +15,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "hero-slides",
+    resourceLabel: "메인 비주얼",
+    target: data?.title ?? body?.title ?? null,
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 
@@ -23,5 +31,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const supabase = createAdminClient();
   const { error } = await supabase.from("hero_slides").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "hero-slides",
+    resourceLabel: "메인 비주얼",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }

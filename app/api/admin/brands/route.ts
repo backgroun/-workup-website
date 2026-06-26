@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,6 +22,13 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "brands",
+    resourceLabel: "브랜드",
+    target: data?.name ?? name.trim(),
+    targetId: data?.id,
+  });
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -36,6 +44,13 @@ export async function PUT(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "brands",
+    resourceLabel: "브랜드",
+    target: data?.name ?? name.trim(),
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 
@@ -45,5 +60,11 @@ export async function DELETE(req: Request) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("brands").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "brands",
+    resourceLabel: "브랜드",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }

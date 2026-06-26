@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { stores as staticStores } from "@/data/stores";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 // POST /api/admin/stores/import — Excel 파싱 결과(배열)를 upsert
 export async function POST(req: Request) {
@@ -32,6 +33,12 @@ export async function POST(req: Request) {
     }));
     const { error } = await supabase.from("stores").upsert(rows, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await logAudit({
+      action: "create",
+      resource: "stores",
+      resourceLabel: "매장",
+      summary: `매장 ${rows.length}건 엑셀 업로드`,
+    });
     return NextResponse.json({ ok: true, count: rows.length });
   }
 
@@ -61,6 +68,12 @@ export async function POST(req: Request) {
     }))
   );
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "stores",
+    resourceLabel: "매장",
+    summary: `매장 ${rows.length}건 엑셀 업로드`,
+  });
   return NextResponse.json({ ok: true, count: rows.length });
 }
 

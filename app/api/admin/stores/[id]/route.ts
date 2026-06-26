@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -43,6 +44,13 @@ export async function PUT(req: Request, { params }: Params) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "stores",
+    resourceLabel: "매장",
+    target: data?.name ?? body?.name,
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 
@@ -52,5 +60,11 @@ export async function DELETE(_req: Request, { params }: Params) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("stores").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "stores",
+    resourceLabel: "매장",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }
