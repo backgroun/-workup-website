@@ -144,7 +144,7 @@ export default function ProductDetailClient({
       setLoginPromptOpen(true);
       return;
     }
-    toggleProduct({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: product.price, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
+    toggleProduct({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: displayPrice, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
   };
 
   const StoreList = () => (

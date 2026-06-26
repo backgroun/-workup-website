@@ -100,6 +100,7 @@ type FormData = {
   customJobSite: string;
   mainExpose: string[];
   sizes: string[];
+  sizePrices: { size: string; price: string }[];
   sizeGuide: SizeGuide;
   detailInfo: DetailInfoItem[];
   customSizeInput: string;
@@ -149,6 +150,7 @@ function toForm(p?: Product): FormData {
     customJobSite: "",
     mainExpose: p?.mainExpose ?? (p?.isNew ? ["신상품"] : []),
     sizes: (p?.sizes ?? DEFAULT_SIZES),
+    sizePrices: (p?.sizePrices ?? []).map((sp) => ({ size: sp.size, price: sp.price })),
     sizeGuide: p?.sizeGuide ?? { ...SIZE_GUIDE_DEFAULT },
     detailInfo: p?.detailInfo ?? [],
     customSizeInput: "",
@@ -908,6 +910,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       bg: "bg-[#1A2B4A]",
       colors: form.colors,
       sizes: form.sizes,
+      sizePrices: form.sizePrices.filter((sp) => form.sizes.includes(sp.size) && sp.price.trim()),
       sizeGuide: form.sizeGuide,
       detailInfo: form.detailInfo.filter((d) => d.label.trim() || d.value.trim()),
       relatedIds: form.relatedIds,
