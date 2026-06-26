@@ -2,15 +2,17 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { hoursFromParts } from "@/lib/storeHours";
 
 const COLUMNS = [
   { key: "name",              label: "매장명",            required: true },
   { key: "region",            label: "지역",              required: false },
   { key: "address",           label: "주소",              required: true },
-  { key: "lat",               label: "위도",              required: false },
-  { key: "lng",               label: "경도",              required: false },
   { key: "phone",             label: "전화번호",           required: false },
-  { key: "hours",             label: "영업시간",           required: false },
+  { key: "weekdayStart",      label: "평일시작",           required: false },
+  { key: "weekdayEnd",        label: "평일종료",           required: false },
+  { key: "weekendStart",      label: "주말시작",           required: false },
+  { key: "weekendEnd",        label: "주말종료",           required: false },
   { key: "store_type",        label: "매장유형",           required: false },
   { key: "brands",            label: "취급브랜드(;구분)",   required: false },
   { key: "parking",           label: "주차여부",           required: false },
@@ -25,19 +27,30 @@ type ParsedRow = { _row: number; _error?: string; [key: string]: string | number
 function parseRow(row: Record<string, unknown>, idx: number): ParsedRow {
   const name = String(row["매장명"] ?? row["name"] ?? "").trim();
   const address = String(row["주소"] ?? row["address"] ?? "").trim();
+  const id = String(row["ID"] ?? row["id"] ?? "").trim();
   const errors: string[] = [];
   if (!name) errors.push("매장명 필수");
   if (!address) errors.push("주소 필수");
+  if (id && !/^\d+$/.test(id)) errors.push("ID는 숫자만");
+
+  const wdStart = String(row["평일시작"] ?? row["weekdayStart"] ?? "").trim();
+  const wdEnd = String(row["평일종료"] ?? row["weekdayEnd"] ?? "").trim();
+  const weStart = String(row["주말시작"] ?? row["weekendStart"] ?? "").trim();
+  const weEnd = String(row["주말종료"] ?? row["weekendEnd"] ?? "").trim();
+
   return {
     _row: idx + 2,
     _error: errors.length > 0 ? errors.join(", ") : undefined,
+    id,
     name,
     region: String(row["지역"] ?? row["region"] ?? "").trim(),
     address,
-    lat: String(row["위도"] ?? row["lat"] ?? "").trim(),
-    lng: String(row["경도"] ?? row["lng"] ?? "").trim(),
     phone: String(row["전화번호"] ?? row["phone"] ?? "").trim(),
-    hours: String(row["영업시간"] ?? row["hours"] ?? "").trim(),
+    weekdayStart: wdStart,
+    weekdayEnd: wdEnd,
+    weekendStart: weStart,
+    weekendEnd: weEnd,
+    hours: hoursFromParts(wdStart, wdEnd, weStart, weEnd),
     store_type: String(row["매장유형"] ?? row["store_type"] ?? "직영점").trim() || "직영점",
     brands: String(row["취급브랜드(;구분)"] ?? row["brands"] ?? "").trim(),
     parking: String(row["주차여부"] ?? row["parking"] ?? "").trim(),
@@ -45,18 +58,20 @@ function parseRow(row: Record<string, unknown>, idx: number): ParsedRow {
     kakao_channel_url: String(row["카카오채널URL"] ?? row["kakao_channel_url"] ?? "").trim(),
     store_url: String(row["스토어URL"] ?? row["store_url"] ?? "").trim(),
     is_active: String(row["활성여부"] ?? row["is_active"] ?? "true").trim(),
+    sort_order: String(row["정렬순서"] ?? row["sort_order"] ?? "").trim(),
   };
 }
 
 function downloadTemplate() {
   const header = COLUMNS.map((c) => c.label);
+  // 평일 10~20시, 주말은 비워두면 평일과 동일하게 등록됨 (시작/종료는 "10"처럼 시(時)만 입력해도 됨)
   const sample = [
     "워크업 포천직영점", "경기", "경기도 포천시 호국로 90 워크업 포천 본점",
-    "37.783470", "127.121414", "031-000-0000", "10:00 - 20:00 (매일)",
+    "031-000-0000", "10", "20", "", "",
     "직영점", "WORKUP;나이키", "false", "포천 직영점입니다.", "", "", "true",
   ];
   const ws = XLSX.utils.aoa_to_sheet([header, sample]);
-  ws["!cols"] = COLUMNS.map((_, i) => ({ wch: i === 0 ? 24 : i === 10 ? 30 : 16 }));
+  ws["!cols"] = COLUMNS.map((c) => ({ wch: c.key === "address" ? 40 : c.key === "description" ? 30 : c.key === "name" ? 22 : 14 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "매장목록");
   XLSX.writeFile(wb, "workup_stores_template.xlsx");
