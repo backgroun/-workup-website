@@ -140,6 +140,22 @@ export default function AdminMainPeoplePage() {
 
   return (
     <div>
+      {/* 탭 — 인물 인터뷰 / 릴스(MATE ZONE)를 한 화면에서 관리 */}
+      <div className="flex gap-1 mb-6 border-b border-slate-200">
+        {([["people", "인물 인터뷰"], ["reels", "릴스 (MATE ZONE)"]] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setView(key)}
+            className={`px-5 py-2.5 text-sm font-semibold -mb-px border-b-2 transition-colors ${
+              view === key ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === "reels" ? (
+        <MateZoneAdmin />
+      ) : (
+      <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">MATE 관리</h1>
