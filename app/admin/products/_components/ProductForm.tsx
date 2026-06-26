@@ -1985,10 +1985,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 설명</h2>
               <div className="flex items-center gap-2">
-                {/* 우선 옵션 — 바로 추가 */}
-                <button type="button" onClick={() => addBlock("착용 컷")}
+                {/* 착용컷 — 등록된 썸네일(대표·추가 이미지) 일괄 추가 */}
+                <button type="button" onClick={addWornCutsFromThumbnails}
+                  title="등록된 썸네일(대표·추가 이미지)을 착용컷으로 일괄 추가합니다"
                   className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
-                  + 착용컷
+                  + 착용컷 (썸네일 일괄)
                 </button>
                 <button type="button" onClick={() => addBlock("상품 소개")}
                   className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
