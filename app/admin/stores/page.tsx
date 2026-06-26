@@ -1,15 +1,24 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 
 type StoreRow = {
   id: number;
   name: string;
   region: string;
   address: string;
+  lat: number | null;
+  lng: number | null;
   phone: string;
   hours: string;
+  description: string;
+  image_urls: string[];
+  brands: string[];
+  parking: boolean;
   store_type: string;
+  kakao_channel_url: string;
+  store_url: string;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -80,6 +89,42 @@ export default function AdminStoresPage() {
       setMsg(`✗ 오류: ${data.error}`);
     }
     setSeeding(false);
+  };
+
+  // 현재 매장 목록을 Excel로 다운로드 (업로드 템플릿과 동일 컬럼 + ID/정렬순서)
+  // 필터가 적용돼 있으면 보이는 목록만, 아니면 전체를 내보낸다.
+  const downloadExcel = () => {
+    const target = filtered.length === stores.length ? stores : filtered;
+    if (target.length === 0) return;
+    const header = [
+      "ID", "매장명", "지역", "주소", "위도", "경도", "전화번호", "영업시간",
+      "매장유형", "취급브랜드(;구분)", "주차여부", "매장소개",
+      "카카오채널URL", "스토어URL", "활성여부", "정렬순서",
+    ];
+    const data = target.map((s) => [
+      s.id,
+      s.name,
+      s.region ?? "",
+      s.address,
+      s.lat ?? "",
+      s.lng ?? "",
+      s.phone ?? "",
+      s.hours ?? "",
+      s.store_type ?? "",
+      (s.brands ?? []).join(";"),
+      s.parking ? "true" : "false",
+      s.description ?? "",
+      s.kakao_channel_url ?? "",
+      s.store_url ?? "",
+      s.is_active ? "true" : "false",
+      s.sort_order ?? 0,
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+    ws["!cols"] = header.map((_, i) => ({ wch: i === 1 ? 24 : i === 3 ? 40 : i === 11 ? 30 : 14 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "매장목록");
+    const today = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `workup_stores_${today}.xlsx`);
   };
 
   const handleDelete = async (id: number, name: string) => {
