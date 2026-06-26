@@ -36,20 +36,23 @@ export default async function PrRoomPage() {
 
   return (
     <main>
-      {/* ── 히어로 ── */}
-      <div className="bg-[#1A2B4A] py-14 md:py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">PR ROOM</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">{config.title}</h1>
-          <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl">
-            {config.subtitle}
+      {/* ── 페이지 타이틀 (메이트·필드테스트와 동일 스타일) ── */}
+      <section className="pt-16 pb-0 bg-[#F5F2ED]">
+        <div className="px-[15px] md:px-[70px]">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
+            {config.title}
+          </h1>
+          <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl">
+            {config.subtitle.split("\n").map((line, i, arr) => (
+              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+            ))}
           </p>
         </div>
-      </div>
+      </section>
 
       {/* ── 게시판 ── */}
-      <div className="bg-[#F5F2ED] py-12 md:py-16 min-h-[40vh]">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="bg-[#F5F2ED] pt-[60px] pb-16 min-h-[40vh]">
+        <div className="px-[15px] md:px-[70px]">
           {posts.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-gray-400 text-sm">아직 등록된 소식이 없습니다.</p>
@@ -97,7 +100,7 @@ export default async function PrRoomPage() {
             </ul>
           )}
         </div>
-      </div>
+      </section>
     </main>
   );
 }
