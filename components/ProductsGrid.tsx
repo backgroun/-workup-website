@@ -124,6 +124,18 @@ export default function ProductsGrid() {
       .catch(() => {});
   }, []);
 
+  // 카테고리 분류 — 관리자 DB 설정에서 로드 (없으면 정적 fallback 유지)
+  useEffect(() => {
+    fetch("/api/admin/site-settings/categories")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCats(data.categories as CatItem[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // 회원 로그인 세션 — 카드 하트(찜) 게이팅용
   useEffect(() => {
     fetch("/api/member/me")
@@ -132,7 +144,7 @@ export default function ProductsGrid() {
       .catch(() => setMemberSession(null));
   }, []);
 
-  const handleCategoryChange = (cat: MainCategory | "전체") => {
+  const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
     setActiveSubCategory("전체");
   };
@@ -156,12 +168,12 @@ export default function ProductsGrid() {
     if (searchQuery) router.push("/products");
   };
 
-  const subCats: SubCategory[] =
+  const subCats: string[] =
     activeCategory !== "전체"
-      ? subCategoriesByMain[activeCategory as MainCategory]
+      ? (cats.find((c) => c.name === activeCategory)?.subs ?? [])
       : [];
 
-  const allCats: (MainCategory | "전체")[] = ["전체", ...mainCategories];
+  const allCats: string[] = ["전체", ...cats.map((c) => c.name)];
 
   const getProductCats = (p: typeof products[0]) => {
     const raw = (p as Record<string, unknown>).categories as { main: string; sub: string }[] | undefined;
@@ -413,7 +425,7 @@ export default function ProductsGrid() {
             className="flex items-center gap-5 px-[15px] py-3 border-b border-gray-100 bg-white overflow-x-auto"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {(["전체", ...subCats] as (SubCategory | "전체")[]).map((sub) => (
+            {["전체", ...subCats].map((sub) => (
               <button
                 key={sub}
                 onClick={() => setActiveSubCategory(sub)}
@@ -577,7 +589,7 @@ export default function ProductsGrid() {
             {/* ── 하위 카테고리 탭 ── */}
             {subCats.length > 0 && (
               <div className="flex items-center gap-6 mb-6 flex-wrap">
-                {(["전체", ...subCats] as (SubCategory | "전체")[]).map((sub) => (
+                {["전체", ...subCats].map((sub) => (
                   <button key={sub} onClick={() => setActiveSubCategory(sub)}
                     className={`text-[14px] whitespace-nowrap transition-colors pb-0.5 ${
                       activeSubCategory === sub ? "font-bold text-[#1A2B4A] border-b-2 border-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
