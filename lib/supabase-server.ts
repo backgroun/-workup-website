@@ -60,6 +60,7 @@ export function mapToDb(p: Partial<Product>) {
     id: p.id,
     sku: p.sku ?? null,
     brand: p.brand ?? null,
+    hide_brand_prefix: p.hideBrandPrefix ?? false,
     manufacturer: p.manufacturer ?? null,
     origin: p.origin ?? null,
     name: p.name,

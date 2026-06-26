@@ -77,6 +77,7 @@ type FormData = {
   id: string;
   sku: string;
   brand: string;
+  hideBrandPrefix: boolean;
   manufacturer: string;
   origin: string;
   name: string;
@@ -127,6 +128,7 @@ function toForm(p?: Product): FormData {
     id: p?.id ?? "",
     sku: p?.sku ?? "",
     brand: p?.brand ?? "",
+    hideBrandPrefix: p?.hideBrandPrefix ?? false,
     manufacturer: p?.manufacturer ?? "",
     origin: p?.origin ?? "",
     name: p?.name ?? "",
@@ -946,6 +948,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       id,
       sku: form.sku || undefined,
       brand: form.brand || undefined,
+      hideBrandPrefix: form.hideBrandPrefix,
       manufacturer: form.manufacturer || undefined,
       origin: form.origin || undefined,
       name: form.name,
