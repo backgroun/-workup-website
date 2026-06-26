@@ -1060,6 +1060,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     </select>
                     <a href="/admin/brands" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
                   </div>
+                  <label className="flex items-center gap-1.5 mt-2 cursor-pointer w-fit">
+                    <input type="checkbox" checked={!form.hideBrandPrefix}
+                      onChange={(e) => set("hideBrandPrefix", !e.target.checked)}
+                      className="accent-[#1A2B4A] w-3.5 h-3.5" />
+                    <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#1A2B4A]">[브랜드]</b> 표시</span>
+                  </label>
                 </Field>
                 <Field label="제조사">
                   <div className="flex gap-2 items-center">
