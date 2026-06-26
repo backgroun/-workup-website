@@ -38,6 +38,7 @@ export type Product = {
   id: string;
   sku?: string;
   brand?: string;
+  hideBrandPrefix?: boolean;   // 제품명 앞 "[브랜드]" 표시 숨김 (기본 false = 표시)
   manufacturer?: string;
   origin?: string;
   line: LineType;
@@ -87,6 +88,12 @@ export type Product = {
   lifestyleScenes?: { tag: string; title: string; desc: string }[];
   sizePrices?: { size: string; weight?: string; price: string }[];
 };
+
+// 제품명 표시 — 브랜드가 있고 숨김 설정이 아니면 "[브랜드] 제품명" 형태로 반환
+export function productDisplayName(p: { name: string; brand?: string; hideBrandPrefix?: boolean }): string {
+  const brand = (p.brand ?? "").trim();
+  return brand && !p.hideBrandPrefix ? `[${brand}] ${p.name}` : p.name;
+}
 
 export const mainCategories: MainCategory[] = [
   "공용", "남성", "여성", "소품", "현장", "일상",

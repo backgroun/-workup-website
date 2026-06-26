@@ -14,6 +14,7 @@ export function mapFromDb(row: any): Product {
     id: row.id,
     sku: row.sku ?? undefined,
     brand: row.brand ?? undefined,
+    hideBrandPrefix: row.hide_brand_prefix ?? false,
     manufacturer: row.manufacturer ?? undefined,
     origin: row.origin ?? undefined,
     name: row.name,
