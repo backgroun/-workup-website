@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import PeopleGrid from "@/components/PeopleGrid";
+import MateZone from "@/components/MateZone";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
+import { normalizeMateZone, type MateZoneConfig } from "@/data/mate-zone";
 import { getSiteSection } from "@/lib/site-settings";
 
 type PageHeader = { title: string; description: string };
@@ -12,13 +14,18 @@ export const metadata: Metadata = {
 };
 
 export default async function PeoplePage() {
-  const config = await getSiteSection<PageData>("people_page");
+  const [config, mateZoneRaw] = await Promise.all([
+    getSiteSection<PageData>("people_page"),
+    getSiteSection<MateZoneConfig>("mate_zone"),
+  ]);
   const items = config?.items?.length ? config.items : DEFAULT_PEOPLE;
   const header = config?.header;
+  const mateZone = normalizeMateZone(mateZoneRaw);
 
   return (
     <main>
       <PeopleGrid items={items} header={header} />
+      <MateZone config={mateZone} />
     </main>
   );
 }
