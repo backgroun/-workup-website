@@ -29,7 +29,11 @@ function LoginContent() {
         body: JSON.stringify({ email: form.email.trim(), password: form.password }),
       });
       if (res.ok) {
-        router.push(from === "cart" ? "/cart" : "/mypage");
+        const data = await res.json().catch(() => ({}));
+        const isAdmin = data?.member?.grade === ADMIN_GRADE;
+        // 관리자는 대시보드로, 그 외에는 원래 흐름(찜/마이페이지)으로.
+        const dest = isAdmin ? "/admin" : from === "cart" ? "/cart" : "/mypage";
+        router.push(dest);
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
