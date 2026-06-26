@@ -360,12 +360,6 @@ export const navGroups: NavGroup[] = [
           </svg>
         ),
       },
-    ],
-  },
-  // ── 운영 기록 ─────────────────────────────────────────────────────────────
-  {
-    label: "운영 기록",
-    items: [
       {
         label: "활동 로그",
         href: "/admin/logs",
