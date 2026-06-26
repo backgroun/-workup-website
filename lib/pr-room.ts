@@ -45,6 +45,23 @@ function safeLink(v: unknown): string {
   return HTTP_URL_RE.test(u) ? u : "";
 }
 
+// 본문은 관리자가 에디터로 작성한 HTML 이다. 관리자(신뢰 주체)만 작성하지만,
+// 저장값을 공개 페이지에서 dangerouslySetInnerHTML 로 렌더하므로 위험 태그/속성을
+// 의존성 없이 가볍게 제거한다(스크립트·이벤트 핸들러·javascript: 스킴).
+export function sanitizeBodyHtml(v: unknown): string {
+  if (typeof v !== "string") return "";
+  return v
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)\b[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<\s*\/?\s*(script|style|iframe|object|embed|link|meta)\b[^>]*>/gi, "")
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*("\s*javascript:[^"]*"|'\s*javascript:[^']*')/gi, '$1="#"');
+}
+
+// 본문이 HTML(에디터 작성)인지, 옛 평문(줄바꿈 텍스트)인지 판별 — 렌더 분기에 사용.
+export function isHtmlBody(v: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(v);
+}
+
 function normalizePost(raw: unknown, idx: number): PrPost | null {
   if (!raw || typeof raw !== "object") return null;
   const p = raw as Record<string, unknown>;
@@ -54,7 +71,7 @@ function normalizePost(raw: unknown, idx: number): PrPost | null {
     date: str(p.date),
     image_url: str(p.image_url),
     summary: str(p.summary),
-    body: str(p.body),
+    body: sanitizeBodyHtml(p.body),
     link: safeLink(p.link),
     is_visible: bool(p.is_visible, true),
     sort_order: typeof p.sort_order === "number" ? p.sort_order : idx,
