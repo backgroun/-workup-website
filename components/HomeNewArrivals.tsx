@@ -8,7 +8,7 @@ import { productDisplayName, type Product } from "@/data/products";
 
 export default function HomeNewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [activeTab, setActiveTab] = useState<MainCategory | "전체">("전체");
+  const [activeTab, setActiveTab] = useState<string>("전체");
   const [showLeft, setShowLeft] = useState(false);
   const [title, setTitle] = useState("신상품이 입고 되었어요");
   const [loading, setLoading] = useState(true);
@@ -59,11 +59,11 @@ export default function HomeNewArrivals() {
     });
   };
 
-  const newCategories = new Set(products.filter((p) => p.isNew).map((p) => p.category));
-  const availableTabs: (MainCategory | "전체")[] = [
-    "전체",
-    ...mainCategories.filter((cat) => newCategories.has(cat)),
+  // 신상품에 실제 존재하는 카테고리만 탭으로 노출 (등장 순서 유지) — 관리자 분류 변경 자동 반영
+  const newArrivalCats = [
+    ...new Set(products.filter((p) => p.isNew).map((p) => p.category).filter(Boolean)),
   ];
+  const availableTabs: string[] = ["전체", ...newArrivalCats];
 
   const newItems = products
     .filter((p) => p.isNew)
