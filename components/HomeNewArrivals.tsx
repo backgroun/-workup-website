@@ -184,7 +184,7 @@ export default function HomeNewArrivals() {
                     <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1.5">NEW</span>
                   )}
                   <p className="text-[13px] text-[#1A2B4A] font-medium leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-2">
-                    {p.name}
+                    {productDisplayName(p)}
                   </p>
                   <p className="text-[11px] text-gray-400 line-clamp-1 mb-2">{p.tagline}</p>
                   <p className="text-[14px] font-bold text-[#1A2B4A]">{p.price}</p>
@@ -229,7 +229,7 @@ export default function HomeNewArrivals() {
                   {p.isNew && (
                     <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#1A2B4A] font-medium leading-snug line-clamp-2 mb-1">{p.name}</p>
+                  <p className="text-[13px] text-[#1A2B4A] font-medium leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
                   <p className="text-[11px] text-gray-400 line-clamp-1 mb-1.5">{p.tagline}</p>
                   <p className="text-[13px] font-bold text-[#1A2B4A]">{p.price}</p>
                 </div>
