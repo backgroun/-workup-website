@@ -228,6 +228,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
+  const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -767,6 +768,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const sgRemoveColumn = (ci: number) => setSG({ columns: sgCols.filter((_, i) => i !== ci), rows: sgRows.map((r) => ({ cells: r.cells.filter((_, i) => i !== ci) })) });
   const sgSetColumn = (ci: number, v: string) => setSG({ columns: sgCols.map((c, i) => (i === ci ? v : c)) });
   const sgAddRow = () => setSG({ rows: [...sgRows, { cells: sgCols.map(() => "") }] });
+  // 열 일괄 추가 — "XL, 2XL, 3XL"처럼 입력하면 한 번에 여러 열 추가 (기존 열 뒤에 붙임)
+  const sgBulkAddColumns = () => {
+    const items = bulkColInput.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
+    if (!items.length) return;
+    setSG({
+      columns: [...sgCols, ...items],
+      rows: sgRows.map((r) => ({ cells: [...r.cells, ...items.map(() => "")] })),
+    });
+    setBulkColInput("");
+  };
   const sgRemoveRow = (ri: number) => setSG({ rows: sgRows.filter((_, i) => i !== ri) });
   const sgSetCell = (ri: number, ci: number, v: string) =>
     setSG({ rows: sgRows.map((r, i) => (i === ri ? { cells: r.cells.map((c, j) => (j === ci ? v : c)) } : r)) });
