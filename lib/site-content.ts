@@ -123,6 +123,10 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
           href: typeof it.href === "string" ? it.href : "/",
         }))
     : DEFAULT_FOOTER.navLinks;
+  // PR룸 링크가 빠져 있으면 자동 추가(상시 메뉴 보장).
+  if (!navLinks.some((l) => l.href === PR_ROOM_NAV_LINK.href)) {
+    navLinks.push({ ...PR_ROOM_NAV_LINK });
+  }
   const instagram_url = safeUrl(c.instagram_url);
   const youtube_url = safeUrl(c.youtube_url);
   const kakao_url = safeUrl(c.kakao_url);
