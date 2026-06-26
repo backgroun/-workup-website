@@ -117,7 +117,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </>
           )}
           <span className="flex-shrink-0">/</span>
-          <span className="text-gray-500 truncate">{product.name}</span>
+          <span className="text-gray-500 truncate">{productDisplayName(product)}</span>
         </nav>
       </div>
 
