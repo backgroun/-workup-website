@@ -78,9 +78,11 @@ export default function AdminProductsPage() {
   const pendingScroll = useRef<number | null>(typeof V.scrollTop === "number" ? V.scrollTop : null);
 
   // ─ 검색 & 필터 ─────────────────────────────────────────────────────────
-  const [searchType, setSearchType]   = useState<SearchType>(V.searchType ?? "상품명");
-  const [searchQuery, setSearchQuery] = useState<string>(V.searchQuery ?? "");
-  const [applied, setApplied]         = useState<{ type: SearchType; query: string }>(V.applied ?? { type: "상품명", query: "" });
+  // 검색어는 재진입(페이지 재방문) 시 항상 초기화한다 — V에서 복원하지 않음.
+  // (필터·정렬·스크롤은 기존대로 복원해 "수정 후 복귀" 위치 유지)
+  const [searchType, setSearchType]   = useState<SearchType>("상품명");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [applied, setApplied]         = useState<{ type: SearchType; query: string }>({ type: "상품명", query: "" });
   const [datePreset, setDatePreset]   = useState<DatePreset>(V.datePreset ?? "전체");
   const [dateStart, setDateStart]     = useState<string>(V.dateStart ?? "");
   const [dateEnd, setDateEnd]         = useState<string>(V.dateEnd ?? "");
