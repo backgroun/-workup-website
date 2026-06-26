@@ -69,19 +69,17 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const closeTab = useCallback(
     (href: string) => {
-      setTabs((prev) => {
-        const idx = prev.findIndex((t) => t.href === href);
-        if (idx === -1) return prev;
-        const next = prev.filter((t) => t.href !== href);
-        // 활성 탭을 닫으면 인접 탭으로 이동
-        if (href === currentHref) {
-          const fallback = next[idx - 1] || next[idx] || next[next.length - 1];
-          router.push(fallback ? fallback.href : "/admin");
-        }
-        return next;
-      });
+      const idx = tabs.findIndex((t) => t.href === href);
+      if (idx === -1) return;
+      const next = tabs.filter((t) => t.href !== href);
+      setTabs(next);
+      // 활성 탭을 닫으면 인접 탭으로 이동 (setState 업데이터 밖에서 호출해야 함)
+      if (href === currentHref) {
+        const fallback = next[idx - 1] || next[idx] || next[next.length - 1];
+        router.push(fallback ? fallback.href : "/admin");
+      }
     },
-    [currentHref, router]
+    [tabs, currentHref, router]
   );
 
   const isFavorite = useCallback((href: string) => favorites.includes(href), [favorites]);
