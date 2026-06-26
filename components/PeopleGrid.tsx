@@ -23,7 +23,7 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
 
   // 글 전환 시 본문 상단으로 스크롤(블로그처럼 한 편씩 읽는 경험)
   const goTo = (index: number) => {
-    const next = ((index % total) + total) % total; // 순환
+    const next = Math.max(0, Math.min(total - 1, index)); // 경계 클램프(순환 안 함)
     setCurrent(next);
     setListOpen(false);
     if (typeof window !== "undefined") {
@@ -31,9 +31,12 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
     }
   };
 
+  const hasPrev = current > 0;
+  const hasNext = current < total - 1;
+
   return (
     <section className="py-20 bg-[#F5F2ED]">
-      <div className="px-[15px] md:px-[70px] max-w-3xl mx-auto">
+      <div className="px-[15px] md:px-[70px]">
 
         {/* 섹션 헤더 */}
         <div className="mb-10">
@@ -95,10 +98,10 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
           </div>
         )}
 
-        {/* 본문 — 한 편의 글 */}
-        <article className="bg-white border border-gray-200 overflow-hidden">
-          {/* 대형 사진 */}
-          <div className="aspect-[16/10] relative overflow-hidden" style={{ backgroundColor: person.bg }}>
+        {/* 본문 — 한 편의 글 (모바일: 세로 / PC: 사진+본문 2단으로 화면 꽉 채움) */}
+        <article className="bg-white border border-gray-200 overflow-hidden grid lg:grid-cols-2 items-stretch">
+          {/* 대형 사진 — PC에서는 본문 높이만큼 꽉 채움 */}
+          <div className="relative overflow-hidden aspect-[16/10] lg:aspect-auto lg:min-h-[560px]" style={{ backgroundColor: person.bg }}>
             {person.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
@@ -116,7 +119,7 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
           </div>
 
           {/* 글 본문 */}
-          <div className="p-6 md:p-10">
+          <div className="p-6 md:p-10 lg:p-14 lg:flex lg:flex-col lg:justify-center">
             <p className="text-xs text-gray-400 mb-3">{person.years}</p>
 
             <blockquote className="text-[22px] md:text-[26px] font-bold text-[#1A2B4A] leading-snug mb-8">
