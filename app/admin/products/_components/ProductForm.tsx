@@ -702,6 +702,21 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     ]);
   };
 
+  // 착용컷 — 등록된 썸네일(대표·추가 이미지)을 착용컷 블록으로 일괄 추가 (중복 제외)
+  const addWornCutsFromThumbnails = () => {
+    const existing = new Set(form.detailBlocks.map((b) => b.imageUrl).filter(Boolean));
+    const imgs = Array.from(new Set([form.imageUrl, ...form.subImages].filter(Boolean)))
+      .filter((u) => !existing.has(u));
+    if (imgs.length === 0) {
+      alert("추가할 썸네일이 없습니다. 제품 이미지(대표·추가 이미지)를 먼저 등록하거나, 이미 모두 추가된 상태입니다.");
+      return;
+    }
+    const blocks = imgs.map((url, i) => ({
+      id: `block-${Date.now()}-${i}`, type: "착용 컷" as const, content: "", imageUrl: url,
+    }));
+    set("detailBlocks", [...form.detailBlocks, ...blocks]);
+  };
+
   const updateBlock = (idx: number, key: string, val: string) => {
     const next = form.detailBlocks.map((b, i) => i === idx ? { ...b, [key]: val } : b);
     set("detailBlocks", next);

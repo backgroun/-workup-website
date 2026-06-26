@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 function connectedProjectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
@@ -27,5 +28,12 @@ export async function POST(req: Request) {
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("brand_catalogs").insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "create",
+    resource: "brand-catalogs",
+    resourceLabel: "브랜드 카탈로그",
+    target: data?.name ?? data?.title ?? body?.name ?? body?.title,
+    targetId: data?.id,
+  });
   return NextResponse.json(data);
 }

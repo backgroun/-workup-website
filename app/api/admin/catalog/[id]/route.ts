@@ -33,5 +33,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const supabase = createAdminClient();
   const { error } = await supabase.from("catalog_pages").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "catalog",
+    resourceLabel: "카탈로그",
+    targetId: id,
+  });
   return NextResponse.json({ ok: true });
 }

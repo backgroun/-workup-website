@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
+import { logAudit } from "@/lib/audit-server";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -22,6 +23,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "update",
+    resource: "brand-catalogs",
+    resourceLabel: "브랜드 카탈로그",
+    target: data?.name ?? data?.title ?? body?.name ?? body?.title,
+    targetId: id,
+  });
   return NextResponse.json(data);
 }
 
@@ -34,6 +42,13 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const { data: row } = await supabase.from("brand_catalogs").select("pdf_public_id").eq("id", id).maybeSingle();
   const { error } = await supabase.from("brand_catalogs").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logAudit({
+    action: "delete",
+    resource: "brand-catalogs",
+    resourceLabel: "브랜드 카탈로그",
+    targetId: id,
+  });
 
   if (row?.pdf_public_id) {
     try { await cloudinary.uploader.destroy(row.pdf_public_id as string, { resource_type: "image" }); } catch { /* 자산 정리 실패는 무시 */ }

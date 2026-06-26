@@ -118,5 +118,11 @@ export async function DELETE(req: Request) {
   const q = id ? base.eq("id", id) : t ? base.eq("type", t) : base.not("id", "is", null);
   const { error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAudit({
+    action: "delete",
+    resource: "inquiries",
+    resourceLabel: "문의",
+    summary: "문의 더미 삭제",
+  });
   return NextResponse.json({ ok: true });
 }
