@@ -60,6 +60,7 @@ export const DEFAULT_FOOTER: FooterConfig = {
   instagram_url: "",
   youtube_url: "",
   kakao_url: "",
+  socialLinks: [],
   copyright: "© 2026 (주)트레이딩포스트. All rights reserved.",
   navLinks: [
     { id: "nav-cs",          label: "고객센터",      href: "/support" },
@@ -82,6 +83,30 @@ export function safeUrl(v: unknown): string {
   return HTTP_URL_RE.test(u) ? u : "";
 }
 
+// 소셜 링크 정규화. socialLinks 배열이 있으면 그대로 정리하고,
+// 없으면(레거시 데이터) instagram_url/youtube_url/kakao_url 에서 자동 변환한다.
+function normalizeSocialLinks(
+  raw: unknown,
+  legacy: { instagram_url: string; youtube_url: string; kakao_url: string },
+): FooterSocialLink[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((it): it is Record<string, unknown> => !!it && typeof it === "object")
+      .map((it, i) => ({
+        id: typeof it.id === "string" && it.id ? it.id : `soc-${i}`,
+        platform: typeof it.platform === "string" && it.platform ? it.platform : "custom",
+        label: typeof it.label === "string" ? it.label : "",
+        href: safeUrl(it.href),
+        iconUrl: safeUrl(it.iconUrl),
+      }));
+  }
+  const migrated: FooterSocialLink[] = [];
+  if (legacy.instagram_url) migrated.push({ id: "soc-instagram", platform: "instagram", label: "Instagram", href: legacy.instagram_url, iconUrl: "" });
+  if (legacy.youtube_url)   migrated.push({ id: "soc-youtube",   platform: "youtube",   label: "YouTube",   href: legacy.youtube_url,   iconUrl: "" });
+  if (legacy.kakao_url)     migrated.push({ id: "soc-kakao",     platform: "kakao",     label: "카카오채널", href: legacy.kakao_url,     iconUrl: "" });
+  return migrated;
+}
+
 export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): FooterConfig {
   const c = raw ?? {};
   const navLinks: FooterNavLink[] = Array.isArray(c.navLinks)
@@ -93,6 +118,9 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
           href: typeof it.href === "string" ? it.href : "/",
         }))
     : DEFAULT_FOOTER.navLinks;
+  const instagram_url = safeUrl(c.instagram_url);
+  const youtube_url = safeUrl(c.youtube_url);
+  const kakao_url = safeUrl(c.kakao_url);
   return {
     company_name: str(c.company_name, DEFAULT_FOOTER.company_name),
     ceo: str(c.ceo, DEFAULT_FOOTER.ceo),
@@ -102,9 +130,10 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
     cs_phone: str(c.cs_phone, DEFAULT_FOOTER.cs_phone),
     cs_hours_weekday: str(c.cs_hours_weekday, DEFAULT_FOOTER.cs_hours_weekday),
     cs_hours_weekend: str(c.cs_hours_weekend, DEFAULT_FOOTER.cs_hours_weekend),
-    instagram_url: safeUrl(c.instagram_url),
-    youtube_url: safeUrl(c.youtube_url),
-    kakao_url: safeUrl(c.kakao_url),
+    instagram_url,
+    youtube_url,
+    kakao_url,
+    socialLinks: normalizeSocialLinks(c.socialLinks, { instagram_url, youtube_url, kakao_url }),
     copyright: str(c.copyright, DEFAULT_FOOTER.copyright),
     navLinks,
   };
