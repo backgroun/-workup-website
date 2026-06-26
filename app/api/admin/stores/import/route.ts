@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
 import { stores as staticStores } from "@/data/stores";
-
-async function isAuthed() {
-  const store = await cookies();
-  const token = store.get("wu-auth")?.value;
-  return token === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 // POST /api/admin/stores/import — Excel 파싱 결과(배열)를 upsert
 export async function POST(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
 
   // seed=true 이면 data/stores.ts 정적 데이터를 upsert (중복 방지)

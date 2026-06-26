@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
 import { makeDummy } from "@/data/inquiryDummy";
+import { isAdmin } from "@/lib/admin-auth";
 
-async function isAuthed() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
 function connectedProjectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/^https?:\/\//, "").split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
 }
 
 // 더미 목록 + 총 개수 (관리자). ?type= 으로 유형별 조회.
 export async function GET(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { searchParams } = new URL(req.url);
   const tp = searchParams.get("type");
@@ -40,7 +36,7 @@ function parseDate(s: unknown): number | null {
 //  - 기간형: { mode:"range", start, end, count, maxPerDay, type, clearFirst? }
 //            start~end(포함) 사이에 하루 maxPerDay 이하로 랜덤 분산. clearFirst=true 면 해당 유형 먼저 삭제.
 export async function POST(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const type = body.type === "franchise" || body.type === "wholesale" ? body.type : undefined;
   const supabase = createAdminClient();

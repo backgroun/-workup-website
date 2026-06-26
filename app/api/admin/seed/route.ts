@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient, mapToDb } from "@/lib/supabase-server";
 import { products } from "@/data/products";
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function POST() {
-  const store = await cookies();
-  const token = store.get("wu-auth")?.value;
-  if (token !== (process.env.AUTH_TOKEN ?? "wu-session-ok")) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

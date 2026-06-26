@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidateTag } from "next/cache";
 import { createAdminClient } from "@/lib/supabase-server";
-
-async function isAuthed() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 // 공개 GET이 막혀선 안 되는 섹션(팝업·기획전·카테고리 등은 클라이언트에서 조회)과 달리,
 // 민감 정보가 담긴 섹션은 관리자만 읽을 수 있게 한다.
@@ -17,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ section: string }> }
 ) {
   const { section } = await params;
-  if (SENSITIVE_SECTIONS.has(section) && !(await isAuthed())) {
+  if (SENSITIVE_SECTIONS.has(section) && !(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const supabase = createAdminClient();
@@ -34,7 +29,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ section: string }> }
 ) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { section } = await params;
   const config = await req.json();
   const supabase = createAdminClient();
