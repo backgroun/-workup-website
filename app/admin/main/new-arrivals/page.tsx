@@ -1,6 +1,10 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { mainCategories, type MainCategory, type Product } from "@/data/products";
+import { mainCategories as staticMainCategories, subCategoriesByMain as staticSubByMain, type Product } from "@/data/products";
+
+// 카테고리 분류 (관리자 DB 설정과 동일한 형태)
+type CatItem = { name: string; subs: string[] };
+const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({ name, subs: staticSubByMain[name] ?? [] }));
 
 type SortBy = "latest" | "sales" | "recommended";
 type Mode = "auto" | "manual";
@@ -11,7 +15,7 @@ type NewArrivalsConfig = {
   mode: Mode;
   sort_by: SortBy;
   count: number;
-  category_filter: MainCategory | "전체";
+  category_filter: string;
   manual_ids: string[];
   hide_sold_out: boolean;
   show_discount_badge: boolean;
@@ -45,6 +49,7 @@ export default function AdminNewArrivalsPage() {
   const [searchQ, setSearchQ] = useState("");
   const [dbMissing, setDbMissing] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
 
   const flash = (text: string, type = "ok") => {
     setMsg({ text, type });
