@@ -45,8 +45,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* 본문 */}
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
-        <main className="flex-1 overflow-y-auto bg-[#f1f5f9]">
-          <div className="px-10 pt-5 pb-10 admin-content" style={{ zoom: 1.2 }}>
+        <main className="flex-1 min-w-0 overflow-y-auto bg-[#f1f5f9]">
+          <div className="px-4 sm:px-6 lg:px-10 pt-5 pb-10 admin-content">
             {children}
           </div>
         </main>
