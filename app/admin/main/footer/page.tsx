@@ -251,12 +251,100 @@ export default function FooterManagePage() {
             <p className="text-[11px] text-gray-400">저장 버튼을 눌러야 반영됩니다. 링크는 <span className="font-mono">/support</span> 형식(내부) 또는 <span className="font-mono">https://...</span>(외부) 모두 가능합니다.</p>
           </div>
 
+          {/* 소셜 링크 관리 */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">소셜 링크 (비우면 숨김)</p>
-            <Labeled label="인스타그램 URL"><input className={INPUT} placeholder="https://instagram.com/..." value={footer.instagram_url} onChange={(e) => setF("instagram_url", e.target.value)} /></Labeled>
-            <Labeled label="유튜브 URL"><input className={INPUT} placeholder="https://youtube.com/..." value={footer.youtube_url} onChange={(e) => setF("youtube_url", e.target.value)} /></Labeled>
-            <Labeled label="카카오채널 URL"><input className={INPUT} placeholder="https://pf.kakao.com/..." value={footer.kakao_url} onChange={(e) => setF("kakao_url", e.target.value)} /></Labeled>
-            <Labeled label="카피라이트"><input className={INPUT} value={footer.copyright} onChange={(e) => setF("copyright", e.target.value)} /></Labeled>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">소셜 링크 ({footer.socialLinks.length})</p>
+              <button
+                onClick={addSocial}
+                className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                소셜 추가
+              </button>
+            </div>
+
+            {footer.socialLinks.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">등록된 소셜 링크가 없습니다. 위 [+ 소셜 추가]를 눌러 추가하세요.</p>
+            ) : (
+              <div className="space-y-3">
+                {footer.socialLinks.map((s, i) => {
+                  const meta = FOOTER_SOCIAL_PLATFORMS.find((p) => p.value === s.platform);
+                  const builtin = meta?.builtin ?? false;
+                  return (
+                    <div key={s.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-slate-400 w-5 flex-shrink-0">#{i + 1}</span>
+                        <select
+                          value={s.platform}
+                          onChange={(e) => updateSocial(i, { platform: e.target.value })}
+                          className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400 flex-shrink-0"
+                        >
+                          {FOOTER_SOCIAL_PLATFORMS.map((p) => (
+                            <option key={p.value} value={p.value}>{p.label}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          value={s.label}
+                          onChange={(e) => updateSocial(i, { label: e.target.value })}
+                          placeholder="표시 이름 (선택, 접근성용)"
+                          className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                        />
+                        <button onClick={() => moveSocial(i, -1)} disabled={i === 0} title="위로"
+                          className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30 flex-shrink-0">↑</button>
+                        <button onClick={() => moveSocial(i, 1)} disabled={i === footer.socialLinks.length - 1} title="아래로"
+                          className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30 flex-shrink-0">↓</button>
+                        <button onClick={() => removeSocial(i)} title="삭제"
+                          className="w-6 h-6 flex items-center justify-center rounded border border-red-200 text-red-400 hover:bg-red-50 flex-shrink-0">✕</button>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={s.href}
+                        onChange={(e) => updateSocial(i, { href: e.target.value })}
+                        placeholder="https://..."
+                        className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-blue-400"
+                      />
+
+                      {builtin ? (
+                        <p className="text-[11px] text-gray-400 pl-7">기본 아이콘이 자동으로 표시됩니다.</p>
+                      ) : (
+                        <div className="flex items-center gap-3 pl-7">
+                          {s.iconUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={s.iconUrl} alt="" className="w-9 h-9 rounded border border-slate-200 bg-white object-contain p-1 flex-shrink-0" />
+                          ) : (
+                            <span className="w-9 h-9 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-300 text-lg flex-shrink-0">?</span>
+                          )}
+                          <label className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-white rounded-lg cursor-pointer">
+                            {socialUploadId === s.id ? "업로드 중..." : s.iconUrl ? "아이콘 변경" : "아이콘 등록"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadSocialIcon(s.id, i, f); e.target.value = ""; }}
+                            />
+                          </label>
+                          {s.iconUrl && (
+                            <button onClick={() => updateSocial(i, { iconUrl: "" })} className="text-xs text-red-400 hover:text-red-600">아이콘 제거</button>
+                          )}
+                          <span className="text-[11px] text-amber-600">아이콘 자동 생성 불가 — 직접 등록 필요</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-[11px] text-gray-400">URL을 비우면 사이트 푸터에 표시되지 않습니다. 저장 버튼을 눌러야 반영됩니다. (PNG·SVG 정사각형 아이콘 권장)</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">카피라이트</p>
+            <Labeled label="카피라이트 문구"><input className={INPUT} value={footer.copyright} onChange={(e) => setF("copyright", e.target.value)} /></Labeled>
           </div>
 
           <button onClick={() => saveSection("footer", footer, "푸터를 저장했습니다.")} disabled={saving}
