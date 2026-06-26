@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
-
-async function checkAuth() {
-  const store = await cookies();
-  return store.get("wu-auth")?.value === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function GET(req: Request) {
-  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { searchParams } = new URL(req.url);
   const status    = searchParams.get("status");
   const search    = searchParams.get("search");
@@ -40,7 +35,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
     const sb = createAdminClient();

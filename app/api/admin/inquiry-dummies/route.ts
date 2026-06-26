@@ -101,7 +101,7 @@ export async function POST(req: Request) {
 
 // 더미 삭제 (관리자). ?id= 개별 / ?type= 유형 전체 / 없으면 전부.
 export async function DELETE(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");

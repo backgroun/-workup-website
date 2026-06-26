@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { v2 as cloudinary } from "cloudinary";
+import { isAdmin } from "@/lib/admin-auth";
 
 // 브라우저 → Cloudinary 직접 업로드용 서명 발급.
 // 대용량 PDF가 Vercel 프록시(~4.5MB)를 우회해 바로 Cloudinary로 올라가도록 한다.
@@ -11,8 +11,7 @@ cloudinary.config({
 });
 
 export async function POST(req: Request) {
-  const store = await cookies();
-  if (store.get("wu-auth")?.value !== (process.env.AUTH_TOKEN ?? "wu-session-ok")) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

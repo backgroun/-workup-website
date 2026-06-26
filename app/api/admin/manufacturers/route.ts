@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
-
-async function isAuthed() {
-  const store = await cookies();
-  const token = store.get("wu-auth")?.value;
-  return token === (process.env.AUTH_TOKEN ?? "wu-session-ok");
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("manufacturers").select("*").order("name");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -17,7 +11,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { name } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "제조사명을 입력하세요." }, { status: 400 });
   const supabase = createAdminClient();
@@ -31,7 +25,7 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id, name } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "제조사명을 입력하세요." }, { status: 400 });
   const supabase = createAdminClient();
@@ -46,7 +40,7 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
   const supabase = createAdminClient();
   const { error } = await supabase.from("manufacturers").delete().eq("id", id);
