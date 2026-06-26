@@ -7,12 +7,19 @@ import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import {
   products as staticProducts,
-  mainCategories,
-  subCategoriesByMain,
+  mainCategories as staticMainCategories,
+  subCategoriesByMain as staticSubByMain,
   productDisplayName,
-  type MainCategory,
-  type SubCategory,
 } from "@/data/products";
+
+// 카테고리 분류 구조 (관리자 DB 설정과 동일한 형태)
+type CatItem = { name: string; subs: string[] };
+
+// 정적 파일을 DB 미연동 시 fallback 으로 사용
+const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({
+  name,
+  subs: staticSubByMain[name] ?? [],
+}));
 
 type SortOption = "신상품순" | "낮은 가격순" | "높은 가격순";
 
@@ -92,11 +99,10 @@ export default function ProductsGrid() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState(staticProducts);
+  const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
   const catParam = searchParams.get("cat") || searchParams.get("category");
-  const [activeCategory, setActiveCategory] = useState<MainCategory | "전체">(
-    catParam && mainCategories.includes(catParam as MainCategory) ? (catParam as MainCategory) : "전체"
-  );
-  const [activeSubCategory, setActiveSubCategory] = useState<SubCategory | "전체">("전체");
+  const [activeCategory, setActiveCategory] = useState<string>(catParam ?? "전체");
+  const [activeSubCategory, setActiveSubCategory] = useState<string>("전체");
   const [sortBy, setSortBy] = useState<SortOption>("신상품순");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
