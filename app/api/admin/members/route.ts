@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
+import { logAudit } from "@/lib/audit-server";
 
 export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,6 +49,13 @@ export async function POST(req: Request) {
       status: "active",
     }]).select().single();
     if (error) throw error;
+    await logAudit({
+      action: "create",
+      resource: "members",
+      resourceLabel: "회원",
+      target: data?.name ?? body?.name,
+      targetId: data?.id,
+    });
     return NextResponse.json(data);
   } catch (e: unknown) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
