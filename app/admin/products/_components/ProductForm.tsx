@@ -1740,6 +1740,26 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               )}
             </div>
 
+            {/* 사이즈별 가격 (선택) */}
+            {form.sizes.length > 0 && (
+              <div className="mb-5 pt-4 border-t border-gray-100">
+                <label className="block text-xs font-medium text-gray-500 mb-1">사이즈별 가격 (선택)</label>
+                <p className="text-[11px] text-gray-400 mb-2">사이즈마다 가격이 다르면 입력하세요. 비워두면 기본 판매가{form.price ? ` (${form.price}원)` : ""}가 적용됩니다.</p>
+                <div className="flex flex-wrap gap-2">
+                  {form.sizes.map((size) => (
+                    <div key={size} className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-1">
+                      <span className="text-xs font-semibold text-[#1A2B4A] min-w-[36px] text-center">{size}</span>
+                      <input type="text" inputMode="numeric" value={sizePriceOf(size)}
+                        onChange={(e) => setSizePrice(size, e.target.value)}
+                        placeholder={form.price || "기본가"}
+                        className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#1A2B4A]" />
+                      <span className="text-xs text-gray-400">원</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-2">색상 옵션</label>
               <div className="flex flex-wrap gap-2 mb-3">
