@@ -7,7 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import { normalizeProductBanners, type ProductBanner } from "@/lib/product-banners";
 import { stores } from "@/data/stores";
-import type { Product } from "@/data/products";
+import { productDisplayName, type Product } from "@/data/products";
 
 const SIZES = ["S", "M", "L", "XL", "2XL"];
 
@@ -204,7 +204,7 @@ export default function ProductDetailClient({
             )}
           </div>
         )}
-        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-2">{product.name}</h1>
+        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-2">{productDisplayName(product)}</h1>
         <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{displayPrice}</p>
         {hasSizePrices && (
           <p className="text-xs text-gray-400 mt-1">사이즈에 따라 가격이 다릅니다{selectedSize ? "" : " — 사이즈를 선택하면 해당 가격이 표시됩니다"}.</p>
