@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   DEFAULT_FOOTER, normalizeFooter, type FooterConfig, type FooterNavLink,
+  type FooterSocialLink, FOOTER_SOCIAL_PLATFORMS,
   DEFAULT_SUPPORT, normalizeSupport, type SupportConfig,
   DEFAULT_TERMS, DEFAULT_PRIVACY, normalizeLegal,
 } from "@/lib/site-content";
@@ -33,6 +34,7 @@ export default function FooterManagePage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [socialUploadId, setSocialUploadId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [footer, setFooter] = useState<FooterConfig>(DEFAULT_FOOTER);
@@ -70,18 +72,51 @@ export default function FooterManagePage() {
     }
   };
 
+  // 공용 이미지 업로드 — 성공 시 URL, 실패 시 null
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    if (!r.ok) { flash("이미지 업로드 실패"); return null; }
+    const { url } = await r.json();
+    return url as string;
+  };
+
   const uploadGuide = async (file: File) => {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      if (r.ok) { const { url } = await r.json(); setSupport((s) => ({ ...s, guide_image_url: url })); }
-      else flash("이미지 업로드 실패");
+      const url = await uploadImage(file);
+      if (url) setSupport((s) => ({ ...s, guide_image_url: url }));
     } finally { setUploading(false); }
   };
 
   const setF = <K extends keyof FooterConfig>(k: K, v: FooterConfig[K]) => setFooter((p) => ({ ...p, [k]: v }));
+
+  // ── 소셜 링크 목록 조작 ──
+  const addSocial = () => setFooter((p) => ({
+    ...p,
+    socialLinks: [...p.socialLinks, { id: `soc-${Date.now()}`, platform: "instagram", label: "", href: "", iconUrl: "" }],
+  }));
+  const updateSocial = (i: number, patch: Partial<FooterSocialLink>) => setFooter((p) => {
+    const next = [...p.socialLinks];
+    next[i] = { ...next[i], ...patch };
+    return { ...p, socialLinks: next };
+  });
+  const removeSocial = (i: number) => setFooter((p) => ({ ...p, socialLinks: p.socialLinks.filter((_, idx) => idx !== i) }));
+  const moveSocial = (i: number, dir: -1 | 1) => setFooter((p) => {
+    const j = i + dir;
+    if (j < 0 || j >= p.socialLinks.length) return p;
+    const next = [...p.socialLinks];
+    [next[i], next[j]] = [next[j], next[i]];
+    return { ...p, socialLinks: next };
+  });
+  const uploadSocialIcon = async (id: string, i: number, file: File) => {
+    setSocialUploadId(id);
+    try {
+      const url = await uploadImage(file);
+      if (url) updateSocial(i, { iconUrl: url });
+    } finally { setSocialUploadId(null); }
+  };
   const setS = <K extends keyof SupportConfig>(k: K, v: SupportConfig[K]) => setSupport((p) => ({ ...p, [k]: v }));
 
   if (loading) return <div className="p-6 text-sm text-gray-400">불러오는 중...</div>;
