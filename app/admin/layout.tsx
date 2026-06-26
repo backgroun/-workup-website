@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+import AdminShell from "@/components/AdminShell";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { getAdminMember } from "@/lib/admin-auth";
 
@@ -44,12 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       {/* 본문 */}
       <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto bg-[#f1f5f9]">
-          <div className="px-4 sm:px-6 lg:px-10 pt-5 pb-10 admin-content">
-            {children}
-          </div>
-        </main>
+        <AdminShell>{children}</AdminShell>
       </div>
     </div>
   );
