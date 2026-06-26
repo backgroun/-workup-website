@@ -266,7 +266,7 @@ export default function ProductsGrid() {
     }
     toggleProduct({
       productId: product.id,
-      name: product.name,
+      name: productDisplayName(product),
       sku: product.sku,
       line: product.line,
       price: product.price,

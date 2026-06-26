@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
-import { mainCategories, type MainCategory, type Product } from "@/data/products";
+import { mainCategories, productDisplayName, type MainCategory, type Product } from "@/data/products";
 
 export default function HomeNewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,7 +45,7 @@ export default function HomeNewArrivals() {
     }
     toggleProduct({
       productId: p.id,
-      name: p.name,
+      name: productDisplayName(p),
       sku: p.sku,
       line: p.line,
       price: p.price,
