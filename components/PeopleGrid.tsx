@@ -141,7 +141,7 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
             </div>
 
             {/* 추천 제품 */}
-            <div className="mb-8">
+            <div>
               <p className="text-xs text-gray-400 mb-3">이 분이 함께한 제품</p>
               <div className="flex flex-wrap gap-2">
                 {person.products.map((product) => (
@@ -154,19 +154,6 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
                   </Link>
                 ))}
               </div>
-            </div>
-
-            {/* 글 하단 CTA — 오프라인 방문 유도 */}
-            <div className="border-t border-gray-100 pt-6">
-              <p className="text-[13px] text-gray-500 mb-4">
-                매장에서 직접 입어보고, 내 일에 맞는 옷인지 확인해보세요.
-              </p>
-              <Link
-                href="/store"
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-[#ff550c] text-white text-[14px] font-semibold px-8 py-3 min-h-[48px] hover:bg-[#1A2B4A] transition-colors"
-              >
-                가까운 매장 찾기 →
-              </Link>
             </div>
           </div>
         </article>

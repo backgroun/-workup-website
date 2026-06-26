@@ -279,6 +279,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [relatedSearch, setRelatedSearch] = useState("");
   const [relatedModalOpen, setRelatedModalOpen] = useState(false);
   const [blockMenuOpen, setBlockMenuOpen] = useState(false); // 상세설명 "블록 추가" 드롭다운
+  const [uploadingBlocksMulti, setUploadingBlocksMulti] = useState(false); // 상세설명 여러 장 업로드
+  const [dragBlockIdx, setDragBlockIdx] = useState<number | null>(null);
+  const [dragOverBlockIdx, setDragOverBlockIdx] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/site-settings/categories")
@@ -742,6 +745,35 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     if (url) updateBlock(idx, "imageUrl", url);
     if (blockImgRefs.current[idx]) blockImgRefs.current[idx]!.value = "";
   };
+
+  // 상세설명 — 여러 장 한 번에 업로드 → 각 이미지가 블록으로 추가 (이미지 중심 에디터)
+  const handleBlocksMultiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    setUploadError(""); setUploadingBlocksMulti(true);
+    const urls: string[] = [];
+    for (const file of files) { const url = await uploadFile(file); if (url) urls.push(url); }
+    const blocks = urls.map((url, i) => ({ id: `block-${Date.now()}-${i}`, type: "상품 소개" as const, content: "", imageUrl: url }));
+    if (blocks.length) set("detailBlocks", [...form.detailBlocks, ...blocks]);
+    setUploadingBlocksMulti(false);
+  };
+
+  // 블록 드래그 순서 변경 (드래그 핸들 ⠿ 사용 → 입력칸 편집 방해 없음)
+  const onBlockDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragBlockIdx !== null && dragBlockIdx !== idx) setDragOverBlockIdx(idx);
+  };
+  const onBlockDrop = (e: React.DragEvent, toIdx: number) => {
+    e.preventDefault();
+    if (dragBlockIdx === null || dragBlockIdx === toIdx) { setDragBlockIdx(null); setDragOverBlockIdx(null); return; }
+    const next = [...form.detailBlocks];
+    const [moved] = next.splice(dragBlockIdx, 1);
+    next.splice(toIdx, 0, moved);
+    set("detailBlocks", next);
+    setDragBlockIdx(null); setDragOverBlockIdx(null);
+  };
+  const onBlockDragEnd = () => { setDragBlockIdx(null); setDragOverBlockIdx(null); };
 
   // ── 태그 토글 ──────────────────────────────────────────────────────────────
   const toggleArr = (key: "featureTags" | "jobSites" | "mainExpose" | "seasons" | "sizes", val: string) => {
