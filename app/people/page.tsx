@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import PeopleGrid from "@/components/PeopleGrid";
-import MateZone from "@/components/MateZone";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import { normalizeMateZone, type MateZoneConfig } from "@/data/mate-zone";
 import { getSiteSection } from "@/lib/site-settings";
@@ -24,8 +23,7 @@ export default async function PeoplePage() {
 
   return (
     <main>
-      <PeopleGrid items={items} header={header} />
-      <MateZone config={mateZone} />
+      <PeopleGrid items={items} header={header} mateZone={mateZone} />
     </main>
   );
 }

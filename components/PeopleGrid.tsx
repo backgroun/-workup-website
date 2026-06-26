@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
+import MateZone from "@/components/MateZone";
+import type { MateZoneConfig } from "@/data/mate-zone";
 
 type PageHeader = { title: string; description: string };
 
@@ -10,7 +12,7 @@ const DEFAULT_HEADER: PageHeader = {
   description: "워크업이 만드는 옷의 주인공은 제품이 아닙니다.\n매일 현장에서 땀 흘리는 사람들의 이야기입니다.",
 };
 
-export default function PeopleGrid({ items, header }: { items?: Person[]; header?: PageHeader }) {
+export default function PeopleGrid({ items, header, mateZone }: { items?: Person[]; header?: PageHeader; mateZone?: MateZoneConfig }) {
   const people: Person[] = items && items.length ? items : DEFAULT_PEOPLE;
   const h = header ?? DEFAULT_HEADER;
 
