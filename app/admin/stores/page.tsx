@@ -98,30 +98,35 @@ export default function AdminStoresPage() {
     const target = filtered.length === stores.length ? stores : filtered;
     if (target.length === 0) return;
     const header = [
-      "ID", "매장명", "지역", "주소", "위도", "경도", "전화번호", "영업시간",
+      "ID", "매장명", "지역", "주소", "전화번호",
+      "평일시작", "평일종료", "주말시작", "주말종료",
       "매장유형", "취급브랜드(;구분)", "주차여부", "매장소개",
       "카카오채널URL", "스토어URL", "활성여부", "정렬순서",
     ];
-    const data = target.map((s) => [
-      s.id,
-      s.name,
-      s.region ?? "",
-      s.address,
-      s.lat ?? "",
-      s.lng ?? "",
-      s.phone ?? "",
-      s.hours ?? "",
-      s.store_type ?? "",
-      (s.brands ?? []).join(";"),
-      s.parking ? "true" : "false",
-      s.description ?? "",
-      s.kakao_channel_url ?? "",
-      s.store_url ?? "",
-      s.is_active ? "true" : "false",
-      s.sort_order ?? 0,
-    ]);
+    const data = target.map((s) => {
+      const t = partsFromHours(s.hours ?? "");
+      return [
+        s.id,
+        s.name,
+        s.region ?? "",
+        s.address,
+        s.phone ?? "",
+        t.wdStart,
+        t.wdEnd,
+        t.weStart,
+        t.weEnd,
+        s.store_type ?? "",
+        (s.brands ?? []).join(";"),
+        s.parking ? "true" : "false",
+        s.description ?? "",
+        s.kakao_channel_url ?? "",
+        s.store_url ?? "",
+        s.is_active ? "true" : "false",
+        s.sort_order ?? 0,
+      ];
+    });
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
-    ws["!cols"] = header.map((_, i) => ({ wch: i === 1 ? 24 : i === 3 ? 40 : i === 11 ? 30 : 14 }));
+    ws["!cols"] = header.map((_, i) => ({ wch: i === 1 ? 24 : i === 3 ? 40 : i === 12 ? 30 : 14 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "매장목록");
     const today = new Date().toISOString().slice(0, 10);
