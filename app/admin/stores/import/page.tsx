@@ -273,13 +273,15 @@ export default function StoreImportPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {[
+              { label: "ID",              desc: "비우면 신규 / 채우면 해당 매장 수정", req: false, ex: "1" },
               { label: "매장명",          desc: "매장 이름",              req: true,  ex: "워크업 포천직영점" },
               { label: "지역",            desc: "지역명 (서울, 경기 등)",   req: false, ex: "경기" },
               { label: "주소",            desc: "전체 주소",              req: true,  ex: "경기도 포천시 호국로 90" },
-              { label: "위도",            desc: "위도 (소수점)",           req: false, ex: "37.7834706" },
-              { label: "경도",            desc: "경도 (소수점)",           req: false, ex: "127.1214147" },
               { label: "전화번호",         desc: "전화번호",               req: false, ex: "031-000-0000" },
-              { label: "영업시간",         desc: "영업시간 문자열",          req: false, ex: "10:00 - 20:00 (매일)" },
+              { label: "평일시작",         desc: "평일 오픈 (시만 입력 가능)", req: false, ex: "10" },
+              { label: "평일종료",         desc: "평일 마감",               req: false, ex: "20" },
+              { label: "주말시작",         desc: "주말 오픈 (비우면 평일과 동일)", req: false, ex: "10" },
+              { label: "주말종료",         desc: "주말 마감 (비우면 평일과 동일)", req: false, ex: "19" },
               { label: "매장유형",         desc: "직영점/대리점/아울렛 등",  req: false, ex: "직영점" },
               { label: "취급브랜드(;구분)", desc: "세미콜론으로 브랜드 구분",  req: false, ex: "WORKUP;나이키" },
               { label: "주차여부",         desc: "true / false",          req: false, ex: "true" },

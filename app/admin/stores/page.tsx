@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { partsFromHours } from "@/lib/storeHours";
 
 type StoreRow = {
   id: number;
