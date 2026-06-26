@@ -241,10 +241,10 @@ export default function PeopleGrid({ items, header }: { items?: Person[]; header
 
       </div>
 
-      {/* 모바일 하단 고정 CTA — 항상 매장 방문 유도 */}
+      {/* 데스크톱 우하단 고정 CTA — 글을 읽는 내내 매장 방문 유도(모바일은 전역 하단바 '매장' 탭이 담당) */}
       <Link
         href="/store"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#ff550c] text-white text-center text-[15px] font-semibold py-4 min-h-[52px] flex items-center justify-center shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#ff550c] text-white text-[14px] font-semibold px-6 py-3.5 rounded-full shadow-[0_4px_20px_rgba(255,85,12,0.35)] hover:bg-[#1A2B4A] transition-colors"
       >
         가까운 매장 찾기 →
       </Link>
