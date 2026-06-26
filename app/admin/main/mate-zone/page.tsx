@@ -66,13 +66,14 @@ export default function AdminMateZonePage() {
       const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, { method: "POST", body: form }).then(r => r.json());
       if (up.error) { flash(`업로드 실패: ${up.error.message ?? ""}`); return; }
 
-      // 최신 state 기준으로 영상 URL 반영 후 저장(낙관적 — 실패해도 미리보기는 유지)
-      let next: MateZoneConfig | null = null;
-      setConfig(prev => {
-        next = { ...prev, reels: prev.reels.map(r => r.id === reelId ? { ...r, video_url: up.secure_url as string } : r) };
-        return next;
-      });
-      if (next) await saveConfig(next);
+      // 최신 config(ref) 기준으로 영상 URL 반영 후 저장(낙관적 — 실패해도 미리보기는 유지)
+      const latest = configRef.current;
+      const next: MateZoneConfig = {
+        ...latest,
+        reels: latest.reels.map(r => r.id === reelId ? { ...r, video_url: up.secure_url as string } : r),
+      };
+      setConfig(next);
+      await saveConfig(next);
     } catch {
       flash("업로드 실패 (네트워크/용량 확인)");
     } finally { setUploadingId(null); }
