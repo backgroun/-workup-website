@@ -1398,7 +1398,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   대표 이미지 <span className="text-red-400">*</span>
                 </p>
                 <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded font-mono">
-                  800 × 800 px · 1:1 비율 권장 · 최대 5 MB
+                  960 × 960 px · 1:1 비율 권장 · 최대 5 MB
                 </span>
               </div>
               <div className="flex gap-4 items-start">
@@ -1436,7 +1436,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold text-gray-700">추가 이미지</p>
                 <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded font-mono">
-                  800 × 800 px · 최대 9장 · 5 MB/장
+                  960 × 960 px · 최대 9장 · 5 MB/장
                 </span>
               </div>
 

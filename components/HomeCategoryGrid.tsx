@@ -16,9 +16,13 @@ type QuickCategoriesConfig = {
   is_section_visible: boolean;
   display_count: number;
   pc_columns?: number;
-  pc_gap?: number;
+  pc_gap?: number;        // 구버전(단일 간격) — 하위호환 fallback
+  pc_gap_x?: number;      // 가로(열) 간격
+  pc_gap_y?: number;      // 세로(행) 간격
   mobile_columns?: number;
-  mobile_gap?: number;
+  mobile_gap?: number;    // 구버전(단일 간격) — 하위호환 fallback
+  mobile_gap_x?: number;  // 가로(열) 간격
+  mobile_gap_y?: number;  // 세로(행) 간격
   items: QuickCategoryItem[];
 };
 
@@ -69,11 +73,13 @@ export default async function HomeCategoryGrid() {
     .filter((c) => c.is_visible)
     .slice(0, cfg.display_count);
 
-  // 관리자 레이아웃 설정 (값 없으면 기본값)
+  // 관리자 레이아웃 설정 (값 없으면 기본값). 가로/세로 미설정 시 구버전 단일 간격 → 기본값 순으로 fallback
   const pcColumns = cfg.pc_columns ?? DEFAULT_PC_COLUMNS;
-  const pcGap = cfg.pc_gap ?? DEFAULT_PC_GAP;
+  const pcGapX = cfg.pc_gap_x ?? cfg.pc_gap ?? DEFAULT_PC_GAP;
+  const pcGapY = cfg.pc_gap_y ?? cfg.pc_gap ?? DEFAULT_PC_GAP;
   const mobileColumns = cfg.mobile_columns ?? DEFAULT_MOBILE_COLUMNS;
-  const mobileGap = cfg.mobile_gap ?? DEFAULT_MOBILE_GAP;
+  const mobileGapX = cfg.mobile_gap_x ?? cfg.mobile_gap ?? DEFAULT_MOBILE_GAP;
+  const mobileGapY = cfg.mobile_gap_y ?? cfg.mobile_gap ?? DEFAULT_MOBILE_GAP;
 
   return (
     <section className="bg-white py-10 md:py-14">
@@ -85,7 +91,8 @@ export default async function HomeCategoryGrid() {
           style={{
             gridTemplateColumns: `repeat(${pcColumns}, max-content)`,
             justifyContent: "center",
-            gap: `${pcGap}px`,
+            columnGap: `${pcGapX}px`,
+            rowGap: `${pcGapY}px`,
           }}
         >
           {visible.map((cat) => (
@@ -124,7 +131,8 @@ export default async function HomeCategoryGrid() {
           className="md:hidden grid"
           style={{
             gridTemplateColumns: `repeat(${mobileColumns}, minmax(0, 1fr))`,
-            gap: `${mobileGap}px`,
+            columnGap: `${mobileGapX}px`,
+            rowGap: `${mobileGapY}px`,
           }}
         >
           {visible.map((cat) => (

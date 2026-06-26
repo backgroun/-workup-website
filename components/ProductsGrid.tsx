@@ -571,13 +571,13 @@ export default function ProductsGrid() {
               </div>
             )}
 
-            {/* ── 카테고리 가로 탭 (모바일 메뉴 스타일) ── */}
-            <div className="flex items-center border-b border-gray-200 mb-5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* ── 카테고리 가로 탭 ── 첫 항목을 콘텐츠 좌측(타이틀·서브·정렬과 동일선)에 정렬 */}
+            <div className="flex items-center gap-8 border-b border-gray-200 mb-5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {allCats.map((cat) => {
                 const isActive = activeCategory === cat;
                 return (
                   <button key={cat} onClick={() => handleCategoryChange(cat)}
-                    className={`flex-shrink-0 px-5 py-3 text-[15px] whitespace-nowrap transition-colors border-b-2 -mb-px ${
+                    className={`flex-shrink-0 py-3 text-[15px] whitespace-nowrap transition-colors border-b-2 -mb-px ${
                       isActive ? "border-[#1A2B4A] text-[#1A2B4A] font-bold" : "border-transparent text-gray-500 hover:text-[#1A2B4A]"
                     }`}>
                     {cat}

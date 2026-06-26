@@ -25,3 +25,6 @@ generated/
 
 # 상품 업로드 작업 폴더 (원본 이미지·정보 — GitHub 미동기화)
 products-inbox/
+
+# Claude 임시 dev 로그
+scratchpad_dev.log

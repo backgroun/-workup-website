@@ -72,7 +72,6 @@ export default function MateZone({ config }: { config: MateZoneConfig }) {
   return (
     <div className="mt-16 pt-12 border-t border-gray-200">
       <div className="mb-8">
-        <p className="text-[11px] tracking-[0.25em] text-[#ff550c] font-bold uppercase mb-2">MATE ZONE</p>
         <h2 className="text-[24px] md:text-[30px] font-bold text-[#1A2B4A] leading-tight">{config.title}</h2>
         {config.subtitle && (
           <p className="mt-2 text-[14px] text-gray-500">{config.subtitle}</p>

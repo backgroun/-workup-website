@@ -11,8 +11,8 @@ type QuickCategoryItem = {
 };
 type QuickCategoriesConfig = {
   is_section_visible: boolean; display_count: number;
-  pc_columns?: number; pc_gap?: number;
-  mobile_columns?: number; mobile_gap?: number;
+  pc_columns?: number; pc_gap?: number; pc_gap_x?: number; pc_gap_y?: number;
+  mobile_columns?: number; mobile_gap?: number; mobile_gap_x?: number; mobile_gap_y?: number;
   items: QuickCategoryItem[];
 };
 
@@ -228,7 +228,7 @@ export default function AdminCombinedCategoriesPage() {
     if (!Number.isFinite(n)) return;
     setQcConfig(p => ({ ...p, [key]: n }));
   }
-  function setGap(key: "pc_gap" | "mobile_gap", raw: string) {
+  function setGap(key: "pc_gap_x" | "pc_gap_y" | "mobile_gap_x" | "mobile_gap_y", raw: string) {
     if (raw.trim() === "") return;
     const n = Math.max(0, Math.round(Number(raw)));
     if (!Number.isFinite(n)) return;
@@ -237,12 +237,14 @@ export default function AdminCombinedCategoriesPage() {
 
   const visibleCount = qcConfig.items.filter(it => it.is_visible).length;
 
-  // 레이아웃 미리보기용 파생값
+  // 레이아웃 미리보기용 파생값 (가로/세로 미설정 시 구버전 단일 간격 → 기본값 순 fallback)
   const previewItems = qcConfig.items.filter(it => it.is_visible).slice(0, qcConfig.display_count);
   const qcPcCols = qcConfig.pc_columns ?? QC_PC_COLUMNS;
-  const qcPcGap = qcConfig.pc_gap ?? QC_PC_GAP;
+  const qcPcGapX = qcConfig.pc_gap_x ?? qcConfig.pc_gap ?? QC_PC_GAP;
+  const qcPcGapY = qcConfig.pc_gap_y ?? qcConfig.pc_gap ?? QC_PC_GAP;
   const qcMobileCols = qcConfig.mobile_columns ?? QC_MOBILE_COLUMNS;
-  const qcMobileGap = qcConfig.mobile_gap ?? QC_MOBILE_GAP;
+  const qcMobileGapX = qcConfig.mobile_gap_x ?? qcConfig.mobile_gap ?? QC_MOBILE_GAP;
+  const qcMobileGapY = qcConfig.mobile_gap_y ?? qcConfig.mobile_gap ?? QC_MOBILE_GAP;
 
   // ── 로딩 ──
   if (catLoading || qcLoading) {
@@ -500,17 +502,23 @@ export default function AdminCombinedCategoriesPage() {
             {/* PC 설정 */}
             <div className="rounded-lg border border-gray-100 p-3">
               <p className="text-xs font-bold text-gray-500 mb-2">💻 PC</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량 (개)</span>
+                  <span className="block text-[11px] text-gray-500 mb-1">배치 수량 (개)</span>
                   <input type="number" inputMode="numeric" min={1} step={1} value={qcPcCols}
                     onChange={e => setColumns("pc_columns", e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">간격 (px)</span>
-                  <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGap}
-                    onChange={e => setGap("pc_gap", e.target.value)}
+                  <span className="block text-[11px] text-gray-500 mb-1">가로 간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGapX}
+                    onChange={e => setGap("pc_gap_x", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">세로 간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGapY}
+                    onChange={e => setGap("pc_gap_y", e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
               </div>
@@ -519,17 +527,23 @@ export default function AdminCombinedCategoriesPage() {
             {/* 모바일 설정 */}
             <div className="rounded-lg border border-gray-100 p-3">
               <p className="text-xs font-bold text-gray-500 mb-2">📱 모바일</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량 (개)</span>
+                  <span className="block text-[11px] text-gray-500 mb-1">배치 수량 (개)</span>
                   <input type="number" inputMode="numeric" min={1} step={1} value={qcMobileCols}
                     onChange={e => setColumns("mobile_columns", e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] text-gray-500 mb-1">간격 (px)</span>
-                  <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGap}
-                    onChange={e => setGap("mobile_gap", e.target.value)}
+                  <span className="block text-[11px] text-gray-500 mb-1">가로 간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGapX}
+                    onChange={e => setGap("mobile_gap_x", e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">세로 간격 (px)</span>
+                  <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGapY}
+                    onChange={e => setGap("mobile_gap_y", e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
                 </label>
               </div>
@@ -550,7 +564,8 @@ export default function AdminCombinedCategoriesPage() {
                         display: "grid",
                         gridTemplateColumns: `repeat(${qcPcCols}, max-content)`,
                         justifyContent: "center",
-                        gap: `${qcPcGap}px`,
+                        columnGap: `${qcPcGapX}px`,
+                        rowGap: `${qcPcGapY}px`,
                       }}>
                         {previewItems.map(it => (
                           <div key={it.id} className="flex flex-col items-center gap-1">
@@ -574,7 +589,8 @@ export default function AdminCombinedCategoriesPage() {
                       <div style={{
                         display: "grid",
                         gridTemplateColumns: `repeat(${qcMobileCols}, minmax(0, 1fr))`,
-                        gap: `${qcMobileGap}px`,
+                        columnGap: `${qcMobileGapX}px`,
+                        rowGap: `${qcMobileGapY}px`,
                       }}>
                         {previewItems.map(it => (
                           <div key={it.id} className="flex flex-col items-center gap-1">
