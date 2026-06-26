@@ -114,7 +114,7 @@ export default function StoreImportPage() {
       body: JSON.stringify(validRows),
     });
     const data = await res.json();
-    setResult(res.ok ? { ok: true, count: data.count } : { ok: false, error: data.error });
+    setResult(res.ok ? { ok: true, count: data.count, updated: data.updated, inserted: data.inserted } : { ok: false, error: data.error });
     setImporting(false);
   };
 
@@ -185,7 +185,9 @@ export default function StoreImportPage() {
 
       {result && (
         <div className={`mb-6 px-6 py-4 rounded-xl text-base font-medium ${result.ok ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-red-50 border border-red-200 text-red-700"}`}>
-          {result.ok ? `✓ ${result.count}개 매장이 성공적으로 등록됐습니다.` : `✗ 오류: ${result.error}`}
+          {result.ok
+            ? `✓ 완료 — 신규 ${result.inserted ?? 0}건, 수정 ${result.updated ?? 0}건 (총 ${result.count}건)`
+            : `✗ 오류: ${result.error}`}
         </div>
       )}
 
