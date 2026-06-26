@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { DEFAULT_MATE_ZONE, normalizeMateZone, type Reel, type MateZoneConfig } from "@/data/mate-zone";
-import AdminImageField from "@/components/admin/AdminImageField";
+
+// 최신 config를 동기적으로 참조하기 위한 ref(업로드 콜백에서 stale 방지)
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function emptyReel(): Reel { return { id: uid(), video_url: "", poster_url: "", caption: "", link: "" }; }
+function emptyReel(): Reel { return { id: uid(), video_url: "", caption: "", link: "" }; }
 
 export default function AdminMateZonePage() {
   const [config, setConfig] = useState<MateZoneConfig>({ ...DEFAULT_MATE_ZONE });
@@ -14,6 +15,10 @@ export default function AdminMateZonePage() {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
+
+  // 항상 최신 config를 가리키는 ref — 업로드 콜백이 stale config를 읽지 않게 한다.
+  const configRef = useRef(config);
+  useEffect(() => { configRef.current = config; }, [config]);
 
   useEffect(() => {
     fetch("/api/admin/site-settings/mate_zone")
@@ -25,10 +30,8 @@ export default function AdminMateZonePage() {
 
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
 
-  // config 전체를 저장(낙관적 갱신 + 실패 시 복원)
-  const persist = async (next: MateZoneConfig) => {
-    const rollback = config;
-    setConfig(next);
+  // 서버 저장만 담당. 실패해도 화면 state는 유지(방금 올린 영상이 사라지지 않게).
+  const saveConfig = async (next: MateZoneConfig): Promise<boolean> => {
     setSaving(true);
     try {
       const r = await fetch("/api/admin/site-settings/mate_zone", {
@@ -36,11 +39,11 @@ export default function AdminMateZonePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next),
       });
-      if (!r.ok) { setConfig(rollback); flash("저장에 실패했습니다."); }
-      else flash("저장됐습니다.");
+      flash(r.ok ? "저장됐습니다." : "저장 실패 — ‘저장’을 다시 눌러주세요.");
+      return r.ok;
     } catch {
-      setConfig(rollback);
-      flash("저장에 실패했습니다.");
+      flash("저장 실패 — 네트워크를 확인해 주세요.");
+      return false;
     } finally { setSaving(false); }
   };
 
@@ -62,9 +65,14 @@ export default function AdminMateZonePage() {
       form.append("signature", sig.signature);
       const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, { method: "POST", body: form }).then(r => r.json());
       if (up.error) { flash(`업로드 실패: ${up.error.message ?? ""}`); return; }
-      // 업로드된 영상 URL을 해당 릴스에 반영 후 저장
-      const next = { ...config, reels: config.reels.map(r => r.id === reelId ? { ...r, video_url: up.secure_url as string } : r) };
-      await persist(next);
+
+      // 최신 state 기준으로 영상 URL 반영 후 저장(낙관적 — 실패해도 미리보기는 유지)
+      let next: MateZoneConfig | null = null;
+      setConfig(prev => {
+        next = { ...prev, reels: prev.reels.map(r => r.id === reelId ? { ...r, video_url: up.secure_url as string } : r) };
+        return next;
+      });
+      if (next) await saveConfig(next);
     } catch {
       flash("업로드 실패 (네트워크/용량 확인)");
     } finally { setUploadingId(null); }
@@ -77,7 +85,9 @@ export default function AdminMateZonePage() {
 
   const removeReel = async (id: string) => {
     if (!confirm("이 릴스를 삭제할까요?")) return;
-    await persist({ ...config, reels: config.reels.filter(r => r.id !== id) });
+    const next = { ...config, reels: config.reels.filter(r => r.id !== id) };
+    setConfig(next);
+    await saveConfig(next);
   };
 
   const handleDrop = async (target: number) => {
@@ -85,8 +95,10 @@ export default function AdminMateZonePage() {
     const reels = [...config.reels];
     const [moved] = reels.splice(dragIndex, 1);
     reels.splice(target, 0, moved);
+    const next = { ...config, reels };
+    setConfig(next);
     setDragIndex(null); setDragOver(null);
-    await persist({ ...config, reels });
+    await saveConfig(next);
   };
 
   if (loading) return <div className="p-6 text-sm text-gray-400">불러오는 중...</div>;
@@ -115,7 +127,7 @@ export default function AdminMateZonePage() {
             <h2 className="text-sm font-semibold text-slate-700">섹션 제목·문구</h2>
             <p className="text-xs text-slate-400 mt-0.5">MATE ZONE 영역 상단에 표시됩니다.</p>
           </div>
-          <button onClick={() => persist(config)} disabled={saving}
+          <button onClick={() => saveConfig(config)} disabled={saving}
             className="px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -171,13 +183,6 @@ export default function AdminMateZonePage() {
                 />
 
                 <div className="mt-3 space-y-3">
-                  <AdminImageField
-                    value={reel.poster_url}
-                    onChange={url => setReel(reel.id, { poster_url: url })}
-                    promptType="person"
-                    promptSeed={reel.caption || ""}
-                    label="썸네일 (선택 · 재생 전 표시)"
-                  />
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5">캡션 (선택)</label>
                     <input type="text" value={reel.caption ?? ""} onChange={e => setReel(reel.id, { caption: e.target.value })}
@@ -190,7 +195,7 @@ export default function AdminMateZonePage() {
                       placeholder="https://www.instagram.com/reel/..."
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
                   </div>
-                  <button onClick={() => persist(config)} disabled={saving}
+                  <button onClick={() => saveConfig(config)} disabled={saving}
                     className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     {saving ? "저장 중..." : "이 릴스 저장"}
                   </button>
@@ -204,7 +209,7 @@ export default function AdminMateZonePage() {
   );
 }
 
-// 릴스 영상 업로드 + 미리보기
+// 릴스 영상 업로드 + 미리보기(관리자에서는 확인용으로 음소거 자동재생)
 function ReelVideoField({ reel, uploading, onUpload, onClear }: {
   reel: Reel; uploading: boolean; onUpload: (f: File) => void; onClear: () => void;
 }) {
