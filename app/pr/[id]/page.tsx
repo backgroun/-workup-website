@@ -2,7 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrRoom } from "@/lib/pr-room-server";
+import { isHtmlBody } from "@/lib/pr-room";
 import { getFooterConfig } from "@/lib/footer-server";
+
+// 본문(에디터 HTML) 렌더용 자식 요소 스타일 — prose 플러그인 없이 임의 변형자로 처리.
+const BODY_PROSE =
+  "text-[15px] text-gray-700 leading-[1.9] " +
+  "[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-[#1A2B4A] [&_h2]:mt-8 [&_h2]:mb-3 " +
+  "[&_h3]:text-lg [&_h3]:font-bold [&_h3]:text-[#1A2B4A] [&_h3]:mt-6 [&_h3]:mb-2 " +
+  "[&_p]:mb-4 [&_strong]:font-bold [&_b]:font-bold [&_u]:underline [&_em]:italic " +
+  "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 [&_li]:mb-1 " +
+  "[&_a]:text-[#1A2B4A] [&_a]:underline [&_img]:rounded-lg [&_img]:my-4 [&_img]:max-w-full [&_img]:h-auto";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -61,9 +71,13 @@ export default async function PrPostDetailPage({ params }: Params) {
           </div>
         )}
 
-        {/* 본문 */}
+        {/* 본문 — 에디터 HTML 은 그대로 렌더, 옛 평문은 줄바꿈 유지 */}
         {post.body && (
-          <div className="text-[15px] text-gray-700 leading-[1.9] whitespace-pre-line">{post.body}</div>
+          isHtmlBody(post.body) ? (
+            <div className={BODY_PROSE} dangerouslySetInnerHTML={{ __html: post.body }} />
+          ) : (
+            <div className="text-[15px] text-gray-700 leading-[1.9] whitespace-pre-line">{post.body}</div>
+          )
         )}
 
         {/* 외부 원문 링크 (있을 경우) */}
