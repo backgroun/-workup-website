@@ -71,6 +71,7 @@ export type Product = {
   detailInfo?: DetailInfoItem[];
   imageUrl?: string;
   subImages?: string[];
+  videoUrl?: string;   // 갤러리 영상 (YouTube·Vimeo 링크 또는 mp4 등 직접 URL)
   detailBlocks?: DetailBlock[];
   relatedIds?: string[];
   metaTitle?: string;
