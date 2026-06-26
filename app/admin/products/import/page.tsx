@@ -1,9 +1,13 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import type { Product } from "@/data/products";
-import { mainCategories, subCategoriesByMain } from "@/data/products";
+import { mainCategories as staticMainCategories, subCategoriesByMain as staticSubByMain } from "@/data/products";
+
+// 카테고리 분류 구조 (관리자 DB 설정과 동일한 형태)
+type CatItem = { name: string; subs: string[] };
+const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({ name, subs: staticSubByMain[name] ?? [] }));
 
 // ── 컬럼 정의 ────────────────────────────────────────────────────────────────
 const COLUMNS = [
