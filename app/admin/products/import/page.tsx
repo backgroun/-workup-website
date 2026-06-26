@@ -40,18 +40,28 @@ function toArr(val: unknown): string[] {
   return String(val).split(";").map((s) => s.trim()).filter(Boolean);
 }
 
-function parseRow(row: Record<string, unknown>, idx: number): Partial<Product> & { id: string; _row: number; _error?: string } {
+function parseRow(
+  row: Record<string, unknown>,
+  idx: number,
+  cats: CatItem[],
+): Partial<Product> & { id: string; _row: number; _error?: string } {
+  const mainNames = cats.map((c) => c.name);
+  const subsByMain: Record<string, string[]> = Object.fromEntries(cats.map((c) => [c.name, c.subs]));
+  // 카테고리 미입력 시 첫 번째 분류로 기본 배정 (정적 기본값 대신 실제 분류 사용)
+  const defaultMain = mainNames[0] ?? "";
+  const defaultSub = (subsByMain[defaultMain]?.[0]) ?? "";
+
   const name = String(row["상품명"] ?? row["name"] ?? "").trim();
   const price = String(row["판매가"] ?? row["price"] ?? "").trim();
-  const category = String(row["대카테고리"] ?? row["category"] ?? "현장").trim() as Product["category"];
-  const subCategory = String(row["중카테고리"] ?? row["subCategory"] ?? "상의").trim() as Product["subCategory"];
+  const category = String(row["대카테고리"] ?? row["category"] ?? defaultMain).trim() as Product["category"];
+  const subCategory = String(row["중카테고리"] ?? row["subCategory"] ?? defaultSub).trim() as Product["subCategory"];
 
   const errors: string[] = [];
   if (!name) errors.push("상품명 필수");
   if (!price) errors.push("판매가 필수");
-  if (!mainCategories.includes(category)) errors.push(`잘못된 대카테고리: ${category}`);
+  if (!mainNames.includes(category)) errors.push(`잘못된 대카테고리: ${category}`);
 
-  const validSubs = category ? (subCategoriesByMain[category] ?? []) : [];
+  const validSubs = category ? (subsByMain[category] ?? []) : [];
   if (subCategory && validSubs.length > 0 && !validSubs.includes(subCategory as never)) {
     errors.push(`잘못된 중카테고리: ${subCategory}`);
   }
@@ -115,7 +125,20 @@ export default function ProductImportPage() {
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; count?: number; error?: string } | null>(null);
+  const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // 카테고리 분류 — 관리자 DB 설정에서 로드 (검증 기준을 최신 분류와 일치시킴)
+  useEffect(() => {
+    fetch("/api/admin/site-settings/categories")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCats(data.categories as CatItem[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -129,7 +152,7 @@ export default function ProductImportPage() {
       const wb = XLSX.read(data, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
-      setRows(json.map((r, i) => parseRow(r, i)));
+      setRows(json.map((r, i) => parseRow(r, i, cats)));
     };
     reader.readAsArrayBuffer(file);
     if (fileRef.current) fileRef.current.value = "";
