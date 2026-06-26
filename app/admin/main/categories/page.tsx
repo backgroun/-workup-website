@@ -476,6 +476,119 @@ export default function AdminCombinedCategoriesPage() {
             </div>
           </div>
 
+          {/* 레이아웃 설정 (간격 · 배치 수량) */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-700">레이아웃 (간격 · 배치 수량)</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">한 줄에 몇 개씩 배치할지, 아이콘 사이 간격을 PC·모바일 별로 조절합니다.</p>
+            </div>
+
+            {/* PC 설정 */}
+            <div className="rounded-lg border border-gray-100 p-3">
+              <p className="text-xs font-bold text-gray-500 mb-2">💻 PC</p>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량</span>
+                  <select value={qcPcCols}
+                    onChange={e => setQcConfig(p => ({ ...p, pc_columns: Number(e.target.value) }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
+                    {[4, 5, 6, 7, 8, 10].map(n => <option key={n} value={n}>{n}개씩</option>)}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">간격</span>
+                  <select value={qcPcGap}
+                    onChange={e => setQcConfig(p => ({ ...p, pc_gap: Number(e.target.value) }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
+                    {[16, 24, 32, 40, 48, 56, 64].map(n => <option key={n} value={n}>{n}px</option>)}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            {/* 모바일 설정 */}
+            <div className="rounded-lg border border-gray-100 p-3">
+              <p className="text-xs font-bold text-gray-500 mb-2">📱 모바일</p>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">한 줄 배치 수량</span>
+                  <select value={qcMobileCols}
+                    onChange={e => setQcConfig(p => ({ ...p, mobile_columns: Number(e.target.value) }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
+                    {[2, 3, 4, 5].map(n => <option key={n} value={n}>{n}개씩</option>)}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="block text-[11px] text-gray-500 mb-1">간격</span>
+                  <select value={qcMobileGap}
+                    onChange={e => setQcConfig(p => ({ ...p, mobile_gap: Number(e.target.value) }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
+                    {[8, 12, 16, 20, 24, 32].map(n => <option key={n} value={n}>{n}px</option>)}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            {/* 실시간 미리보기 */}
+            <div>
+              <p className="text-[11px] font-medium text-gray-500 mb-2">미리보기 <span className="text-gray-400">(실제 노출 항목 · 현재 설정 기준)</span></p>
+              {previewItems.length === 0 ? (
+                <p className="text-xs text-gray-400 py-4 text-center bg-gray-50 rounded-lg">노출 항목이 없습니다.</p>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {/* PC 미리보기 */}
+                  <div className="rounded-lg border border-gray-100 bg-gray-50/60 p-3">
+                    <p className="text-[10px] text-gray-400 mb-2">💻 PC</p>
+                    <div className="overflow-x-auto">
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${qcPcCols}, max-content)`,
+                        justifyContent: "center",
+                        gap: `${qcPcGap}px`,
+                      }}>
+                        {previewItems.map(it => (
+                          <div key={it.id} className="flex flex-col items-center gap-1">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-base overflow-hidden"
+                              style={{ backgroundColor: it.bg_color || "#f0f0f0" }}>
+                              {it.icon_url && !it.icon_url.startsWith("data:")
+                                ? <img src={it.icon_url} alt="" className="w-6 h-6 object-contain" />
+                                : <span className="leading-none select-none">{it.emoji}</span>}
+                            </div>
+                            <span className="text-[9px] text-[#1A2B4A] whitespace-nowrap">{it.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 모바일 미리보기 (가상 폰 폭 320px) */}
+                  <div className="rounded-lg border border-gray-100 bg-gray-50/60 p-3">
+                    <p className="text-[10px] text-gray-400 mb-2">📱 모바일</p>
+                    <div className="mx-auto bg-white rounded-lg border border-gray-200 px-[15px] py-3" style={{ width: 320 }}>
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${qcMobileCols}, minmax(0, 1fr))`,
+                        gap: `${qcMobileGap}px`,
+                      }}>
+                        {previewItems.map(it => (
+                          <div key={it.id} className="flex flex-col items-center gap-1">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm overflow-hidden"
+                              style={{ backgroundColor: it.bg_color || "#f0f0f0" }}>
+                              {it.icon_url && !it.icon_url.startsWith("data:")
+                                ? <img src={it.icon_url} alt="" className="w-5 h-5 object-contain" />
+                                : <span className="leading-none select-none">{it.emoji}</span>}
+                            </div>
+                            <span className="text-[9px] text-[#1A2B4A] truncate max-w-full">{it.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* 퀵 카테고리 목록 */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
