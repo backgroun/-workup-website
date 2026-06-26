@@ -9,6 +9,28 @@ export type FooterNavLink = {
   href: string;
 };
 
+export type FooterSocialLink = {
+  id: string;
+  platform: string;   // FOOTER_SOCIAL_PLATFORMS 의 value, 또는 "custom"
+  label: string;      // 화면에 노출되진 않고 aria-label/접근성용
+  href: string;
+  iconUrl: string;    // 내장 아이콘이 없는 플랫폼(custom)에서 직접 등록한 아이콘 이미지
+};
+
+// 소셜 플랫폼 목록. builtin=true 는 Footer 에 내장 SVG 아이콘이 자동 표시되고,
+// builtin=false(=직접 등록)는 관리자가 아이콘 이미지를 업로드해야 한다.
+export const FOOTER_SOCIAL_PLATFORMS: { value: string; label: string; builtin: boolean }[] = [
+  { value: "instagram", label: "인스타그램",   builtin: true },
+  { value: "youtube",   label: "유튜브",       builtin: true },
+  { value: "kakao",     label: "카카오채널",   builtin: true },
+  { value: "naver",     label: "네이버 블로그", builtin: true },
+  { value: "facebook",  label: "페이스북",     builtin: true },
+  { value: "x",         label: "X (트위터)",   builtin: true },
+  { value: "threads",   label: "스레드",       builtin: true },
+  { value: "tiktok",    label: "틱톡",         builtin: true },
+  { value: "custom",    label: "직접 등록",    builtin: false },
+];
+
 export type FooterConfig = {
   company_name: string;
   ceo: string;
@@ -18,9 +40,10 @@ export type FooterConfig = {
   cs_phone: string;
   cs_hours_weekday: string;
   cs_hours_weekend: string;
-  instagram_url: string;
-  youtube_url: string;
-  kakao_url: string;
+  instagram_url: string;     // ⚠️ 레거시 — socialLinks 로 대체됨(마이그레이션용 유지)
+  youtube_url: string;       // ⚠️ 레거시
+  kakao_url: string;         // ⚠️ 레거시
+  socialLinks: FooterSocialLink[];
   copyright: string;
   navLinks: FooterNavLink[];
 };
