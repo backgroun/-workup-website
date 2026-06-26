@@ -67,8 +67,13 @@ export const DEFAULT_FOOTER: FooterConfig = {
     { id: "nav-inquiry",     label: "1:1문의",       href: "/support" },
     { id: "nav-franchise",   label: "가맹·창업문의", href: "/partnership/franchise" },
     { id: "nav-wholesale",   label: "입점·제휴문의", href: "/partnership/wholesale" },
+    { id: "nav-pr",          label: "PR룸",          href: "/pr" },
   ],
 };
+
+// PR룸은 사이트 상시 메뉴이므로, 저장된 푸터에 누락돼 있으면 자동으로 보강한다.
+// (관리자가 푸터 관리에서 이름·순서를 바꿔 저장하면 그 값이 유지된다.)
+export const PR_ROOM_NAV_LINK: FooterNavLink = { id: "nav-pr", label: "PR룸", href: "/pr" };
 
 function str(v: unknown, fallback: string): string {
   return typeof v === "string" ? v : fallback;
