@@ -533,7 +533,8 @@ export default function AdminSidebar() {
   const toggleDropdown = (label: string) =>
     setOpenDropdowns((prev) => {
       const next = new Set(prev);
-      next.has(label) ? next.delete(label) : next.add(label);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
       return next;
     });
 
