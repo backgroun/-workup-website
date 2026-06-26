@@ -1531,6 +1531,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
             {uploadError && <p className="text-xs text-red-500 mt-3">{uploadError}</p>}
 
+            {/* ── 동영상 (선택) ── */}
+            <div className="mt-5 pt-5 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-700">동영상 URL (선택)</p>
+                <span className="text-[11px] text-gray-400">YouTube · Vimeo · mp4 링크</span>
+              </div>
+              <input type="url" value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)}
+                placeholder="예: https://youtu.be/abc123 또는 https://….mp4"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+              <p className="text-[11px] text-gray-400 mt-1.5">등록하면 상세 갤러리 썸네일 맨 뒤에 <b className="text-[#1A2B4A]">▶ 영상</b>이 추가됩니다. (YouTube·Vimeo는 자동 임베드, mp4 등 직접 링크는 플레이어로 재생)</p>
+            </div>
+
             {/* ── AI 이미지 생성 프롬프트 ── */}
             <div className="mt-5 pt-5 border-t border-gray-100">
               <button type="button" onClick={() => setPromptPanelOpen((v) => !v)}
