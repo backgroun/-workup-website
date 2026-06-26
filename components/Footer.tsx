@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { DEFAULT_FOOTER, type FooterConfig, type FooterSocialLink } from "@/lib/site-content";
+import { normalizeFooter, type FooterConfig, type FooterSocialLink } from "@/lib/site-content";
 import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
 
 
@@ -73,7 +73,9 @@ function SocialIcon({ social }: { social: FooterSocialLink }) {
 }
 
 export default function Footer({ config, logo }: { config?: FooterConfig | null; logo?: LogoConfig | null }) {
-  const c = config ?? DEFAULT_FOOTER;
+  // config 가 정규화되지 않았거나 일부 필드(socialLinks/navLinks 등)가 빠진
+  // 옛 캐시 데이터로 전달돼도 안전하도록, 컴포넌트 진입 시 항상 정규화한다.
+  const c = normalizeFooter(config);
   const lg = logo ?? DEFAULT_LOGO;
   const [bizOpen, setBizOpen] = useState(false);
 
