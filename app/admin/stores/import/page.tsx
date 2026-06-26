@@ -81,7 +81,7 @@ export default function StoreImportPage() {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; count?: number; error?: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; count?: number; updated?: number; inserted?: number; error?: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
