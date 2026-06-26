@@ -19,3 +19,9 @@ create index if not exists idx_audit_logs_created_at on audit_logs (created_at d
 create index if not exists idx_audit_logs_actor      on audit_logs (actor_id);
 create index if not exists idx_audit_logs_resource   on audit_logs (resource);
 create index if not exists idx_audit_logs_action     on audit_logs (action);
+
+-- 서버(service_role)만 읽고 쓰도록 권한 부여.
+-- 앱은 createAdminClient(service_role)로만 접근하므로 anon/authenticated 에는 권한을 주지 않는다.
+grant all on table audit_logs to service_role;
+-- RLS 활성화(정책 없음) — anon/authenticated 의 직접 접근을 차단하고 service_role 만 우회 허용.
+alter table audit_logs enable row level security;

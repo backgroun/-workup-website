@@ -144,7 +144,7 @@ export default function ProductDetailClient({
       setLoginPromptOpen(true);
       return;
     }
-    toggleProduct({ productId: product.id, name: product.name, sku: product.sku, line: product.line, price: displayPrice, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
+    toggleProduct({ productId: product.id, name: productDisplayName(product), sku: product.sku, line: product.line, price: displayPrice, size: selectedSize, color: selectedColor?.name ?? "", colorHex: selectedColor?.hex ?? "#000", bg: product.bg, imageUrl: product.imageUrl, allSizes: product.sizes, allColors: product.colors });
   };
 
   const StoreList = () => (
@@ -292,7 +292,7 @@ export default function ProductDetailClient({
                     : <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[8px]">WORKUP</span>
                   }
                 </div>
-                <p className="text-[11px] text-gray-600 leading-tight truncate">{rp.name}</p>
+                <p className="text-[11px] text-gray-600 leading-tight truncate">{productDisplayName(rp)}</p>
                 <p className="text-xs font-semibold text-[#1A2B4A] mt-0.5">{rp.price}</p>
               </Link>
             ))}
