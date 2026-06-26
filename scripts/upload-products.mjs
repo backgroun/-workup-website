@@ -1,15 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// 폴더 기반 상품 자동 등록 스크립트
-//   products-inbox/<상품폴더>/ 안의 info.txt + 이미지들을 읽어
-//   이미지 → Cloudinary 업로드, 상품정보 → Supabase 등록(upsert).
+// 폴더 + 엑셀 기반 상품 자동 등록
 //
-// 실행:  node scripts/upload-products.mjs   (또는 상품업로드.bat 더블클릭)
+// [방식 A · 권장] 엑셀로 일괄 등록 (다른 팀에서 받은 정보)
+//   products-inbox/ 에 엑셀 1장(상품정보.xlsx) + 상품별 이미지 폴더를 둔다.
+//   엑셀의 "폴더명"(없으면 "상품명") 컬럼 = 이미지 폴더 이름으로 매칭.
+//     products-inbox/
+//       상품정보.xlsx          ← 행 = 상품 (양식: _상품정보_양식.xlsx 참고)
+//       스너그 부력보조복/       ← "폴더명" 또는 "상품명"과 일치
+//         대표/ (대표컷)  ·  상세/ (상세컷)
 //
-// 폴더 규칙:
-//   썸네일.jpg / thumb*  → 대표 이미지(960×930로 자동 정리)
-//   상세*, 그 외 이미지   → 상세(추가) 이미지, 파일명 순서대로
-//   info.txt             → "키: 값" 형식 (한글 키 지원)
-//   "_"로 시작하는 폴더는 건너뜀(_사용법, _템플릿 등)
+// [방식 B · 백업] 폴더별 info.txt
+//   각 상품 폴더에 info.txt(키:값) + 대표/·상세/ 이미지
+//
+// 실행:  상품업로드.bat 더블클릭  (또는 node scripts/upload-products.mjs)
+//   - 엑셀이 있으면 방식 A, 없으면 방식 B로 자동 동작
+//   - "_"로 시작하는 파일/폴더(_양식, _템플릿 등)와 ~$ 임시파일은 무시
 // ─────────────────────────────────────────────────────────────────────────────
 import fs from "fs";
 import path from "path";
@@ -17,7 +22,9 @@ import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import cloudinaryPkg from "cloudinary";
 import sharp from "sharp";
+import * as XLSXns from "xlsx";
 
+const XLSX = XLSXns.default && XLSXns.default.utils ? XLSXns.default : XLSXns;
 const cloudinary = cloudinaryPkg.v2;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const INBOX = path.join(ROOT, "products-inbox");
@@ -47,7 +54,7 @@ const COLOR_HEX = {
 };
 const slugify = (name) =>
   name.toLowerCase().replace(/[^\w\s가-힣]/g, "").replace(/\s+/g, "-").replace(/[가-힣]/g, (c) => c.charCodeAt(0).toString(16));
-const listSplit = (s) => (s ? s.split(/[;,]/).map((x) => x.trim()).filter(Boolean) : []);
+const listSplit = (s) => (s ? String(s).split(/[;,]/).map((x) => x.trim()).filter(Boolean) : []);
 const natSort = (a, b) => a.localeCompare(b, undefined, { numeric: true });
 
 function parseInfo(txt) {
@@ -85,14 +92,9 @@ function collectImages(dir) {
   const galleryFolder = flat(GALLERY_DIRS);
   const rootImgs = entries.filter((e) => e.isFile() && IMG_RE.test(e.name)).map((e) => path.join(dir, e.name)).sort(natSort);
 
-  // 대표(썸네일): 썸네일폴더 → 루트 → 상세 첫 장
   const thumbPool = thumbFolder.length ? thumbFolder : rootImgs.length ? rootImgs : [...detailFolder, ...galleryFolder];
   const thumb = thumbPool[0] || null;
-
-  // 갤러리(썸네일 스트립): 명시적 "갤러리/" 폴더만 → sub_images
   const gallery = [...new Set(galleryFolder)].filter((p) => p && p !== thumb);
-
-  // 상세(상세 영역 전용): 상세폴더 + 썸네일폴더 잔여 + 루트 잔여 → detail_blocks
   const used = new Set([thumb, ...gallery]);
   const details = [...new Set([...detailFolder, ...thumbFolder, ...rootImgs])].filter((p) => p && !used.has(p));
   return { thumb, gallery, details };
@@ -104,8 +106,9 @@ async function uploadImage(filePath, publicId, isThumb) {
     buf = await sharp(buf).resize(960, 930, { fit: "contain", background: { r: 237, g: 237, b: 237 } }).jpeg({ quality: 88 }).toBuffer();
   } else {
     const meta = await sharp(buf).metadata();
-    if ((meta.width ?? 0) > 1080) buf = await sharp(buf).resize({ width: 1080 }).jpeg({ quality: 85 }).toBuffer();
-    else buf = await sharp(buf).jpeg({ quality: 88 }).toBuffer();
+    buf = (meta.width ?? 0) > 1080
+      ? await sharp(buf).resize({ width: 1080 }).jpeg({ quality: 85 }).toBuffer()
+      : await sharp(buf).jpeg({ quality: 88 }).toBuffer();
   }
   const r = await cloudinary.uploader.upload(`data:image/jpeg;base64,${buf.toString("base64")}`, {
     folder: "workup", public_id: publicId, overwrite: true,
@@ -113,46 +116,17 @@ async function uploadImage(filePath, publicId, isThumb) {
   return r.secure_url;
 }
 
-async function processFolder(dir, folderName) {
-  // info.txt 는 선택사항 — 없으면 폴더 이름을 상품명으로 사용
-  const infoPath = ["info.txt", "정보.txt"].map((f) => path.join(dir, f)).find((p) => fs.existsSync(p));
-  const info = infoPath ? parseInfo(fs.readFileSync(infoPath, "utf8")) : {};
-  const get = (...keys) => { for (const k of keys) if (info[k]) return info[k]; return ""; };
-
-  const name = get("상품명", "name", "이름") || folderName.replace(/[-_]+/g, " ").trim();
-  const price = get("판매가", "price"); // 선택 — 없으면 빈 값(나중에 관리자에서 입력 가능)
-  const id = get("id") || slugify(name);
-
-  // 카테고리: "소품 > 기타" 또는 대/중 분리 입력 모두 지원
+// ── 상품 1건 등록 (info=get 함수, 이미지=imageDir) ──
+function buildRow(get, { id, name, image_url, sub_images, detail_blocks }) {
   let category = get("대카테고리", "category");
   let subCategory = get("중카테고리", "subCategory");
   const cat = get("카테고리");
   if (cat.includes(">")) { const [a, b] = cat.split(">").map((s) => s.trim()); category = category || a; subCategory = subCategory || b; }
-  category = category || "소품"; subCategory = subCategory || "기타";
-
-  // 이미지 수집: 대표→image_url, 갤러리→sub_images(썸네일), 상세→detail_blocks(상세 영역)
-  const { thumb, gallery, details } = collectImages(dir);
-  if (!thumb && gallery.length === 0 && details.length === 0 && !infoPath) {
-    console.log(`  ⚠ ${folderName}: 이미지·정보 없음 → 건너뜀`);
-    return false;
-  }
-  console.log(`  ▶ ${name} (${id}) — 대표:${thumb ? "O" : "X"} 갤러리:${gallery.length}장 상세:${details.length}장`);
-
-  const image_url = thumb ? await uploadImage(thumb, `${id}_thumb`, true) : null;
-  const sub_images = [];
-  for (let i = 0; i < gallery.length; i++) {
-    sub_images.push(await uploadImage(gallery[i], `${id}_gal${i + 1}`, false));
-  }
-  const detail_blocks = [];
-  for (let i = 0; i < details.length; i++) {
-    const url = await uploadImage(details[i], `${id}_detail${i + 1}`, false);
-    detail_blocks.push({ id: `d${i + 1}`, type: "상품 소개", content: "", imageUrl: url });
-  }
-
+  category = category || "소품";
+  subCategory = subCategory || "기타";
   const colors = listSplit(get("색상", "colors")).map((n) => ({ name: n, hex: COLOR_HEX[n] || "#888888" }));
   const mainExpose = listSplit(get("메인노출", "mainExpose"));
-
-  const row = {
+  return {
     id, name,
     sku: get("상품코드", "sku") || null,
     brand: get("브랜드", "brand") || null,
@@ -164,7 +138,7 @@ async function processFolder(dir, folderName) {
     status: get("판매상태", "status") || "판매중",
     is_new: mainExpose.includes("신상품"),
     tagline: get("한줄소개", "tagline") || "",
-    price,
+    price: get("판매가", "price") || "",
     consumer_price: get("소비자가", "consumerPrice") || null,
     supply_price: get("공급가", "supplyPrice") || null,
     features: listSplit(get("주요특징", "features")),
@@ -179,24 +153,86 @@ async function processFolder(dir, folderName) {
     meta_title: get("메타타이틀", "metaTitle") || `${name} | WORKUP`,
     meta_desc: get("메타설명", "metaDesc") || get("한줄소개", "tagline") || null,
   };
+}
 
+async function register(get, name, imageDir) {
+  const id = get("id") || slugify(name);
+  let image_url = null;
+  const sub_images = [];
+  const detail_blocks = [];
+  if (imageDir && fs.existsSync(imageDir)) {
+    const { thumb, gallery, details } = collectImages(imageDir);
+    if (thumb) image_url = await uploadImage(thumb, `${id}_thumb`, true);
+    for (let i = 0; i < gallery.length; i++) sub_images.push(await uploadImage(gallery[i], `${id}_gal${i + 1}`, false));
+    for (let i = 0; i < details.length; i++) {
+      detail_blocks.push({ id: `d${i + 1}`, type: "상품 소개", content: "", imageUrl: await uploadImage(details[i], `${id}_detail${i + 1}`, false) });
+    }
+  }
+  const row = buildRow(get, { id, name, image_url, sub_images, detail_blocks });
   const { error } = await sb.from("products").upsert(row, { onConflict: "id" });
-  if (error) { console.log(`  ❌ ${name}: 등록 실패 — ${error.message}`); return false; }
-  console.log(`  ✅ ${name}: 등록 완료 → /products/${id}`);
+  if (error) { console.log(`  ❌ ${name}: ${error.message}`); return false; }
+  console.log(`  ✅ ${name} → /products/${id}  (대표:${image_url ? "O" : "X"} 갤러리:${sub_images.length} 상세:${detail_blocks.length})`);
   return true;
 }
 
+// ── 방식 A: 엑셀 ──
+async function processExcel(xlsxPath) {
+  const wb = XLSX.readFile(xlsxPath);
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+  console.log(`📄 엑셀 「${path.basename(xlsxPath)}」 — ${rows.length}행\n`);
+  let ok = 0;
+  for (const row of rows) {
+    const get = (...keys) => { for (const k of keys) { const v = row[k]; if (v != null && String(v).trim()) return String(v).trim(); } return ""; };
+    const name = get("상품명", "name", "이름");
+    if (!name) continue;
+    const folderName = get("폴더명", "folder") || name;
+    const dir = path.join(INBOX, folderName);
+    const imageDir = fs.existsSync(dir) ? dir : null;
+    if (!imageDir) console.log(`  · ${name}: 이미지 폴더 「${folderName}」 없음 → 정보만 등록`);
+    try { if (await register(get, name, imageDir)) ok++; }
+    catch (e) { console.log(`  ❌ ${name}: ${e.message}`); }
+  }
+  console.log(`\n🏁 완료: ${ok}개 등록.\n`);
+}
+
+// ── 방식 B: 폴더별 info.txt ──
+async function processFolder(dir, folderName) {
+  const infoPath = ["info.txt", "정보.txt"].map((f) => path.join(dir, f)).find((p) => fs.existsSync(p));
+  const info = infoPath ? parseInfo(fs.readFileSync(infoPath, "utf8")) : {};
+  const get = (...keys) => { for (const k of keys) if (info[k]) return String(info[k]).trim(); return ""; };
+  const name = get("상품명", "name", "이름") || folderName.replace(/[-_]+/g, " ").trim();
+  const { thumb, gallery, details } = collectImages(dir);
+  if (!thumb && !gallery.length && !details.length && !infoPath) {
+    console.log(`  ⚠ ${folderName}: 이미지·정보 없음 → 건너뜀`);
+    return false;
+  }
+  return register(get, name, dir);
+}
+
+// ── 진입점 ──
 (async () => {
   if (!fs.existsSync(INBOX)) { console.log("products-inbox 폴더가 없습니다."); return; }
+
+  // 1) 엑셀이 있으면 방식 A
+  const excel = fs.readdirSync(INBOX).find(
+    (f) => /\.(xlsx|xls|csv)$/i.test(f) && !f.startsWith("_") && !f.startsWith("~$")
+  );
+  if (excel) { await processExcel(path.join(INBOX, excel)); return; }
+
+  // 2) 없으면 방식 B (폴더별 info.txt)
   const dirs = fs.readdirSync(INBOX, { withFileTypes: true })
     .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
     .map((d) => d.name);
-  if (!dirs.length) { console.log("📭 등록할 상품 폴더가 없습니다. products-inbox/ 안에 상품 폴더를 넣으세요."); return; }
-  console.log(`\n📦 상품 폴더 ${dirs.length}개 발견\n`);
+  if (!dirs.length) {
+    console.log("📭 등록할 상품이 없습니다. (엑셀 또는 상품 폴더를 products-inbox에 넣으세요)");
+    return;
+  }
+  console.log(`\n📦 상품 폴더 ${dirs.length}개\n`);
   let ok = 0;
   for (const name of dirs) {
     try { if (await processFolder(path.join(INBOX, name), name)) ok++; }
     catch (e) { console.log(`  ❌ ${name}: ${e.message}`); }
   }
-  console.log(`\n🏁 완료: ${ok}/${dirs.length}개 등록.\n`);
+  console.log(`\n🏁 완료: ${ok}/${dirs.length}개.\n`);
 })();
