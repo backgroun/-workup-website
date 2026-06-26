@@ -33,7 +33,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = (await headers()).get("x-pathname") ?? "";
-  const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/login");
+  const isAdmin = pathname.startsWith("/admin");
 
   const [topbar, footer, headerNav, logo, search, studio] = isAdmin
     ? [null, null, null, null, null, null]
