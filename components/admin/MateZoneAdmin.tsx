@@ -7,7 +7,7 @@ import { DEFAULT_MATE_ZONE, normalizeMateZone, type Reel, type MateZoneConfig } 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function emptyReel(): Reel { return { id: uid(), video_url: "", caption: "", link: "" }; }
 
-export default function AdminMateZonePage() {
+export default function MateZoneAdmin() {
   const [config, setConfig] = useState<MateZoneConfig>({ ...DEFAULT_MATE_ZONE });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

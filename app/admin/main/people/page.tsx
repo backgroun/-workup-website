@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { DEFAULT_PEOPLE, type Person, type PersonProduct } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
+import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
 const DEFAULT_HEADER = {
   title: "일하는 사람이 제일 멋있다.",
@@ -21,6 +22,7 @@ function emptyPerson(): Person {
 }
 
 export default function AdminMainPeoplePage() {
+  const [view, setView]         = useState<"people" | "reels">("people");
   const [header, setHeader]     = useState<PageHeader>({ ...DEFAULT_HEADER });
   const [items, setItems]       = useState<Person[]>([]);
   const [loading, setLoading]   = useState(true);
