@@ -8,6 +8,7 @@ import { AdminUIContext, type AdminTab, type AdminUIValue } from "./admin-ui-con
 const MAX_TABS = 10;
 const LS_TABS = "admin.tabs.v1";
 const LS_FAVS = "admin.favorites.v1";
+const LS_VISITS = "admin.visits.v1";
 
 /**
  * 관리자 본문 래퍼.
@@ -64,6 +65,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       return next;
     });
   }, [hydrated, currentHref, pathname, searchStr]);
+
+  // 메뉴 방문 횟수 집계 (대시보드 "자주 방문" 용). /admin(대시보드 자신)은 제외.
+  useEffect(() => {
+    if (!hydrated || !pathname.startsWith("/admin") || pathname === "/admin") return;
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS_VISITS) || "{}");
+      raw[pathname] = (Number(raw[pathname]) || 0) + 1;
+      localStorage.setItem(LS_VISITS, JSON.stringify(raw));
+    } catch {
+      /* noop */
+    }
+  }, [hydrated, pathname]);
 
   const selectTab = useCallback((href: string) => { router.push(href); }, [router]);
 

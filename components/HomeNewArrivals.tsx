@@ -5,12 +5,18 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import { productDisplayName, type Product } from "@/data/products";
+import {
+  DEFAULT_NEW_ARRIVALS,
+  normalizeNewArrivals,
+  selectNewArrivalsPool,
+  type NewArrivalsConfig,
+} from "@/lib/new-arrivals";
 
 export default function HomeNewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<string>("전체");
   const [showLeft, setShowLeft] = useState(false);
-  const [title, setTitle] = useState("신상품이 입고 되었어요");
+  const [cfg, setCfg] = useState<NewArrivalsConfig>(DEFAULT_NEW_ARRIVALS);
   const [loading, setLoading] = useState(true);
   const pcRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -22,9 +28,9 @@ export default function HomeNewArrivals() {
     Promise.all([
       fetch("/api/products").then((r) => r.json()),
       fetch("/api/admin/site-settings/new_arrivals").then((r) => r.json()).catch(() => null),
-    ]).then(([prods, cfg]) => {
+    ]).then(([prods, cfgRaw]) => {
       if (Array.isArray(prods)) setProducts(prods);
-      if (cfg?.title) setTitle(cfg.title);
+      setCfg(normalizeNewArrivals(cfgRaw));
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -59,16 +65,23 @@ export default function HomeNewArrivals() {
     });
   };
 
-  // 신상품에 실제 존재하는 카테고리만 탭으로 노출 (등장 순서 유지) — 관리자 분류 변경 자동 반영
-  const newArrivalCats = [
-    ...new Set(products.filter((p) => p.isNew).map((p) => p.category).filter(Boolean)),
-  ];
-  const availableTabs: string[] = ["전체", ...newArrivalCats];
+  // 관리자 "신상품 영역" 설정을 반영해 노출 상품 선정 (수동선택·자동·정렬·카테고리·품절숨김)
+  const pool = selectNewArrivalsPool(products, cfg);
 
-  const newItems = products
-    .filter((p) => p.isNew)
-    .filter((p) => activeTab === "전체" || p.category === activeTab)
-    .slice(0, 10);
+  // 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만. 실제 존재하는 카테고리만 노출
+  const showTabs =
+    cfg.show_category_tabs &&
+    cfg.mode === "auto" &&
+    new Set(pool.map((p) => p.category).filter(Boolean)).size > 1;
+  const availableTabs: string[] = showTabs
+    ? ["전체", ...new Set(pool.map((p) => p.category).filter(Boolean))]
+    : [];
+
+  const tabbed = showTabs && activeTab !== "전체"
+    ? pool.filter((p) => p.category === activeTab)
+    : pool;
+  // 수동 모드는 선택한 상품을 모두 노출, 자동 모드는 설정한 개수만큼
+  const newItems = cfg.mode === "manual" ? tabbed : tabbed.slice(0, cfg.count);
 
   const handlePcScroll = () => setShowLeft((pcRef.current?.scrollLeft ?? 0) > 10);
   const scroll = (dir: "left" | "right") =>
@@ -95,32 +108,34 @@ export default function HomeNewArrivals() {
     );
   }
 
-  if (newItems.length === 0) return null;
+  if (!cfg.is_visible || newItems.length === 0) return null;
 
   return (
     <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
-        <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-5">{title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-5">{cfg.title}</h2>
 
-        {/* 카테고리 탭 */}
-        <div
-          className="flex items-end overflow-x-auto border-b border-gray-200 mb-6"
-          style={{ scrollbarWidth: "none" }}
-        >
-          {availableTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 text-[13px] pb-2.5 px-3 mr-1 whitespace-nowrap transition-colors ${
-                activeTab === tab
-                  ? "text-[#1A2B4A] font-bold border-b-2 border-[#1A2B4A] -mb-px"
-                  : "text-gray-400 hover:text-[#1A2B4A]"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만 */}
+        {availableTabs.length > 0 && (
+          <div
+            className="flex items-end overflow-x-auto border-b border-gray-200 mb-6"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {availableTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-shrink-0 text-[13px] pb-2.5 px-3 mr-1 whitespace-nowrap transition-colors ${
+                  activeTab === tab
+                    ? "text-[#1A2B4A] font-bold border-b-2 border-[#1A2B4A] -mb-px"
+                    : "text-gray-400 hover:text-[#1A2B4A]"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* PC 가로 스크롤 캐러셀 */}
         <div className="hidden md:block relative -mr-[70px]">

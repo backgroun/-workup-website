@@ -39,8 +39,6 @@ export default function AdminStoresPage() {
   const [regionFilter, setRegionFilter] = useState("전체");
   const [typeFilter, setTypeFilter] = useState("전체");
   const [activeFilter, setActiveFilter] = useState<"전체" | "활성" | "비활성">("전체");
-  const [seeding, setSeeding] = useState(false);
-  const [msg, setMsg] = useState("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const load = async () => {
@@ -72,25 +70,6 @@ export default function AdminStoresPage() {
       return true;
     });
   }, [stores, search, regionFilter, typeFilter, activeFilter]);
-
-  const handleSeed = async () => {
-    if (!confirm("data/stores.ts의 154개 기존 매장을 DB에 upsert합니다.\n이미 등록된 매장은 덮어씁니다. 계속할까요?")) return;
-    setSeeding(true);
-    setMsg("");
-    const res = await fetch("/api/admin/stores/import", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ seed: true }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMsg(`✓ ${data.count}개 매장이 등록(또는 업데이트)됐습니다.`);
-      await load();
-    } else {
-      setMsg(`✗ 오류: ${data.error}`);
-    }
-    setSeeding(false);
-  };
 
   // 현재 매장 목록을 Excel로 다운로드 (업로드 템플릿과 동일 컬럼 + ID/정렬순서)
   // 필터가 적용돼 있으면 보이는 목록만, 아니면 전체를 내보낸다.
@@ -186,25 +165,6 @@ export default function AdminStoresPage() {
             </svg>
             Excel 다운로드
           </button>
-          <button
-            onClick={handleSeed}
-            disabled={seeding}
-            className="flex items-center gap-2 px-4 py-2.5 border-2 border-amber-300 text-sm font-semibold text-amber-700 hover:border-amber-500 hover:text-amber-800 transition-colors rounded"
-          >
-            {seeding ? (
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                처리 중...
-              </span>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                기존 매장 154개 불러오기
-              </>
-            )}
-          </button>
           <Link
             href="/admin/stores/new"
             className="flex items-center gap-2 px-5 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243a63] transition-colors rounded"
@@ -217,11 +177,6 @@ export default function AdminStoresPage() {
         </div>
       </div>
 
-      {msg && (
-        <div className={`mb-6 px-6 py-4 rounded-xl text-sm font-medium ${msg.startsWith("✓") ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-red-50 border border-red-200 text-red-700"}`}>
-          {msg}
-        </div>
-      )}
 
       {/* 채용공고 바로가기 */}
       <div className="mb-6 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-5 py-4">
@@ -311,7 +266,7 @@ export default function AdminStoresPage() {
                     {stores.length === 0
                       ? <div>
                           <p className="text-base font-medium mb-2">등록된 매장이 없습니다.</p>
-                          <p className="text-sm">상단의 "기본 데이터 삽입" 버튼으로 기존 매장 데이터를 가져오세요.</p>
+                          <p className="text-sm">"매장 추가" 또는 "Excel 업로드"로 매장을 등록하세요.</p>
                         </div>
                       : "검색 결과가 없습니다."}
                   </td>

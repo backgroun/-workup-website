@@ -248,24 +248,6 @@ export const navGroups: NavGroup[] = [
         ),
       },
       {
-        label: "매장 추가",
-        href: "/admin/stores/new",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-        ),
-      },
-      {
-        label: "Excel 업로드",
-        href: "/admin/stores/import",
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-        ),
-      },
-      {
         label: "채용공고 관리",
         href: "/admin/stores/jobs",
         icon: (
@@ -540,6 +522,23 @@ export default function AdminSidebar() {
   return (
     <aside className="w-72 flex-shrink-0 bg-[#0f172a] min-h-full flex flex-col">
       <nav className="flex-1 py-4 overflow-y-auto">
+        {/* 대시보드 (홈) */}
+        <div className="px-3 mb-2">
+          <Link
+            href="/admin"
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-[14px] font-semibold transition-all ${
+              pathname === "/admin"
+                ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30"
+                : "text-slate-300 hover:text-white hover:bg-white/8"
+            }`}
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            대시보드
+          </Link>
+        </div>
+
         {/* 즐겨찾기 */}
         {favoriteLeaves.length > 0 && (
           <div className="mb-3 px-3">

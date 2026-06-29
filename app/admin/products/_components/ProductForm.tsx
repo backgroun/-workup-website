@@ -29,7 +29,6 @@ const SEASON_OPTIONS: Season[] = ["봄/가을", "여름", "겨울"];
 const FEATURE_TAG_PRESETS = ["냉감", "방수", "방풍", "스트레치", "고내구성", "UV차단", "흡한속건", "경량", "보온", "반사"];
 const JOB_SITE_PRESETS = ["건설", "물류", "정비", "배달", "농업", "서비스", "캠핑"];
 const MAIN_EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
-const DETAIL_BLOCK_TYPES = ["상품 소개", "착용 컷", "기능 설명", "현장 테스트", "사이즈표", "세탁법", "구매 안내"] as const;
 const CLOTHING_SIZE_PRESETS = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
 // 직접 입력 사이즈 빠른 템플릿 (신발·단독사이즈 등) — 클릭 시 해당 사이즈 세트로 교체
 const SIZE_TEMPLATES: { label: string; sizes: string[] }[] = [
@@ -195,8 +194,8 @@ function Field({ label, required, hint, children }: {
 const INPUT_CLS = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded";
 const SELECT_CLS = `${INPUT_CLS} bg-white`;
 
-function SaveBar({ saving, isEdit, onCancel, status, onStatusChange }: {
-  saving: boolean; isEdit?: boolean; onCancel: () => void;
+function SaveBar({ saving, isEdit, onCancel, onPreview, status, onStatusChange }: {
+  saving: boolean; isEdit?: boolean; onCancel: () => void; onPreview: () => void;
   status: string; onStatusChange: (s: string) => void;
 }) {
   return (
@@ -206,6 +205,10 @@ function SaveBar({ saving, isEdit, onCancel, status, onStatusChange }: {
         className="border border-gray-200 px-3 py-2.5 text-sm bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
         {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
+      <button type="button" onClick={onPreview}
+        className="px-5 py-2.5 border border-[#1A2B4A] text-[#1A2B4A] text-sm font-semibold hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+        미리보기
+      </button>
       <button type="submit" disabled={saving}
         className="px-8 py-2.5 bg-[#ff550c] text-white text-sm font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded">
         {saving ? "저장 중..." : isEdit ? "수정 완료" : "제품 추가"}
@@ -233,6 +236,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
   const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
+  const [useSizePrices, setUseSizePrices] = useState((initial?.sizePrices?.length ?? 0) > 0); // 사이즈별 가격 사용 체크
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -282,7 +286,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [relatedCatFilter, setRelatedCatFilter] = useState("");
   const [relatedSearch, setRelatedSearch] = useState("");
   const [relatedModalOpen, setRelatedModalOpen] = useState(false);
-  const [blockMenuOpen, setBlockMenuOpen] = useState(false); // 상세설명 "블록 추가" 드롭다운
   const [uploadingBlocksMulti, setUploadingBlocksMulti] = useState(false); // 상세설명 여러 장 업로드
   const [dragBlockIdx, setDragBlockIdx] = useState<number | null>(null);
   const [dragOverBlockIdx, setDragOverBlockIdx] = useState<number | null>(null);
@@ -702,13 +705,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleDragEnd = () => { setDragSubIdx(null); setDragOverSubIdx(null); };
 
   // ── 상세 설명 블록 ──────────────────────────────────────────────────────────
-  const addBlock = (type: (typeof DETAIL_BLOCK_TYPES)[number] = "상품 소개") => {
-    set("detailBlocks", [
-      ...form.detailBlocks,
-      { id: `block-${Date.now()}`, type, content: "", imageUrl: "" },
-    ]);
-  };
-
   // 착용컷 — 등록된 썸네일(대표·추가 이미지)을 착용컷 블록으로 일괄 추가 (중복 제외)
   const addWornCutsFromThumbnails = () => {
     const existing = new Set(form.detailBlocks.map((b) => b.imageUrl).filter(Boolean));
@@ -731,14 +727,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   const removeBlock = (idx: number) => {
     set("detailBlocks", form.detailBlocks.filter((_, i) => i !== idx));
-  };
-
-  const moveBlock = (idx: number, dir: -1 | 1) => {
-    const next = [...form.detailBlocks];
-    const to = idx + dir;
-    if (to < 0 || to >= next.length) return;
-    [next[idx], next[to]] = [next[to], next[idx]];
-    set("detailBlocks", next);
   };
 
   const handleBlockImgFile = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
@@ -934,19 +922,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   };
 
   // ── 저장 ──────────────────────────────────────────────────────────────────
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(""); setSaving(true);
-
-    if (form.categories.length === 0) {
-      setError("카테고리를 하나 이상 선택해 주세요.");
-      setSaving(false);
-      return;
-    }
-
+  // 폼 → 저장/미리보기 공용 product 객체 구성
+  const buildPayload = (): Partial<Product> & { id: string; categories?: CategoryEntry[] } => {
     const id = form.id || slugify(form.name) || `product-${Date.now()}`;
-    const primaryCat = form.categories[0];
-
-    const payload: Partial<Product> & { id: string; categories?: CategoryEntry[] } = {
+    const primaryCat = form.categories[0] ?? { main: "현장", sub: "상의" };
+    return {
       id,
       sku: form.sku || undefined,
       brand: form.brand || undefined,
@@ -988,6 +968,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       metaTitle: form.metaTitle || undefined,
       metaDesc: form.metaDesc || undefined,
     };
+  };
+
+  // 미리보기 — 현재 입력값을 sessionStorage에 담아 새 탭에서 상세페이지로 렌더
+  const handlePreview = () => {
+    try {
+      sessionStorage.setItem("wu-product-preview", JSON.stringify(buildPayload()));
+      window.open("/products/preview", "_blank");
+    } catch { alert("미리보기를 열 수 없습니다. 잠시 후 다시 시도해 주세요."); }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setError("");
+    if (form.categories.length === 0) {
+      setError("카테고리를 하나 이상 선택해 주세요.");
+      return;
+    }
+    setSaving(true);
+    const payload = buildPayload();
 
     const url = isEdit ? `/api/admin/products/${initial!.id}` : "/api/admin/products";
     try {
@@ -1023,7 +1021,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       {/* ── 상단 저장 버튼 ── */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <p className="text-sm text-gray-500">{isEdit ? "상품 수정 중" : "새 상품 등록"}</p>
-        <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} status={form.status} onStatusChange={(s) => set("status", s)} />
+        <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} onPreview={handlePreview} status={form.status} onStatusChange={(s) => set("status", s)} />
       </div>
 
       <div className="grid grid-cols-2 gap-6 items-start">
@@ -1379,7 +1377,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 하단 저장 버튼 ── */}
           <div className="flex gap-3 pb-8">
-            <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} status={form.status} onStatusChange={(s) => set("status", s)} />
+            <SaveBar saving={saving} isEdit={isEdit} onCancel={() => router.back()} onPreview={handlePreview} status={form.status} onStatusChange={(s) => set("status", s)} />
           </div>
 
         </div>{/* end left col */}
@@ -1822,23 +1820,32 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               )}
             </div>
 
-            {/* 사이즈별 가격 (선택) */}
+            {/* 사이즈별 가격 — 체크 시에만 입력 */}
             {form.sizes.length > 0 && (
               <div className="mb-5 pt-4 border-t border-gray-100">
-                <label className="block text-xs font-medium text-gray-500 mb-1">사이즈별 가격 (선택)</label>
-                <p className="text-[11px] text-gray-400 mb-2">사이즈마다 가격이 다르면 입력하세요. 비워두면 기본 판매가{form.price ? ` (${form.price}원)` : ""}가 적용됩니다.</p>
-                <div className="flex flex-wrap gap-2">
-                  {form.sizes.map((size) => (
-                    <div key={size} className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-[#1A2B4A] min-w-[36px] text-center">{size}</span>
-                      <input type="text" inputMode="numeric" value={sizePriceOf(size)}
-                        onChange={(e) => setSizePrice(size, e.target.value)}
-                        placeholder={form.price || "기본가"}
-                        className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#1A2B4A]" />
-                      <span className="text-xs text-gray-400">원</span>
+                <label className="flex items-center gap-2 cursor-pointer w-fit">
+                  <input type="checkbox" checked={useSizePrices}
+                    onChange={(e) => { setUseSizePrices(e.target.checked); if (!e.target.checked) set("sizePrices", []); }}
+                    className="accent-[#1A2B4A] w-4 h-4" />
+                  <span className="text-xs font-medium text-[#1A2B4A]">사이즈별 가격 사용 <span className="text-gray-400 font-normal">(사이즈마다 다른 가격)</span></span>
+                </label>
+                {useSizePrices && (
+                  <div className="mt-2 pl-6">
+                    <p className="text-[11px] text-gray-400 mb-2">비워둔 사이즈는 기본 판매가{form.price ? ` (${form.price})` : ""}가 적용됩니다.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {form.sizes.map((size) => (
+                        <div key={size} className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-1">
+                          <span className="text-xs font-semibold text-[#1A2B4A] min-w-[36px] text-center">{size}</span>
+                          <input type="text" inputMode="numeric" value={sizePriceOf(size)}
+                            onChange={(e) => setSizePrice(size, e.target.value)}
+                            placeholder={form.price || "기본가"}
+                            className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#1A2B4A]" />
+                          <span className="text-xs text-gray-400">원</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -2052,103 +2059,46 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
                   + 착용컷 (썸네일 일괄)
                 </button>
-                <button type="button" onClick={() => addBlock("상품 소개")}
-                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
-                  + 상품 소개
-                </button>
-                {/* 그 외 유형 — 드롭다운 */}
-                <div className="relative">
-                  <button type="button" onClick={() => setBlockMenuOpen((v) => !v)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[#1A2B4A] text-white hover:bg-[#243d5e] transition-colors rounded">
-                    블록 추가
-                    <svg className={`w-3 h-3 transition-transform ${blockMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {blockMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setBlockMenuOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 shadow-lg rounded min-w-[140px] py-1">
-                        <p className="px-3 pb-1 mb-1 text-[11px] text-gray-400 border-b border-gray-100">기타 블록 유형</p>
-                        {DETAIL_BLOCK_TYPES.filter((t) => t !== "착용 컷" && t !== "상품 소개").map((t) => (
-                          <button key={t} type="button"
-                            onClick={() => { addBlock(t); setBlockMenuOpen(false); }}
-                            className="block w-full text-left px-3 py-2 text-[13px] text-gray-700 hover:bg-gray-50">
-                            + {t}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </div>
-            {form.detailBlocks.length === 0 && (
-              <p className="text-xs text-gray-400 py-6 text-center border border-dashed border-gray-200 rounded">
-                블록을 추가해 상세 설명을 구성하세요.
-              </p>
-            )}
-            <div className="space-y-3">
+            <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#1A2B4A]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {form.detailBlocks.map((block, idx) => (
-                <div key={block.id}
+                <div key={block.id} draggable
+                  onDragStart={() => setDragBlockIdx(idx)}
                   onDragOver={(e) => onBlockDragOver(e, idx)} onDrop={(e) => onBlockDrop(e, idx)} onDragEnd={onBlockDragEnd}
-                  className={`border p-4 space-y-3 rounded-lg transition-all ${
+                  title="드래그해 순서 변경"
+                  className={`relative aspect-[3/4] rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all ${
                     dragOverBlockIdx === idx && dragBlockIdx !== null && dragBlockIdx !== idx
-                      ? "border-violet-400 ring-2 ring-violet-300 bg-violet-50"
-                      : dragBlockIdx === idx ? "border-dashed border-gray-400 opacity-50 bg-gray-50" : "border-gray-200 bg-gray-50"
+                      ? "border-violet-400 ring-2 ring-violet-300"
+                      : dragBlockIdx === idx ? "border-dashed border-gray-400 opacity-50" : "border-gray-200"
                   }`}>
-                  <div className="flex items-center gap-2">
-                    <span draggable onDragStart={() => setDragBlockIdx(idx)}
-                      title="드래그해 순서 변경"
-                      className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-[#1A2B4A] select-none px-1 text-base leading-none">⠿</span>
-                    <span className="text-xs text-gray-400 font-mono w-5 text-center">{idx + 1}</span>
-                    <select value={block.type} onChange={(e) => updateBlock(idx, "type", e.target.value)}
-                      className="border border-gray-200 px-2 py-1.5 text-xs bg-white focus:outline-none focus:border-[#1A2B4A] rounded">
-                      {DETAIL_BLOCK_TYPES.map((t) => <option key={t}>{t}</option>)}
-                    </select>
-                    <div className="ml-auto flex items-center gap-1">
-                      <button type="button" onClick={() => moveBlock(idx, -1)} disabled={idx === 0}
-                        className="px-2 py-1 text-xs border border-gray-200 bg-white text-gray-500 hover:bg-gray-100 disabled:opacity-30 rounded">↑</button>
-                      <button type="button" onClick={() => moveBlock(idx, 1)} disabled={idx === form.detailBlocks.length - 1}
-                        className="px-2 py-1 text-xs border border-gray-200 bg-white text-gray-500 hover:bg-gray-100 disabled:opacity-30 rounded">↓</button>
-                      <button type="button" onClick={() => removeBlock(idx)}
-                        className="px-2 py-1 text-xs border border-red-200 bg-white text-red-400 hover:bg-red-50 rounded">삭제</button>
+                  {block.imageUrl ? (
+                    <Image src={block.imageUrl} alt={`상세 ${idx + 1}`} fill className="object-cover pointer-events-none" sizes="160px" />
+                  ) : uploadingBlockIdx === idx ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <span className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
                     </div>
-                  </div>
-                  <textarea value={block.content} onChange={(e) => updateBlock(idx, "content", e.target.value)}
-                    rows={3} placeholder="내용을 입력하세요..."
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none bg-white rounded" />
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-16 h-16 border border-gray-200 flex-shrink-0 overflow-hidden rounded">
-                      {block.imageUrl ? (
-                        <>
-                          <Image src={block.imageUrl} alt="블록 이미지" fill className="object-cover" sizes="64px" />
-                          <button type="button" onClick={() => updateBlock(idx, "imageUrl", "")}
-                            className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center hover:bg-red-600 z-10 rounded-full">×</button>
-                        </>
-                      ) : uploadingBlockIdx === idx ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                          <span className="w-4 h-4 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
-                        </div>
-                      ) : (
-                        <label htmlFor={`block-img-r-${idx}`}
-                          className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-                          <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                          </svg>
-                        </label>
-                      )}
-                      <input ref={(el) => { blockImgRefs.current[idx] = el; }} id={`block-img-r-${idx}`}
-                        type="file" accept="image/*" onChange={(e) => handleBlockImgFile(e, idx)} className="hidden" />
-                    </div>
-                    <div className="flex-1">
-                      <input type="url" value={block.imageUrl} onChange={(e) => updateBlock(idx, "imageUrl", e.target.value)}
-                        placeholder="이미지 URL (선택)"
-                        className="w-full border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-[#1A2B4A] rounded" />
-                    </div>
-                  </div>
+                  ) : (
+                    <label htmlFor={`block-img-r-${idx}`}
+                      className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-gray-50 text-gray-300 hover:text-[#1A2B4A]">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                      <span className="text-[10px] mt-1">이미지 업로드</span>
+                    </label>
+                  )}
+                  <input ref={(el) => { blockImgRefs.current[idx] = el; }} id={`block-img-r-${idx}`}
+                    type="file" accept="image/*" onChange={(e) => handleBlockImgFile(e, idx)} className="hidden" />
+                  <span className="absolute top-1 left-1 bg-black/55 text-white text-[10px] px-1.5 py-0.5 rounded leading-none">{idx + 1}</span>
+                  <button type="button" onClick={() => removeBlock(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[11px] flex items-center justify-center hover:bg-red-600 rounded-full leading-none">×</button>
                 </div>
               ))}
+              {/* 이미지 추가 카드 (여러 장 선택) */}
+              <label className="aspect-[3/4] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-[#1A2B4A] hover:border-[#1A2B4A] transition-colors">
+                <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                <span className="text-[10px] mt-1">이미지 추가</span>
+              </label>
             </div>
           </section>
 

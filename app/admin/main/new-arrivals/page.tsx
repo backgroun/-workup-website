@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { mainCategories as staticMainCategories, subCategoriesByMain as staticSubByMain, type Product } from "@/data/products";
+import { DEFAULT_NEW_ARRIVALS as DEFAULT, type NewArrivalsConfig } from "@/lib/new-arrivals";
 
 // 카테고리 분류 (관리자 DB 설정과 동일한 형태)
 type CatItem = { name: string; subs: string[] };
@@ -8,36 +9,6 @@ const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({ name, subs:
 
 type SortBy = "latest" | "sales" | "recommended";
 type Mode = "auto" | "manual";
-
-type NewArrivalsConfig = {
-  title: string;
-  is_visible: boolean;
-  mode: Mode;
-  sort_by: SortBy;
-  count: number;
-  category_filter: string;
-  manual_ids: string[];
-  hide_sold_out: boolean;
-  show_discount_badge: boolean;
-  show_category_tabs: boolean;
-  new_product_days: number;
-  view_all_link: string;
-};
-
-const DEFAULT: NewArrivalsConfig = {
-  title: "신상품이 입고 되었어요",
-  is_visible: true,
-  mode: "auto",
-  sort_by: "latest",
-  count: 10,
-  category_filter: "전체",
-  manual_ids: [],
-  hide_sold_out: true,
-  show_discount_badge: false,
-  show_category_tabs: true,
-  new_product_days: 60,
-  view_all_link: "/products?new=true",
-};
 
 const SECTION = "new_arrivals";
 

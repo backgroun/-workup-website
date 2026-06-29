@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { getAdminMember } from "@/lib/admin-auth";
@@ -14,15 +15,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* 상단 헤더 */}
       <header className="bg-[#0f172a] h-16 flex items-center justify-between px-8 flex-shrink-0 z-20 border-b border-white/5">
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-3">
+          <Link href="/admin" className="flex items-center gap-3 group" title="대시보드로 이동">
             <div className="w-9 h-9 bg-[#1d4ed8] rounded-lg flex items-center justify-center">
               <span className="text-white text-[13px] font-black tracking-tight">WU</span>
             </div>
             <div>
-              <p className="text-white font-bold text-base tracking-wide leading-none">WORKUP</p>
+              <p className="text-white font-bold text-base tracking-wide leading-none group-hover:text-blue-300 transition-colors">WORKUP</p>
               <p className="text-slate-500 text-[11px] mt-0.5">Admin Dashboard</p>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="flex items-center gap-6">
           <span className="text-slate-400 text-sm hidden sm:inline">

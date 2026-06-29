@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import type { Product } from "@/data/products";
@@ -13,6 +13,8 @@ const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({ name, subs:
 const COLUMNS = [
   { key: "name",          label: "상품명",         required: true },
   { key: "sku",           label: "상품코드",        required: true },
+  { key: "sizes",         label: "사이즈(;구분)",   required: true },
+  { key: "colors",        label: "색상(;구분)",     required: true },
   { key: "brand",         label: "브랜드",          required: true },
   { key: "category",      label: "대카테고리",       required: true },
   { key: "subCategory",   label: "중카테고리",       required: true },
@@ -22,8 +24,18 @@ const COLUMNS = [
   { key: "consumerPrice", label: "소비자가",        required: false },
   { key: "supplyPrice",   label: "공급가",          required: false },
   { key: "status",        label: "판매상태",        required: false },
-  { key: "sizes",         label: "사이즈(;구분)",   required: false },
 ];
+
+// 색상명 → hex (제품 폼 프리셋과 동일). 미지정 색은 기본 네이비.
+const COLOR_HEX: Record<string, string> = {
+  "블랙": "#1C1C1C", "화이트": "#F0F0F0", "네이비": "#1A2B4A",
+  "그레이": "#7A7A7A", "베이지": "#C9B99A", "카키": "#4A5240",
+};
+const COLOR_PRESET_NAMES = Object.keys(COLOR_HEX);
+function parseColors(val: unknown): { name: string; hex: string }[] {
+  return String(val ?? "").split(";").map((s) => s.trim()).filter(Boolean)
+    .map((name) => ({ name, hex: COLOR_HEX[name] ?? "#1A2B4A" }));
+}
 
 function slugify(name: string) {
   return name
@@ -47,6 +59,7 @@ function fmtComma(v: string): string {
 // 필수값 검증 — 상품명·상품코드·브랜드·대/중카테고리·판매가. 하나라도 비면 가져오기 차단.
 function computeError(r: {
   name?: string; sku?: string; brand?: string; price?: string; category?: string; subCategory?: string;
+  sizes?: string[]; colors?: { name: string }[];
 }): string | undefined {
   const miss: string[] = [];
   if (!r.name?.trim()) miss.push("상품명");
@@ -55,6 +68,8 @@ function computeError(r: {
   if (!r.category?.trim()) miss.push("대카테고리");
   if (!r.subCategory?.trim()) miss.push("중카테고리");
   if (!r.price?.trim()) miss.push("판매가");
+  if (!r.sizes?.length) miss.push("사이즈");
+  if (!r.colors?.length) miss.push("색상");
   return miss.length ? `필수 미입력: ${miss.join(", ")}` : undefined;
 }
 
@@ -77,12 +92,14 @@ function parseRow(
   const supplyPrice = fmtComma(String(row["공급가"] ?? row["supplyPrice"] ?? ""));
   const category = String(row["대카테고리"] ?? row["category"] ?? defaultMain).trim() as Product["category"];
   const subCategory = String(row["중카테고리"] ?? row["subCategory"] ?? defaultSub).trim() as Product["subCategory"];
+  const sizes = toArr(row["사이즈(;구분)"] ?? row["sizes"]);
+  const colors = parseColors(row["색상(;구분)"] ?? row["colors"]);
 
   const id = slugify(name) || `product-${Date.now()}-${idx}`;
 
   return {
     _row: idx + 2,
-    _error: computeError({ name, sku, brand, price, category, subCategory }),
+    _error: computeError({ name, sku, brand, price, category, subCategory, sizes, colors }),
     id,
     name,
     sku: sku || undefined,
@@ -95,35 +112,125 @@ function parseRow(
     consumerPrice: consumerPrice || undefined,
     supplyPrice: supplyPrice || undefined,
     status: (String(row["판매상태"] ?? row["status"] ?? "판매중").trim() || "판매중") as Product["status"],
-    sizes: toArr(row["사이즈(;구분)"] ?? row["sizes"]),
+    sizes,
+    colors,
     line: "SITE",
     jobTypes: [],
     bg: "bg-[#1A2B4A]",
-    colors: [],
   };
 }
 
-function downloadTemplate() {
-  const header = COLUMNS.map((c) => c.label);
-  const sample = [
-    "스트레치 카고 팬츠",
-    "WU-S001",
-    "WORKUP",
-    "현장",
-    "하의",
-    "(주)워크업코리아",
-    "대한민국",
-    "39,000원",
-    "45,000원",
-    "25,000원",
-    "판매중",
-    "S;M;L;XL;2XL",
+// exceljs로 스타일 템플릿 생성: 필수열 색상 + 카테고리 드롭다운(선택+입력) + 가격 콤마 서식
+async function downloadTemplate(fallbackCats: CatItem[]) {
+  // 다운로드 시점에 항상 최신 카테고리를 새로 가져온다(상태 타이밍/캐시로 옛 카테고리가 들어가는 문제 방지)
+  let cats = fallbackCats;
+  try {
+    const d = await fetch("/api/admin/site-settings/categories", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null));
+    if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) cats = d.categories as CatItem[];
+  } catch { /* 실패 시 전달받은 값 사용 */ }
+  const ExcelJS = (await import("exceljs")).default;
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("상품목록");
+
+  // 컬럼 위치(키 기반 — 순서가 바뀌어도 안전)·엑셀 열 문자
+  const colNum = (key: string) => COLUMNS.findIndex((c) => c.key === key) + 1; // 1-based
+  const colLetter = (n: number) => { let s = ""; let x = n; while (x > 0) { const m = (x - 1) % 26; s = String.fromCharCode(65 + m) + s; x = Math.floor((x - 1) / 26); } return s; };
+  const validName = (s: string) => /^[가-힣A-Za-z_][가-힣A-Za-z0-9_]*$/.test(s);
+
+  // 드롭다운 참조용 숨김 시트: A열=대분류, 대분류별 subs는 각 열에 + 이름정의(종속 드롭다운용)
+  const opt = wb.addWorksheet("목록");
+  const mainList = cats.map((c) => c.name);
+  mainList.forEach((m, i) => { opt.getCell(i + 1, 1).value = m; });
+  cats.forEach((c, ci) => {
+    const col = ci + 2; // B, C, ...
+    c.subs.forEach((s, si) => { opt.getCell(si + 1, col).value = s; });
+    // 대분류명이 엑셀 이름 규칙에 맞고 subs가 있으면 이름정의 → INDIRECT 종속 드롭다운
+    if (validName(c.name) && c.subs.length > 0) {
+      const L = colLetter(col);
+      try { wb.definedNames.add(`목록!$${L}$1:$${L}$${c.subs.length}`, c.name); } catch { /* 이름 충돌 무시 */ }
+    }
+  });
+  opt.state = "veryHidden";
+
+  const c0 = cats[0];
+  const sampleByKey: Record<string, string | number> = {
+    name: "스트레치 카고 팬츠", sku: "WU-S001",
+    sizes: "S;M;L;XL;2XL", colors: "블랙;화이트;네이비",
+    brand: "WORKUP", category: c0?.name ?? "현장", subCategory: c0?.subs[0] ?? "하의",
+    manufacturer: "(주)워크업코리아", origin: "대한민국",
+    price: 39000, consumerPrice: 45000, supplyPrice: 25000, status: "판매중",
+  };
+  const totalCols = COLUMNS.length;
+  const MAX_ROWS = 200;
+
+  // 상단 안내 문구 (빨간색, 컬럼 전체 병합)
+  const notes = [
+    "● 노란색 음영 칸은 필수 입력 항목입니다.",
+    "● 가격(판매가·소비자가·공급가)은 숫자만 입력하면 콤마가 자동 적용됩니다.",
+    "● 사이즈별로 가격이 다른 경우: 판매가에 기본가를 입력한 뒤, 업로드 후 미리보기에서 '사이즈별가'를 체크해 사이즈마다 수동 입력하세요.",
+    "● 대카테고리를 선택하면 중카테고리에는 해당 하위 분류만 표시됩니다.",
   ];
-  const ws = XLSX.utils.aoa_to_sheet([header, sample]);
-  ws["!cols"] = COLUMNS.map((_, i) => ({ wch: i === 0 ? 24 : 16 }));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "상품목록");
-  XLSX.writeFile(wb, "workup_products_template.xlsx");
+  notes.forEach((text, i) => {
+    const r = i + 1;
+    ws.mergeCells(r, 1, r, totalCols);
+    const cell = ws.getCell(r, 1);
+    cell.value = text;
+    cell.font = { color: { argb: "FFD6336C" }, bold: i === 0, size: 11 };
+    cell.alignment = { vertical: "middle" };
+  });
+
+  const HEADER_ROW = notes.length + 2; // 안내문 아래 한 줄 띄우고 헤더
+  const FIRST_DATA = HEADER_ROW + 1;
+  const LAST_DATA = HEADER_ROW + MAX_ROWS;
+
+  // 헤더 + 샘플
+  COLUMNS.forEach((c, i) => { ws.getCell(HEADER_ROW, i + 1).value = c.label; });
+  COLUMNS.forEach((c, i) => { ws.getCell(FIRST_DATA, i + 1).value = sampleByKey[c.key] ?? ""; });
+
+  const thin = { style: "thin" as const, color: { argb: "FFCED4DA" } };
+  const cellBorder = { top: thin, left: thin, bottom: thin, right: thin };
+
+  COLUMNS.forEach((col, i) => {
+    const ci = i + 1;
+    ws.getColumn(ci).width = i === 0 ? 24 : 14;
+    const h = ws.getCell(HEADER_ROW, ci);
+    h.font = { bold: true, color: { argb: "FF1A2B4A" } };
+    h.alignment = { vertical: "middle", horizontal: "center" };
+    h.fill = { type: "pattern", pattern: "solid", fgColor: { argb: col.required ? "FFFFD666" : "FFEDF0F3" } };
+    h.border = cellBorder;
+    // 데이터 영역 — 입력 칸에 테두리 + 필수 컬럼 음영
+    for (let r = FIRST_DATA; r <= LAST_DATA; r++) {
+      const dc = ws.getCell(r, ci);
+      dc.border = cellBorder;
+      if (col.required) dc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF7E0" } };
+    }
+  });
+
+  // 데이터 유효성: 대카테고리=대분류 목록 / 중카테고리=INDIRECT(대카테고리) 종속 / 가격=콤마
+  const daeCol = colNum("category");
+  const jungCol = colNum("subCategory");
+  const daeL = colLetter(daeCol);
+  for (let r = FIRST_DATA; r <= LAST_DATA; r++) {
+    ws.getCell(r, daeCol).dataValidation = { type: "list", allowBlank: true, showErrorMessage: false, formulae: [`목록!$A$1:$A$${Math.max(mainList.length, 1)}`] };
+    ws.getCell(r, jungCol).dataValidation = { type: "list", allowBlank: true, showErrorMessage: false, formulae: [`INDIRECT($${daeL}${r})`] };
+    ws.getCell(r, colNum("price")).numFmt = "#,##0";
+    ws.getCell(r, colNum("consumerPrice")).numFmt = "#,##0";
+    ws.getCell(r, colNum("supplyPrice")).numFmt = "#,##0";
+  }
+  ws.getRow(HEADER_ROW).height = 22;
+  // 눈금선 제거 + 헤더까지 고정
+  ws.views = [{ showGridLines: false, state: "frozen", ySplit: HEADER_ROW }];
+
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf as ArrayBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "workup_products_template.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 type ParsedRow = Partial<Product> & { id: string; _row: number; _error?: string };
@@ -159,8 +266,22 @@ export default function ProductImportPage() {
       const data = new Uint8Array(ev.target!.result as ArrayBuffer);
       const wb = XLSX.read(data, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
-      setRows(json.map((r, i) => parseRow(r, i, cats)));
+      // 시트를 2차원 배열로 읽어 "상품명"이 있는 실제 헤더 행을 찾는다(상단 안내문구 줄을 건너뜀)
+      const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "" });
+      const headerIdx = aoa.findIndex((r) => Array.isArray(r) && r.some((c) => String(c).trim() === "상품명"));
+      if (headerIdx < 0) {
+        alert("헤더(상품명 등)를 찾을 수 없습니다. 템플릿을 다운로드해 그대로 작성·업로드해 주세요.");
+        return;
+      }
+      const headers = (aoa[headerIdx] as unknown[]).map((c) => String(c).trim());
+      const dataRows = aoa.slice(headerIdx + 1).filter((r) => Array.isArray(r) && r.some((c) => String(c).trim()));
+      const json = dataRows.map((r) => {
+        const arr = r as unknown[];
+        const obj: Record<string, unknown> = {};
+        headers.forEach((h, i) => { if (h) obj[h] = arr[i] ?? ""; });
+        return obj;
+      });
+      setRows(json.map((r, i) => parseRow(r, headerIdx + i, cats)));
     };
     reader.readAsArrayBuffer(file);
     if (fileRef.current) fileRef.current.value = "";
@@ -184,6 +305,25 @@ export default function ProductImportPage() {
       (val ?? "").trim() ? "border-amber-200 bg-amber-50 focus:border-[#1A2B4A]" : "border-red-300 bg-red-50 focus:border-red-400"
     }`;
   const optCls = "w-full border border-gray-200 rounded px-2 py-1 text-xs bg-white focus:outline-none focus:border-[#1A2B4A]";
+
+  // 사이즈별 가격 — 체크 시 행 펼침. 끄면 입력값 초기화.
+  const [sizePriceOpen, setSizePriceOpen] = useState<Set<number>>(new Set());
+  const toggleSizePrice = (rowNum: number, on: boolean) => {
+    setSizePriceOpen((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(rowNum); else next.delete(rowNum);
+      return next;
+    });
+    if (!on) setRows((prev) => prev.map((r) => (r._row === rowNum ? { ...r, sizePrices: [] } : r)));
+  };
+  const setRowSizePrice = (rowNum: number, size: string, raw: string) => {
+    const price = fmtComma(raw);
+    setRows((prev) => prev.map((r) => {
+      if (r._row !== rowNum) return r;
+      const others = (r.sizePrices ?? []).filter((sp) => sp.size !== size);
+      return { ...r, sizePrices: price ? [...others, { size, price }] : others };
+    }));
+  };
 
   const handleImport = async () => {
     if (validRows.length === 0) return;
@@ -233,7 +373,7 @@ export default function ProductImportPage() {
           <p className="text-base text-gray-400 mt-1">엑셀 파일로 여러 제품을 한 번에 등록하거나 수정합니다.</p>
         </div>
         <button
-          onClick={downloadTemplate}
+          onClick={() => { downloadTemplate(cats).catch(() => alert("템플릿 생성 중 오류가 발생했습니다.")); }}
           className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-200 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors rounded"
         >
           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -304,6 +444,8 @@ export default function ProductImportPage() {
             </div>
             {/* 카테고리 드롭다운+입력용 datalist (현재 등록 카테고리) */}
             <datalist id="imp-cat-main">{cats.map((c) => <option key={c.name} value={c.name} />)}</datalist>
+            <datalist id="imp-colors">{COLOR_PRESET_NAMES.map((c) => <option key={c} value={c} />)}</datalist>
+            <datalist id="imp-sizes">{["S", "M", "L", "XL", "2XL", "3XL", "4XL"].map((s) => <option key={s} value={s} />)}</datalist>
             {cats.map((c) => (
               <datalist key={c.name} id={`imp-cat-sub-${c.name}`}>{c.subs.map((s) => <option key={s} value={s} />)}</datalist>
             ))}
@@ -315,14 +457,15 @@ export default function ProductImportPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    {["행", "상태", "상품명*", "상품코드*", "브랜드*", "대분류*", "중분류*", "판매가*", "소비자가", "공급가", "오류"].map((h) => (
+                    {["행", "상태", "상품명*", "상품코드*", "사이즈*", "색상*", "브랜드*", "대분류*", "중분류*", "판매가*", "소비자가", "공급가", "사이즈별가", "오류"].map((h) => (
                       <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {rows.slice(0, 50).map((row) => (
-                    <tr key={row._row} className={row._error ? "bg-red-50/40" : "hover:bg-gray-50"}>
+                    <Fragment key={row._row}>
+                    <tr className={row._error ? "bg-red-50/40" : "hover:bg-gray-50"}>
                       <td className="px-3 py-2 text-gray-400 text-xs">{row._row}</td>
                       <td className="px-3 py-2">
                         {row._error ? (
@@ -336,6 +479,16 @@ export default function ProductImportPage() {
                       </td>
                       <td className="px-2 py-2 min-w-[110px]">
                         <input value={row.sku ?? ""} onChange={(e) => updateRow(row._row, { sku: e.target.value })} className={reqCls(row.sku)} />
+                      </td>
+                      <td className="px-2 py-2 min-w-[120px]">
+                        <input list="imp-sizes" value={(row.sizes ?? []).join(";")}
+                          onChange={(e) => updateRow(row._row, { sizes: toArr(e.target.value) })}
+                          className={reqCls((row.sizes ?? []).join(";"))} placeholder="S;M;L;XL" />
+                      </td>
+                      <td className="px-2 py-2 min-w-[130px]">
+                        <input list="imp-colors" value={(row.colors ?? []).map((c) => c.name).join(";")}
+                          onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value) })}
+                          className={reqCls((row.colors ?? []).map((c) => c.name).join(";"))} placeholder="블랙;화이트" />
                       </td>
                       <td className="px-2 py-2 min-w-[110px]">
                         <input value={row.brand ?? ""} onChange={(e) => updateRow(row._row, { brand: e.target.value })} className={reqCls(row.brand)} />
@@ -359,8 +512,38 @@ export default function ProductImportPage() {
                       <td className="px-2 py-2 min-w-[100px]">
                         <input inputMode="numeric" value={row.supplyPrice ?? ""} onChange={(e) => updateRow(row._row, { supplyPrice: fmtComma(e.target.value) })} className={optCls} />
                       </td>
+                      <td className="px-3 py-2 text-center">
+                        <input type="checkbox" checked={sizePriceOpen.has(row._row)}
+                          onChange={(e) => toggleSizePrice(row._row, e.target.checked)}
+                          className="w-4 h-4 accent-[#1A2B4A] cursor-pointer" title="사이즈별 가격 입력" />
+                      </td>
                       <td className="px-3 py-2 text-[11px] text-red-500 min-w-[140px]">{row._error || ""}</td>
                     </tr>
+                    {sizePriceOpen.has(row._row) && (
+                      <tr className="bg-amber-50/50">
+                        <td colSpan={14} className="px-4 py-3">
+                          <div className="flex flex-wrap gap-3 items-center">
+                            <span className="text-xs font-semibold text-[#1A2B4A]">사이즈별 가격</span>
+                            {(row.sizes ?? []).length === 0 ? (
+                              <span className="text-xs text-gray-400">먼저 사이즈를 입력하세요.</span>
+                            ) : (
+                              (row.sizes ?? []).map((sz) => (
+                                <label key={sz} className="flex items-center gap-1 text-xs">
+                                  <span className="font-semibold text-[#1A2B4A] min-w-[34px] text-center">{sz}</span>
+                                  <input inputMode="numeric"
+                                    value={row.sizePrices?.find((sp) => sp.size === sz)?.price ?? ""}
+                                    onChange={(e) => setRowSizePrice(row._row, sz, e.target.value)}
+                                    placeholder={row.price || "기본가"}
+                                    className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#1A2B4A]" />
+                                </label>
+                              ))
+                            )}
+                            <span className="text-[11px] text-gray-400">· 비운 사이즈는 기본 판매가 적용</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -412,6 +595,8 @@ export default function ProductImportPage() {
               {[
                 { label: "상품명",         desc: "제품 이름",            req: true,  ex: "스트레치 카고 팬츠" },
                 { label: "상품코드",        desc: "SKU 코드 (필수)",      req: true,  ex: "WU-S001" },
+                { label: "사이즈(;구분)",   desc: "세미콜론으로 여러 사이즈 (필수)",   req: true, ex: "S;M;L;XL;2XL" },
+                { label: "색상(;구분)",     desc: `세미콜론으로 여러 색상 (${COLOR_PRESET_NAMES.join("·")}) (필수)`, req: true, ex: "블랙;화이트;네이비" },
                 { label: "브랜드",          desc: "브랜드명 (목록에 없으면 자동 생성)", req: true, ex: "WORKUP" },
                 { label: "대카테고리",       desc: `현재 등록: ${cats.map((c) => c.name).join(" / ") || "-"} (미리보기에서 선택/입력)`, req: true, ex: cats[0]?.name ?? "현장" },
                 { label: "중카테고리",       desc: "대분류의 하위 — 미리보기에서 드롭다운 선택 또는 직접 입력", req: true, ex: cats[0]?.subs[0] ?? "하의" },
@@ -419,7 +604,7 @@ export default function ProductImportPage() {
                 { label: "소비자가",         desc: "소비자가",             req: false, ex: "45,000원" },
                 { label: "공급가",          desc: "공급가",               req: false, ex: "25,000원" },
                 { label: "판매상태",         desc: "판매중/품절/판매중지/예약판매/진열대기", req: false, ex: "판매중" },
-                { label: "사이즈(;구분)",   desc: "세미콜론으로 여러 사이즈",   req: false, ex: "S;M;L;XL;2XL" },
+                { label: "사이즈별 가격",   desc: "엑셀엔 없음 — 업로드 후 미리보기에서 '사이즈별가' 체크 시 사이즈마다 입력", req: false, ex: "체크 후 입력" },
               ].map((col) => (
                 <tr key={col.label} className="hover:bg-gray-50">
                   <td className="px-5 py-3.5 font-mono text-sm text-[#1A2B4A] font-semibold">{col.label}</td>

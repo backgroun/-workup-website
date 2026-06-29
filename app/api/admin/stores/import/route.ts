@@ -1,48 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
-import { stores as staticStores } from "@/data/stores";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
 
-// POST /api/admin/stores/import — Excel 파싱 결과(배열)를 upsert
+// POST /api/admin/stores/import — Excel 파싱 결과(배열)를 신규 insert / ID 기준 수정(upsert)
 export async function POST(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
 
-  // seed=true 이면 data/stores.ts 정적 데이터를 upsert (중복 방지)
-  if (body.seed === true) {
-    const supabase = createAdminClient();
-    const rows = staticStores.map((s, i) => ({
-      id: s.id,
-      name: s.name,
-      region: extractRegion(s.address),
-      address: s.address,
-      lat: s.lat ?? null,
-      lng: s.lng ?? null,
-      hours: s.hours ?? "",
-      phone: s.phone ?? "",
-      description: "",
-      image_urls: [],
-      brands: [],
-      parking: false,
-      is_active: true,
-      store_type: inferType(s.name),
-      kakao_channel_url: "",
-      store_url: "",
-      sort_order: i + 1,
-    }));
-    const { error } = await supabase.from("stores").upsert(rows, { onConflict: "id" });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    await logAudit({
-      action: "create",
-      resource: "stores",
-      resourceLabel: "매장",
-      summary: `매장 ${rows.length}건 엑셀 업로드`,
-    });
-    return NextResponse.json({ ok: true, count: rows.length });
-  }
-
-  // 일반 Excel 업로드
+  // Excel 업로드
   const rows = Array.isArray(body) ? body : [];
   if (rows.length === 0) return NextResponse.json({ error: "데이터가 없습니다." }, { status: 400 });
 
@@ -105,10 +71,4 @@ function extractRegion(address: string): string {
   if (r.startsWith("경남") || r.startsWith("경상남")) return "경남";
   if (r.startsWith("제주")) return "제주";
   return r;
-}
-
-function inferType(name: string): string {
-  if (name.includes("모다아울렛") || name.includes("아울렛")) return "아울렛";
-  if (name.includes("직영")) return "직영점";
-  return "대리점";
 }
