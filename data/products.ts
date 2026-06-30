@@ -12,6 +12,7 @@ export type DetailBlock = {
 // 사이즈 및 소재 탭 — 이미지 등록 또는 행·열 표 직접 생성
 export type SizeGuide = {
   mode: "image" | "table";
+  guideImage?: string;                  // 측정 위치 안내 도식(어깨·가슴·총장 등) — 표/이미지 위에 노출, 선택
   image?: string;                       // mode="image"
   columns?: string[];                   // mode="table" 헤더, 예: ["항목","S","M","L","XL","XXL"]
   rows?: { cells: string[] }[];         // 각 행의 셀(첫 셀 = 행 라벨), columns 길이에 맞춤

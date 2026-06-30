@@ -33,7 +33,11 @@ if (!fs.existsSync(SRC)) {
   process.exit(1);
 }
 
-const dest = path.join(ROOT, "generated", PRODUCT_ID);
+// 저장 위치: OUT_DIR 환경변수가 있으면 그 폴더에 그대로 저장(외부 경로 지원),
+// 없으면 프로젝트 generated/<제품ID>/ 에 저장.
+const dest = process.env.OUT_DIR
+  ? path.resolve(process.env.OUT_DIR)
+  : path.join(ROOT, "generated", PRODUCT_ID);
 fs.mkdirSync(dest, { recursive: true });
 
 const SIZE = parseInt(process.env.THUMB_SIZE || "1600", 10); // 출력 캔버스(기본 1600)

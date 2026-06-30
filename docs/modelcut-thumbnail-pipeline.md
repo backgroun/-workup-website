@@ -21,6 +21,25 @@
 
 ---
 
+## 🔴 배색 필수 규칙 (MUST)
+
+**강조하는 제품이 가장 잘 보이도록 배색한다. 필수 사항이다.**
+
+- 강조 제품(상의든 하의든)과 **비슷한 색 계열로 나머지 의상을 매치하지 않는다.**
+- 나머지 의상은 제품과 **대비되는 색**으로 골라 제품이 도드라지게 한다.
+- **고정색 아님 — 제품마다 어울리는 대비색을 선택한다** (무조건 베이지 ❌ → 제품 색·톤에 맞는 대비색 ✅).
+- 예시:
+  - **검정 상의** 강조 → 하의 **베이지/밝은 톤** (JK423 확정). 어두운·검정 하의 금지.
+  - **밝은 상의** 강조 → 하의 **어두운 톤**
+  - **하의 강조** → 상의를 대비색으로
+- 신발·배경도 제품을 가리지 않는 무채색/대비 톤으로.
+
+> 이유: 제품이 같은 색 옷에 묻히면 카탈로그에서 형태·디테일이 안 보여 정보 전달 실패.
+> 프롬프트에 매번 "featured product is [색] → choose a contrasting color that suits this
+> product, do NOT use [같은 계열]" 지시를 명시한다.
+
+---
+
 ## 카테고리별 규칙 (상의 / 하의 / 세트)
 
 카테고리마다 **무엇을 강조하고 어디를 크롭할지**가 다르다. 같은 프레이밍을 쓰면 안 된다.
@@ -59,7 +78,7 @@
 | 도구 | magnific `images_generate` |
 | 모델(mode) | `imagen-nano-banana-2` (Google Nano Banana Pro — product/brand 충실도 최상) |
 | aspectRatio | `1:1` |
-| resolution | `2k` |
+| resolution | `4k` (반신 크롭 선명도 확보) |
 | references | 누끼 이미지를 `creations_upload_image`로 올린 뒤 `{type:"image", identifier:"..."}` |
 | count | 2 (가장 정확한 컷 선택) |
 
@@ -98,7 +117,7 @@ magnific `images_remove_background`에 1단계 결과의 creation identifier 전
 
 ---
 
-## 3단계 — 손 아래선 크롭 → 960×960 프레이밍
+## 3단계 — 손 아래선 크롭 → 1600×1600 프레이밍
 
 전신 컷아웃을 그대로 프레이밍하면 모델이 작게 들어간다(전신이 정사각형에 들어가
 좌우 여백 ↑). **손 바로 아래선까지 세로로 잘라** 베스트를 키우되 손은 보존한다.
@@ -108,8 +127,8 @@ magnific `images_remove_background`에 1단계 결과의 creation identifier 전
 #   sharp extract 로 top=0, height=원본H*0.58 정도. 정확한 선은 손 위치 보고 조정.
 #   (머리~무릎 컷이면 ~0.72. 발끝 전신일수록 손이 위에 잡혀 더 낮게 자른다.)
 
-# 프레이밍 → 960×960
-node scripts/thumbnail-frame.mjs <컷아웃.png> <출력_960.png> [width|height] [transparent]
+# 프레이밍 → 1600×1600 (THUMB_SIZE 로 사이즈 변경 가능)
+node scripts/thumbnail-frame.mjs <컷아웃.png> <출력.png> [width|height] [transparent]
 ```
 
 > ✅ **발끝까지 전신 생성 권장**: 발끝까지 생성하면 손이 프레임 상대적으로 위쪽에

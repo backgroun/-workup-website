@@ -233,6 +233,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingSubIdx, setUploadingSubIdx] = useState<number | null>(null);
   const [uploadingBlockIdx, setUploadingBlockIdx] = useState<number | null>(null);
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
+  const [uploadingSizeDiagram, setUploadingSizeDiagram] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
   const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
@@ -876,6 +877,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const url = await uploadFile(file);
     setUploadingSizeGuide(false);
     if (url) setSG({ image: url });
+    e.target.value = "";
+  };
+
+  // 측정 위치 안내 도식(어깨·가슴·총장 등) — 표/이미지 위에 노출
+  const handleSizeDiagramFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploadError(""); setUploadingSizeDiagram(true);
+    const url = await uploadFile(file);
+    setUploadingSizeDiagram(false);
+    if (url) setSG({ guideImage: url });
     e.target.value = "";
   };
 
@@ -1909,6 +1920,27 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </div>
                 <button type="button" onClick={sgClearAll}
                   className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">전체 삭제</button>
+              </div>
+            </div>
+
+            {/* 측정 위치 안내 이미지 — 사이즈표/이미지 바로 위에 노출 (선택) */}
+            <div className="mb-5 pb-5 border-b border-gray-100 flex gap-4 items-start">
+              {sg.guideImage ? (
+                <div className="relative w-40 border border-gray-200 rounded overflow-hidden bg-gray-50 flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block" />
+                  <button type="button" onClick={() => setSG({ guideImage: "" })}
+                    className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex-shrink-0 text-center px-2">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleSizeDiagramFile} />
+                  <span className="text-xs leading-snug">{uploadingSizeDiagram ? "업로드 중…" : "＋ 측정 위치 안내 이미지"}</span>
+                </label>
+              )}
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-[#1A2B4A] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
+                <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
               </div>
             </div>
 
