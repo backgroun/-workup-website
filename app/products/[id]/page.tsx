@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products as staticProducts, getProductById, productDisplayName, type Product } from "@/data/products";
+import { products as staticProducts, getProductById, productDisplayName, isPubliclyVisible, type Product } from "@/data/products";
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import ProductImageGallery from "@/components/ProductImageGallery";
@@ -51,9 +51,9 @@ async function fetchRelatedProducts(ids: string[]): Promise<Product[]> {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase.from("products").select("*").in("id", ids);
-    if (data?.length) return data.map(mapFromDb);
+    if (data?.length) return data.map(mapFromDb).filter(isPubliclyVisible);
   } catch {}
-  return ids.map((id) => getProductById(id)).filter(Boolean) as Product[];
+  return (ids.map((id) => getProductById(id)).filter(Boolean) as Product[]).filter(isPubliclyVisible);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -86,6 +86,8 @@ export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
   const product = await fetchProduct(id);
   if (!product) notFound();
+  // 판매중지·진열대기 상품은 직접 URL 접근도 차단 (고객 노출 금지)
+  if (!isPubliclyVisible(product)) notFound();
 
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
   const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);

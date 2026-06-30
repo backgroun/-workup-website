@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
-import { products as staticProducts, type Product } from "@/data/products";
+import { products as staticProducts, isPubliclyVisible, type Product } from "@/data/products";
 
 export const revalidate = 0;
 
@@ -21,11 +21,12 @@ export async function GET() {
       .order("created_at", { ascending: true });
 
     if (error || !data || data.length === 0) {
-      return NextResponse.json(staticProducts.map(toPublic));
+      return NextResponse.json(staticProducts.filter(isPubliclyVisible).map(toPublic));
     }
 
-    return NextResponse.json(data.map(mapFromDb).map(toPublic));
+    // 판매중지·진열대기는 고객에게 숨김
+    return NextResponse.json(data.map(mapFromDb).filter(isPubliclyVisible).map(toPublic));
   } catch {
-    return NextResponse.json(staticProducts.map(toPublic));
+    return NextResponse.json(staticProducts.filter(isPubliclyVisible).map(toPublic));
   }
 }

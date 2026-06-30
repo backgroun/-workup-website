@@ -97,6 +97,13 @@ export function productDisplayName(p: { name: string; brand?: string; hideBrandP
   return brand && !p.hideBrandPrefix ? `[${brand}] ${p.name}` : p.name;
 }
 
+// 고객에게 숨기는 상태 — "판매중지"(판매안함)·"진열대기"(노출중지)
+export const HIDDEN_PRODUCT_STATUSES: ReadonlySet<string> = new Set(["판매중지", "진열대기"]);
+// 공개 사이트(목록·검색·홈·관련상품)에 노출 가능한지. status 미지정은 "판매중"으로 간주
+export function isPubliclyVisible(p: { status?: string }): boolean {
+  return !HIDDEN_PRODUCT_STATUSES.has(p.status ?? "판매중");
+}
+
 export const mainCategories: MainCategory[] = [
   "공용", "남성", "여성", "소품", "현장", "일상",
 ];
