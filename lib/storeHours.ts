@@ -5,10 +5,20 @@
 //   평일/주말:  "10:00 - 20:00 (평일) / 10:00 - 19:00 (주말)"
 
 // 느슨한 시간 입력을 "HH:MM"으로 정규화.
-//   "10" → "10:00", "9" → "09:00", "1030" → "10:30", "10:5" → "10:05"
+//   "10" → "10:00", "9" → "09:00", "1030" → "10:30", "10:5" → "10:05", "10:30:00" → "10:30"
+//   Excel 시간 셀이 소수(하루의 분수)로 들어오는 경우도 처리: 0.4375 → "10:30"
 export function normalizeTime(raw: string): string {
   const s = String(raw ?? "").trim();
   if (!s) return "";
+
+  // Excel 시간/날짜 시리얼 (예: 0.4375 = 10:30, 45000.5 = 12:00). 소수부가 하루 중 시각.
+  if (/^\d*\.\d+$/.test(s)) {
+    const totalMin = Math.round((Number(s) % 1) * 24 * 60);
+    const hh = Math.floor(totalMin / 60) % 24;
+    const mm = totalMin % 60;
+    return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  }
+
   if (s.includes(":")) {
     const [h, m] = s.split(":");
     const hh = (h.replace(/\D/g, "") || "0").padStart(2, "0").slice(-2);

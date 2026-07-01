@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
+import { geocodeAddress } from "@/lib/geocode";
 
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,14 +20,23 @@ export async function POST(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
   const supabase = createAdminClient();
+
+  // 좌표가 없으면 주소로 자동 변환(지오코딩) — 지도 표시용
+  let lat = body.lat ?? null;
+  let lng = body.lng ?? null;
+  if ((lat == null || lng == null) && body.address) {
+    const geo = await geocodeAddress(body.address);
+    if (geo) { lat = geo.lat; lng = geo.lng; }
+  }
+
   const { data, error } = await supabase
     .from("stores")
     .insert({
       name: body.name,
       region: body.region ?? "",
       address: body.address,
-      lat: body.lat ?? null,
-      lng: body.lng ?? null,
+      lat,
+      lng,
       hours: body.hours ?? "",
       phone: body.phone ?? "",
       description: body.description ?? "",

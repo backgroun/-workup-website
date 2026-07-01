@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { stores } from "@/data/stores";
+import { useStores } from "@/lib/useStores";
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;
@@ -28,6 +28,7 @@ export default function NearbyStoreModal({
   productName: string;
   onClose: () => void;
 }) {
+  const stores = useStores();
   const [nearStores, setNearStores] = useState<NearStore[]>([]);
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errMsg, setErrMsg] = useState("");
@@ -83,6 +84,7 @@ export default function NearbyStoreModal({
       },
       { timeout: 10000 }
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openKakao = (s: NearStore) => {

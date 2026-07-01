@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import { normalizeProductBanners, type ProductBanner } from "@/lib/product-banners";
-import { stores } from "@/data/stores";
+import { useStores } from "@/lib/useStores";
 import { productDisplayName, type Product } from "@/data/products";
 
 const SIZES = ["S", "M", "L", "XL", "2XL"];
@@ -40,6 +40,7 @@ export default function ProductDetailClient({
 }) {
   const { hasProduct, toggleProduct } = useCart();
   const router = useRouter();
+  const stores = useStores();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   // 사이즈별 가격 — 선택 사이즈에 지정가가 있으면 그 가격, 없으면 기본 판매가

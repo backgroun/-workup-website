@@ -7,19 +7,11 @@ import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import {
   products as staticProducts,
-  mainCategories as staticMainCategories,
-  subCategoriesByMain as staticSubByMain,
   productDisplayName,
 } from "@/data/products";
 
 // 카테고리 분류 구조 (관리자 DB 설정과 동일한 형태)
-type CatItem = { name: string; subs: string[] };
-
-// 정적 파일을 DB 미연동 시 fallback 으로 사용
-const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({
-  name,
-  subs: staticSubByMain[name] ?? [],
-}));
+export type CatItem = { name: string; subs: string[] };
 
 type SortOption = "신상품순" | "낮은 가격순" | "높은 가격순";
 
@@ -95,11 +87,12 @@ function FilterDropdown({
   );
 }
 
-export default function ProductsGrid() {
+export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatItem[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState(staticProducts);
-  const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
+  // 서버에서 전달받은 최신 분류로 시작 → 옛 카테고리가 깜빡이지 않는다 (정적 fallback 제거)
+  const [cats, setCats] = useState<CatItem[]>(initialCats);
   const catParam = searchParams.get("cat") || searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<string>(catParam ?? "전체");
   const [activeSubCategory, setActiveSubCategory] = useState<string>("전체");
@@ -124,7 +117,7 @@ export default function ProductsGrid() {
       .catch(() => {});
   }, []);
 
-  // 카테고리 분류 — 관리자 DB 설정에서 로드 (없으면 정적 fallback 유지)
+  // 카테고리 분류 — 클라이언트에서 한 번 더 최신화 (서버 prop이 캐시됐을 경우 대비)
   useEffect(() => {
     fetch("/api/admin/site-settings/categories")
       .then((r) => (r.ok ? r.json() : null))

@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import AdminSidebar, { getRouteLabel } from "./AdminSidebar";
+import AdminSidebar, { getNavLeafByHref } from "./AdminSidebar";
 import AdminTabBar from "./AdminTabBar";
 import { AdminUIContext, type AdminTab, type AdminUIValue } from "./admin-ui-context";
 
@@ -24,6 +24,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const searchStr = searchParams.toString();
   const currentHref = pathname + (searchStr ? `?${searchStr}` : "");
 
+  // 현재 경로가 "왼쪽 메뉴(사이드바)에 있는 항목"인지 판별.
+  // 메뉴에 있으면 그 메뉴의 정규 href를 탭 키로 사용한다.
+  // 제품 수정/등록 같은 동적 페이지는 메뉴에 없으므로 routeLeaf === null → 탭 생성 안 함.
+  const routeLeaf = getNavLeafByHref(currentHref);
+  const activeHref = routeLeaf ? routeLeaf.href : currentHref;
+
   const [hydrated, setHydrated] = useState(false);
   const [tabs, setTabs] = useState<AdminTab[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -33,7 +39,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     try {
       const t = JSON.parse(localStorage.getItem(LS_TABS) || "[]");
       if (Array.isArray(t)) {
-        setTabs(t.filter((x) => x && typeof x.href === "string" && typeof x.label === "string"));
+        // 메뉴에 없는 잡탭(이전 버전에서 쌓인 제품 수정 등)은 로드 시 정리
+        setTabs(
+          t.filter(
+            (x) =>
+              x && typeof x.href === "string" && typeof x.label === "string" && getNavLeafByHref(x.href)
+          )
+        );
       }
       const f = JSON.parse(localStorage.getItem(LS_FAVS) || "[]");
       if (Array.isArray(f)) setFavorites(f.filter((x) => typeof x === "string"));
@@ -51,20 +63,21 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     if (hydrated) try { localStorage.setItem(LS_FAVS, JSON.stringify(favorites)); } catch { /* noop */ }
   }, [favorites, hydrated]);
 
-  // 현재 경로를 탭에 추가
+  // 현재 경로가 메뉴 항목일 때만 탭에 추가 (동적 편집/등록 페이지는 제외)
   useEffect(() => {
-    if (!hydrated || !pathname.startsWith("/admin")) return;
+    if (!hydrated || !routeLeaf) return;
+    const href = routeLeaf.href;
     setTabs((prev) => {
-      if (prev.some((t) => t.href === currentHref)) return prev;
-      const next = [...prev, { href: currentHref, label: getRouteLabel(pathname, searchStr) }];
+      if (prev.some((t) => t.href === href)) return prev;
+      const next = [...prev, { href, label: routeLeaf.label }];
       if (next.length > MAX_TABS) {
         // 현재(활성) 탭이 아닌 가장 오래된 탭 제거
-        const idx = next.findIndex((t) => t.href !== currentHref);
+        const idx = next.findIndex((t) => t.href !== href);
         if (idx !== -1) next.splice(idx, 1);
       }
       return next;
     });
-  }, [hydrated, currentHref, pathname, searchStr]);
+  }, [hydrated, routeLeaf]);
 
   // 메뉴 방문 횟수 집계 (대시보드 "자주 방문" 용). /admin(대시보드 자신)은 제외.
   useEffect(() => {
@@ -87,12 +100,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       const next = tabs.filter((t) => t.href !== href);
       setTabs(next);
       // 활성 탭을 닫으면 인접 탭으로 이동 (setState 업데이터 밖에서 호출해야 함)
-      if (href === currentHref) {
+      if (href === activeHref) {
         const fallback = next[idx - 1] || next[idx] || next[next.length - 1];
         router.push(fallback ? fallback.href : "/admin");
       }
     },
-    [tabs, currentHref, router]
+    [tabs, activeHref, router]
   );
 
   const isFavorite = useCallback((href: string) => favorites.includes(href), [favorites]);
@@ -101,8 +114,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, []);
 
   const value = useMemo<AdminUIValue>(
-    () => ({ tabs, currentHref, selectTab, closeTab, favorites, isFavorite, toggleFavorite }),
-    [tabs, currentHref, selectTab, closeTab, favorites, isFavorite, toggleFavorite]
+    () => ({ tabs, currentHref: activeHref, selectTab, closeTab, favorites, isFavorite, toggleFavorite }),
+    [tabs, activeHref, selectTab, closeTab, favorites, isFavorite, toggleFavorite]
   );
 
   return (

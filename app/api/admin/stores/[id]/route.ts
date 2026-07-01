@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
+import { geocodeAddress } from "@/lib/geocode";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -19,14 +20,37 @@ export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   const body = await req.json();
   const supabase = createAdminClient();
+
+  // 좌표 결정: 폼에는 좌표 입력이 없으므로 기존 좌표를 보존한다.
+  // 주소가 바뀌었으면 지오코딩으로 새 좌표를 구하고, 실패 시 기존 좌표 유지.
+  let lat = body.lat ?? null;
+  let lng = body.lng ?? null;
+  if (lat == null || lng == null) {
+    const { data: existing } = await supabase
+      .from("stores")
+      .select("lat, lng, address")
+      .eq("id", id)
+      .single();
+    if (existing) {
+      if (existing.address === body.address && existing.lat != null) {
+        lat = existing.lat;
+        lng = existing.lng;
+      } else {
+        const geo = await geocodeAddress(body.address);
+        if (geo) { lat = geo.lat; lng = geo.lng; }
+        else { lat = existing.lat; lng = existing.lng; }
+      }
+    }
+  }
+
   const { data, error } = await supabase
     .from("stores")
     .update({
       name: body.name,
       region: body.region ?? "",
       address: body.address,
-      lat: body.lat ?? null,
-      lng: body.lng ?? null,
+      lat,
+      lng,
       hours: body.hours ?? "",
       phone: body.phone ?? "",
       description: body.description ?? "",

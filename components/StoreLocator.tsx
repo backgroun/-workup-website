@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState, useRef, useEffect } from "react";
-import { stores, type Store } from "@/data/stores";
+import { type Store } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 
 const NEARBY_COUNT = 5;
@@ -125,7 +125,7 @@ function NaverDirBtn({ store, userCoords: passedCoords }: {
   );
 }
 
-export default function StoreLocator({ id }: { id?: string }) {
+export default function StoreLocator({ id, stores }: { id?: string; stores: Store[] }) {
   const [locStatus, setLocStatus] = useState<LocStatus>("idle");
   const [locError, setLocError] = useState("");
   const [nearbyStores, setNearbyStores] = useState<StoreWithDistance[]>([]);
@@ -460,6 +460,7 @@ export default function StoreLocator({ id }: { id?: string }) {
         <div ref={mapRef} className="relative mb-6">
           <div className="w-full overflow-hidden border border-gray-200 h-[360px] md:h-[520px]">
             <KakaoMap
+              stores={stores}
               center={mapCenter}
               selectedStore={selectedStore}
               userCoords={userCoords}

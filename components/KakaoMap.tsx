@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useRef, useState } from "react";
-import { stores, type Store } from "@/data/stores";
+import { type Store } from "@/data/stores";
 
 declare global {
   // 카카오 맵 SDK는 런타임 스크립트로 로드되어 별도 타입 패키지가 없다.
@@ -9,6 +9,7 @@ declare global {
 }
 
 interface Props {
+  stores: Store[];
   center: { lat: number; lng: number; level: number };
   selectedStore: Store | null;
   userCoords?: { lat: number; lng: number } | null;
@@ -128,7 +129,7 @@ function clusterByScreen(pts: XYStore[], gridSize: number): Cluster[] {
   return result;
 }
 
-export default function KakaoMap({ center, selectedStore, userCoords, onStoreSelect }: Props) {
+export default function KakaoMap({ stores, center, selectedStore, userCoords, onStoreSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
