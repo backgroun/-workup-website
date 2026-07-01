@@ -155,19 +155,19 @@ export default function ProductTabs({ product }: { product: Product }) {
         <div ref={sizeRef} data-tab="사이즈 및 소재" className={`${sectionClass} border-t border-gray-100`}>
           <p className="text-base md:text-lg font-bold text-[#1A2B4A] mb-5">사이즈 가이드</p>
 
-          {/* 측정 위치 안내 도식 — 표/이미지 위에 가운데 정렬로 노출 (등록 시) */}
+          {/* 측정 위치 안내 도식 — 원본 크기 그대로, 가운데 정렬 (등록 시) */}
           {sizeGuide?.guideImage && (
-            <div className="max-w-sm mx-auto mb-6">
+            <div className="mb-6 flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sizeGuide.guideImage} alt={`${product.name} 사이즈 측정 위치 안내`} className="block w-full h-auto" loading="lazy" />
+              <img src={sizeGuide.guideImage} alt={`${product.name} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
             </div>
           )}
 
           {hasSizeImage ? (
-            // 이미지로 등록한 경우
-            <div className="max-w-3xl">
+            // 이미지로 등록한 경우 — 원본 크기 그대로 (컨테이너보다 클 때만 축소)
+            <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sizeGuide!.image} alt={`${product.name} 사이즈 가이드`} className="block w-full h-auto" loading="lazy" />
+              <img src={sizeGuide!.image} alt={`${product.name} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
               {sizeGuide!.note && <p className="text-xs text-gray-400 mt-4">{sizeGuide!.note}</p>}
             </div>
           ) : hasSizeTable ? (

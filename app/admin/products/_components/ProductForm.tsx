@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem } from "@/data/products";
+import { parseInstagramUrl, instagramEmbedSrc } from "@/lib/instagram-feed";
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ["판매중", "품절", "판매중지", "예약판매", "진열대기"] as const;
@@ -93,6 +94,7 @@ type FormData = {
   imageUrl: string;
   subImages: string[];
   videoUrl: string;
+  instagramPosts: string[];
   detailBlocks: (Omit<DetailBlock, "id"> & { id: string })[];
   features: string;
   featureTags: string[];
@@ -145,6 +147,7 @@ function toForm(p?: Product): FormData {
     imageUrl: p?.imageUrl ?? "",
     subImages: p?.subImages ?? [],
     videoUrl: p?.videoUrl ?? "",
+    instagramPosts: p?.instagramPosts ?? [],
     detailBlocks: p?.detailBlocks ?? [],
     features: (p?.features ?? []).join("\n"),
     featureTags: p?.featureTags ?? [],
@@ -154,7 +157,8 @@ function toForm(p?: Product): FormData {
     mainExpose: p?.mainExpose ?? (p?.isNew ? ["신상품"] : []),
     sizes: (p?.sizes ?? DEFAULT_SIZES),
     sizePrices: (p?.sizePrices ?? []).map((sp) => ({ size: sp.size, price: sp.price })),
-    sizeGuide: p?.sizeGuide ?? { ...SIZE_GUIDE_DEFAULT },
+    // 안내 문구는 기본 문구로 미리 채운다(기존 상품 포함). note가 명시적으로 ""이면(사용자가 지운 것) 그대로 유지
+    sizeGuide: p?.sizeGuide ? { ...p.sizeGuide, note: p.sizeGuide.note ?? SIZE_NOTE_DEFAULT } : { ...SIZE_GUIDE_DEFAULT },
     detailInfo: p?.detailInfo ?? [],
     customSizeInput: "",
     colorName: "",
@@ -902,6 +906,20 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("detailInfo", []);
   };
 
+  // ── 인스타 게시물 (이 상품에 연관된 게시물 URL) ──────────────────────────────
+  const igAdd = () => set("instagramPosts", [...form.instagramPosts, ""]);
+  const igSet = (i: number, url: string) =>
+    set("instagramPosts", form.instagramPosts.map((u, idx) => (idx === i ? url : u)));
+  const igRemove = (i: number) =>
+    set("instagramPosts", form.instagramPosts.filter((_, idx) => idx !== i));
+  const igMove = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= form.instagramPosts.length) return;
+    const next = [...form.instagramPosts];
+    [next[i], next[j]] = [next[j], next[i]];
+    set("instagramPosts", next);
+  };
+
   // ── 색상 ──────────────────────────────────────────────────────────────────
   const toggleColor = (preset: { name: string; hex: string }) => {
     const exists = form.colors.some((c) => c.name === preset.name);
@@ -960,6 +978,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       imageUrl: form.imageUrl || undefined,
       subImages: form.subImages.filter(Boolean),
       videoUrl: form.videoUrl.trim() || undefined,
+      instagramPosts: form.instagramPosts.map((u) => u.trim()).filter(Boolean),
       detailBlocks: form.detailBlocks as DetailBlock[],
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
       featureTags: form.featureTags,
@@ -1112,6 +1131,145 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
 
             </div>
+          </section>
+
+          {/* ── 사이즈 가이드 (사이즈 및 소재 탭) ── */}
+          <section className="bg-white border border-gray-200 p-7 rounded-xl">
+            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
+              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+                  {(["image", "table"] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => setSG({ mode: m })}
+                      className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:text-[#1A2B4A]"}`}>
+                      {m === "image" ? "이미지" : "행·열 표"}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" onClick={sgClearAll}
+                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">전체 삭제</button>
+              </div>
+            </div>
+
+            {/* 측정 위치 안내 이미지 — 사이즈표/이미지 바로 위에 노출 (선택) */}
+            <div className="mb-5 pb-5 border-b border-gray-100 flex gap-4 items-start">
+              {sg.guideImage ? (
+                <div className="relative w-40 border border-gray-200 rounded overflow-hidden bg-gray-50 flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block" />
+                  <button type="button" onClick={() => setSG({ guideImage: "" })}
+                    className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex-shrink-0 text-center px-2">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleSizeDiagramFile} />
+                  <span className="text-xs leading-snug">{uploadingSizeDiagram ? "업로드 중…" : "＋ 측정 위치 안내 이미지"}</span>
+                </label>
+              )}
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-[#1A2B4A] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
+                <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
+              </div>
+            </div>
+
+            {sg.mode === "image" ? (
+              <div className="flex gap-4 items-start">
+                {sg.image ? (
+                  <div className="relative w-44 border border-gray-200 rounded overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={sg.image} alt="사이즈 가이드" className="w-full h-auto block" />
+                    <button type="button" onClick={() => setSG({ image: "" })}
+                      className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-44 h-44 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                    <input type="file" accept="image/*" className="hidden" onChange={handleSizeGuideFile} />
+                    <span className="text-xs">{uploadingSizeGuide ? "업로드 중…" : "＋ 이미지 등록"}</span>
+                  </label>
+                )}
+                <p className="text-xs text-gray-400 leading-relaxed flex-1">사이즈표 이미지를 등록하면 &quot;사이즈 및 소재&quot; 탭에 그대로 표시됩니다.</p>
+              </div>
+            ) : (
+              <div>
+                {/* 무료 OCR — 표 구조는 직접 만들고, 수치 칸만 자동으로 채움 (브라우저 내 실행, 키 불필요) */}
+                <div className="mb-3 p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                  <label className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${ocrBusy ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleSizeOcr} disabled={ocrBusy} />
+                    {ocrBusy ? (
+                      <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />인식 중… {ocrProgress}%</>
+                    ) : (
+                      "📷 이미지에서 수치만 채우기 (무료)"
+                    )}
+                  </label>
+                  <p className="text-[11px] text-gray-400 mt-1.5">먼저 <b>템플릿</b>이나 <b>행·열 추가</b>로 표 구조(항목·사이즈)를 만든 뒤 이미지를 올리면, <b>가운데 수치 칸만</b> 자동으로 채웁니다. (행·열 제목은 안 바뀜) 인식 오류는 확인·수정하세요.</p>
+                </div>
+                {/* 항목 템플릿 — 클릭 시 측정 항목(행) 자동 구성 */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
+                  {SIZE_GUIDE_ROW_TEMPLATES.map((t) => (
+                    <button key={t.label} type="button" onClick={() => sgApplyTemplate(t)}
+                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3 items-center">
+                  <button type="button" onClick={sgAddColumn}
+                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 열 추가</button>
+                  <button type="button" onClick={sgAddRow} disabled={sgCols.length === 0}
+                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">+ 행 추가</button>
+                  <span className="w-px h-5 bg-gray-200 mx-1" />
+                  <input value={bulkColInput} onChange={(e) => setBulkColInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddColumns(); } }}
+                    placeholder="XL, 2XL, 3XL (쉼표·공백 구분)"
+                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
+                  <button type="button" onClick={sgBulkAddColumns} disabled={!bulkColInput.trim()}
+                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
+                </div>
+                {sgCols.length === 0 ? (
+                  <p className="text-xs text-gray-400">＋ 열 추가로 헤더(항목·S·M·L…)를 먼저 만들고, ＋ 행 추가로 값을 입력하세요.</p>
+                ) : (
+                  <div className="overflow-x-auto border border-gray-100 rounded">
+                    <table className="text-xs">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="p-1.5 border-b border-r border-gray-100 w-8" />
+                          {sgCols.map((c, ci) => (
+                            <th key={ci} className="p-1.5 border-b border-r border-gray-100">
+                              <div className="flex items-center gap-1">
+                                <input value={c} onChange={(e) => sgSetColumn(ci, e.target.value)} placeholder={ci === 0 ? "항목" : "S"}
+                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A] font-semibold" />
+                                <button type="button" onClick={() => sgRemoveColumn(ci)} className="text-gray-300 hover:text-red-500">×</button>
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sgRows.map((r, ri) => (
+                          <tr key={ri}>
+                            <td className="p-1.5 border-r border-b border-gray-100 text-center">
+                              <button type="button" onClick={() => sgRemoveRow(ri)} className="text-gray-300 hover:text-red-500" title="행 삭제">×</button>
+                            </td>
+                            {sgCols.map((_, ci) => (
+                              <td key={ci} className="p-1.5 border-r border-b border-gray-100">
+                                <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
+                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A]" />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">안내 문구</label>
+                  <input value={sg.note ?? ""} onChange={(e) => setSG({ note: e.target.value })} placeholder={SIZE_NOTE_DEFAULT}
+                    className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A]" />
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ── 카테고리 (최상단 박스) ── */}
@@ -1905,176 +2063,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             </div>
           </section>
 
-          {/* ── 사이즈 가이드 (사이즈 및 소재 탭) ── */}
-          <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
-              <div className="flex items-center gap-2">
-                <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
-                  {(["image", "table"] as const).map((m) => (
-                    <button key={m} type="button" onClick={() => setSG({ mode: m })}
-                      className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:text-[#1A2B4A]"}`}>
-                      {m === "image" ? "이미지" : "행·열 표"}
-                    </button>
-                  ))}
-                </div>
-                <button type="button" onClick={sgClearAll}
-                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">전체 삭제</button>
-              </div>
-            </div>
-
-            {/* 측정 위치 안내 이미지 — 사이즈표/이미지 바로 위에 노출 (선택) */}
-            <div className="mb-5 pb-5 border-b border-gray-100 flex gap-4 items-start">
-              {sg.guideImage ? (
-                <div className="relative w-40 border border-gray-200 rounded overflow-hidden bg-gray-50 flex-shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block" />
-                  <button type="button" onClick={() => setSG({ guideImage: "" })}
-                    className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex-shrink-0 text-center px-2">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleSizeDiagramFile} />
-                  <span className="text-xs leading-snug">{uploadingSizeDiagram ? "업로드 중…" : "＋ 측정 위치 안내 이미지"}</span>
-                </label>
-              )}
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-[#1A2B4A] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
-                <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
-              </div>
-            </div>
-
-            {sg.mode === "image" ? (
-              <div className="flex gap-4 items-start">
-                {sg.image ? (
-                  <div className="relative w-44 border border-gray-200 rounded overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={sg.image} alt="사이즈 가이드" className="w-full h-auto block" />
-                    <button type="button" onClick={() => setSG({ image: "" })}
-                      className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-44 h-44 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
-                    <input type="file" accept="image/*" className="hidden" onChange={handleSizeGuideFile} />
-                    <span className="text-xs">{uploadingSizeGuide ? "업로드 중…" : "＋ 이미지 등록"}</span>
-                  </label>
-                )}
-                <p className="text-xs text-gray-400 leading-relaxed flex-1">사이즈표 이미지를 등록하면 &quot;사이즈 및 소재&quot; 탭에 그대로 표시됩니다.</p>
-              </div>
-            ) : (
-              <div>
-                {/* 무료 OCR — 표 구조는 직접 만들고, 수치 칸만 자동으로 채움 (브라우저 내 실행, 키 불필요) */}
-                <div className="mb-3 p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <label className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${ocrBusy ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleSizeOcr} disabled={ocrBusy} />
-                    {ocrBusy ? (
-                      <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />인식 중… {ocrProgress}%</>
-                    ) : (
-                      "📷 이미지에서 수치만 채우기 (무료)"
-                    )}
-                  </label>
-                  <p className="text-[11px] text-gray-400 mt-1.5">먼저 <b>템플릿</b>이나 <b>행·열 추가</b>로 표 구조(항목·사이즈)를 만든 뒤 이미지를 올리면, <b>가운데 수치 칸만</b> 자동으로 채웁니다. (행·열 제목은 안 바뀜) 인식 오류는 확인·수정하세요.</p>
-                </div>
-                {/* 항목 템플릿 — 클릭 시 측정 항목(행) 자동 구성 */}
-                <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                  <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
-                  {SIZE_GUIDE_ROW_TEMPLATES.map((t) => (
-                    <button key={t.label} type="button" onClick={() => sgApplyTemplate(t)}
-                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2 mb-3 items-center">
-                  <button type="button" onClick={sgAddColumn}
-                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 열 추가</button>
-                  <button type="button" onClick={sgAddRow} disabled={sgCols.length === 0}
-                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">+ 행 추가</button>
-                  <span className="w-px h-5 bg-gray-200 mx-1" />
-                  <input value={bulkColInput} onChange={(e) => setBulkColInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddColumns(); } }}
-                    placeholder="XL, 2XL, 3XL (쉼표·공백 구분)"
-                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
-                  <button type="button" onClick={sgBulkAddColumns} disabled={!bulkColInput.trim()}
-                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
-                </div>
-                {sgCols.length === 0 ? (
-                  <p className="text-xs text-gray-400">＋ 열 추가로 헤더(항목·S·M·L…)를 먼저 만들고, ＋ 행 추가로 값을 입력하세요.</p>
-                ) : (
-                  <div className="overflow-x-auto border border-gray-100 rounded">
-                    <table className="text-xs">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="p-1.5 border-b border-r border-gray-100 w-8" />
-                          {sgCols.map((c, ci) => (
-                            <th key={ci} className="p-1.5 border-b border-r border-gray-100">
-                              <div className="flex items-center gap-1">
-                                <input value={c} onChange={(e) => sgSetColumn(ci, e.target.value)} placeholder={ci === 0 ? "항목" : "S"}
-                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A] font-semibold" />
-                                <button type="button" onClick={() => sgRemoveColumn(ci)} className="text-gray-300 hover:text-red-500">×</button>
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sgRows.map((r, ri) => (
-                          <tr key={ri}>
-                            <td className="p-1.5 border-r border-b border-gray-100 text-center">
-                              <button type="button" onClick={() => sgRemoveRow(ri)} className="text-gray-300 hover:text-red-500" title="행 삭제">×</button>
-                            </td>
-                            {sgCols.map((_, ci) => (
-                              <td key={ci} className="p-1.5 border-r border-b border-gray-100">
-                                <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
-                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A]" />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                <div className="mt-3">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">안내 문구</label>
-                  <input value={sg.note ?? ""} onChange={(e) => setSG({ note: e.target.value })} placeholder={SIZE_NOTE_DEFAULT}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A]" />
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* ── 상세 정보 (텍스트) ── */}
-          <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 정보</h2>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={diLoadDefaults}
-                  className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors">기본 항목 불러오기</button>
-                <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
-                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
-                <button type="button" onClick={diAdd}
-                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
-              </div>
-            </div>
-            {form.detailInfo.length === 0 ? (
-              <p className="text-xs text-gray-400">&quot;기본 항목 불러오기&quot;로 품명·소재·색상·제조국 등 기본 라벨을 채우거나 &quot;+ 항목 추가&quot;로 직접 추가하세요. 값이 빈 항목은 노출되지 않습니다.</p>
-            ) : (
-              <div className="space-y-2">
-                {form.detailInfo.map((it, i) => (
-                  <div key={i} className="flex gap-2 items-start">
-                    <input value={it.label} onChange={(e) => diSet(i, "label", e.target.value)} placeholder="항목명 (예: 소재)"
-                      className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] font-medium" />
-                    <textarea value={it.value} onChange={(e) => diSet(i, "value", e.target.value)} rows={1} placeholder="내용"
-                      className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] resize-y" />
-                    <button type="button" onClick={() => diRemove(i)}
-                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
           {/* ── 상세 설명 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
@@ -2132,6 +2120,95 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <span className="text-[10px] mt-1">이미지 추가</span>
               </label>
             </div>
+          </section>
+
+          {/* ── 상세 정보 (텍스트) ── */}
+          <section className="bg-white border border-gray-200 p-6 rounded-xl">
+            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
+              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 정보</h2>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={diLoadDefaults}
+                  className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors">기본 항목 불러오기</button>
+                <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
+                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
+                <button type="button" onClick={diAdd}
+                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
+              </div>
+            </div>
+            {form.detailInfo.length === 0 ? (
+              <p className="text-xs text-gray-400">&quot;기본 항목 불러오기&quot;로 품명·소재·색상·제조국 등 기본 라벨을 채우거나 &quot;+ 항목 추가&quot;로 직접 추가하세요. 값이 빈 항목은 노출되지 않습니다.</p>
+            ) : (
+              <div className="space-y-2">
+                {form.detailInfo.map((it, i) => (
+                  <div key={i} className="flex gap-2 items-start">
+                    <input value={it.label} onChange={(e) => diSet(i, "label", e.target.value)} placeholder="항목명 (예: 소재)"
+                      className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] font-medium" />
+                    <textarea value={it.value} onChange={(e) => diSet(i, "value", e.target.value)} rows={1} placeholder="내용"
+                      className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] resize-y" />
+                    <button type="button" onClick={() => diRemove(i)}
+                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* ── 인스타 피드 (이 상품 관련 게시물) ── */}
+          <section className="bg-white border border-gray-200 p-6 rounded-xl">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">인스타 피드</h2>
+              <button type="button" onClick={igAdd}
+                className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 게시물 추가</button>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
+              이 상품과 관련된 인스타그램 <b>게시물 URL</b>을 등록하면 <b>이 상품 상세페이지 하단</b>에만 노출됩니다. (게시물 <b>···</b> &gt; <b>링크 복사</b> / 릴스도 가능 / 공개 게시물만 표시) 섹션 제목·계정 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#1A2B4A] underline">인스타 피드 관리 ↗</a>에서.
+            </p>
+
+            {form.instagramPosts.length === 0 ? (
+              <p className="text-xs text-gray-400">등록된 게시물이 없습니다. <b>+ 게시물 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
+            ) : (
+              <div className="space-y-3">
+                {form.instagramPosts.map((url, i) => {
+                  const parsed = parseInstagramUrl(url);
+                  const src = instagramEmbedSrc(url);
+                  return (
+                    <div key={i} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
+                      <div className="flex flex-col items-center gap-1 pt-1">
+                        <button type="button" onClick={() => igMove(i, -1)} disabled={i === 0}
+                          className="text-gray-300 hover:text-[#1A2B4A] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▲</button>
+                        <span className="text-[11px] text-gray-400 font-mono">{i + 1}</span>
+                        <button type="button" onClick={() => igMove(i, 1)} disabled={i === form.instagramPosts.length - 1}
+                          className="text-gray-300 hover:text-[#1A2B4A] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <input value={url} onChange={(e) => igSet(i, e.target.value)}
+                          placeholder="https://www.instagram.com/p/XXXXXXXX/"
+                          className={`w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none ${
+                            url.trim() === "" ? "border-gray-200 focus:border-[#1A2B4A]"
+                              : parsed ? "border-green-300 focus:border-green-500 bg-green-50/40"
+                              : "border-red-300 focus:border-red-500 bg-red-50/40"
+                          }`} />
+                        <p className="text-[11px] mt-1">
+                          {url.trim() === "" ? <span className="text-gray-400">URL을 입력하세요.</span>
+                            : parsed ? <span className="text-green-600">✓ 인식됨 ({parsed.type})</span>
+                            : <span className="text-red-500">✕ 올바른 인스타그램 게시물 URL이 아닙니다.</span>}
+                        </p>
+                      </div>
+                      <div className="w-[120px] h-[140px] flex-shrink-0 rounded overflow-hidden border border-gray-100 bg-[#fafafa]">
+                        {src ? (
+                          // eslint-disable-next-line jsx-a11y/iframe-has-title
+                          <iframe src={src} title={`ig-${i + 1}`} scrolling="no" className="w-full h-full" style={{ border: 0 }} />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[11px] text-gray-300">미리보기</div>
+                        )}
+                      </div>
+                      <button type="button" onClick={() => igRemove(i)} title="삭제"
+                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
         </div>{/* end right col */}

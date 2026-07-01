@@ -8,6 +8,7 @@ import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductTabs from "@/components/ProductTabs";
 import StickyAside from "@/components/StickyAside";
 import MobileProductNav from "@/components/MobileProductNav";
+import InstagramFeed from "@/components/InstagramFeed";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -139,6 +140,9 @@ export default async function ProductDetailPage({ params }: Props) {
           <ProductDetailClient product={product} relatedProducts={relatedProducts} isNewLayout={isNewLayout} />
         </StickyAside>
       </div>
+
+      {/* 인스타그램 피드 — 이 상품 등록 게시물 (미등록 시 자동 숨김) · 메인 영역 바로 아래 */}
+      <InstagramFeed posts={product.instagramPosts} />
 
       {/* 모바일: 상세 탭을 정보 패널 아래에 (구 레이아웃) */}
       {!isNewLayout && (

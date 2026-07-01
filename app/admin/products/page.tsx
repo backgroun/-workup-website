@@ -145,7 +145,11 @@ export default function AdminProductsPage() {
   useEffect(() => {
     fetch("/api/admin/site-settings/categories")
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (Array.isArray(d) && d.length) setCatList(d); })
+      // 응답은 config 객체 = { categories: [{name, subs}] } 형태. (구버전 대비 배열도 허용)
+      .then(d => {
+        const cats = Array.isArray(d?.categories) ? d.categories : Array.isArray(d) ? d : null;
+        if (cats && cats.length) setCatList(cats);
+      })
       .catch(() => {});
   }, []);
 
