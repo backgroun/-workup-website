@@ -287,6 +287,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   // 외부 데이터
   const [brands, setBrands] = useState<string[]>([]);
+  // 브랜드 즉시 추가 팝업
+  const [brandModalOpen, setBrandModalOpen] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [brandSaving, setBrandSaving] = useState(false);
+  const [brandError, setBrandError] = useState("");
   const [manufacturers, setManufacturers] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string; imageUrl?: string }[]>([]);
   const [relatedCatFilter, setRelatedCatFilter] = useState("");
@@ -963,6 +968,29 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   // ── 저장 ──────────────────────────────────────────────────────────────────
   // 폼 → 저장/미리보기 공용 product 객체 구성
+  // 브랜드 즉시 생성 — 팝업에서 등록 후 목록에 반영하고 이 상품에 바로 선택
+  const createBrand = async () => {
+    const name = newBrandName.trim();
+    if (!name) { setBrandError("브랜드명을 입력하세요."); return; }
+    if (brands.includes(name)) {   // 이미 있으면 새로 만들지 않고 선택만
+      set("brand", name); setBrandModalOpen(false); setNewBrandName(""); return;
+    }
+    setBrandSaving(true); setBrandError("");
+    try {
+      const res = await fetch("/api/admin/brands", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setBrandError(data?.error ?? "브랜드 생성에 실패했습니다."); return; }
+      const created: string = (data?.name as string) ?? name;
+      setBrands((prev) => Array.from(new Set([...prev, created])).sort((a, b) => a.localeCompare(b, "ko")));
+      set("brand", created);
+      setNewBrandName(""); setBrandModalOpen(false);
+    } finally {
+      setBrandSaving(false);
+    }
+  };
+
   const buildPayload = (): Partial<Product> & { id: string; categories?: CategoryEntry[] } => {
     const id = form.id || slugify(form.name) || `product-${Date.now()}`;
     const primaryCat = form.categories[0] ?? { main: "현장", sub: "상의" };
@@ -1095,22 +1123,29 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
               {/* 브랜드 · 제조사 · 원산지 */}
               <div className="grid grid-cols-3 gap-5">
-                <Field label="브랜드">
-                  <div className="flex gap-2 items-center">
-                    <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={`${SELECT_CLS} flex-1`}>
-                      <option value="">선택 안 함</option>
-                      {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-                      {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
-                    </select>
-                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
+                <div>
+                  {/* 라벨 행: 브랜드 + 작은 추가/관리 버튼 (셀렉트는 아래 전체 폭) */}
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <label className="text-xs font-medium text-gray-500">브랜드</label>
+                    <button type="button"
+                      onClick={() => { setNewBrandName(""); setBrandError(""); setBrandModalOpen(true); }}
+                      className="text-[10px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] rounded px-1.5 py-0.5 leading-none hover:bg-[#1A2B4A] hover:text-white transition-colors">
+                      + 추가
+                    </button>
+                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-[10px] text-gray-400 hover:text-[#1A2B4A]">관리 ↗</a>
                   </div>
+                  <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={SELECT_CLS}>
+                    <option value="">선택 안 함</option>
+                    {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+                    {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
+                  </select>
                   <label className="flex items-center gap-1.5 mt-2 cursor-pointer w-fit">
                     <input type="checkbox" checked={!form.hideBrandPrefix}
                       onChange={(e) => set("hideBrandPrefix", !e.target.checked)}
                       className="accent-[#1A2B4A] w-3.5 h-3.5" />
                     <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#1A2B4A]">[브랜드]</b> 표시</span>
                   </label>
-                </Field>
+                </div>
                 <Field label="제조사">
                   <div className="flex gap-2 items-center">
                     <select value={form.manufacturer} onChange={(e) => set("manufacturer", e.target.value)} className={`${SELECT_CLS} flex-1`}>
@@ -2240,6 +2275,31 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
         </div>{/* end right col */}
       </div>{/* end grid */}
+
+      {/* 브랜드 즉시 추가 팝업 */}
+      {brandModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setBrandModalOpen(false)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[#1A2B4A] mb-1">새 브랜드 추가</h3>
+            <p className="text-xs text-gray-400 mb-4">등록하면 이 상품에 바로 선택됩니다.</p>
+            <input autoFocus value={newBrandName}
+              onChange={(e) => { setNewBrandName(e.target.value); setBrandError(""); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createBrand(); } }}
+              placeholder="브랜드명 (예: 워크업)"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]" />
+            {brandError && <p className="text-xs text-red-500 mt-2">{brandError}</p>}
+            <div className="flex justify-end gap-2 mt-5">
+              <button type="button" onClick={() => setBrandModalOpen(false)}
+                className="px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">취소</button>
+              <button type="button" onClick={createBrand} disabled={brandSaving || !newBrandName.trim()}
+                className="px-4 py-2 text-sm bg-[#1A2B4A] text-white rounded-lg hover:bg-[#243d5e] transition-colors disabled:opacity-50">
+                {brandSaving ? "등록 중..." : "등록"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
