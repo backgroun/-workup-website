@@ -20,6 +20,8 @@ export type SizeGuide = {
 };
 // 상세 정보 탭 — 라벨/값 텍스트 항목
 export type DetailInfoItem = { label: string; value: string };
+// 인스타 피드 — 상품별 등록 미디어 (업로드한 대표 이미지 + 선택적 인스타 게시물 링크)
+export type InstagramMedia = { image: string; url?: string };
 export type MainCategory = "공용" | "남성" | "여성" | "소품" | "현장" | "일상";
 export type SubCategory =
   // 공용
@@ -73,7 +75,7 @@ export type Product = {
   imageUrl?: string;
   subImages?: string[];
   videoUrl?: string;   // 갤러리 영상 (YouTube·Vimeo 링크 또는 mp4 등 직접 URL)
-  instagramPosts?: string[];   // 이 상품과 관련된 인스타그램 게시물 URL 목록 — 상세페이지 하단 노출
+  instagramPosts?: InstagramMedia[];   // 이 상품 관련 인스타 미디어(이미지+링크) — 상세페이지 노출
   detailBlocks?: DetailBlock[];
   relatedIds?: string[];
   metaTitle?: string;

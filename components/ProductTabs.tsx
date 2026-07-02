@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Product } from "@/data/products";
 import ProductInquiryModal from "./ProductInquiryModal";
+import InstagramFeed from "./InstagramFeed";
 
 const TABS = ["상세 정보", "사이즈 및 소재", "상품문의"] as const;
 type Tab = typeof TABS[number];
@@ -91,6 +92,9 @@ export default function ProductTabs({ product }: { product: Product }) {
       <div className="max-w-screen-xl mx-auto">
         {/* ── 상세 정보 ── */}
         <div ref={detailRef} data-tab="상세 정보" className={sectionClass}>
+          {/* 인스타 피드 — 이 상품 등록 게시물 (상세 이미지 시작 전, 미등록 시 자동 숨김) */}
+          <InstagramFeed posts={product.instagramPosts} />
+
           {/* 필드 테스트 */}
           {product.fieldTest && (
             <div className="flex items-start gap-2.5 bg-amber-50 px-4 py-3 border-l-2 border-[#ff550c] mb-8">

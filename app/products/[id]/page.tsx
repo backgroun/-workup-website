@@ -141,9 +141,6 @@ export default async function ProductDetailPage({ params }: Props) {
         </StickyAside>
       </div>
 
-      {/* 인스타그램 피드 — 이 상품 등록 게시물 (미등록 시 자동 숨김) · 메인 영역 바로 아래 */}
-      <InstagramFeed posts={product.instagramPosts} />
-
       {/* 모바일: 상세 탭을 정보 패널 아래에 (구 레이아웃) */}
       {!isNewLayout && (
         <div className="md:hidden">
@@ -154,6 +151,9 @@ export default async function ProductDetailPage({ params }: Props) {
       {/* === 신규 레이아웃 10섹션 === */}
       {isNewLayout && (
         <>
+          {/* 인스타 피드 — 신규 레이아웃은 탭이 없으므로 상세 섹션 시작 전에 노출 */}
+          <InstagramFeed posts={product.instagramPosts} contained />
+
           {/* S2: 이런 분께 추천합니다 */}
           {product.recommendedFor && product.recommendedFor.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">

@@ -2,8 +2,8 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem } from "@/data/products";
-import { parseInstagramUrl, instagramEmbedSrc } from "@/lib/instagram-feed";
+import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem, InstagramMedia } from "@/data/products";
+import { parseInstagramUrl } from "@/lib/instagram-feed";
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ["판매중", "품절", "판매중지", "예약판매", "진열대기"] as const;
@@ -94,7 +94,7 @@ type FormData = {
   imageUrl: string;
   subImages: string[];
   videoUrl: string;
-  instagramPosts: string[];
+  instagramPosts: InstagramMedia[];
   detailBlocks: (Omit<DetailBlock, "id"> & { id: string })[];
   features: string;
   featureTags: string[];
@@ -238,6 +238,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingBlockIdx, setUploadingBlockIdx] = useState<number | null>(null);
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
   const [uploadingSizeDiagram, setUploadingSizeDiagram] = useState(false);
+  const [uploadingIgIdx, setUploadingIgIdx] = useState<number | null>(null);
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
   const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
@@ -906,10 +907,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("detailInfo", []);
   };
 
-  // ── 인스타 게시물 (이 상품에 연관된 게시물 URL) ──────────────────────────────
-  const igAdd = () => set("instagramPosts", [...form.instagramPosts, ""]);
-  const igSet = (i: number, url: string) =>
-    set("instagramPosts", form.instagramPosts.map((u, idx) => (idx === i ? url : u)));
+  // ── 인스타 피드 (이 상품 미디어: 이미지 업로드 + 선택적 인스타 링크) ──────────
+  const igAdd = () => set("instagramPosts", [...form.instagramPosts, { image: "", url: "" }]);
+  const igSetUrl = (i: number, url: string) =>
+    set("instagramPosts", form.instagramPosts.map((p, idx) => (idx === i ? { ...p, url } : p)));
+  const igSetImage = (i: number, image: string) =>
+    set("instagramPosts", form.instagramPosts.map((p, idx) => (idx === i ? { ...p, image } : p)));
   const igRemove = (i: number) =>
     set("instagramPosts", form.instagramPosts.filter((_, idx) => idx !== i));
   const igMove = (i: number, dir: -1 | 1) => {
@@ -918,6 +921,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const next = [...form.instagramPosts];
     [next[i], next[j]] = [next[j], next[i]];
     set("instagramPosts", next);
+  };
+  const handleIgImage = async (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploadError(""); setUploadingIgIdx(i);
+    const url = await uploadFile(file);
+    setUploadingIgIdx(null);
+    if (url) igSetImage(i, url);
+    e.target.value = "";
   };
 
   // ── 색상 ──────────────────────────────────────────────────────────────────
@@ -978,7 +989,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       imageUrl: form.imageUrl || undefined,
       subImages: form.subImages.filter(Boolean),
       videoUrl: form.videoUrl.trim() || undefined,
-      instagramPosts: form.instagramPosts.map((u) => u.trim()).filter(Boolean),
+      instagramPosts: form.instagramPosts
+        .filter((p) => (p.image ?? "").trim() !== "")
+        .map((p) => ({ image: p.image.trim(), url: (p.url ?? "").trim() || undefined })),
       detailBlocks: form.detailBlocks as DetailBlock[],
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
       featureTags: form.featureTags,
@@ -2153,24 +2166,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             )}
           </section>
 
-          {/* ── 인스타 피드 (이 상품 관련 게시물) ── */}
+          {/* ── 인스타 피드 (이 상품 관련 이미지/영상) ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">인스타 피드</h2>
               <button type="button" onClick={igAdd}
-                className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 게시물 추가</button>
+                className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
             </div>
             <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
-              이 상품과 관련된 인스타그램 <b>게시물 URL</b>을 등록하면 <b>이 상품 상세페이지 하단</b>에만 노출됩니다. (게시물 <b>···</b> &gt; <b>링크 복사</b> / 릴스도 가능 / 공개 게시물만 표시) 섹션 제목·계정 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#1A2B4A] underline">인스타 피드 관리 ↗</a>에서.
+              이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#1A2B4A] underline">인스타 피드 설정 ↗</a>에서.
             </p>
 
             {form.instagramPosts.length === 0 ? (
-              <p className="text-xs text-gray-400">등록된 게시물이 없습니다. <b>+ 게시물 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
+              <p className="text-xs text-gray-400">등록된 항목이 없습니다. <b>+ 항목 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
             ) : (
               <div className="space-y-3">
-                {form.instagramPosts.map((url, i) => {
-                  const parsed = parseInstagramUrl(url);
-                  const src = instagramEmbedSrc(url);
+                {form.instagramPosts.map((item, i) => {
+                  const parsed = item.url ? parseInstagramUrl(item.url) : null;
+                  const isVideo = parsed?.type === "reel" || parsed?.type === "tv";
                   return (
                     <div key={i} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
                       <div className="flex flex-col items-center gap-1 pt-1">
@@ -2180,28 +2193,42 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                         <button type="button" onClick={() => igMove(i, 1)} disabled={i === form.instagramPosts.length - 1}
                           className="text-gray-300 hover:text-[#1A2B4A] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
                       </div>
+
+                      {/* 이미지 업로드/미리보기 (9:16 세로 — 실제 노출 비율) */}
+                      <div className="w-[90px] h-[160px] flex-shrink-0 relative">
+                        {item.image ? (
+                          <div className="relative w-full h-full rounded overflow-hidden border border-gray-100 bg-[#fafafa]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.image} alt={`인스타 ${i + 1}`} className="w-full h-full object-cover" />
+                            {isVideo && <span className="absolute top-1 right-1 text-white drop-shadow"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>}
+                            <button type="button" onClick={() => igSetImage(i, "")}
+                              className="absolute bottom-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-[11px] leading-none">×</button>
+                          </div>
+                        ) : (
+                          <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors text-center">
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIgImage(e, i)} disabled={uploadingIgIdx === i} />
+                            <span className="text-[11px] leading-tight px-1">{uploadingIgIdx === i ? "업로드 중…" : "＋ 이미지"}</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {/* 인스타 링크(선택) */}
                       <div className="flex-1 min-w-0">
-                        <input value={url} onChange={(e) => igSet(i, e.target.value)}
+                        <label className="block text-[11px] text-gray-500 mb-1">인스타 링크 <span className="text-gray-300">(선택 · 클릭 시 이동)</span></label>
+                        <input value={item.url ?? ""} onChange={(e) => igSetUrl(i, e.target.value)}
                           placeholder="https://www.instagram.com/p/XXXXXXXX/"
                           className={`w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none ${
-                            url.trim() === "" ? "border-gray-200 focus:border-[#1A2B4A]"
+                            (item.url ?? "").trim() === "" ? "border-gray-200 focus:border-[#1A2B4A]"
                               : parsed ? "border-green-300 focus:border-green-500 bg-green-50/40"
                               : "border-red-300 focus:border-red-500 bg-red-50/40"
                           }`} />
                         <p className="text-[11px] mt-1">
-                          {url.trim() === "" ? <span className="text-gray-400">URL을 입력하세요.</span>
-                            : parsed ? <span className="text-green-600">✓ 인식됨 ({parsed.type})</span>
-                            : <span className="text-red-500">✕ 올바른 인스타그램 게시물 URL이 아닙니다.</span>}
+                          {(item.url ?? "").trim() === "" ? <span className="text-gray-400">비워두면 클릭 이동 없이 이미지만 노출됩니다.</span>
+                            : parsed ? <span className="text-green-600">✓ 인식됨 ({parsed.type}){isVideo ? " · 영상 ▶" : ""}</span>
+                            : <span className="text-red-500">✕ 올바른 인스타 게시물 URL이 아닙니다.</span>}
                         </p>
                       </div>
-                      <div className="w-[120px] h-[140px] flex-shrink-0 rounded overflow-hidden border border-gray-100 bg-[#fafafa]">
-                        {src ? (
-                          // eslint-disable-next-line jsx-a11y/iframe-has-title
-                          <iframe src={src} title={`ig-${i + 1}`} scrolling="no" className="w-full h-full" style={{ border: 0 }} />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[11px] text-gray-300">미리보기</div>
-                        )}
-                      </div>
+
                       <button type="button" onClick={() => igRemove(i)} title="삭제"
                         className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
                     </div>
