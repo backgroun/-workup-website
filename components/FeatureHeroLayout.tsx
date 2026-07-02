@@ -134,7 +134,7 @@ function WhiteBox({
             fontWeight: "bold",
             color: "#1A2B4A",
             lineHeight: 1.3,
-            marginBottom: "20px",
+            marginBottom: "6px",
           }}
         >
           {section.title}
@@ -144,7 +144,7 @@ function WhiteBox({
             fontSize: "13px",
             color: "#6b7280",
             lineHeight: 1.7,
-            marginBottom: "20px",
+            marginBottom: "6px",
           }}
         >
           {section.desc}

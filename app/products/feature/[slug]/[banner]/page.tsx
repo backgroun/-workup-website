@@ -28,12 +28,12 @@ export default async function BannerDetailPage({ params }: Props) {
   const products = detail.products.filter((p) => p.productId || p.name);
 
   return (
-    <main className="bg-white">
+    <main className="bg-[#F5F2ED]">
       {/* ── 상단: 좌 텍스트 / 우 섹션이미지 ───────────────────── */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-10 py-10 md:py-16">
-        <div className="flex flex-col md:flex-row md:items-center gap-8 md:gap-12">
-          {/* 좌: 기획전 타이틀 + 설명 */}
-          <div className="md:flex-1 md:min-w-0 order-2 md:order-1">
+        <div className="flex flex-col md:flex-row md:items-stretch gap-5 md:gap-8">
+          {/* 좌: 기획전 타이틀 + 설명 — 오른쪽 이미지와 동일한 높이의 흰색 패널 */}
+          <div className="md:flex-1 md:min-w-0 order-2 md:order-1 bg-white flex flex-col justify-center px-6 py-8 md:px-10 md:py-12">
             {detail.editorialTitle && (
               <p className="text-[11px] tracking-[0.25em] text-[#ff550c] uppercase mb-4">
                 {detail.editorialTitle}
