@@ -31,6 +31,7 @@ type Banner = {
   section_bg: string;
   image_url: string;
   items: ProductItem[];
+  detail_items?: ProductItem[];  // 상세페이지 전용 추가 상품 (메인 items 뒤에 노출)
   tags?: HeroTag[];   // 섹션 이미지 위 상품 핫스팟 (단일 x/y 좌표 사용)
 };
 
@@ -112,9 +113,13 @@ function ProductPicker({ products, value, onSelect }: {
 
   useEffect(() => { if (!open) setQuery(value); }, [value, open]);
 
-  const results = query.trim()
-    ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
-    : products.slice(0, 8);
+  const MAX_RESULTS = 50;
+  const q = query.trim().toLowerCase();
+  const matched = q
+    ? products.filter((p) => p.name.toLowerCase().includes(q))
+    : products;
+  const results = matched.slice(0, MAX_RESULTS);
+  const overflow = matched.length - results.length;
 
   return (
     <div className="relative">
@@ -133,7 +138,7 @@ function ProductPicker({ products, value, onSelect }: {
         </svg>
       </div>
       {open && results.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 top-full mt-1 border border-gray-200 rounded-lg bg-white shadow-lg max-h-44 overflow-y-auto">
+        <div className="absolute z-50 left-0 right-0 top-full mt-1 border border-gray-200 rounded-lg bg-white shadow-lg max-h-64 overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
@@ -159,6 +164,11 @@ function ProductPicker({ products, value, onSelect }: {
               </div>
             </button>
           ))}
+          {overflow > 0 && (
+            <p className="px-3 py-2 text-[11px] text-gray-400 bg-gray-50 sticky bottom-0 border-t border-gray-100">
+              외 {overflow}개 더 있음 — 검색어를 입력해 좁혀보세요
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -1177,6 +1187,18 @@ function BannerEditor({ banner, label, onChange, products }: {
     onChange({ items: next });
   }
 
+  // 상세페이지 전용 추가 상품 (가변 개수)
+  const detailItems: ProductItem[] = banner.detail_items ?? [];
+  function addDetailItem() {
+    onChange({ detail_items: [...detailItems, emptyItem()] });
+  }
+  function updateDetailItem(idx: number, patch: Partial<ProductItem>) {
+    onChange({ detail_items: detailItems.map((it, i) => (i === idx ? { ...it, ...patch } : it)) });
+  }
+  function removeDetailItem(idx: number) {
+    onChange({ detail_items: detailItems.filter((_, i) => i !== idx) });
+  }
+
   return (
     <div className="space-y-4">
       {/* 타이틀 + 설명 한 줄 (single-line inputs) */}
@@ -1245,6 +1267,83 @@ function BannerEditor({ banner, label, onChange, products }: {
 
       {/* 기획전 합성기 — 모델컷 3장을 옷 변형 없이 한 배너로 합쳐 섹션 이미지로 적용 */}
       <BannerComposer items={items3} onApply={(url) => onChange({ image_url: url })} />
+
+      {/* 상세페이지 추가 상품 — 섹션이미지 클릭 시 이동하는 상세페이지에만 노출 (메인 3개 뒤) */}
+      <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/60">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[13px] font-semibold text-[#1A2B4A]">상세페이지 추가 상품</p>
+          <button
+            type="button"
+            onClick={addDetailItem}
+            className="flex items-center gap-1 text-[12px] font-medium text-white bg-[#1A2B4A] hover:bg-[#26385c] px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            상품 추가
+          </button>
+        </div>
+        <p className="text-[11px] text-gray-400 mb-3">
+          섹션이미지를 클릭하면 열리는 상세페이지에서 위 연결상품 3개 뒤에 이어서 노출됩니다. (메인 화면에는 표시되지 않음)
+        </p>
+
+        {detailItems.length === 0 ? (
+          <div className="text-center py-5 text-[12px] text-gray-400 border border-dashed border-gray-200 rounded-lg bg-white">
+            추가된 상품이 없습니다. &lsquo;상품 추가&rsquo;로 상세페이지에만 노출할 제품을 담아보세요.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {detailItems.map((item, idx) => (
+              <div key={item.id} className="flex gap-3 items-start bg-white border border-gray-200 rounded-lg p-2.5">
+                {/* 썸네일 */}
+                <div className="flex-shrink-0 w-14 h-14 rounded-md overflow-hidden border border-gray-100 bg-gray-100 flex items-center justify-center">
+                  {item.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[9px] text-gray-300 font-bold">WU</span>
+                  )}
+                </div>
+                {/* 필드 */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <ProductPicker
+                    products={products}
+                    value={item.name}
+                    onSelect={(p) => updateDetailItem(idx, { product_id: p.id, name: p.name, price: p.price, image_url: p.imageUrl ?? "" })}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) => updateDetailItem(idx, { name: e.target.value })}
+                      placeholder="상품명"
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                    />
+                    <input
+                      type="text"
+                      value={item.price}
+                      onChange={(e) => updateDetailItem(idx, { price: e.target.value })}
+                      placeholder="가격"
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                    />
+                  </div>
+                </div>
+                {/* 삭제 */}
+                <button
+                  type="button"
+                  onClick={() => removeDetailItem(idx)}
+                  className="flex-shrink-0 text-gray-300 hover:text-red-500 transition-colors p-1"
+                  aria-label="삭제"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

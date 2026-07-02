@@ -87,7 +87,7 @@ function WhiteBox({
       }}
     >
       {/* 이미지 — 440:495 = 8:9 컨테이너, object-contain으로 잘림 없음 */}
-      <div className="relative w-full flex-shrink-0" style={{ paddingBottom: "112.5%" }}>
+      <div className="group/img relative w-full flex-shrink-0" style={{ paddingBottom: "112.5%" }}>
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           {section.imageUrl ? (
             <img
@@ -99,6 +99,21 @@ function WhiteBox({
             <span className="text-gray-300 text-6xl font-black select-none">WU</span>
           )}
         </div>
+        {/* 섹션이미지 클릭 → 배너 상세 기획전 페이지 (핫스팟 태그보다 아래 z-index) */}
+        {section.detailHref && (
+          <Link
+            href={section.detailHref}
+            aria-label={`${section.title} 기획전 보기`}
+            className="absolute inset-0 z-[2]"
+          >
+            <span className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/95 text-[#1A2B4A] text-[11px] font-semibold px-2.5 py-1.5 shadow-md opacity-0 translate-y-1 group-hover/img:opacity-100 group-hover/img:translate-y-0 transition-all">
+              기획전 보기
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Link>
+        )}
         <SectionTags tags={section.tags} />
       </div>
 
@@ -406,6 +421,21 @@ export default function FeatureHeroLayout({
                   />
                 ) : (
                   <span className="text-gray-300 text-5xl font-black select-none">WU</span>
+                )}
+                {/* 섹션이미지 클릭 → 배너 상세 기획전 페이지 */}
+                {section.detailHref && (
+                  <Link
+                    href={section.detailHref}
+                    aria-label={`${section.title} 기획전 보기`}
+                    className="absolute inset-0 z-[2]"
+                  >
+                    <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-white/95 text-[#1A2B4A] text-[11px] font-semibold px-2.5 py-1.5 shadow-md">
+                      기획전 보기
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </Link>
                 )}
                 <SectionTags tags={section.tags} />
               </div>

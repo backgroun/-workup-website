@@ -36,6 +36,8 @@ export type EditorialSection = {
   desc: string;
   imageUrl?: string;
   items: [EditorialSectionItem, EditorialSectionItem, EditorialSectionItem];
+  detailItems?: EditorialSectionItem[]; // 상세페이지 전용 추가 상품 (메인 items 뒤에 노출)
+  detailHref?: string;                  // 섹션이미지 클릭 시 이동할 상세페이지 경로
   tags?: EditorialSectionTag[];
 };
 

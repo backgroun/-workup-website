@@ -6,11 +6,13 @@ import { logAudit } from "@/lib/audit-server";
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
+  // Supabase(PostgREST) 기본 반환 상한이 1000행이라 등록 상품이 많으면 잘림 → 범위를 명시해 전체 조회
   const { data, error } = await supabase
     .from("products")
     .select("*")
     .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .range(0, 9999);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json((data ?? []).map(mapFromDb));
 }
