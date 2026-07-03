@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { type Store } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
+import { trackStoreEvent } from "@/lib/track";
 
 const NEARBY_COUNT = 5;
 const KAKAO_CHANNEL = "https://pf.kakao.com/_workup"; // 실제 채널 URL로 교체
@@ -46,6 +47,7 @@ function KakaoDirBtn({ store, userCoords: passedCoords }: {
   };
 
   const handleClick = () => {
+    trackStoreEvent("directions_kakao", { id: store.id, name: store.name });
     if (coords) { openKakao(coords); return; }
     if (!navigator.geolocation) { openKakao(null); return; }
     setLoading(true);
@@ -95,6 +97,7 @@ function NaverDirBtn({ store, userCoords: passedCoords }: {
   };
 
   const handleClick = () => {
+    trackStoreEvent("directions_naver", { id: store.id, name: store.name });
     if (coords) { openNaver(coords); return; }
     if (!navigator.geolocation) { openNaver(null); return; }
     setLoading(true);
@@ -544,6 +547,7 @@ export default function StoreLocator({ id, stores }: { id?: string; stores: Stor
                       const next = isOpen ? null : store.id;
                       setExpanded(next);
                       if (!isOpen) {
+                        trackStoreEvent("list_click", { id: store.id, name: store.name });
                         setSelectedStore(store);
                         setMapCenter({ lat: store.lat, lng: store.lng, level: 5 });
                         mapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -609,6 +613,7 @@ export default function StoreLocator({ id, stores }: { id?: string; stores: Stor
                         {/* 전화하기 */}
                         <a
                           href={`tel:${store.phone.replace(/-/g, "")}`}
+                          onClick={() => trackStoreEvent("call", { id: store.id, name: store.name })}
                           className="flex flex-1 md:flex-none items-center justify-center gap-1.5 bg-[#1A2B4A] text-white text-xs px-3 py-2 hover:bg-[#243d5e] transition-colors"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

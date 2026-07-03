@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { trackStoreEvent } from "@/lib/track";
 
 type Props = {
+  storeId: number;
   name: string;
   address: string;
   lat: number | null;
@@ -10,7 +12,7 @@ type Props = {
 
 // 길찾기 버튼 — 클릭 시 GPS로 출발지를 '내 위치'로 채워 지도 앱/웹을 연다.
 // 카카오는 좌표 순서가 (위도, 경도), 네이버는 (경도, 위도)로 서로 반대인 점에 주의.
-export default function DirectionButtons({ name, address, lat, lng }: Props) {
+export default function DirectionButtons({ storeId, name, address, lat, lng }: Props) {
   const [loading, setLoading] = useState<"kakao" | "naver" | null>(null);
   const hasCoords = lat != null && lng != null;
 
@@ -31,6 +33,7 @@ export default function DirectionButtons({ name, address, lat, lng }: Props) {
   };
 
   const handle = (which: "kakao" | "naver") => {
+    trackStoreEvent(which === "kakao" ? "directions_kakao" : "directions_naver", { id: storeId, name });
     const build = which === "kakao" ? buildKakao : buildNaver;
     const go = (c: { lat: number; lng: number } | null) =>
       window.open(build(c), "_blank", "noopener,noreferrer");

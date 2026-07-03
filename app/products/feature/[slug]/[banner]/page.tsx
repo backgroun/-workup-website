@@ -34,9 +34,9 @@ export default async function BannerDetailPage({ params }: Props) {
         <div className="flex flex-col md:flex-row md:items-stretch gap-5 md:gap-8">
           {/* 좌: 기획전 타이틀 + 설명 — 오른쪽 이미지와 동일한 높이의 흰색 패널 */}
           <div className="md:flex-1 md:min-w-0 order-2 md:order-1 bg-white flex flex-col justify-center px-6 py-8 md:px-10 md:py-12">
-            {detail.editorialTitle && (
+            {detail.label && (
               <p className="text-[11px] tracking-[0.25em] text-[#ff550c] uppercase mb-4">
-                {detail.editorialTitle}
+                {detail.label}
               </p>
             )}
             <h1 className="text-2xl md:text-4xl font-bold text-[#1A2B4A] leading-snug mb-5 whitespace-pre-line">
@@ -89,7 +89,7 @@ export default async function BannerDetailPage({ params }: Props) {
                     <span className="text-gray-300 text-sm font-black">WU</span>
                   )}
                 </div>
-                <p className="text-[13px] md:text-sm text-[#1A2B4A] leading-snug mb-1 line-clamp-2">{p.name}</p>
+                <p className="text-[13px] md:text-sm text-[#1A2B4A] leading-snug mb-1 line-clamp-2">{p.displayName}</p>
                 {p.price && <p className="text-sm md:text-[15px] font-bold text-[#1A2B4A]">{p.price}</p>}
               </Link>
             ))}

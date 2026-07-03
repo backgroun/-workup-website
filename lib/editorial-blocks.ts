@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-server";
 import { editorials } from "@/data/editorial";
+import { productDisplayName } from "@/data/products";
 import type { Editorial, EditorialSection, EditorialSectionItem } from "@/data/editorial";
 
 // ── DB 원본 타입 ──────────────────────────────────────────────
@@ -7,6 +8,7 @@ export type HeroTag = { id: string; x: number; y: number; pc_x?: number; pc_y?: 
 export type ProductItem = { id: string; product_id: string; name: string; price: string; image_url: string; bg: string };
 export type Banner = {
   title: string; desc: string; section_bg: string; image_url: string;
+  label?: string;               // 상세페이지 상단 라벨 (배너별 기획전명)
   items: ProductItem[];
   detail_items?: ProductItem[]; // 상세페이지 전용 추가 상품
   tags?: HeroTag[];
@@ -113,16 +115,39 @@ export async function getHomeEditorials(): Promise<{ editorial: Editorial; rever
 }
 
 // ── 배너별 상세페이지 데이터 ──────────────────────────────────
+export type DetailProduct = EditorialSectionItem & { displayName: string };
 export type BannerDetail = {
   blockId: string;
   bannerIndex: number;
-  editorialTitle: string;      // 상위 기획전(블록) 제목 — 브레드크럼/메타용
+  editorialTitle: string;      // 상위 기획전(블록) 제목 — 메타용
+  label: string;               // 상단 라벨 (배너별 기획전명, 없으면 블록 제목 폴백)
   title: string;
   desc: string;
   imageUrl?: string;           // 배너 섹션 이미지
   bg: string;
-  products: EditorialSectionItem[]; // 메인 items + detail_items 합본
+  products: DetailProduct[];   // 메인 items + detail_items 합본 (브랜드 접두 포함)
 };
+
+// 상품 id → 브랜드 정보 조회 (제품명 앞 "[브랜드]" 접두용)
+async function fetchBrandMap(ids: string[]): Promise<Record<string, { brand?: string; hide: boolean }>> {
+  const map: Record<string, { brand?: string; hide: boolean }> = {};
+  const valid = ids.filter(Boolean);
+  if (valid.length === 0) return map;
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("products")
+      .select("id, brand, hide_brand_prefix")
+      .in("id", valid);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (data ?? []).forEach((r: any) => {
+      map[r.id] = { brand: r.brand ?? undefined, hide: r.hide_brand_prefix ?? false };
+    });
+  } catch {
+    // 조회 실패 시 브랜드 없이 진행
+  }
+  return map;
+}
 
 export async function getBannerDetail(blockId: string, bannerIndex: number): Promise<BannerDetail | null> {
   if (bannerIndex < 1 || bannerIndex > 4) return null;
@@ -134,14 +159,22 @@ export async function getBannerDetail(blockId: string, bannerIndex: number): Pro
   const banner = [block.banner1, block.banner2, block.banner3, block.banner4][bannerIndex - 1];
   if (!banner) return null;
 
-  const products = [...mapItems(banner.items), ...mapItems(banner.detail_items)]
+  const merged = [...mapItems(banner.items), ...mapItems(banner.detail_items)]
     // 중복 상품(productId 기준) 제거 — 메인/추가에 같은 상품이 들어간 경우
     .filter((p, i, arr) => !p.productId || arr.findIndex((q) => q.productId === p.productId) === i);
+
+  // 브랜드 접두명 구성 — 제품 DB에서 brand/hide_brand_prefix 조회
+  const brandMap = await fetchBrandMap(merged.map((p) => p.productId));
+  const products: DetailProduct[] = merged.map((p) => {
+    const b = brandMap[p.productId];
+    return { ...p, displayName: productDisplayName({ name: p.name, brand: b?.brand, hideBrandPrefix: b?.hide }) };
+  });
 
   return {
     blockId: block.id,
     bannerIndex,
     editorialTitle: block.hero?.title || "",
+    label: banner.label?.trim() || block.hero?.title || "",
     title: banner.title || "",
     desc: banner.desc || "",
     imageUrl: banner.image_url || undefined,

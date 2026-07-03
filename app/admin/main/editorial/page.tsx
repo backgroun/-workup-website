@@ -28,6 +28,7 @@ type HeroTag = {
 type Banner = {
   title: string;
   desc: string;
+  label?: string;     // 상세페이지 상단 라벨 (배너별 기획전명) — 예: "그대 이름은 바람 바람 바람"
   section_bg: string;
   image_url: string;
   items: ProductItem[];
@@ -1201,6 +1202,14 @@ function BannerEditor({ banner, label, onChange, products }: {
 
   return (
     <div className="space-y-4">
+      {/* 상단 라벨 (상세페이지 상단 기획전명 — 배너별로 개별 노출) */}
+      <Field
+        label="상단 라벨 (상세페이지 기획전명)"
+        value={banner.label ?? ""}
+        onChange={(v) => onChange({ label: v })}
+        placeholder="그대 이름은 바람 바람 바람"
+      />
+
       {/* 타이틀 + 설명 한 줄 (single-line inputs) */}
       <div className="flex gap-3 items-end">
         <div className="flex-shrink-0" style={{ width: "220px" }}>

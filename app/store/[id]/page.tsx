@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase-server";
 import DirectionButtons from "./_components/DirectionButtons";
+import TrackView from "./_components/TrackView";
+import TrackedLink from "@/components/TrackedLink";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -269,25 +271,32 @@ export default async function StoreDetailPage({ params }: Props) {
         {/* CTA 섹션 */}
         <div className="px-5 py-6 space-y-3">
           <DirectionButtons
+            storeId={store.id}
             name={store.name}
             address={store.address}
             lat={store.lat}
             lng={store.lng}
           />
           {store.phone && (
-            <a
+            <TrackedLink
               href={`tel:${store.phone}`}
+              eventType="call"
+              storeId={store.id}
+              storeName={store.name}
               className="flex items-center justify-center gap-2 w-full py-4 bg-white border-2 border-[#1A2B4A] text-[#1A2B4A] font-bold text-base rounded-xl hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               전화 문의 ({store.phone})
-            </a>
+            </TrackedLink>
           )}
           {store.kakao_channel_url && (
-            <a
+            <TrackedLink
               href={store.kakao_channel_url}
+              eventType="kakao_chat"
+              storeId={store.id}
+              storeName={store.name}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-4 bg-[#FEE500] text-[#3C1E1E] font-bold text-base rounded-xl hover:bg-[#f5dc00] transition-colors"
@@ -296,9 +305,10 @@ export default async function StoreDetailPage({ params }: Props) {
                 <path d="M12 3C6.477 3 2 6.477 2 10.5c0 2.603 1.543 4.9 3.9 6.32l-.975 3.573c-.087.318.268.572.55.39L9.662 18.5A11.01 11.01 0 0012 18.75c5.523 0 10-3.697 10-8.25S17.523 3 12 3z" />
               </svg>
               카카오톡 상담
-            </a>
+            </TrackedLink>
           )}
         </div>
+        <TrackView storeId={store.id} storeName={store.name} />
 
         {/* 전국 매장 보기 링크 */}
         <div className="px-5 pb-8">
