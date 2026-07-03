@@ -2,9 +2,10 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem, InstagramMedia } from "@/data/products";
+import type { Product, DetailBlock, MainExpose, Season, SizeGuide, SizeGuideLine, DetailInfoItem, InstagramMedia } from "@/data/products";
 import { parseInstagramUrl } from "@/lib/instagram-feed";
 import { resizeImageToMaxWidth } from "@/lib/imageResize";
+import SizeGuideLinesOverlay from "@/components/SizeGuideLinesOverlay";
 
 // 사이즈 가이드 이미지 기준 폭 — 초과 시 이 폭으로 축소, 이하면 원본 그대로 업로드
 const SIZE_GUIDE_MAX_WIDTH = 1200;
@@ -856,6 +857,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     setSgImageDim(null); setSgImageResized(false); setSgDiagramDim(null); setSgDiagramResized(false);
   };
   const sgSetLabel = (label: string) => setSG({ label });
+  // 측정 위치 안내 이미지 위 가이드선 — 선택 기능(추가하지 않으면 오버레이 표시 안 함)
+  const sgLines = sg.guideLines ?? [];
+  const sgAddLine = (preset: SizeGuideLine) => setSG({ guideLines: [...sgLines, { ...preset }] });
+  const sgUpdateLine = (i: number, patch: Partial<SizeGuideLine>) =>
+    setSG({ guideLines: sgLines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)) });
+  const sgRemoveLine = (i: number) => setSG({ guideLines: sgLines.filter((_, idx) => idx !== i) });
   const sgCols = sg.columns ?? [];
   const sgRows = sg.rows ?? [];
   const sgAddColumn = () => setSG({ columns: [...sgCols, ""], rows: sgRows.map((r) => ({ cells: [...r.cells, ""] })) });
