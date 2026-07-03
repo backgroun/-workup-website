@@ -1289,6 +1289,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     onLoad={(e) => setSgDiagramDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} />
                   <button type="button" onClick={() => { setSG({ guideImage: "" }); setSgDiagramDim(null); setSgDiagramResized(false); }}
                     className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
+                  {sgLines.length > 0 && <SizeGuideLinesOverlay lines={sgLines} />}
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex-shrink-0 text-center px-2">
@@ -1305,6 +1306,60 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <p className="text-[11px] text-gray-300 mt-1">기준 폭 {SIZE_GUIDE_MAX_WIDTH}px — 초과 시 자동 축소, 이하면 원본 그대로.</p>
               </div>
             </div>
+
+            {/* 가이드선(어깨/가슴/소매/총장 등) — 측정 위치 안내 이미지가 있을 때만 선택적으로 사용 */}
+            {sg.guideImage && (
+              <div className="mb-5 pb-5 border-b border-gray-100">
+                <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                  <p className="text-xs font-semibold text-[#1A2B4A]">가이드선 <span className="text-gray-400 font-normal">(선택 — 추가 안 하면 표시 안 됨)</span></p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SIZE_GUIDE_LINE_PRESETS.map((preset) => (
+                      <button key={preset.label} type="button" onClick={() => sgAddLine(preset)}
+                        className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                        + {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {sgLines.length > 0 && (
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="relative w-full md:w-56 flex-shrink-0 border border-gray-200 rounded overflow-hidden bg-gray-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={sg.guideImage} alt="가이드선 미리보기" className="w-full h-auto block" />
+                      <SizeGuideLinesOverlay lines={sgLines} />
+                    </div>
+                    <div className="flex-1 w-full space-y-2">
+                      {sgLines.map((l, i) => (
+                        <div key={i} className="flex flex-wrap items-center gap-1.5 p-2 bg-gray-50 rounded border border-gray-100">
+                          <input value={l.label} onChange={(e) => sgUpdateLine(i, { label: e.target.value })}
+                            placeholder="라벨 (예: 어깨)" className="w-20 px-2 py-1 text-xs border border-gray-200 rounded" />
+                          <select value={l.orientation} onChange={(e) => sgUpdateLine(i, { orientation: e.target.value as SizeGuideLine["orientation"] })}
+                            className="px-2 py-1 text-xs border border-gray-200 rounded">
+                            <option value="horizontal">가로</option>
+                            <option value="vertical">세로</option>
+                          </select>
+                          <label className="flex items-center gap-1 text-[11px] text-gray-500">위치
+                            <input type="number" min={0} max={100} value={l.pos} onChange={(e) => sgUpdateLine(i, { pos: Number(e.target.value) })}
+                              className="w-14 px-1.5 py-1 text-xs border border-gray-200 rounded" />%
+                          </label>
+                          <label className="flex items-center gap-1 text-[11px] text-gray-500">시작
+                            <input type="number" min={0} max={100} value={l.start} onChange={(e) => sgUpdateLine(i, { start: Number(e.target.value) })}
+                              className="w-14 px-1.5 py-1 text-xs border border-gray-200 rounded" />%
+                          </label>
+                          <label className="flex items-center gap-1 text-[11px] text-gray-500">끝
+                            <input type="number" min={0} max={100} value={l.end} onChange={(e) => sgUpdateLine(i, { end: Number(e.target.value) })}
+                              className="w-14 px-1.5 py-1 text-xs border border-gray-200 rounded" />%
+                          </label>
+                          <button type="button" onClick={() => sgRemoveLine(i)}
+                            className="ml-auto px-2 py-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors">삭제</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {sg.mode === "image" ? (
               <div className="flex gap-4 items-start">
