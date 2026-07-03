@@ -19,16 +19,6 @@ CREATE INDEX IF NOT EXISTS store_events_created_idx ON store_events (created_at)
 -- 기록은 서버 API(service role)로만, 조회는 관리자 API(service role)로만.
 ALTER TABLE store_events ENABLE ROW LEVEL SECURITY;
 
--- 기간별 지점·행동별 집계 (서버 GROUP BY → 작은 결과만 반환)
-CREATE OR REPLACE FUNCTION store_event_stats(since TIMESTAMPTZ)
-RETURNS TABLE(store_id INTEGER, store_name TEXT, event_type TEXT, cnt BIGINT)
-LANGUAGE sql STABLE AS $$
-  SELECT
-    e.store_id,
-    MAX(e.store_name) AS store_name,
-    e.event_type,
-    COUNT(*) AS cnt
-  FROM store_events e
-  WHERE e.created_at >= since
-  GROUP BY e.store_id, e.event_type
-$$;
+-- service_role에 테이블·시퀀스 권한 부여 (앱이 이 role로 기록/조회)
+GRANT ALL PRIVILEGES ON TABLE store_events TO service_role;
+GRANT ALL PRIVILEGES ON SEQUENCE store_events_id_seq TO service_role;
