@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { getSizeGuides, type Product, type SizeGuide } from "@/data/products";
 import ProductInquiryModal from "./ProductInquiryModal";
 import InstagramFeed from "./InstagramFeed";
+import SizeGuideLinesOverlay from "./SizeGuideLinesOverlay";
 
 // 가이드에 실제 내용이 있는지 (도식/이미지/표 중 하나라도)
 function hasSizeGuideContent(g: SizeGuide): boolean {
@@ -22,8 +23,11 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
     <>
       {guide.guideImage && (
         <div className="mb-6 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
+          <div className="relative inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
+            {guide.guideLines && guide.guideLines.length > 0 && <SizeGuideLinesOverlay lines={guide.guideLines} />}
+          </div>
         </div>
       )}
       {hasImage ? (
