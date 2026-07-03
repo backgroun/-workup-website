@@ -30,6 +30,13 @@ const SIZE_GUIDE_ROW_TEMPLATES: { label: string; firstCol: string; rows: string[
   { label: "바지", firstCol: "항목", rows: ["허리", "힙", "밑위", "인심(다리길이)", "허벅지너비", "밑단 너비"] },
   { label: "상하세트", firstCol: "사이즈", rows: ["총장", "어깨너비", "가슴둘레", "허리둘레", "소매길이", "전체 팔길이", "인심(다리길이)", "허리", "밑단둘레"] },
 ];
+// 측정 위치 안내 이미지 위 가이드선 프리셋 — 클릭 시 기본 위치(%)로 추가, 이후 숫자로 미세 조정
+const SIZE_GUIDE_LINE_PRESETS: SizeGuideLine[] = [
+  { label: "어깨", orientation: "horizontal", pos: 15, start: 25, end: 75 },
+  { label: "가슴", orientation: "horizontal", pos: 45, start: 15, end: 85 },
+  { label: "소매", orientation: "vertical", pos: 8, start: 15, end: 85 },
+  { label: "총장", orientation: "vertical", pos: 92, start: 8, end: 90 },
+];
 const SEASON_OPTIONS: Season[] = ["봄/가을", "여름", "겨울"];
 const FEATURE_TAG_PRESETS = ["냉감", "방수", "방풍", "스트레치", "고내구성", "UV차단", "흡한속건", "경량", "보온", "반사"];
 const JOB_SITE_PRESETS = ["건설", "물류", "정비", "배달", "농업", "서비스", "캠핑"];
