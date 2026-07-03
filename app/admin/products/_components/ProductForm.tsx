@@ -4,6 +4,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Product, DetailBlock, MainExpose, Season, SizeGuide, DetailInfoItem, InstagramMedia } from "@/data/products";
 import { parseInstagramUrl } from "@/lib/instagram-feed";
+import { resizeImageToMaxWidth } from "@/lib/imageResize";
+
+// 사이즈 가이드 이미지 기준 폭 — 초과 시 이 폭으로 축소, 이하면 원본 그대로 업로드
+const SIZE_GUIDE_MAX_WIDTH = 1200;
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ["판매중", "품절", "판매중지", "예약판매", "진열대기"] as const;
@@ -104,7 +108,7 @@ type FormData = {
   mainExpose: string[];
   sizes: string[];
   sizePrices: { size: string; price: string }[];
-  sizeGuide: SizeGuide;
+  sizeGuides: SizeGuide[];
   detailInfo: DetailInfoItem[];
   customSizeInput: string;
   colorName: string;
@@ -158,7 +162,13 @@ function toForm(p?: Product): FormData {
     sizes: (p?.sizes ?? DEFAULT_SIZES),
     sizePrices: (p?.sizePrices ?? []).map((sp) => ({ size: sp.size, price: sp.price })),
     // 안내 문구는 기본 문구로 미리 채운다(기존 상품 포함). note가 명시적으로 ""이면(사용자가 지운 것) 그대로 유지
-    sizeGuide: p?.sizeGuide ? { ...p.sizeGuide, note: p.sizeGuide.note ?? SIZE_NOTE_DEFAULT } : { ...SIZE_GUIDE_DEFAULT },
+    // 사이즈 가이드 목록 — 신규(sizeGuides) 우선, 레거시 단일(sizeGuide) 수용, 없으면 기본 1개
+    sizeGuides: (() => {
+      const list = (p?.sizeGuides && p.sizeGuides.length > 0)
+        ? p.sizeGuides
+        : (p?.sizeGuide ? [p.sizeGuide] : [{ ...SIZE_GUIDE_DEFAULT }]);
+      return list.map((g) => ({ ...g, note: g.note ?? SIZE_NOTE_DEFAULT }));
+    })(),
     detailInfo: p?.detailInfo ?? [],
     customSizeInput: "",
     colorName: "",
@@ -238,6 +248,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingBlockIdx, setUploadingBlockIdx] = useState<number | null>(null);
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
   const [uploadingSizeDiagram, setUploadingSizeDiagram] = useState(false);
+  const [activeGuideIdx, setActiveGuideIdx] = useState(0);   // 편집 중인 사이즈 가이드 인덱스
+  // 사이즈 가이드 이미지 크기 표시 (표시용 · onLoad로 실제 픽셀 읽음) + 방금 업로드 시 축소 여부
+  const [sgImageDim, setSgImageDim] = useState<{ w: number; h: number } | null>(null);
+  const [sgImageResized, setSgImageResized] = useState(false);
+  const [sgDiagramDim, setSgDiagramDim] = useState<{ w: number; h: number } | null>(null);
+  const [sgDiagramResized, setSgDiagramResized] = useState(false);
   const [uploadingIgIdx, setUploadingIgIdx] = useState<number | null>(null);
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -809,9 +825,30 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("sizePrices", price.trim() ? [...others, { size, price: price.trim() }] : others);
   };
 
-  // ── 사이즈 가이드 (이미지 / 행·열 표) ──────────────────────────────────────
-  const sg = form.sizeGuide;
-  const setSG = (patch: Partial<SizeGuide>) => set("sizeGuide", { ...sg, ...patch });
+  // ── 사이즈 가이드 (여러 개 가능: 상하세트 등) ──────────────────────────────
+  const sizeGuides = form.sizeGuides.length > 0 ? form.sizeGuides : [{ ...SIZE_GUIDE_DEFAULT }];
+  const gIdx = Math.min(activeGuideIdx, sizeGuides.length - 1);   // 현재 편집 중인 가이드
+  const sg = sizeGuides[gIdx];
+  const setSG = (patch: Partial<SizeGuide>) =>
+    set("sizeGuides", sizeGuides.map((g, i) => (i === gIdx ? { ...g, ...patch } : g)));
+  // 가이드 추가/삭제/라벨/전환
+  const sgAddGuide = () => {
+    set("sizeGuides", [...sizeGuides, { ...SIZE_GUIDE_DEFAULT, label: "" }]);
+    setActiveGuideIdx(sizeGuides.length);
+    setSgImageDim(null); setSgImageResized(false); setSgDiagramDim(null); setSgDiagramResized(false);
+  };
+  const sgRemoveGuide = (i: number) => {
+    if (sizeGuides.length <= 1) { set("sizeGuides", [{ ...SIZE_GUIDE_DEFAULT }]); setActiveGuideIdx(0); return; }
+    if (!confirm("이 사이즈 가이드를 삭제할까요?")) return;
+    const next = sizeGuides.filter((_, idx) => idx !== i);
+    set("sizeGuides", next);
+    setActiveGuideIdx((prev) => Math.max(0, Math.min(prev >= i ? prev - 1 : prev, next.length - 1)));
+  };
+  const sgSwitchGuide = (i: number) => {
+    setActiveGuideIdx(i);
+    setSgImageDim(null); setSgImageResized(false); setSgDiagramDim(null); setSgDiagramResized(false);
+  };
+  const sgSetLabel = (label: string) => setSG({ label });
   const sgCols = sg.columns ?? [];
   const sgRows = sg.rows ?? [];
   const sgAddColumn = () => setSG({ columns: [...sgCols, ""], rows: sgRows.map((r) => ({ cells: [...r.cells, ""] })) });
@@ -884,9 +921,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleSizeGuideFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploadError(""); setUploadingSizeGuide(true);
-    const url = await uploadFile(file);
+    // 기준 폭 초과 시 축소, 이하면 원본 그대로
+    const r = await resizeImageToMaxWidth(file, SIZE_GUIDE_MAX_WIDTH);
+    const url = await uploadFile(r.file);
     setUploadingSizeGuide(false);
-    if (url) setSG({ image: url });
+    if (url) { setSG({ image: url }); setSgImageResized(r.resized); }
     e.target.value = "";
   };
 
@@ -894,9 +933,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleSizeDiagramFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploadError(""); setUploadingSizeDiagram(true);
-    const url = await uploadFile(file);
+    const r = await resizeImageToMaxWidth(file, SIZE_GUIDE_MAX_WIDTH);
+    const url = await uploadFile(r.file);
     setUploadingSizeDiagram(false);
-    if (url) setSG({ guideImage: url });
+    if (url) { setSG({ guideImage: url }); setSgDiagramResized(r.resized); }
     e.target.value = "";
   };
 
@@ -1033,7 +1073,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       colors: form.colors,
       sizes: form.sizes,
       sizePrices: form.sizePrices.filter((sp) => form.sizes.includes(sp.size) && sp.price.trim()),
-      sizeGuide: form.sizeGuide,
+      sizeGuides: form.sizeGuides,
+      sizeGuide: form.sizeGuides[0],   // 레거시 하위호환
       detailInfo: form.detailInfo.filter((d) => d.label.trim() || d.value.trim()),
       relatedIds: form.relatedIds,
       metaTitle: form.metaTitle || undefined,
@@ -1183,8 +1224,30 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
           {/* ── 사이즈 가이드 (사이즈 및 소재 탭) ── */}
           <section className="bg-white border border-gray-200 p-7 rounded-xl">
+            {/* 가이드 선택 탭 — 상하세트 등 여러 개(상의/하의…) 등록 */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-4">
+              {sizeGuides.map((g, i) => (
+                <button key={i} type="button" onClick={() => sgSwitchGuide(i)}
+                  className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                    i === gIdx ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
+                  }`}>
+                  {g.label?.trim() || `가이드 ${i + 1}`}
+                </button>
+              ))}
+              <button type="button" onClick={sgAddGuide}
+                className="px-3 py-1.5 text-xs rounded-lg border border-dashed border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                + 가이드 추가
+              </button>
+              <span className="text-[11px] text-gray-400 ml-1">상하세트는 상의·하의를 따로 추가하세요</span>
+            </div>
+
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
+                <input value={sg.label ?? ""} onChange={(e) => sgSetLabel(e.target.value)}
+                  placeholder="라벨 (예: 상의 / 하의)"
+                  className="w-32 border border-gray-200 px-2 py-1 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
+              </div>
               <div className="flex items-center gap-2">
                 <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
                   {(["image", "table"] as const).map((m) => (
@@ -1195,7 +1258,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   ))}
                 </div>
                 <button type="button" onClick={sgClearAll}
-                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">전체 삭제</button>
+                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors">내용 비우기</button>
+                {sizeGuides.length > 1 && (
+                  <button type="button" onClick={() => sgRemoveGuide(gIdx)}
+                    className="px-3 py-1.5 text-[11px] border border-red-200 text-red-500 hover:bg-red-50 rounded transition-colors">가이드 삭제</button>
+                )}
               </div>
             </div>
 
@@ -1204,8 +1271,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               {sg.guideImage ? (
                 <div className="relative w-40 border border-gray-200 rounded overflow-hidden bg-gray-50 flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block" />
-                  <button type="button" onClick={() => setSG({ guideImage: "" })}
+                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block"
+                    onLoad={(e) => setSgDiagramDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} />
+                  <button type="button" onClick={() => { setSG({ guideImage: "" }); setSgDiagramDim(null); setSgDiagramResized(false); }}
                     className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
                 </div>
               ) : (
@@ -1217,16 +1285,21 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <div className="flex-1">
                 <p className="text-xs font-semibold text-[#1A2B4A] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
                 <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
+                {sg.guideImage && sgDiagramDim && (
+                  <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgDiagramDim.w} × {sgDiagramDim.h}px</b>{sgDiagramResized && <span className="text-[#ff550c]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
+                )}
+                <p className="text-[11px] text-gray-300 mt-1">기준 폭 {SIZE_GUIDE_MAX_WIDTH}px — 초과 시 자동 축소, 이하면 원본 그대로.</p>
               </div>
             </div>
 
             {sg.mode === "image" ? (
               <div className="flex gap-4 items-start">
                 {sg.image ? (
-                  <div className="relative w-44 border border-gray-200 rounded overflow-hidden">
+                  <div className="relative w-44 border border-gray-200 rounded overflow-hidden flex-shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={sg.image} alt="사이즈 가이드" className="w-full h-auto block" />
-                    <button type="button" onClick={() => setSG({ image: "" })}
+                    <img src={sg.image} alt="사이즈 가이드" className="w-full h-auto block"
+                      onLoad={(e) => setSgImageDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} />
+                    <button type="button" onClick={() => { setSG({ image: "" }); setSgImageDim(null); setSgImageResized(false); }}
                       className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
                   </div>
                 ) : (
@@ -1235,7 +1308,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <span className="text-xs">{uploadingSizeGuide ? "업로드 중…" : "＋ 이미지 등록"}</span>
                   </label>
                 )}
-                <p className="text-xs text-gray-400 leading-relaxed flex-1">사이즈표 이미지를 등록하면 &quot;사이즈 및 소재&quot; 탭에 그대로 표시됩니다.</p>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-400 leading-relaxed">사이즈표 이미지를 등록하면 &quot;사이즈 및 소재&quot; 탭에 그대로 표시됩니다.</p>
+                  {sg.image && sgImageDim && (
+                    <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgImageDim.w} × {sgImageDim.h}px</b>{sgImageResized && <span className="text-[#ff550c]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
+                  )}
+                  <p className="text-[11px] text-gray-300 mt-1">기준 폭 {SIZE_GUIDE_MAX_WIDTH}px — 초과 시 자동 축소, 이하면 원본 그대로.</p>
+                </div>
               </div>
             ) : (
               <div>

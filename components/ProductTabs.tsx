@@ -1,8 +1,67 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { Product } from "@/data/products";
+import { getSizeGuides, type Product, type SizeGuide } from "@/data/products";
 import ProductInquiryModal from "./ProductInquiryModal";
 import InstagramFeed from "./InstagramFeed";
+
+// 가이드에 실제 내용이 있는지 (도식/이미지/표 중 하나라도)
+function hasSizeGuideContent(g: SizeGuide): boolean {
+  if (g.guideImage) return true;
+  if (g.mode === "image" && g.image) return true;
+  if (g.mode === "table" && (g.rows?.length ?? 0) > 0 && (g.columns?.length ?? 0) > 0) return true;
+  return false;
+}
+
+// 사이즈 가이드 1개 렌더 (측정 도식 → 이미지/표 → 안내문구)
+function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: string }) {
+  const cols = guide.columns ?? [];
+  const rows = guide.rows ?? [];
+  const hasImage = guide.mode === "image" && !!guide.image;
+  const hasTable = guide.mode === "table" && rows.length > 0 && cols.length > 0;
+  return (
+    <>
+      {guide.guideImage && (
+        <div className="mb-6 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
+        </div>
+      )}
+      {hasImage ? (
+        <div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={guide.image} alt={`${productName} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
+          {guide.note && <p className="text-xs text-gray-400 mt-4">{guide.note}</p>}
+        </div>
+      ) : hasTable ? (
+        <div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-t border-gray-300">
+              <thead>
+                <tr className="bg-[#f5f5f5] border-b border-gray-200">
+                  {cols.map((h, i) => (
+                    <th key={i} className="px-3 py-4 text-center text-[13px] md:text-sm font-bold text-[#1A2B4A] whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, ri) => (
+                  <tr key={ri} className="border-b border-gray-100">
+                    {cols.map((_, ci) => (
+                      <td key={ci} className={`px-3 py-4 text-center text-[13px] md:text-sm whitespace-nowrap ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-slate-500"}`}>
+                        {row.cells[ci] ?? ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {guide.note && <p className="text-xs text-gray-400 mt-4">{guide.note}</p>}
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 const TABS = ["상세 정보", "사이즈 및 소재", "상품문의"] as const;
 type Tab = typeof TABS[number];
@@ -61,12 +120,8 @@ export default function ProductTabs({ product }: { product: Product }) {
   }, [product.id]);
   useEffect(() => { loadInquiries(); }, [loadInquiries]);
 
-  // 사이즈 가이드 / 상세 정보 — 관리자 등록 데이터
-  const sizeGuide = product.sizeGuide;
-  const sgCols = sizeGuide?.columns ?? [];
-  const sgRows = sizeGuide?.rows ?? [];
-  const hasSizeTable = sizeGuide?.mode === "table" && sgRows.length > 0 && sgCols.length > 0;
-  const hasSizeImage = sizeGuide?.mode === "image" && !!sizeGuide.image;
+  // 사이즈 가이드 (여러 개 가능: 상하세트 등) — 내용 있는 것만
+  const sizeGuides = getSizeGuides(product).filter(hasSizeGuideContent);
   const detailInfo = (product.detailInfo ?? []).filter((d) => d.value?.trim());
 
   const tabClass = (t: Tab) =>
@@ -159,47 +214,17 @@ export default function ProductTabs({ product }: { product: Product }) {
         <div ref={sizeRef} data-tab="사이즈 및 소재" className={`${sectionClass} border-t border-gray-100`}>
           <p className="text-base md:text-lg font-bold text-[#1A2B4A] mb-5">사이즈 가이드</p>
 
-          {/* 측정 위치 안내 도식 — 원본 크기 그대로, 가운데 정렬 (등록 시) */}
-          {sizeGuide?.guideImage && (
-            <div className="mb-6 flex justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sizeGuide.guideImage} alt={`${product.name} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
-            </div>
-          )}
-
-          {hasSizeImage ? (
-            // 이미지로 등록한 경우 — 원본 크기 그대로 (컨테이너보다 클 때만 축소)
-            <div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sizeGuide!.image} alt={`${product.name} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
-              {sizeGuide!.note && <p className="text-xs text-gray-400 mt-4">{sizeGuide!.note}</p>}
-            </div>
-          ) : hasSizeTable ? (
-            // 행·열 표로 등록한 경우
-            <div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-t border-gray-300">
-                  <thead>
-                    <tr className="bg-[#f5f5f5] border-b border-gray-200">
-                      {sgCols.map((h, i) => (
-                        <th key={i} className="px-3 py-4 text-center text-[13px] md:text-sm font-bold text-[#1A2B4A] whitespace-nowrap">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sgRows.map((row, ri) => (
-                      <tr key={ri} className="border-b border-gray-100">
-                        {sgCols.map((_, ci) => (
-                          <td key={ci} className={`px-3 py-4 text-center text-[13px] md:text-sm whitespace-nowrap ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-slate-500"}`}>
-                            {row.cells[ci] ?? ""}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {sizeGuide!.note && <p className="text-xs text-gray-400 mt-4">{sizeGuide!.note}</p>}
+          {sizeGuides.length > 0 ? (
+            <div className="space-y-10">
+              {sizeGuides.map((g, i) => (
+                <div key={i}>
+                  {/* 여러 개일 때만 라벨(상의/하의 등) 표시 */}
+                  {sizeGuides.length > 1 && g.label?.trim() && (
+                    <p className="text-sm font-bold text-[#1A2B4A] mb-3 pb-2 border-b border-gray-200">{g.label}</p>
+                  )}
+                  <SizeGuideView guide={g} productName={product.name} />
+                </div>
+              ))}
             </div>
           ) : (
             // 미등록 — 매장 문의 유도

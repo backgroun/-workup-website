@@ -11,6 +11,7 @@ export type DetailBlock = {
 };
 // 사이즈 및 소재 탭 — 이미지 등록 또는 행·열 표 직접 생성
 export type SizeGuide = {
+  label?: string;                       // 여러 개일 때 구분 라벨 (예: "상의", "하의")
   mode: "image" | "table";
   guideImage?: string;                  // 측정 위치 안내 도식(어깨·가슴·총장 등) — 표/이미지 위에 노출, 선택
   image?: string;                       // mode="image"
@@ -20,6 +21,12 @@ export type SizeGuide = {
 };
 // 상세 정보 탭 — 라벨/값 텍스트 항목
 export type DetailInfoItem = { label: string; value: string };
+
+// 사이즈 가이드 목록 정규화 — 신규(sizeGuides 배열) 우선, 없으면 레거시 단일(sizeGuide)을 배열로.
+export function getSizeGuides(p: { sizeGuides?: SizeGuide[]; sizeGuide?: SizeGuide }): SizeGuide[] {
+  if (Array.isArray(p.sizeGuides) && p.sizeGuides.length > 0) return p.sizeGuides;
+  return p.sizeGuide ? [p.sizeGuide] : [];
+}
 // 인스타 피드 — 상품별 등록 미디어 (업로드한 대표 이미지 + 선택적 인스타 게시물 링크)
 export type InstagramMedia = { image: string; url?: string };
 export type MainCategory = "공용" | "남성" | "여성" | "소품" | "현장" | "일상";
@@ -70,7 +77,8 @@ export type Product = {
   bg: string;
   colors: { name: string; hex: string }[];
   sizes?: string[];
-  sizeGuide?: SizeGuide;
+  sizeGuide?: SizeGuide;         // (레거시) 단일 가이드 — 하위호환 읽기용
+  sizeGuides?: SizeGuide[];      // 여러 사이즈 가이드 (상하세트 등: 상의/하의 등)
   detailInfo?: DetailInfoItem[];
   imageUrl?: string;
   subImages?: string[];

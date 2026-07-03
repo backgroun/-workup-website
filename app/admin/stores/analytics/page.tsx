@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 
 type StoreStat = {
   store_id: number | null;
@@ -23,7 +24,9 @@ type Totals = {
   conversions: number;
 };
 
-const RANGES = [
+type Range = { type: "preset"; days: number } | { type: "custom"; from: string; to: string };
+
+const PRESETS = [
   { label: "최근 7일", days: 7 },
   { label: "최근 30일", days: 30 },
   { label: "최근 90일", days: 90 },
@@ -32,22 +35,38 @@ const RANGES = [
 
 const RANK_BADGE = ["bg-[#ff550c] text-white", "bg-amber-400 text-white", "bg-amber-300 text-amber-900"];
 
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+
 export default function StoreAnalyticsPage() {
-  const [days, setDays] = useState(30);
+  const [range, setRange] = useState<Range>({ type: "preset", days: 30 });
+  const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 86400000)));
+  const [to, setTo] = useState(() => isoDate(new Date()));
   const [stores, setStores] = useState<StoreStat[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const rangeLabel = useMemo(
+    () =>
+      range.type === "preset"
+        ? PRESETS.find((p) => p.days === range.days)?.label ?? `${range.days}일`
+        : `${range.from} ~ ${range.to}`,
+    [range],
+  );
+
   useEffect(() => {
+    const qs =
+      range.type === "preset"
+        ? `days=${range.days}`
+        : `from=${range.from}&to=${range.to}`;
     setLoading(true);
-    fetch(`/api/admin/stores/analytics?days=${days}`)
+    fetch(`/api/admin/stores/analytics?${qs}`)
       .then((r) => (r.ok ? r.json() : { stores: [], totals: null }))
       .then((d) => {
         setStores(d.stores ?? []);
         setTotals(d.totals ?? null);
       })
       .finally(() => setLoading(false));
-  }, [days]);
+  }, [range]);
 
   const summary = [
     { label: "지점 조회", value: totals?.view ?? 0, color: "text-gray-900" },
@@ -57,6 +76,30 @@ export default function StoreAnalyticsPage() {
     { label: "전환 합계", value: totals?.conversions ?? 0, color: "text-[#ff550c]" },
   ];
 
+  const downloadExcel = () => {
+    if (stores.length === 0) return;
+    const header = ["순위", "지점", "조회", "길찾기(카카오)", "길찾기(네이버)", "전화", "카카오톡", "리스트클릭", "전환합계"];
+    const rows = stores.map((s, i) => [
+      i + 1, s.store_name, s.view, s.directions_kakao, s.directions_naver, s.call, s.kakao_chat, s.list_click, s.conversions,
+    ]);
+    const totalRow = totals
+      ? ["", "합계", totals.view, "", "", totals.call, totals.kakao_chat, totals.list_click, totals.conversions]
+      : null;
+    const aoa = [
+      [`워크업 지점 방문 분석 — 기간: ${rangeLabel}`],
+      [],
+      header,
+      ...rows,
+      ...(totalRow ? [totalRow] : []),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = header.map((_, i) => ({ wch: i === 1 ? 26 : 13 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "방문분석");
+    const tag = range.type === "preset" ? rangeLabel.replace(/\s/g, "") : `${range.from}_${range.to}`;
+    XLSX.writeFile(wb, `workup_방문분석_${tag}.xlsx`);
+  };
+
   return (
     <div>
       {/* 헤더 */}
@@ -65,22 +108,61 @@ export default function StoreAnalyticsPage() {
         <span>/</span>
         <span className="text-gray-900 font-semibold">방문 분석</span>
       </div>
-      <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">방문 분석</h1>
           <p className="text-base text-gray-400 mt-1">지점별 조회·길찾기·전화·상담 등 전환 행동을 집계합니다.</p>
         </div>
+        <button
+          onClick={downloadExcel}
+          disabled={stores.length === 0}
+          className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-200 text-sm font-semibold text-gray-700 hover:border-gray-400 transition-colors rounded disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Excel 다운로드
+        </button>
+      </div>
+
+      {/* 기간 선택 */}
+      <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-6 flex flex-wrap items-center gap-4">
         <div className="flex gap-1 border border-gray-200 rounded-lg overflow-hidden">
-          {RANGES.map((r) => (
+          {PRESETS.map((p) => (
             <button
-              key={r.days}
-              onClick={() => setDays(r.days)}
-              className={`px-3.5 py-2 text-sm font-medium transition-colors ${days === r.days ? "bg-[#1A2B4A] text-white" : "text-gray-500 hover:text-gray-900"}`}
+              key={p.days}
+              onClick={() => setRange({ type: "preset", days: p.days })}
+              className={`px-3.5 py-2 text-sm font-medium transition-colors ${range.type === "preset" && range.days === p.days ? "bg-[#1A2B4A] text-white" : "text-gray-500 hover:text-gray-900"}`}
             >
-              {r.label}
+              {p.label}
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">직접 설정</span>
+          <input
+            type="date"
+            value={from}
+            max={to}
+            onChange={(e) => setFrom(e.target.value)}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          />
+          <span className="text-gray-400">~</span>
+          <input
+            type="date"
+            value={to}
+            min={from}
+            onChange={(e) => setTo(e.target.value)}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          />
+          <button
+            onClick={() => from && to && setRange({ type: "custom", from, to })}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${range.type === "custom" ? "bg-[#1A2B4A] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          >
+            조회
+          </button>
+        </div>
+        <p className="text-sm text-gray-400 ml-auto">기간: {rangeLabel}</p>
       </div>
 
       {/* 요약 카드 */}
@@ -118,7 +200,7 @@ export default function StoreAnalyticsPage() {
                 </td></tr>
               ) : stores.length === 0 ? (
                 <tr><td colSpan={9} className="px-5 py-16 text-center text-gray-400">
-                  <p className="text-base font-medium mb-1">아직 수집된 데이터가 없습니다.</p>
+                  <p className="text-base font-medium mb-1">이 기간에 수집된 데이터가 없습니다.</p>
                   <p className="text-sm">고객이 매장 페이지를 조회하거나 길찾기·전화를 누르면 여기에 집계됩니다.</p>
                 </td></tr>
               ) : (

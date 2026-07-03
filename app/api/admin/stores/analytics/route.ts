@@ -21,21 +21,33 @@ export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const days = Number(searchParams.get("days") ?? "30");
-  const since =
-    days > 0 ? new Date(Date.now() - days * 86400000).toISOString() : new Date(0).toISOString();
+  const fromParam = searchParams.get("from"); // YYYY-MM-DD (임의 기간 시작)
+  const toParam = searchParams.get("to"); // YYYY-MM-DD (임의 기간 끝, 포함)
+  const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+
+  // 임의 기간(from~to)이 유효하면 우선, 아니면 days 프리셋 사용. 경계는 KST(+09:00) 기준.
+  let sinceIso: string;
+  let untilIso: string | null = null;
+  if (fromParam && toParam && dateRe.test(fromParam) && dateRe.test(toParam)) {
+    sinceIso = new Date(`${fromParam}T00:00:00+09:00`).toISOString();
+    untilIso = new Date(`${toParam}T23:59:59.999+09:00`).toISOString();
+  } else {
+    const days = Number(searchParams.get("days") ?? "30");
+    sinceIso = days > 0 ? new Date(Date.now() - days * 86400000).toISOString() : new Date(0).toISOString();
+  }
 
   const supabase = createAdminClient();
 
   // store_events를 페이지 단위로 모두 읽어 앱에서 집계 (RPC 불필요, Max rows 제한 회피)
   const rows: EventRow[] = [];
   const PAGE = 1000;
-  for (let from = 0; from <= 200000; from += PAGE) {
-    const { data, error } = await supabase
+  for (let offset = 0; offset <= 200000; offset += PAGE) {
+    let q = supabase
       .from("store_events")
       .select("store_id, store_name, event_type")
-      .gte("created_at", since)
-      .range(from, from + PAGE - 1);
+      .gte("created_at", sinceIso);
+    if (untilIso) q = q.lte("created_at", untilIso);
+    const { data, error } = await q.range(offset, offset + PAGE - 1);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!data || data.length === 0) break;
     rows.push(...(data as EventRow[]));
