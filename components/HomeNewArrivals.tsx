@@ -154,8 +154,8 @@ export default function HomeNewArrivals() {
           </div>
         )}
 
-        {/* PC 가로 스크롤 캐러셀 — 우측으로 블리드(-mr)해 다음 카드가 살짝 보이게(peek), 화살표는 이미지 가장자리 위에 얹음 */}
-        <div className="hidden md:block relative -mr-[70px]">
+        {/* PC 가로 스크롤 캐러셀 — 좌우에 화살표 전용 여백(카드 영역을 52px 안쪽으로 inset), 화살표는 그 여백에 두어 이미지와 겹치지 않음. 다음 카드 peek은 이미지 영역 끝에서 보임 */}
+        <div className="hidden md:block relative">
           {showLeft && (
             <button
               onClick={() => scroll("left")}
@@ -163,22 +163,22 @@ export default function HomeNewArrivals() {
               className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
               style={{ left: "8px" }}
             >
-              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-10 h-10 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]" />
+              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
             </button>
           )}
           <button
             onClick={() => scroll("right")}
             aria-label="다음"
             className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-            style={{ right: "78px" }}
+            style={{ right: "8px" }}
           >
-            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-10 h-10 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]" />
+            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
           </button>
 
           <div
             ref={pcRef}
             onScroll={handlePcScroll}
-            className="flex gap-4 overflow-x-auto pb-1 pr-[70px]"
+            className="flex gap-4 overflow-x-auto pb-1 mx-[52px]"
             style={{ scrollbarWidth: "none" }}
           >
             {newItems.map((p) => (
