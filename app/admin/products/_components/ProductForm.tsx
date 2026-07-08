@@ -3,12 +3,20 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Product, DetailBlock, MainExpose, Season, SizeGuide, SizeGuideLine, DetailInfoItem, InstagramMedia } from "@/data/products";
+import { SIZE_NOTE_DEFAULT } from "@/data/products";
 import { parseInstagramUrl } from "@/lib/instagram-feed";
 import { resizeImageToMaxWidth } from "@/lib/imageResize";
 import SizeGuideLinesOverlay from "@/components/SizeGuideLinesOverlay";
 
 // 사이즈 가이드 이미지 기준 폭 — 초과 시 이 폭으로 축소, 이하면 원본 그대로 업로드
-const SIZE_GUIDE_MAX_WIDTH = 1200;
+const SIZE_GUIDE_MAX_WIDTH = 800;
+
+// 숫자·범위(예: 88-92) 값에 "cm" 단위 붙임. 빈 값·비숫자·이미 cm면 원본 그대로.
+function appendCmUnit(v: string): string {
+  const t = (v ?? "").trim();
+  if (!t || /cm\s*$/i.test(t) || !/^[\d.,~\-\s]+$/.test(t)) return v;
+  return `${t}cm`;
+}
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = ["판매중", "품절", "판매중지", "예약판매", "진열대기"] as const;
@@ -18,7 +26,6 @@ const DETAIL_INFO_DEFAULTS = [
   "세탁방법 및 취급시 주의사항", "제조연월", "품질보증기준",
   "A/S 책임자와 전화번호 / 소비자상담관련 전화번호",
 ];
-const SIZE_NOTE_DEFAULT = "본 사이즈는 상품의 실제 측정사이즈이며 ±1-2cm의 오차가 있을 수 있습니다. (단위:cm)";
 const SIZE_GUIDE_DEFAULT: SizeGuide = {
   mode: "table",
   columns: ["항목", "S", "M", "L", "XL", "XXL"],
@@ -35,7 +42,7 @@ const SIZE_GUIDE_ROW_TEMPLATES: { label: string; firstCol: string; rows: string[
 const SIZE_GUIDE_LINE_PRESETS: SizeGuideLine[] = [
   { label: "어깨", orientation: "horizontal", pos: 15, start: 25, end: 75 },
   { label: "가슴", orientation: "horizontal", pos: 45, start: 15, end: 85 },
-  { label: "소매", orientation: "vertical", pos: 8, start: 15, end: 85 },
+  { label: "소매", orientation: "vertical", pos: 8, start: 24, end: 88 },
   { label: "총장", orientation: "vertical", pos: 92, start: 8, end: 90 },
 ];
 const SEASON_OPTIONS: Season[] = ["봄/가을", "여름", "겨울"];
@@ -266,6 +273,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [ocrBusy, setOcrBusy] = useState(false);   // 사이즈표 무료 OCR 진행 상태
   const [ocrProgress, setOcrProgress] = useState(0);
   const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
+  const [bulkRowInput, setBulkRowInput] = useState("");  // 사이즈 가이드 행 일괄 추가 입력
   const [useSizePrices, setUseSizePrices] = useState((initial?.sizePrices?.length ?? 0) > 0); // 사이즈별 가격 사용 체크
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -879,9 +887,34 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     });
     setBulkColInput("");
   };
+  // 행 일괄 추가 — "총장, 가슴, 어깨"처럼 입력하면 한 번에 여러 행 추가 (첫 칸=항목명, 나머지 빈칸)
+  const sgBulkAddRows = () => {
+    const items = bulkRowInput.split(/[,\n]+/).map((s) => s.trim()).filter(Boolean);
+    if (!items.length || sgCols.length === 0) return;
+    setSG({
+      rows: [...sgRows, ...items.map((label) => ({ cells: sgCols.map((_, ci) => (ci === 0 ? label : "")) }))],
+    });
+    setBulkRowInput("");
+  };
+  // 행/열 전환 — 표를 전치(행↔열). 헤더 첫 칸(항목)은 고정, 나머지 축을 서로 바꾼다.
+  const sgTranspose = () => {
+    if (sgCols.length === 0) return;
+    const corner = sgCols[0] ?? "";
+    const newColumns = [corner, ...sgRows.map((r) => r.cells[0] ?? "")];
+    const newRows = sgCols.slice(1).map((colHeader, ci) => ({
+      cells: [colHeader, ...sgRows.map((r) => r.cells[ci + 1] ?? "")],
+    }));
+    setSG({ columns: newColumns, rows: newRows });
+  };
   const sgRemoveRow = (ri: number) => setSG({ rows: sgRows.filter((_, i) => i !== ri) });
   const sgSetCell = (ri: number, ci: number, v: string) =>
     setSG({ rows: sgRows.map((r, i) => (i === ri ? { cells: r.cells.map((c, j) => (j === ci ? v : c)) } : r)) });
+  // 값 칸(항목명 열 제외) 입력 후 자동으로 "cm" 붙임 — 숫자/범위이고 아직 cm가 없을 때만
+  const sgCellBlur = (ri: number, ci: number, v: string) => {
+    if (ci === 0) return;                         // 첫 칸(항목명)은 제외
+    const nc = appendCmUnit(v);
+    if (nc !== v) sgSetCell(ri, ci, nc);
+  };
   const sgApplyTemplate = (tpl: { firstCol: string; rows: string[] }) => {
     if (sgRows.length > 0 && !confirm("현재 표의 행(항목)을 선택한 템플릿으로 교체할까요?")) return;
     const sizeCols = sgCols.length > 1 ? sgCols.slice(1) : ["S", "M", "L", "XL", "XXL"];
@@ -920,7 +953,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         while (cells.length < sgCols.length) cells.push("");
         for (let ci = 1; ci < sgCols.length; ci++) {
           const v = vals[ci - 1];
-          if (v != null && v !== "") cells[ci] = v;
+          if (v != null && v !== "") cells[ci] = appendCmUnit(String(v));   // OCR 값에도 자동 cm
         }
         return { cells };
       });
@@ -1087,8 +1120,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       colors: form.colors,
       sizes: form.sizes,
       sizePrices: form.sizePrices.filter((sp) => form.sizes.includes(sp.size) && sp.price.trim()),
-      sizeGuides: form.sizeGuides,
-      sizeGuide: form.sizeGuides[0],   // 레거시 하위호환
+      // 안내 문구 필수 — 비어 있으면 기본 문구로 강제 저장
+      sizeGuides: form.sizeGuides.map((g) => ({ ...g, note: g.note?.trim() ? g.note : SIZE_NOTE_DEFAULT })),
+      sizeGuide: (() => { const g = form.sizeGuides[0]; return g ? { ...g, note: g.note?.trim() ? g.note : SIZE_NOTE_DEFAULT } : g; })(),   // 레거시 하위호환
       detailInfo: form.detailInfo.filter((d) => d.label.trim() || d.value.trim()),
       relatedIds: form.relatedIds,
       metaTitle: form.metaTitle || undefined,
@@ -1285,7 +1319,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               {sg.guideImage ? (
                 <div className="relative w-40 border border-gray-200 rounded overflow-hidden bg-gray-50 flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block"
+                  <img src={sg.guideImage} alt="측정 위치 안내" className="w-full h-auto block grayscale opacity-40"
                     onLoad={(e) => setSgDiagramDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} />
                   <button type="button" onClick={() => { setSG({ guideImage: "" }); setSgDiagramDim(null); setSgDiagramResized(false); }}
                     className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
@@ -1326,7 +1360,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <div className="flex flex-col md:flex-row gap-4 items-start">
                     <div className="relative w-full md:w-56 flex-shrink-0 border border-gray-200 rounded overflow-hidden bg-gray-50">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={sg.guideImage} alt="가이드선 미리보기" className="w-full h-auto block" />
+                      <img src={sg.guideImage} alt="가이드선 미리보기" className="w-full h-auto block grayscale opacity-40" />
                       <SizeGuideLinesOverlay lines={sgLines} />
                     </div>
                     <div className="flex-1 w-full space-y-2">
@@ -1421,6 +1455,17 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
                   <button type="button" onClick={sgBulkAddColumns} disabled={!bulkColInput.trim()}
                     className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
+                  <span className="w-px h-5 bg-gray-200 mx-1" />
+                  <input value={bulkRowInput} onChange={(e) => setBulkRowInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddRows(); } }}
+                    placeholder="총장, 가슴, 어깨 (쉼표 구분)" disabled={sgCols.length === 0}
+                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A] disabled:bg-gray-50 disabled:cursor-not-allowed" />
+                  <button type="button" onClick={sgBulkAddRows} disabled={!bulkRowInput.trim() || sgCols.length === 0}
+                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">행 일괄 추가</button>
+                  <span className="w-px h-5 bg-gray-200 mx-1" />
+                  <button type="button" onClick={sgTranspose} disabled={sgCols.length === 0}
+                    title="표의 행과 열을 서로 바꿉니다"
+                    className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">⇄ 행/열 전환</button>
                 </div>
                 {sgCols.length === 0 ? (
                   <p className="text-xs text-gray-400">＋ 열 추가로 헤더(항목·S·M·L…)를 먼저 만들고, ＋ 행 추가로 값을 입력하세요.</p>
@@ -1449,7 +1494,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                             </td>
                             {sgCols.map((_, ci) => (
                               <td key={ci} className="p-1.5 border-r border-b border-gray-100">
-                                <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
+                                <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)}
+                                  onBlur={(e) => sgCellBlur(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
                                   className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A]" />
                               </td>
                             ))}
@@ -1460,7 +1506,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   </div>
                 )}
                 <div className="mt-3">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">안내 문구</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">안내 문구 <span className="text-red-400">*</span> <span className="text-gray-400 font-normal">비우면 기본 문구로 저장됩니다</span></label>
                   <input value={sg.note ?? ""} onChange={(e) => setSG({ note: e.target.value })} placeholder={SIZE_NOTE_DEFAULT}
                     className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A]" />
                 </div>

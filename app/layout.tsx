@@ -15,6 +15,9 @@ import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { siteUrl } from "@/lib/site";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -23,8 +26,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "WORKUP — 일하는 사람을 위한 옷",
+  // 페이지별 상대경로 OG 이미지/링크가 절대 URL로 해석되도록 기준 URL 설정
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "WORKUP — 일하는 사람을 위한 옷",
+    template: "%s | WORKUP",
+  },
   description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
+  // 카톡·SNS·문자 공유 시 노출되는 기본 미리보기 (페이지별 openGraph가 있으면 그것이 우선)
+  openGraph: {
+    type: "website",
+    siteName: "WORKUP",
+    locale: "ko_KR",
+    title: "WORKUP — 일하는 사람을 위한 옷",
+    description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
+    url: siteUrl,
+  },
 };
 
 export default async function RootLayout({
@@ -80,6 +97,9 @@ export default async function RootLayout({
             </div>
             {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} studioEnabled={studio?.enabled ?? true} />}
         </CartProvider>
+        {/* Vercel 방문/전환 분석 · Core Web Vitals 측정 (대시보드에서 활성화 필요) */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

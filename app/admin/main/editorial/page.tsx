@@ -111,6 +111,8 @@ function ProductPicker({ products, value, onSelect }: {
 }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (!open) setQuery(value); }, [value, open]);
 
@@ -122,14 +124,27 @@ function ProductPicker({ products, value, onSelect }: {
   const results = matched.slice(0, MAX_RESULTS);
   const overflow = matched.length - results.length;
 
+  // 아래 공간이 부족하면 위로 펼침 — 페이지 하단에서 목록이 화면 밖으로 잘리는 문제 방지
+  const DROPDOWN_MAX = 280; // max-h-64(256) + 여유
+  function openDropdown() {
+    const el = wrapRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      setDropUp(spaceBelow < DROPDOWN_MAX && spaceAbove > spaceBelow);
+    }
+    setOpen(true);
+  }
+
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapRef}>
       <div className="relative">
         <input
           type="text"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => { setQuery(e.target.value); openDropdown(); }}
+          onFocus={openDropdown}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder="제품명으로 검색..."
           className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
@@ -139,7 +154,7 @@ function ProductPicker({ products, value, onSelect }: {
         </svg>
       </div>
       {open && results.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 top-full mt-1 border border-gray-200 rounded-lg bg-white shadow-lg max-h-64 overflow-y-auto">
+        <div className={`absolute z-50 left-0 right-0 ${dropUp ? "bottom-full mb-1" : "top-full mt-1"} border border-gray-200 rounded-lg bg-white shadow-lg max-h-64 overflow-y-auto`}>
           {results.map((p) => (
             <button
               key={p.id}
@@ -604,15 +619,20 @@ function ImageField({
 
 // ── 서브 컴포넌트: 텍스트 입력 ─────────────────────────────
 function Field({
-  label, value, onChange, placeholder = "", multiline = false,
+  label, value, onChange, placeholder = "", multiline = false, showCount = false,
 }: {
   label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; multiline?: boolean;
+  placeholder?: string; multiline?: boolean; showCount?: boolean;
 }) {
   const cls = "w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30";
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-xs font-medium text-gray-600">{label}</label>
+        {showCount && (
+          <span className="text-[11px] text-gray-400 tabular-nums">{value.length}자 <span className="text-gray-300">(공백 포함)</span></span>
+        )}
+      </div>
       {multiline ? (
         <textarea value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder} rows={3} className={cls} />
@@ -1218,7 +1238,7 @@ function BannerEditor({ banner, label, onChange, products }: {
         </div>
         <div className="flex-1 min-w-0">
           <Field label="설명" value={banner.desc} onChange={(v) => onChange({ desc: v })}
-            placeholder="섹션 설명을 입력하세요" />
+            placeholder="섹션 설명을 입력하세요" showCount />
         </div>
       </div>
 

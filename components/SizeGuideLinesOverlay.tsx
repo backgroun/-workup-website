@@ -13,7 +13,7 @@ export default function SizeGuideLinesOverlay({ lines }: { lines: SizeGuideLine[
           <div key={i} className="absolute inset-0">
             {/* 측정선 */}
             <div
-              className="absolute bg-[#e11d2e]"
+              className="absolute bg-black"
               style={
                 isH
                   ? { top: `${l.pos}%`, left: `${l.start}%`, width: `${l.end - l.start}%`, height: "2px", transform: "translateY(-50%)" }
@@ -22,7 +22,7 @@ export default function SizeGuideLinesOverlay({ lines }: { lines: SizeGuideLine[
             />
             {/* 끝점 마감선 */}
             <div
-              className="absolute bg-[#e11d2e]"
+              className="absolute bg-black"
               style={
                 isH
                   ? { top: `${l.pos}%`, left: `${l.start}%`, width: "2px", height: "10px", transform: "translate(-50%,-50%)" }
@@ -30,7 +30,7 @@ export default function SizeGuideLinesOverlay({ lines }: { lines: SizeGuideLine[
               }
             />
             <div
-              className="absolute bg-[#e11d2e]"
+              className="absolute bg-black"
               style={
                 isH
                   ? { top: `${l.pos}%`, left: `${l.end}%`, width: "2px", height: "10px", transform: "translate(-50%,-50%)" }
@@ -39,7 +39,7 @@ export default function SizeGuideLinesOverlay({ lines }: { lines: SizeGuideLine[
             />
             {/* 라벨 */}
             <div
-              className="absolute text-[11px] md:text-xs font-bold text-[#e11d2e] whitespace-nowrap bg-white/70 px-1 rounded-sm"
+              className="absolute text-[11px] md:text-xs font-bold text-black whitespace-nowrap bg-white/70 px-1 rounded-sm"
               style={
                 isH
                   ? { top: `${l.pos}%`, left: `${mid}%`, transform: "translate(-50%, -160%)" }

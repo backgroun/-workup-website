@@ -8,6 +8,56 @@
 
 ---
 
+## ⭐ v2 마스터 (2026-07 최신 — 이 버전 우선)
+
+> 아래 v2가 현재 표준. (아래 3~6번 치트시트·설정은 그대로 유효, 2번 구버전보다 v2 우선.)
+> **크레딧 절약:** Magnific **웹앱(무제한 적용)** 에서 생성·배경제거를 돌린다. 이 프롬프트를 웹앱 생성창(또는 Space의 생성 노드)에 붙이고 **제품 누끼만 갈아 끼운다**.
+
+### 항상 고정하는 규칙
+- **체형·착용 사이즈(얼굴은 매번 달라도 이건 고정)**: 남 **175cm·70kg·L·허리32** / 여 **165cm·48kg·M·허리27**.
+- **사이즈표 우선**: 폴더 `size` 파일의 총기장/총길이로 기장 결정. 이름의 "크롭/루즈/오버핏/숏"에 휘둘리지 말 것.
+- **길이 기준선(전신 머리끝~신발밑 = 0~100%)**: 가랑이 ~54%, **무릎 ~80%**, 발목 ~92%.
+  - **반바지 = 밑단이 무릎(~80%)까지.** `hem reaching DOWN to the KNEE, covering the top of the kneecap, NOT mid-thigh`
+  - **긴바지 = 발목 풀렌스**(밑단이 신발에 살짝 쌓임). `FULL-LENGTH, hem to the ANKLE, slightly stacking, NOT cropped`
+  - **롱스커트 = 종아리 중간**(사이즈표 총기장). `LONG mid-calf length`
+- **프레이밍**: 머리끝~양발(신발)까지 전신, 크롭 금지.
+- **설정**: mode `Google Nano Banana Pro`(imagen-nano-banana-2), 비율 `1:1`, 해상도 `4k`, 장수 **`1`**(크레딧 절약).
+- **로고**: 로고/프린트 있는 제품은 **2버전** — ①로고 있는 버전(실제 로고 렌더) + ②로고 없는 버전(로고 자리 **아무 표시 없이 원단 그대로**, +·박스 등 마커 금지).
+- **뒷모습 컷**: 포즈 줄만 아래 BACK으로 바꿈.
+
+### A. 상의 / 베스트 (상의가 강조)
+```
+Full-body catalog photo of a Korean [man in his 30s | woman in her 20s], likeable attractive face, soft gentle expression, clean hair. Body: [175cm, 70kg, athletic regular build, size L | 165cm, 48kg, slim, size M]. Standard catalog pose — facing straight to camera, shoulders level, arms relaxed down, standing straight. FRAMING (CRITICAL): the ENTIRE figure from TOP OF HEAD to BOTH FEET (shoes) is fully in frame with margin — do NOT crop head, hands, or feet.
+
+He/She wears the EXACT [garment] shown in the reference — preserve its exact color, fabric and construction: every pocket, zipper, pull, seam, strap and panel in its exact position and count. Keep the fabric smooth and neat with MINIMAL wrinkles. [VEST ONLY: worn OVER a plain white/light-gray inner t-shirt, the adjustable shoulder harness straps visible.] [LOGO버전: reproduce the printed logo/branding exactly. | NO-LOGO버전: leave the logo area completely BLANK/clean — do NOT render any logo, text, symbol or marker there, just the plain fabric.]
+
+COLOR STYLING (mandatory): the [garment] is the FEATURED product — choose a bottom in a color that clearly CONTRASTS so it stands out (see cheat sheet); never the garment's own color family. [대비하의] pants, clean white low-top sneakers.
+
+BACKGROUND & LIGHT: clean seamless light-gray studio background (#ededed), soft even shadowless lighting. Korean e-commerce catalog full-length product photography, model centered, photorealistic, sharp focus on the garment details.
+```
+- **뒷모습**이면 두 번째 문장 앞 포즈 부분을 → `seen from BEHIND (back view) — body and head facing AWAY from camera; show the back of the garment` 로 교체.
+
+### B. 하의 / 스커트 (하의가 강조)
+```
+Full-body catalog photo of a Korean [man in his 20s | woman in her 20s], likeable attractive face, soft expression. Body: [175cm, 70kg, waist 32, size L | 165cm, 48kg, size M waist 27]. Standard catalog pose — [facing straight to camera | seen from BEHIND (back view), body and head facing AWAY], shoulders level, arms relaxed down, standing straight. FRAMING (CRITICAL): the ENTIRE figure from TOP OF HEAD to BOTH FEET (shoes) fully in frame — do NOT crop feet or hands.
+
+FEATURED PRODUCT = the [color] [shorts | pants | skirt] from the reference — preserve EXACTLY its color, waistband, pockets, fabric and cut; it is the hero, clearly visible. LENGTH: [SHORTS → the hem reaches DOWN to the KNEE (knee-length, total side length ~[XX]cm per size chart), covering the top of the kneecap, NOT mid-thigh | PANTS → FULL-LENGTH, the hem reaches the ANKLE and slightly stacks over the shoe, NOT cropped | SKIRT → LONG mid-calf length ~[XX]cm].
+
+STYLING: on top a [대비색] [fitted short-sleeve t-shirt lightly tucked | LOOSE oversized short-sleeve t-shirt worn UNTUCKED, hanging over the waistband so the drawstring is hidden]. Clean white low-top sneakers.
+
+BACKGROUND & LIGHT: seamless light-gray #ededed studio, soft shadowless lighting. Korean e-commerce catalog full-length product photography, photorealistic, sharp on details.
+```
+- **턱인/언턱 2컷**: 턱인 = 상의 넣어 허리밴드+**풀어둔 끈** 노출 / 언턱 = 상의가 허리밴드+끈 완전히 덮어 가림. **두 컷의 상의 색을 다르게.**
+
+### 웹앱 Space로 "템플릿화"하는 법 (무제한·크레딧 0)
+기존 `Template: Batch ad variation` Space와 동일 방식:
+1. 웹앱에서 새 Space 생성 → 노드: **Image(제품 누끼 입력) → Generate(Nano Banana Pro, 위 A/B 프롬프트 붙여넣기) → Remove Background → Output**.
+2. 프롬프트의 고정부는 그대로 두고 `[대괄호]`(성별·색·앞뒤·길이·코디)만 그 제품에 맞게 수정.
+3. 제품마다 **Image 노드의 누끼만 교체**하고 Run → 무제한이라 크레딧 0.
+4. 결과 컷을 `<제품>/model/*_full_src.png`로 저장 → 이 세션에서 길이·프레이밍 QC(무료).
+
+---
+
 ## 1. 사용법 (3단계)
 
 1. **레퍼런스 업로드** — 제품 앞면 + 디테일컷(라벨·지퍼 등)을 Magnific에 올린다. (뒷면 메쉬컷은 제외 — 앞면에 메쉬가 끌려옴)

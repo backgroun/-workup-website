@@ -55,6 +55,7 @@ export function mapFromDb(row: any): Product {
     metaTitle: row.meta_title ?? undefined,
     metaDesc: row.meta_desc ?? undefined,
     createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
   };
 }
 

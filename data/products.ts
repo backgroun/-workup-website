@@ -32,6 +32,9 @@ export type SizeGuide = {
 // 상세 정보 탭 — 라벨/값 텍스트 항목
 export type DetailInfoItem = { label: string; value: string };
 
+// 사이즈 가이드 하단 안내 문구 기본값 (필수) — 미입력 시 저장·노출에 모두 이 문구를 사용
+export const SIZE_NOTE_DEFAULT = "본 사이즈는 상품의 실제 측정사이즈이며 ±1-2cm의 오차가 있을 수 있습니다. (단위:cm)";
+
 // 사이즈 가이드 목록 정규화 — 신규(sizeGuides 배열) 우선, 없으면 레거시 단일(sizeGuide)을 배열로.
 export function getSizeGuides(p: { sizeGuides?: SizeGuide[]; sizeGuide?: SizeGuide }): SizeGuide[] {
   if (Array.isArray(p.sizeGuides) && p.sizeGuides.length > 0) return p.sizeGuides;
@@ -99,6 +102,7 @@ export type Product = {
   metaTitle?: string;
   metaDesc?: string;
   createdAt?: string;
+  updatedAt?: string;   // 최종 수정 시각 (관리자 목록 정렬용)
   coreValues?: string[];
   recommendedFor?: string[];
   keyFeatures?: { title: string; desc: string }[];

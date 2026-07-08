@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
@@ -12,12 +12,27 @@ import {
   type NewArrivalsConfig,
 } from "@/lib/new-arrivals";
 
+// 시드 기반 셔플 — 같은 시드면 같은 순서(리렌더 안정). 시드는 마운트마다 바뀌어 방문 시 랜덤 노출.
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = seed || 1;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function HomeNewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<string>("전체");
   const [showLeft, setShowLeft] = useState(false);
   const [cfg, setCfg] = useState<NewArrivalsConfig>(DEFAULT_NEW_ARRIVALS);
   const [loading, setLoading] = useState(true);
+  // 방문(마운트)마다 랜덤 순서 — 마운트 후 시드를 새로 뽑아 셔플. 리렌더 중엔 시드 고정이라 순서 안 튐.
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  useEffect(() => { setShuffleSeed(Math.floor(Math.random() * 1_000_000) + 1); }, []);
   const pcRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { hasProduct, toggleProduct } = useCart();
@@ -66,15 +81,17 @@ export default function HomeNewArrivals() {
   };
 
   // 관리자 "신상품 영역" 설정을 반영해 노출 상품 선정 (수동선택·자동·정렬·카테고리·품절숨김)
-  const pool = selectNewArrivalsPool(products, cfg);
+  const basePool = useMemo(() => selectNewArrivalsPool(products, cfg), [products, cfg]);
+  // 방문마다 랜덤 순서로 노출 (탭 목록은 basePool 기준으로 안정 유지)
+  const pool = useMemo(() => seededShuffle(basePool, shuffleSeed), [basePool, shuffleSeed]);
 
-  // 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만. 실제 존재하는 카테고리만 노출
+  // 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만. 실제 존재하는 카테고리만 노출 (순서 고정)
   const showTabs =
     cfg.show_category_tabs &&
     cfg.mode === "auto" &&
-    new Set(pool.map((p) => p.category).filter(Boolean)).size > 1;
+    new Set(basePool.map((p) => p.category).filter(Boolean)).size > 1;
   const availableTabs: string[] = showTabs
-    ? ["전체", ...new Set(pool.map((p) => p.category).filter(Boolean))]
+    ? ["전체", ...new Set(basePool.map((p) => p.category).filter(Boolean))]
     : [];
 
   const tabbed = showTabs && activeTab !== "전체"

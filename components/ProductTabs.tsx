@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getSizeGuides, type Product, type SizeGuide } from "@/data/products";
+import { getSizeGuides, SIZE_NOTE_DEFAULT, type Product, type SizeGuide } from "@/data/products";
 import ProductInquiryModal from "./ProductInquiryModal";
 import InstagramFeed from "./InstagramFeed";
 import SizeGuideLinesOverlay from "./SizeGuideLinesOverlay";
@@ -25,7 +25,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
         <div className="mb-6 flex justify-center">
           <div className="relative inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full" loading="lazy" />
+            <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full grayscale opacity-40" loading="lazy" />
             {guide.guideLines && guide.guideLines.length > 0 && <SizeGuideLinesOverlay lines={guide.guideLines} />}
           </div>
         </div>
@@ -34,7 +34,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={guide.image} alt={`${productName} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
-          {guide.note && <p className="text-xs text-gray-400 mt-4">{guide.note}</p>}
+          <p className="text-xs text-gray-400 mt-4">{guide.note?.trim() || SIZE_NOTE_DEFAULT}</p>
         </div>
       ) : hasTable ? (
         <div>
@@ -60,7 +60,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
               </tbody>
             </table>
           </div>
-          {guide.note && <p className="text-xs text-gray-400 mt-4">{guide.note}</p>}
+          <p className="text-xs text-gray-400 mt-4">{guide.note?.trim() || SIZE_NOTE_DEFAULT}</p>
         </div>
       ) : null}
     </>

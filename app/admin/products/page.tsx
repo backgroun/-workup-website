@@ -13,7 +13,7 @@ const SORTABLE_STATUSES = ["판매중", "예약판매", "품절", "판매중지"
 type SearchType = "상품명" | "상품코드" | "브랜드" | "제조사";
 type DisplayFilter = "전체" | "진열함" | "진열안함";
 type DatePreset = "전체" | "오늘" | "3일" | "7일" | "1개월" | "3개월" | "1년";
-type SortBy = "최신순" | "진열순" | "이름순";
+type SortBy = "최종수정순" | "최신순" | "진열순" | "이름순";
 
 const DISPLAY_ON = ["판매중", "예약판매", "품절"];
 const DISPLAY_OFF = ["판매중지", "진열대기"];
@@ -50,7 +50,7 @@ const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개�
 const STATUS_OPTIONS = ["전체", "판매중", "품절", "판매중지", "예약판매", "진열대기"];
 const EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
 // 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명·관리는 항상 표시)
-const TOGGLE_COLS = ["카테고리", "가격", "판매 상태", "등록일"];
+const TOGGLE_COLS = ["카테고리", "가격", "판매 상태", "최종수정"];
 const COL_KEY = "wu-admin-product-cols";
 const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "제조사"];
 
@@ -91,7 +91,7 @@ export default function AdminProductsPage() {
 
   // ─ 선택 & 정렬 ─────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최신순");
+  const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최종수정순");
   const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
   const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
   const [colMenuOpen, setColMenuOpen] = useState(false); // 컬럼 표시/숨김 드롭다운
@@ -343,6 +343,7 @@ export default function AdminProductsPage() {
     list.sort((a, b) => {
       if (sortBy === "이름순") return a.name.localeCompare(b.name);
       if (sortBy === "최신순") return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+      if (sortBy === "최종수정순") return (b.updatedAt ?? b.createdAt ?? "").localeCompare(a.updatedAt ?? a.createdAt ?? "");
       return 0;
     });
 
@@ -671,7 +672,7 @@ export default function AdminProductsPage() {
                 </div>
                 <select value={sortBy} onChange={e => { setSortBy(e.target.value as SortBy); setPage(1); }}
                   className="border border-gray-200 px-3 py-1.5 text-[14px] bg-white rounded focus:outline-none">
-                  <option>최신순</option><option>진열순</option><option>이름순</option>
+                  <option>최종수정순</option><option>최신순</option><option>진열순</option><option>이름순</option>
                 </select>
                 <select value={perPage} onChange={e => { setPerPage(+e.target.value); setPage(1); }}
                   className="border border-gray-200 px-3 py-1.5 text-[14px] bg-white rounded focus:outline-none">
@@ -692,7 +693,7 @@ export default function AdminProductsPage() {
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
                       className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                   </th>
-                  {["상품명", "카테고리", "가격", "판매 상태", "등록일", "관리"]
+                  {["상품명", "카테고리", "가격", "판매 상태", "최종수정", "관리"]
                     .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
                     .map(h => (
                       <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
@@ -804,10 +805,10 @@ export default function AdminProductsPage() {
                     </td>
                     )}
 
-                    {/* 등록일 — 컬럼 표시 토글 */}
-                    {visibleCols["등록일"] && (
+                    {/* 최종수정 — 컬럼 표시 토글 */}
+                    {visibleCols["최종수정"] && (
                     <td className="px-5 py-4 whitespace-nowrap text-[13px] text-gray-400">
-                      {fmtDate(p.createdAt)}
+                      {fmtDate(p.updatedAt ?? p.createdAt)}
                     </td>
                     )}
 
