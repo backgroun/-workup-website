@@ -206,7 +206,7 @@ function WhiteBox({
                 )}
               </div>
               <p style={{ fontSize: "11px", color: "#1A2B4A", lineHeight: 1.3, marginBottom: "3px" }}>
-                {item.name}
+                {item.displayName || item.name}
               </p>
               <p style={{ fontSize: "12px", fontWeight: "bold", color: "#1A2B4A" }}>
                 {item.price}
@@ -506,7 +506,7 @@ export default function FeatureHeroLayout({
                       </div>
                       <div>
                         <p style={{ fontSize: "13px", color: "#1A2B4A", lineHeight: 1.5, margin: 0, marginBottom: "3px" }}>
-                          {item.name}
+                          {item.displayName || item.name}
                         </p>
                         <p style={{ fontSize: "14px", fontWeight: "bold", color: "#1A2B4A", margin: 0 }}>
                           {item.price}

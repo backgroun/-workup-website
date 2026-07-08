@@ -18,6 +18,7 @@ export type EditorialSectionItem = {
   price: string;
   bg: string;
   imageUrl?: string;
+  displayName?: string; // "[브랜드] 상품명" — 상품 brand 조회 후 채움 (없으면 name 사용)
 };
 
 // 섹션 이미지 위 상품 핫스팟 — PC·모바일 모두 8:9 object-contain이라 단일 좌표

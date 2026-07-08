@@ -104,6 +104,28 @@ export function blockToEditorial(block: DBBlock): Editorial {
   };
 }
 
+// ── 에디토리얼 아이템에 브랜드 접두 채우기 ("[브랜드] 상품명") ──
+// 썸네일 상품명 앞에 브랜드명을 노출 — 사이트 전역(productDisplayName)과 동일 규칙.
+async function enrichEditorialBrands(
+  list: { editorial: Editorial; reversed: boolean }[]
+): Promise<{ editorial: Editorial; reversed: boolean }[]> {
+  const ids = new Set<string>();
+  for (const { editorial } of list)
+    for (const s of editorial.sections)
+      for (const it of s.items) if (it.productId) ids.add(it.productId);
+  if (ids.size === 0) return list;
+
+  const brandMap = await fetchBrandMap([...ids]);
+  for (const { editorial } of list)
+    for (const s of editorial.sections)
+      for (const it of s.items) {
+        if (!it.productId) continue;
+        const b = brandMap[it.productId];
+        it.displayName = productDisplayName({ name: it.name, brand: b?.brand, hideBrandPrefix: b?.hide });
+      }
+  return list;
+}
+
 // ── 홈 에디토리얼 목록 ────────────────────────────────────────
 export async function getHomeEditorials(): Promise<{ editorial: Editorial; reversed: boolean }[]> {
   const blockList = await fetchBlocks();
@@ -112,7 +134,8 @@ export async function getHomeEditorials(): Promise<{ editorial: Editorial; rever
       .filter((b) => b.is_visible !== false)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     if (blocks.length > 0) {
-      return blocks.map((b) => ({ editorial: blockToEditorial(b), reversed: b.reversed ?? false }));
+      const list = blocks.map((b) => ({ editorial: blockToEditorial(b), reversed: b.reversed ?? false }));
+      return enrichEditorialBrands(list);
     }
   }
   return editorials.map((ed, i) => ({ editorial: ed, reversed: i % 2 === 1 }));
