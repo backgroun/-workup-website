@@ -1,9 +1,10 @@
-﻿"use client";
-import { useEffect, useState } from "react";
+"use client";
+import { useEffect, useState, type CSSProperties } from "react";
+import { DEFAULT_PARTNERSHIP, type FormConfig } from "@/data/partnership";
 
 type FormState = Record<string, string>;
 
-function SuccessMessage({ onReset }: { onReset: () => void }) {
+function SuccessMessage({ title, desc, onReset }: { title: string; desc: string; onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-12 h-12 bg-[#ff550c] flex items-center justify-center mb-4">
@@ -11,10 +12,8 @@ function SuccessMessage({ onReset }: { onReset: () => void }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <p className="text-base font-bold text-[#1A2B4A] mb-2">문의가 접수되었습니다</p>
-      <p className="text-xs text-gray-500 leading-relaxed mb-6">
-        영업일 기준 2일 이내에 담당자가 연락드립니다.
-      </p>
+      <p className="text-base font-bold text-[#1A2B4A] mb-2">{title}</p>
+      <p className="text-xs text-gray-500 leading-relaxed mb-6">{desc}</p>
       <button
         onClick={onReset}
         className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
@@ -26,15 +25,16 @@ function SuccessMessage({ onReset }: { onReset: () => void }) {
 }
 
 function Field({
-  label, name, type = "text", required, placeholder, value, onChange,
+  label, name, type = "text", required, placeholder, value, onChange, labelStyle, inputStyle,
 }: {
   label: string; name: string; type?: string; required?: boolean;
   placeholder?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  labelStyle: CSSProperties; inputStyle: CSSProperties;
 }) {
-  const cls = "w-full border border-gray-200 px-4 py-2.5 text-sm text-[#1A2B4A] placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white";
+  const cls = "w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white";
   return (
     <div>
-      <label htmlFor={`pf-${name}`} className="block text-xs text-gray-500 mb-1.5">
+      <label htmlFor={`pf-${name}`} className="block mb-1.5" style={labelStyle}>
         {label}{required && <span className="text-[#ff550c] ml-0.5">*</span>}
       </label>
       {type === "textarea" ? (
@@ -46,6 +46,7 @@ function Field({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          style={inputStyle}
           className={cls + " resize-none"}
         />
       ) : (
@@ -57,6 +58,7 @@ function Field({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          style={inputStyle}
           className={cls}
         />
       )}
@@ -156,8 +158,8 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
 
 // ── 개인정보 수집·이용 동의 (로그인 없이 접수하므로 필수) ──
 function PrivacyConsent({
-  checked, onChange,
-}: { checked: boolean; onChange: (v: boolean) => void }) {
+  checked, onChange, text, note,
+}: { checked: boolean; onChange: (v: boolean) => void; text: string; note: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -171,7 +173,7 @@ function PrivacyConsent({
           className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[#1A2B4A]"
         />
         <span className="text-xs text-gray-500 leading-relaxed">
-          <span className="text-[#ff550c] font-medium">[필수]</span> 개인정보 수집·이용에 동의합니다.{" "}
+          <span className="text-[#ff550c] font-medium">[필수]</span> {text}{" "}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -179,9 +181,7 @@ function PrivacyConsent({
           >
             내용 보기
           </button>
-          <span className="block text-gray-400 mt-0.5">
-            이름·연락처는 문의 접수 및 상담 안내 목적으로만 사용됩니다.
-          </span>
+          {note && <span className="block text-gray-400 mt-0.5">{note}</span>}
         </span>
       </label>
 
@@ -201,8 +201,15 @@ async function submitInquiry(type: "franchise" | "wholesale", payload: FormState
   if (!res.ok) throw new Error(data.error ?? "접수에 실패했습니다.");
 }
 
+// 폼 필드 텍스트(라벨/플레이스홀더) 조회 헬퍼
+function fieldLookup(config: FormConfig) {
+  const map: Record<string, { label: string; placeholder: string }> = {};
+  for (const f of config.fields) map[f.key] = { label: f.label, placeholder: f.placeholder };
+  return (key: string) => map[key] ?? { label: key, placeholder: "" };
+}
+
 // ── 가맹 창업 문의 폼 ─────────────────────────────────
-export function FranchiseForm() {
+export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: { config?: FormConfig }) {
   const init: FormState = { name: "", phone: "", region: "", message: "" };
   const [form, setForm] = useState(init);
   const [agreed, setAgreed] = useState(false);
@@ -210,8 +217,12 @@ export function FranchiseForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const f = fieldLookup(config);
+  const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
+  const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,40 +239,45 @@ export function FranchiseForm() {
     }
   };
 
-  if (submitted) return <SuccessMessage onReset={() => { setForm(init); setAgreed(false); setSubmitted(false); }} />;
+  if (submitted) return <SuccessMessage title={config.success_title} desc={config.success_desc} onReset={() => { setForm(init); setAgreed(false); setSubmitted(false); }} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Field label="이름" name="name" required placeholder="홍길동" value={form.name} onChange={handleChange} />
-        <Field label="연락처" name="phone" type="tel" required placeholder="010-0000-0000" value={form.phone} onChange={handleChange} />
+        <Field label={f("name").label} name="name" required placeholder={f("name").placeholder} value={form.name} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+        <Field label={f("phone").label} name="phone" type="tel" required placeholder={f("phone").placeholder} value={form.phone} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
       </div>
-      <Field label="창업 희망 지역" name="region" placeholder="예) 서울 강남, 경기 수원 등" value={form.region} onChange={handleChange} />
-      <Field label="문의 내용" name="message" type="textarea" placeholder="창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요." value={form.message} onChange={handleChange} />
-      <PrivacyConsent checked={agreed} onChange={setAgreed} />
+      <Field label={f("region").label} name="region" placeholder={f("region").placeholder} value={form.region} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+      <Field label={f("message").label} name="message" type="textarea" placeholder={f("message").placeholder} value={form.message} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+      <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
         disabled={submitting || !agreed}
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50 disabled:hover:bg-[#1A2B4A] disabled:cursor-not-allowed"
+        style={{ backgroundColor: config.button_bg, color: config.button_color }}
+        className="w-full text-xs font-semibold tracking-widest py-3 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? "접수 중..." : "가맹 문의 접수하기 →"}
+        {submitting ? "접수 중..." : config.submit_text}
       </button>
-      <p className="text-xs text-gray-400 text-center">영업일 기준 2일 이내 연락드립니다.</p>
+      <p className="text-center" style={{ fontSize: config.footer_style.size, color: config.footer_style.color }}>{config.footer_text}</p>
     </form>
   );
 }
 
 // ── 입점 문의 폼 ──────────────────────────────────────
-export function WholesaleForm() {
+export function WholesaleForm({ config = DEFAULT_PARTNERSHIP.wholesale.form }: { config?: FormConfig }) {
   const init: FormState = { brand: "", manager: "", phone: "", category: "", link: "", message: "" };
   const [form, setForm] = useState(init);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const f = fieldLookup(config);
+  const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
+  const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,29 +292,30 @@ export function WholesaleForm() {
     }
   };
 
-  if (submitted) return <SuccessMessage onReset={() => { setForm(init); setSubmitted(false); }} />;
+  if (submitted) return <SuccessMessage title={config.success_title} desc={config.success_desc} onReset={() => { setForm(init); setSubmitted(false); }} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Field label="브랜드명" name="brand" required placeholder="브랜드 이름" value={form.brand} onChange={handleChange} />
-        <Field label="담당자명" name="manager" required placeholder="홍길동" value={form.manager} onChange={handleChange} />
+        <Field label={f("brand").label} name="brand" required placeholder={f("brand").placeholder} value={form.brand} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+        <Field label={f("manager").label} name="manager" required placeholder={f("manager").placeholder} value={form.manager} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="연락처" name="phone" type="tel" required placeholder="010-0000-0000" value={form.phone} onChange={handleChange} />
-        <Field label="취급 품목" name="category" placeholder="예) 작업복, 안전용품, 잡화 등" value={form.category} onChange={handleChange} />
+        <Field label={f("phone").label} name="phone" type="tel" required placeholder={f("phone").placeholder} value={form.phone} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+        <Field label={f("category").label} name="category" placeholder={f("category").placeholder} value={form.category} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
       </div>
-      <Field label="브랜드 소개 링크" name="link" type="url" placeholder="홈페이지, 인스타그램, 카탈로그 URL 등" value={form.link} onChange={handleChange} />
-      <Field label="문의 내용" name="message" type="textarea" placeholder="입점을 원하는 이유, 제품 특장점, 희망 조건 등을 자유롭게 적어주세요." value={form.message} onChange={handleChange} />
+      <Field label={f("link").label} name="link" type="url" placeholder={f("link").placeholder} value={form.link} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+      <Field label={f("message").label} name="message" type="textarea" placeholder={f("message").placeholder} value={form.message} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
+        style={{ backgroundColor: config.button_bg, color: config.button_color }}
+        className="w-full text-xs font-semibold tracking-widest py-3 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? "접수 중..." : "입점 문의 접수하기 →"}
+        {submitting ? "접수 중..." : config.submit_text}
       </button>
-      <p className="text-xs text-gray-400 text-center">영업일 기준 2일 이내 연락드립니다.</p>
+      <p className="text-center" style={{ fontSize: config.footer_style.size, color: config.footer_style.color }}>{config.footer_text}</p>
     </form>
   );
 }

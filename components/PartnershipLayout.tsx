@@ -1,15 +1,17 @@
 import Link from "next/link";
 import type { PartnerInfo } from "@/data/partnership";
+import PartnershipPanel from "./PartnershipPanel";
 import InquiryBoard from "./InquiryBoard";
 
 // 가맹·창업 / 입점·제휴 문의 페이지 공통 레이아웃 (서버 컴포넌트, 폼은 children으로 주입)
 // 좌: 소개 패널 + 문의 폼(세로 스택) / 우: 실시간 문의 현황 보드
-export default function PartnershipLayout({ info, panelBg, boardType, children }: {
+// 패널 배경색·글자 크기·색상은 info(관리자 편집값)로 제어한다.
+export default function PartnershipLayout({ info, boardType, children }: {
   info: PartnerInfo;
-  panelBg: string;
   boardType?: string;        // "franchise" | "wholesale" — 우측 보드를 해당 유형만 표시
   children: React.ReactNode;
 }) {
+  const st = info.styles;
   return (
     <main>
       <div className="bg-[#F5F2ED] py-8">
@@ -17,27 +19,19 @@ export default function PartnershipLayout({ info, panelBg, boardType, children }
           <div className="grid lg:grid-cols-2 gap-6 items-stretch">
             {/* 좌: 소개 패널 + 폼 (세로 스택) */}
             <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">
-              <div className="px-8 py-10" style={{ backgroundColor: panelBg }}>
-                <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">Partnership</p>
-                <h2 className="text-2xl font-bold text-white mb-4">{info.panel_title}</h2>
-                <p className="text-gray-300 text-sm leading-relaxed">{info.panel_desc}</p>
-                <ul className="mt-7 space-y-3">
-                  {info.benefits.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-xs text-gray-300">
-                      <span className="w-1.5 h-1.5 bg-[#ff550c] rounded-full flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8 pt-7 border-t border-white/15">
-                  <p className="text-xs text-gray-400 tracking-widest uppercase mb-1">직통 전화</p>
-                  <p className="text-sm font-semibold text-white">{info.phone}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{info.hours}</p>
-                </div>
-              </div>
+              <PartnershipPanel info={info} />
 
               <div className="px-8 py-8">
-                <h3 className="text-base font-bold text-[#1A2B4A] mb-6">{info.form_title}</h3>
+                <h3 className="font-bold" style={{ fontSize: st.form_title.size, color: st.form_title.color }}>
+                  {info.form_title}
+                </h3>
+                {info.form_desc ? (
+                  <p className="mt-1.5 mb-6" style={{ fontSize: st.form_desc.size, color: st.form_desc.color }}>
+                    {info.form_desc}
+                  </p>
+                ) : (
+                  <div className="mb-6" />
+                )}
                 {children}
               </div>
             </div>

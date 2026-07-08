@@ -1,9 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import {
-  DEFAULT_PARTNERSHIP, INQUIRY_STATUS_LABEL,
-  type PartnershipConfig, type PartnerInfo, type Inquiry, type InquiryStatus, type InquiryType,
-} from "@/data/partnership";
+import Link from "next/link";
+import { INQUIRY_STATUS_LABEL, type Inquiry, type InquiryStatus } from "@/data/partnership";
 import { DEFAULT_NOTIFICATIONS, normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -33,7 +31,7 @@ function fmtDate(iso: string) {
 }
 
 export default function AdminInquiriesPage() {
-  const [tab, setTab] = useState<"list" | "content" | "notify">("list");
+  const [tab, setTab] = useState<"list" | "notify">("list");
   const [toast, setToast] = useState("");
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
 
@@ -120,50 +118,22 @@ export default function AdminInquiriesPage() {
 
   const filtered = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
 
-  // ── 안내 문구 ──
-  const [config, setConfig] = useState<PartnershipConfig>(DEFAULT_PARTNERSHIP);
-  const [loadingContent, setLoadingContent] = useState(true);
-  const [savingContent, setSavingContent] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/admin/site-settings/partnership_page")
-      .then(r => r.json())
-      .then((d: Partial<PartnershipConfig> | null) => {
-        setConfig({
-          franchise: { ...DEFAULT_PARTNERSHIP.franchise, ...(d?.franchise ?? {}) },
-          wholesale: { ...DEFAULT_PARTNERSHIP.wholesale, ...(d?.wholesale ?? {}) },
-        });
-      })
-      .catch(() => setConfig(DEFAULT_PARTNERSHIP))
-      .finally(() => setLoadingContent(false));
-  }, []);
-
-  const saveContent = async () => {
-    setSavingContent(true);
-    try {
-      const r = await fetch("/api/admin/site-settings/partnership_page", {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(config),
-      });
-      flash(r.ok ? "저장됐습니다." : "저장에 실패했습니다.");
-    } finally { setSavingContent(false); }
-  };
-
-  const setInfo = (key: InquiryType, patch: Partial<PartnerInfo>) =>
-    setConfig(prev => ({ ...prev, [key]: { ...prev[key], ...patch } }));
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">문의 관리</h1>
-          <p className="mt-1 text-sm text-gray-500">가맹·창업 / 입점·제휴 / 고객 1:1 문의 접수 내역과 안내 문구를 관리합니다.</p>
+          <p className="mt-1 text-sm text-gray-500">가맹·창업 / 입점·제휴 / 고객 1:1 문의 접수 내역과 알림을 관리합니다.</p>
         </div>
-        {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
+        <div className="flex items-center gap-3">
+          {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
+          <Link href="/admin/partnership" className="text-sm font-medium text-blue-600 hover:text-blue-800">가맹·입점 페이지 편집 →</Link>
+        </div>
       </div>
 
       {/* 탭 */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {([["list", "접수 내역"], ["content", "안내 문구"], ["notify", "알림 설정"]] as const).map(([t, label]) => (
+        {([["list", "접수 내역"], ["notify", "알림 설정"]] as const).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-slate-800 text-slate-900" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
             {label}{t === "list" && inquiries.length > 0 ? ` (${inquiries.length})` : ""}
@@ -225,56 +195,6 @@ export default function AdminInquiriesPage() {
         </div>
       )}
 
-      {/* ── 안내 문구 ── */}
-      {tab === "content" && (
-        loadingContent ? (
-          <div className="py-12 text-center text-slate-400 text-sm">불러오는 중...</div>
-        ) : (
-          <div className="space-y-6 max-w-3xl">
-            {(["franchise", "wholesale"] as InquiryType[]).map((key) => {
-              const info = config[key];
-              const title = key === "franchise" ? "가맹·창업 페이지" : "입점·제휴 페이지";
-              return (
-                <section key={key} className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-                  <h2 className="font-semibold text-gray-800">{title}</h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input label="상단 제목" value={info.hero_title} onChange={v => setInfo(key, { hero_title: v })} />
-                    <Input label="폼 영역 제목" value={info.form_title} onChange={v => setInfo(key, { form_title: v })} />
-                  </div>
-                  <Textarea label="상단 설명" value={info.hero_desc} onChange={v => setInfo(key, { hero_desc: v })} />
-                  <Input label="패널 제목" value={info.panel_title} onChange={v => setInfo(key, { panel_title: v })} />
-                  <Textarea label="패널 설명" value={info.panel_desc} onChange={v => setInfo(key, { panel_desc: v })} />
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-gray-500">혜택 리스트</label>
-                      <button type="button" onClick={() => setInfo(key, { benefits: [...info.benefits, ""] })} className="text-xs text-blue-600 hover:text-blue-800">+ 추가</button>
-                    </div>
-                    <div className="space-y-2">
-                      {info.benefits.map((b, i) => (
-                        <div key={i} className="flex gap-2">
-                          <input type="text" value={b}
-                            onChange={e => setInfo(key, { benefits: info.benefits.map((x, idx) => idx === i ? e.target.value : x) })}
-                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                          <button type="button" onClick={() => setInfo(key, { benefits: info.benefits.filter((_, idx) => idx !== i) })} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input label="직통 전화" value={info.phone} onChange={v => setInfo(key, { phone: v })} />
-                    <Input label="운영 시간" value={info.hours} onChange={v => setInfo(key, { hours: v })} />
-                  </div>
-                </section>
-              );
-            })}
-            <button onClick={saveContent} disabled={savingContent}
-              className="w-full py-3 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors">
-              {savingContent ? "저장 중..." : "안내 문구 저장"}
-            </button>
-          </div>
-        )
-      )}
-
       {/* ── 알림 설정 ── */}
       {tab === "notify" && (
         loadingNotif ? (
@@ -324,26 +244,6 @@ export default function AdminInquiriesPage() {
           </div>
         )
       )}
-    </div>
-  );
-}
-
-function Input({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-500 mb-1.5">{label}</label>
-      <input type="text" value={value} onChange={e => onChange(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-    </div>
-  );
-}
-
-function Textarea({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-500 mb-1.5">{label}</label>
-      <textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
     </div>
   );
 }

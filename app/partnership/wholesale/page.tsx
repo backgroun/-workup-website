@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import { WholesaleForm } from "@/components/PartnershipForms";
 import PartnershipLayout from "@/components/PartnershipLayout";
-import { DEFAULT_PARTNERSHIP, type PartnershipConfig } from "@/data/partnership";
+import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
 import { getSiteSection } from "@/lib/site-settings";
 
-export const metadata: Metadata = {
-  title: "브랜드 입점·제휴 문의 | WORKUP",
-  description: "내 브랜드 제품을 WORKUP 매장에 납품하고 싶은 분을 위한 입점·제휴 문의 안내.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteSection<PartnershipConfig>("partnership_page");
+  const info = normalizePartnership(config).wholesale;
+  return { title: info.seo_title, description: info.seo_desc };
+}
 
 export default async function WholesalePage() {
   const config = await getSiteSection<PartnershipConfig>("partnership_page");
-  const info = config?.wholesale ?? DEFAULT_PARTNERSHIP.wholesale;
+  const info = normalizePartnership(config).wholesale;
 
   return (
-    <PartnershipLayout info={info} panelBg="#2d4f72" boardType="wholesale">
-      <WholesaleForm />
+    <PartnershipLayout info={info} boardType="wholesale">
+      <WholesaleForm config={info.form} />
     </PartnershipLayout>
   );
 }

@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import { FranchiseForm } from "@/components/PartnershipForms";
 import PartnershipLayout from "@/components/PartnershipLayout";
-import { DEFAULT_PARTNERSHIP, type PartnershipConfig } from "@/data/partnership";
+import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
 import { getSiteSection } from "@/lib/site-settings";
 
-export const metadata: Metadata = {
-  title: "가맹·창업 문의 | WORKUP",
-  description: "WORKUP 브랜드로 독립 매장을 창업하고 싶으신 분을 위한 가맹·창업 문의 안내.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteSection<PartnershipConfig>("partnership_page");
+  const info = normalizePartnership(config).franchise;
+  return { title: info.seo_title, description: info.seo_desc };
+}
 
 export default async function FranchisePage() {
   const config = await getSiteSection<PartnershipConfig>("partnership_page");
-  const info = config?.franchise ?? DEFAULT_PARTNERSHIP.franchise;
+  const info = normalizePartnership(config).franchise;
 
   return (
-    <PartnershipLayout info={info} panelBg="#1A2B4A" boardType="franchise">
-      <FranchiseForm />
+    <PartnershipLayout info={info} boardType="franchise">
+      <FranchiseForm config={info.form} />
     </PartnershipLayout>
   );
 }
