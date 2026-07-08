@@ -14,6 +14,9 @@ function feedTitle(p: Record<string, unknown>, type: string): string {
   return genericContent(type); // 제목·내용이 모두 비면 보드가 비지 않도록 일반 문구
 }
 
+const PAGE = 1000; // Supabase 요청당 최대 반환 행
+const MAX = 5000;  // 보드에 노출할 최대 항목(성능·대역폭 보호)
+
 export async function GET(req: Request) {
   noStore();
   try {
@@ -22,22 +25,34 @@ export async function GET(req: Request) {
     const tp = searchParams.get("type");
     const t = tp === "franchise" || tp === "wholesale" ? tp : null; // 유형 필터(가맹/입점)
 
-    const dq = supabase.from("inquiry_dummies").select("id,type,name,content,created_at").order("created_at", { ascending: false }).limit(120);
-    const rq = supabase.from("inquiries").select("id,type,payload,created_at").order("created_at", { ascending: false }).limit(40);
+    // 1000행 캡을 넘겨 전량(최대 MAX)을 페이지로 모은다.
+    const fetchAll = async (table: "inquiries" | "inquiry_dummies", cols: string) => {
+      const rows: Record<string, unknown>[] = [];
+      for (let from = 0; from < MAX; from += PAGE) {
+        let q = supabase.from(table).select(cols).order("created_at", { ascending: false }).range(from, from + PAGE - 1);
+        if (t) q = q.eq("type", t);
+        const { data } = await q;
+        const page = (data ?? []) as unknown as Record<string, unknown>[];
+        rows.push(...page);
+        if (page.length < PAGE) break;
+      }
+      return rows;
+    };
+
     const dc = supabase.from("inquiry_dummies").select("*", { count: "exact", head: true });
     const rc = supabase.from("inquiries").select("*", { count: "exact", head: true });
 
-    const [{ data: dummies }, { data: reals }, { count: dummyCount }, { count: realCount }] = await Promise.all([
-      t ? dq.eq("type", t) : dq,
-      t ? rq.eq("type", t) : rq,
+    const [dummies, reals, { count: dummyCount }, { count: realCount }] = await Promise.all([
+      fetchAll("inquiry_dummies", "id,type,name,content,created_at"),
+      fetchAll("inquiries", "id,type,payload,created_at"),
       t ? dc.eq("type", t) : dc,
       t ? rc.eq("type", t) : rc,
     ]);
 
-    const dummyItems: FeedItem[] = (dummies ?? []).map((d) => ({
+    const dummyItems: FeedItem[] = dummies.map((d) => ({
       id: d.id as string, type: d.type as string, name: d.name as string, content: d.content as string, created_at: d.created_at as string,
     }));
-    const realItems: FeedItem[] = (reals ?? []).map((r) => {
+    const realItems: FeedItem[] = reals.map((r) => {
       const p = (r.payload ?? {}) as Record<string, unknown>;
       return {
         id: r.id as string,
@@ -50,7 +65,7 @@ export async function GET(req: Request) {
 
     const items = [...realItems, ...dummyItems]
       .sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
-      .slice(0, 120);
+      .slice(0, MAX);
 
     return NextResponse.json({ items, total: (dummyCount ?? 0) + (realCount ?? 0) });
   } catch {

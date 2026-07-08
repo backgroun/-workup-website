@@ -13,13 +13,20 @@ export async function GET(req: Request) {
   const type = searchParams.get("type"); // 'franchise' | 'wholesale' | null(전체)
 
   const supabase = createAdminClient();
-  // Supabase 기본 조회 상한(1000행)에 걸리지 않도록 명시적으로 범위를 넓힌다.
-  let query = supabase.from("inquiries").select("*").order("created_at", { ascending: false }).range(0, 9999);
-  if (type === "franchise" || type === "wholesale") query = query.eq("type", type);
-
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  // Supabase(PostgREST)는 요청당 최대 1000행만 반환하므로,
+  // 1000행씩 페이지로 나눠 전량을 모은다.
+  const PAGE = 1000;
+  const all: unknown[] = [];
+  for (let from = 0; from <= 100000; from += PAGE) {
+    let query = supabase.from("inquiries").select("*").order("created_at", { ascending: false }).range(from, from + PAGE - 1);
+    if (type === "franchise" || type === "wholesale") query = query.eq("type", type);
+    const { data, error } = await query;
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < PAGE) break; // 마지막 페이지
+  }
+  return NextResponse.json(all);
 }
 
 // 여러 문의의 게시판 유형 일괄 변경 (관리자). body: { ids: string[], type }

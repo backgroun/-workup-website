@@ -22,11 +22,14 @@ function isToday(iso: string): boolean {
   return d.toDateString() === new Date().toDateString();
 }
 
+const RENDER_STEP = 60; // 스크롤 시 한 번에 더 그리는 개수
+
 export default function InquiryBoard({ type }: { type?: string }) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [total, setTotal] = useState(0);
   const [newId, setNewId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [visible, setVisible] = useState(RENDER_STEP); // 점진 렌더(무한 스크롤)
   const timerRef = useRef<number | null>(null);
 
   const title = type === "wholesale" ? "워크업 입점/제휴 문의 현황"
@@ -36,17 +39,26 @@ export default function InquiryBoard({ type }: { type?: string }) {
 
   useEffect(() => {
     let alive = true;
+    setVisible(RENDER_STEP);
     fetch(`/api/inquiry-feed${type ? `?type=${type}` : ""}`)
       .then((r) => r.json())
       .then((d) => {
         if (!alive) return;
-        setItems(Array.isArray(d.items) ? d.items.slice(0, 120) : []);
+        setItems(Array.isArray(d.items) ? d.items : []);
         setTotal(typeof d.total === "number" ? d.total : 0);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
     return () => { alive = false; };
   }, [type]);
+
+  // 스크롤이 바닥 근처에 오면 더 그린다.
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
+      setVisible((v) => (v < items.length ? Math.min(v + RENDER_STEP, items.length) : v));
+    }
+  };
 
   // 새 문의가 위로 올라오는 효과 — 첫 등장 30~70초, 이후 하루 ~10개 페이스.
   useEffect(() => {
@@ -57,7 +69,8 @@ export default function InquiryBoard({ type }: { type?: string }) {
       first = false;
       timerRef.current = window.setTimeout(() => {
         const it = makeDummy({ type });
-        setItems((prev) => [it, ...prev].slice(0, 120));
+        setItems((prev) => [it, ...prev]);
+        setVisible((v) => v + 1);
         setNewId(it.id);
         window.setTimeout(() => setNewId((cur) => (cur === it.id ? null : cur)), 1300);
         schedule();
@@ -90,12 +103,12 @@ export default function InquiryBoard({ type }: { type?: string }) {
         <span>제목</span><span className="text-center">작성자</span><span className="text-right">날짜</span>
       </div>
 
-      {/* 목록 (전체 스크롤) */}
-      <div className="flex-1 overflow-y-auto">
+      {/* 목록 (전체 스크롤 — 바닥 근처에서 점진 로드) */}
+      <div className="flex-1 overflow-y-auto" onScroll={onScroll}>
         {!loaded ? (
           <div className="py-12 text-center text-xs text-gray-300">불러오는 중...</div>
         ) : (
-          items.map((it) => {
+          items.slice(0, visible).map((it) => {
             const today = isToday(it.created_at);
             return (
               <div

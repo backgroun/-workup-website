@@ -419,10 +419,10 @@ export default function PartnershipEditPage() {
               </div>
             </div>
 
-            {/* 개인정보 동의 (가맹 전용) */}
-            {tab === "franchise" && (
+            {/* 개인정보 동의 */}
+            {(tab === "franchise" || tab === "wholesale") && (
               <div className="border-t border-slate-100 pt-4 space-y-3">
-                <p className="text-[11px] text-gray-400">개인정보 동의 (가맹·창업 전용)</p>
+                <p className="text-[11px] text-gray-400">개인정보 동의</p>
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1.5">동의 문구</label>
                   <input value={info.form.consent_text} onChange={(e) => patchForm({ consent_text: e.target.value })}
@@ -479,7 +479,7 @@ export default function PartnershipEditPage() {
                     </div>
                   </div>
                 ))}
-                {tab === "franchise" && (
+                {(tab === "franchise" || tab === "wholesale") && (
                   <p className="text-xs text-gray-500 leading-relaxed">
                     <span className="text-[#ff550c] font-medium">[필수]</span> {info.form.consent_text}{" "}
                     <span className="underline text-[#1A2B4A]">내용 보기</span>

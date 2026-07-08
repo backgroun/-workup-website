@@ -109,7 +109,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
 
         {/* 본문 */}
         <div className="px-5 py-5 text-xs text-gray-600 leading-relaxed space-y-4">
-          <p>워크업은 가맹·창업 문의 접수 및 상담을 위해 아래와 같이 개인정보를 수집·이용합니다.</p>
+          <p>워크업은 문의 접수 및 상담을 위해 아래와 같이 개인정보를 수집·이용합니다.</p>
 
           <table className="w-full border-t border-gray-200 text-left">
             <tbody className="divide-y divide-gray-100">
@@ -119,7 +119,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
               </tr>
               <tr>
                 <th className="py-2.5 pr-3 align-top font-medium text-[#1A2B4A] whitespace-nowrap">수집·이용 목적</th>
-                <td className="py-2.5 text-gray-600">가맹·창업 문의 접수 및 상담 안내</td>
+                <td className="py-2.5 text-gray-600">문의 접수 및 상담 안내</td>
               </tr>
               <tr>
                 <th className="py-2.5 pr-3 align-top font-medium text-[#1A2B4A] whitespace-nowrap">보유·이용 기간</th>
@@ -282,7 +282,7 @@ export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: {
   return <InquiryForm type="franchise" config={config} consent />;
 }
 
-// ── 입점 문의 폼 ──────────────────────────────────────
+// ── 입점 문의 폼 (개인정보 동의 포함) ──────────────────
 export function WholesaleForm({ config = DEFAULT_PARTNERSHIP.wholesale.form }: { config?: FormConfig }) {
-  return <InquiryForm type="wholesale" config={config} consent={false} />;
+  return <InquiryForm type="wholesale" config={config} consent />;
 }

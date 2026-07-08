@@ -76,8 +76,8 @@ export async function POST(req: Request) {
 
   // 유형별 검증
   if (type === "franchise" || type === "wholesale") {
-    // 가맹·창업은 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증(클라이언트 우회 방지).
-    if (type === "franchise" && !String(p.privacyAgree ?? "").trim()) {
+    // 가맹·창업 / 입점·제휴는 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증(클라이언트 우회 방지).
+    if (!String(p.privacyAgree ?? "").trim()) {
       return NextResponse.json({ error: "개인정보 수집·이용에 동의해주세요." }, { status: 400 });
     }
     // 관리자가 구성한 폼의 필수 항목·연락처 형식을 검증한다.
