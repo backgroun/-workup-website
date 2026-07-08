@@ -154,35 +154,31 @@ export default function HomeNewArrivals() {
           </div>
         )}
 
-        {/* PC 가로 스크롤 캐러셀 */}
-        <div className="hidden md:block relative -mr-[70px]">
+        {/* PC 가로 스크롤 캐러셀 — 화살표는 좌우 여백(gutter)에 두어 카드 이미지와 겹치지 않음 */}
+        <div className="hidden md:block relative">
           {showLeft && (
             <button
               onClick={() => scroll("left")}
               aria-label="이전"
-              className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center"
-              style={{ left: "85px" }}
+              className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
+              style={{ left: "-52px" }}
             >
-              <svg width="18" height="34" viewBox="0 0 18 34" fill="none" stroke="#1A2B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 5L5 17L13 29" />
-              </svg>
+              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
             </button>
           )}
           <button
             onClick={() => scroll("right")}
             aria-label="다음"
-            className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center"
-            style={{ right: "85px" }}
+            className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
+            style={{ right: "-52px" }}
           >
-            <svg width="18" height="34" viewBox="0 0 18 34" fill="none" stroke="#1A2B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 5L13 17L5 29" />
-            </svg>
+            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
           </button>
 
           <div
             ref={pcRef}
             onScroll={handlePcScroll}
-            className="flex gap-4 overflow-x-auto pb-1 pr-[70px]"
+            className="flex gap-4 overflow-x-auto pb-1"
             style={{ scrollbarWidth: "none" }}
           >
             {newItems.map((p) => (
