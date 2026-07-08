@@ -154,8 +154,8 @@ export default function HomeNewArrivals() {
           </div>
         )}
 
-        {/* PC 가로 스크롤 캐러셀 — 화살표는 이미지 좌우 가장자리 위에 얹음(제품 모델은 가운데라 가리지 않음) */}
-        <div className="hidden md:block relative">
+        {/* PC 가로 스크롤 캐러셀 — 우측으로 블리드(-mr)해 다음 카드가 살짝 보이게(peek), 화살표는 이미지 가장자리 위에 얹음 */}
+        <div className="hidden md:block relative -mr-[70px]">
           {showLeft && (
             <button
               onClick={() => scroll("left")}
@@ -170,7 +170,7 @@ export default function HomeNewArrivals() {
             onClick={() => scroll("right")}
             aria-label="다음"
             className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-            style={{ right: "8px" }}
+            style={{ right: "78px" }}
           >
             <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-10 h-10 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]" />
           </button>
@@ -178,7 +178,7 @@ export default function HomeNewArrivals() {
           <div
             ref={pcRef}
             onScroll={handlePcScroll}
-            className="flex gap-4 overflow-x-auto pb-1"
+            className="flex gap-4 overflow-x-auto pb-1 pr-[70px]"
             style={{ scrollbarWidth: "none" }}
           >
             {newItems.map((p) => (
