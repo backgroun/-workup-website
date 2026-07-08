@@ -47,19 +47,28 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
 }
 
 // 통이미지 카드 — 제목·설명·썸네일 없이 이미지 한 장 (PR 소식 등). link 지정 시 클릭 이동.
-function ImageOnlyCard({ imageUrl, link, title }: { imageUrl?: string; link?: string; title?: string }) {
+// fill=true(PC): 카드(행) 전체 높이를 채움(하단까지·object-cover). fill=false(모바일): 원본 비율.
+function ImageOnlyCard({ imageUrl, link, title, fill = false }: { imageUrl?: string; link?: string; title?: string; fill?: boolean }) {
   const img = imageUrl ? (
-    <img src={imageUrl} alt={title || "기획전 이미지"} className="block w-full h-auto" />
+    <img
+      src={imageUrl}
+      alt={title || "기획전 이미지"}
+      className={fill ? "absolute inset-0 w-full h-full object-cover" : "block w-full h-auto"}
+    />
   ) : (
-    <div className="w-full flex items-center justify-center bg-gray-100" style={{ aspectRatio: "440 / 495" }}>
+    <div
+      className={`flex items-center justify-center bg-gray-100 ${fill ? "absolute inset-0" : "w-full"}`}
+      style={fill ? undefined : { aspectRatio: "440 / 495" }}
+    >
       <span className="text-gray-300 text-6xl font-black select-none">WU</span>
     </div>
   );
-  if (!link) return img;
+  const style = fill ? ({ flex: "1 1 0", minHeight: 0, position: "relative" } as const) : undefined;
+  if (!link) return fill ? <div style={style} className="block w-full">{img}</div> : img;
   return /^https?:\/\//.test(link) ? (
-    <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full">{img}</a>
+    <a href={link} target="_blank" rel="noopener noreferrer" style={style} className="block w-full">{img}</a>
   ) : (
-    <Link href={link} className="block w-full">{img}</Link>
+    <Link href={link} style={style} className="block w-full">{img}</Link>
   );
 }
 
@@ -94,6 +103,8 @@ function WhiteBox({
       ref={ref}
       style={{
         width: "100%",
+        // 통이미지형은 행(옆 카드) 전체 높이를 채운다 — 하단까지
+        height: section.cardType === "image" ? "100%" : undefined,
         backgroundColor: "white",
         overflow: "hidden",
         display: "flex",
@@ -104,7 +115,7 @@ function WhiteBox({
       }}
     >
       {section.cardType === "image" ? (
-        <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} />
+        <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} fill />
       ) : (
       <>
       {/* 이미지 — 440:495 = 8:9 컨테이너, object-contain으로 잘림 없음 */}

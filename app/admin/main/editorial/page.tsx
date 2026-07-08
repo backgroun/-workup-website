@@ -1254,11 +1254,11 @@ function BannerEditor({ banner, label, onChange, products }: {
           <div className="flex-shrink-0" style={{ width: "160px" }}>
             <ImageField
               label="통이미지"
-              hint="원본 비율로 노출"
+              hint="세로형 · 약 900×1800px"
               value={banner.image_url}
               onChange={(url) => onChange({ image_url: url })}
               compact
-              aspectRatio="8/9"
+              aspectRatio="1/2"
             />
           </div>
           <div className="flex-1 min-w-0 space-y-3">
@@ -1270,6 +1270,7 @@ function BannerEditor({ banner, label, onChange, products }: {
             />
             <p className="text-[12px] text-gray-500 leading-relaxed">
               통이미지 한 장으로 노출됩니다. 제목·설명·썸네일은 표시되지 않습니다.<br />
+              <b>권장 사이즈: 세로형 약 900×1800px (폭:높이 ≈ 1:2).</b> 옆 카드 높이에 맞춰 가운데 기준으로 채워지므로(잘릴 수 있음) 중요한 요소는 가운데에 배치하세요.<br />
               링크를 입력하면 이미지 클릭 시 해당 주소로 이동합니다. (외부 주소는 새 탭)
             </p>
           </div>
