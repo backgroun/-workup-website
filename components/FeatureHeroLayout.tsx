@@ -26,8 +26,8 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
             className="relative flex items-center justify-center w-9 h-9"
           >
             <span
-              className="rounded-full border-[3px] border-white bg-white/25 shadow-[0_0_0_1px_rgba(0,0,0,0.22)] transition-transform"
-              style={{ width: "16px", height: "16px", transform: hovered === i ? "scale(1.3)" : "scale(1)" }}
+              className="rounded-full transition-transform w-3 h-3 xl:w-4 xl:h-4 border-2 xl:border-[3px] border-white/60 xl:border-white bg-white/10 xl:bg-white/25 shadow-[0_0_0_1px_rgba(0,0,0,0.2)]"
+              style={{ transform: hovered === i ? "scale(1.3)" : "scale(1)" }}
             />
           </Link>
           {hovered === i && (t.name || t.price) && (
