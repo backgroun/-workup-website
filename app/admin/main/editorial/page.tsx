@@ -31,6 +31,8 @@ type Banner = {
   label?: string;     // 상세페이지 상단 라벨 (배너별 기획전명) — 예: "그대 이름은 바람 바람 바람"
   section_bg: string;
   image_url: string;
+  card_type?: "product" | "image"; // "image" = 통이미지 카드 (제목/설명/썸네일 없이 이미지 한 장)
+  link?: string;      // 통이미지 카드 클릭 시 이동할 링크 (PR 소식 등)
   items: ProductItem[];
   detail_items?: ProductItem[];  // 상세페이지 전용 추가 상품 (메인 items 뒤에 노출)
   tags?: HeroTag[];   // 섹션 이미지 위 상품 핫스팟 (단일 x/y 좌표 사용)
@@ -1222,6 +1224,58 @@ function BannerEditor({ banner, label, onChange, products }: {
 
   return (
     <div className="space-y-4">
+      {/* 카드 타입 — 상품형(기본) / 통이미지형 */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-[13px] font-semibold text-[#1A2B4A]">카드 타입</span>
+        <div className="flex rounded-lg overflow-hidden border border-gray-200">
+          {(["product", "image"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => onChange({ card_type: t })}
+              className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                (banner.card_type ?? "product") === t ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+              }`}
+            >
+              {t === "product" ? "상품형 (기본)" : "통이미지형"}
+            </button>
+          ))}
+        </div>
+        <span className="text-[11px] text-gray-400">
+          {(banner.card_type ?? "product") === "image"
+            ? "제목·설명·썸네일 없이 이미지 한 장으로 노출 (PR 소식 등)"
+            : "상단이미지 + 제목 + 설명 + 썸네일"}
+        </span>
+      </div>
+
+      {(banner.card_type ?? "product") === "image" ? (
+        /* ── 통이미지형 — 이미지 한 장 + 링크 ── */
+        <div className="flex gap-4 items-start">
+          <div className="flex-shrink-0" style={{ width: "160px" }}>
+            <ImageField
+              label="통이미지"
+              hint="원본 비율로 노출"
+              value={banner.image_url}
+              onChange={(url) => onChange({ image_url: url })}
+              compact
+              aspectRatio="8/9"
+            />
+          </div>
+          <div className="flex-1 min-w-0 space-y-3">
+            <Field
+              label="클릭 시 이동 링크 (선택)"
+              value={banner.link ?? ""}
+              onChange={(v) => onChange({ link: v })}
+              placeholder="/notice/123 또는 https://..."
+            />
+            <p className="text-[12px] text-gray-500 leading-relaxed">
+              통이미지 한 장으로 노출됩니다. 제목·설명·썸네일은 표시되지 않습니다.<br />
+              링크를 입력하면 이미지 클릭 시 해당 주소로 이동합니다. (외부 주소는 새 탭)
+            </p>
+          </div>
+        </div>
+      ) : (
+      <>
       {/* 상단 라벨 (상세페이지 상단 기획전명 — 배너별로 개별 노출) */}
       <Field
         label="상단 라벨 (상세페이지 기획전명)"
@@ -1373,6 +1427,8 @@ function BannerEditor({ banner, label, onChange, products }: {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }

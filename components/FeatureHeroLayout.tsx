@@ -46,6 +46,23 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
   );
 }
 
+// 통이미지 카드 — 제목·설명·썸네일 없이 이미지 한 장 (PR 소식 등). link 지정 시 클릭 이동.
+function ImageOnlyCard({ imageUrl, link, title }: { imageUrl?: string; link?: string; title?: string }) {
+  const img = imageUrl ? (
+    <img src={imageUrl} alt={title || "기획전 이미지"} className="block w-full h-auto" />
+  ) : (
+    <div className="w-full flex items-center justify-center bg-gray-100" style={{ aspectRatio: "440 / 495" }}>
+      <span className="text-gray-300 text-6xl font-black select-none">WU</span>
+    </div>
+  );
+  if (!link) return img;
+  return /^https?:\/\//.test(link) ? (
+    <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full">{img}</a>
+  ) : (
+    <Link href={link} className="block w-full">{img}</Link>
+  );
+}
+
 function WhiteBox({
   section,
   colIndex,
@@ -86,6 +103,10 @@ function WhiteBox({
         transitionDelay: `${delayMs}ms`,
       }}
     >
+      {section.cardType === "image" ? (
+        <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} />
+      ) : (
+      <>
       {/* 이미지 — 440:495 = 8:9 컨테이너, object-contain으로 잘림 없음 */}
       <div className="group/img relative w-full flex-shrink-0" style={{ paddingBottom: "112.5%" }}>
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -183,6 +204,8 @@ function WhiteBox({
           ))}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
@@ -408,6 +431,10 @@ export default function FeatureHeroLayout({
         >
           {sections.map((section, i) => (
             <div key={i} style={{ backgroundColor: "white", overflow: "hidden" }}>
+              {section.cardType === "image" ? (
+                <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} />
+              ) : (
+              <>
               {/* 이미지 — object-contain으로 잘림 없음 */}
               <div
                 className="relative w-full flex items-center justify-center bg-gray-100"
@@ -478,6 +505,8 @@ export default function FeatureHeroLayout({
                   ))}
                 </div>
               </div>
+              </>
+              )}
             </div>
           ))}
         </div>

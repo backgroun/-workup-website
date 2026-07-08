@@ -35,6 +35,9 @@ export type EditorialSection = {
   title: string;
   desc: string;
   imageUrl?: string;
+  // 카드 타입 — "product"(기본): 상단이미지+제목+설명+썸네일 / "image": 통이미지 한 장
+  cardType?: "product" | "image";
+  link?: string;                        // 통이미지 카드 클릭 시 이동할 링크 (PR 소식 등)
   items: [EditorialSectionItem, EditorialSectionItem, EditorialSectionItem];
   detailItems?: EditorialSectionItem[]; // 상세페이지 전용 추가 상품 (메인 items 뒤에 노출)
   detailHref?: string;                  // 섹션이미지 클릭 시 이동할 상세페이지 경로

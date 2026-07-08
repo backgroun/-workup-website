@@ -9,6 +9,8 @@ export type ProductItem = { id: string; product_id: string; name: string; price:
 export type Banner = {
   title: string; desc: string; section_bg: string; image_url: string;
   label?: string;               // 상세페이지 상단 라벨 (배너별 기획전명)
+  card_type?: "product" | "image"; // "image" = 통이미지 카드 (제목/설명/썸네일 없이 이미지 한 장)
+  link?: string;                // 통이미지 카드 클릭 시 이동할 링크
   items: ProductItem[];
   detail_items?: ProductItem[]; // 상세페이지 전용 추가 상품
   tags?: HeroTag[];
@@ -66,6 +68,8 @@ function makeSection(banner: Banner | undefined, detailHref?: string): Editorial
     title: banner?.title || "",
     desc: banner?.desc || "",
     imageUrl: banner?.image_url || undefined,
+    cardType: banner?.card_type === "image" ? "image" : "product",
+    link: banner?.link || undefined,
     items: [items[0], items[1], items[2]],
     detailItems,
     detailHref,
