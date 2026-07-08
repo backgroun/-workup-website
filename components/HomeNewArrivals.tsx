@@ -154,25 +154,25 @@ export default function HomeNewArrivals() {
           </div>
         )}
 
-        {/* PC 가로 스크롤 캐러셀 — 화살표는 좌우 여백(gutter)에 두어 카드 이미지와 겹치지 않음 */}
+        {/* PC 가로 스크롤 캐러셀 — 화살표는 이미지 좌우 가장자리 위에 얹음(제품 모델은 가운데라 가리지 않음) */}
         <div className="hidden md:block relative">
           {showLeft && (
             <button
               onClick={() => scroll("left")}
               aria-label="이전"
               className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-              style={{ left: "-52px" }}
+              style={{ left: "8px" }}
             >
-              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
+              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-10 h-10 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]" />
             </button>
           )}
           <button
             onClick={() => scroll("right")}
             aria-label="다음"
             className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-            style={{ right: "-52px" }}
+            style={{ right: "8px" }}
           >
-            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
+            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-10 h-10 select-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]" />
           </button>
 
           <div
