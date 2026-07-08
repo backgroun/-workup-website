@@ -28,12 +28,12 @@ export default function StoryHeroView({ hero }: { hero: StoryHero }) {
       {/* 그라디언트 */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
 
-      {/* 텍스트 — 좌하단 */}
+      {/* 텍스트 — 좌하단 (폰트 배율 --st-fs 적용) */}
       <div className="absolute bottom-12 px-[15px] md:px-[70px]">
-        <h1 className="text-[38px] md:text-[54px] font-bold text-white leading-[1.15] mb-5 whitespace-pre-line">
+        <h1 className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(54px*var(--st-fs,1))] font-bold text-white leading-[1.15] mb-5 whitespace-pre-line">
           {hero.heading}
         </h1>
-        {hero.sub && <p className="text-white/60 text-[14px]">{hero.sub}</p>}
+        {hero.sub && <p className="text-white/60 text-[calc(14px*var(--st-fs,1))]">{hero.sub}</p>}
       </div>
     </div>
   );

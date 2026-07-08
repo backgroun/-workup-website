@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { getSiteSection } from "@/lib/site-settings";
-import { DEFAULT_STORY, type StoryConfig } from "@/data/story";
+import { DEFAULT_STORY, DEFAULT_STORY_STYLE, storyStyleVars, type StoryConfig } from "@/data/story";
 import StoryHeroView from "@/components/StoryHeroView";
 import StorySectionView from "@/components/StorySectionView";
 
@@ -14,9 +15,10 @@ export default async function StoryPage() {
   const config = await getSiteSection<StoryConfig>("story_page");
   const hero = config?.hero ?? DEFAULT_STORY.hero;
   const sections = config?.sections?.length ? config.sections : DEFAULT_STORY.sections;
+  const style = config?.style ?? DEFAULT_STORY_STYLE;
 
   return (
-    <main className="bg-white">
+    <main className="bg-white" style={storyStyleVars(style) as CSSProperties}>
       <StoryHeroView hero={hero} />
       {sections.filter((s) => s.visible).map((s) => (
         <StorySectionView key={s.id} section={s} />

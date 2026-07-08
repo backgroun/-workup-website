@@ -14,3 +14,14 @@ export const siteUrl = (
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : "http://localhost:3000")
 ).replace(/\/$/, "");
+
+/**
+ * 상대경로·저장소 경로를 검색엔진이 인식하는 절대 URL로 변환.
+ * 이미 http(s)로 시작하면 그대로 반환. 빈 값은 undefined.
+ * OG 이미지·구조화 데이터(JSON-LD)에서 이미지/링크를 절대경로로 만들 때 사용.
+ */
+export function absoluteUrl(path?: string | null): string | undefined {
+  if (!path) return undefined;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${siteUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+}

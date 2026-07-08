@@ -1,11 +1,12 @@
 "use client";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode, type CSSProperties } from "react";
 import AdminImageField from "@/components/admin/AdminImageField";
 import StoryHeroView from "@/components/StoryHeroView";
 import StorySectionView from "@/components/StorySectionView";
 import {
-  DEFAULT_STORY, emptySection, uid, SECTION_TYPE_LABEL,
+  DEFAULT_STORY, DEFAULT_STORY_STYLE, storyStyleVars, STORY_IMAGE_RATIOS, emptySection, uid, SECTION_TYPE_LABEL,
   type StoryConfig, type StoryHero, type StorySection, type StorySectionType, type SectionBg, type ValueItem,
+  type StoryStyle, type StoryImageRatio,
   type DeclarationSection, type CategorySection, type ValuesSection,
   type FoundingSection, type CtaSection, type RichTextSection,
   type PhotosSection, type PhotoItem,
@@ -39,6 +40,7 @@ function cleanSection(s: StorySection): StorySection {
 export default function AdminStoryPage() {
   const [hero, setHero] = useState<StoryHero>(DEFAULT_STORY.hero);
   const [sections, setSections] = useState<StorySection[]>([]);
+  const [style, setStyle] = useState<StoryStyle>(DEFAULT_STORY_STYLE);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ text: "", type: "" });
@@ -54,10 +56,12 @@ export default function AdminStoryPage() {
       .then((data: StoryConfig | null) => {
         setHero(data?.hero ?? DEFAULT_STORY.hero);
         setSections(data?.sections?.length ? data.sections : DEFAULT_STORY.sections);
+        setStyle({ ...DEFAULT_STORY_STYLE, ...(data?.style ?? {}) });
       })
       .catch(() => {
         setHero(DEFAULT_STORY.hero);
         setSections(DEFAULT_STORY.sections);
+        setStyle(DEFAULT_STORY_STYLE);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -67,13 +71,13 @@ export default function AdminStoryPage() {
     setTimeout(() => setToast({ text: "", type: "" }), 3000);
   };
 
-  const saveAll = async (nextHero: StoryHero, nextSections: StorySection[]) => {
+  const saveAll = async (nextHero: StoryHero, nextSections: StorySection[], nextStyle: StoryStyle = style) => {
     setSaving(true);
     try {
       const r = await fetch("/api/admin/site-settings/story_page", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hero: nextHero, sections: nextSections }),
+        body: JSON.stringify({ hero: nextHero, sections: nextSections, style: nextStyle }),
       });
       flash(r.ok ? "저장됐습니다." : "저장에 실패했습니다.", r.ok ? "ok" : "err");
     } catch {
@@ -87,6 +91,12 @@ export default function AdminStoryPage() {
   const setHeroField = <K extends keyof StoryHero>(k: K, v: StoryHero[K]) =>
     setHero((prev) => ({ ...prev, [k]: v }));
   const handleSaveHero = () => saveAll(hero, sections);
+
+  // ── 전체 디자인(스타일 토큰) ──
+  const setStyleField = <K extends keyof StoryStyle>(k: K, v: StoryStyle[K]) =>
+    setStyle((prev) => ({ ...prev, [k]: v }));
+  const handleSaveStyle = () => saveAll(hero, sections, style);
+  const resetStyle = () => setStyle(DEFAULT_STORY_STYLE);
 
   // ── 섹션 목록 (변경 즉시 저장) ──
   const addSection = (type: StorySectionType) => { setEditing(emptySection(type)); setIsNew(true); setPickerOpen(false); };
@@ -215,9 +225,62 @@ export default function AdminStoryPage() {
           {/* 히어로 미리보기 */}
           <div className="w-full lg:w-[300px] flex-shrink-0">
             <p className="text-xs font-semibold text-slate-500 mb-2">미리보기</p>
-            <div className="rounded-lg overflow-hidden border border-slate-200">
+            <div className="rounded-lg overflow-hidden border border-slate-200" style={storyStyleVars(style) as CSSProperties}>
               <StoryHeroView hero={{ ...hero, height: 240 }} />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 전체 디자인 카드 ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <div className="px-6 py-3.5 bg-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white">전체 디자인 <span className="text-slate-400 font-normal">· 폰트·줄간격·이미지·여백 일괄 적용</span></h2>
+          <div className="flex items-center gap-2">
+            <button onClick={resetStyle}
+              className="px-3 py-1.5 border border-slate-500 text-slate-200 text-xs font-medium rounded-lg hover:bg-slate-700">
+              기본값
+            </button>
+            <button onClick={handleSaveStyle} disabled={saving}
+              className="px-4 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+              {saving ? "저장 중..." : "디자인 저장"}
+            </button>
+          </div>
+        </div>
+        <div className="p-6 flex flex-col lg:flex-row gap-6">
+          {/* 컨트롤 */}
+          <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <RangeField label="폰트 크기" value={style.fontScale} min={0.8} max={1.4} step={0.05}
+              display={`${Math.round(style.fontScale * 100)}%`} onChange={(v) => setStyleField("fontScale", v)} />
+            <RangeField label="본문 줄간격" value={style.lineHeight} min={1.4} max={2.2} step={0.05}
+              display={style.lineHeight.toFixed(2)} onChange={(v) => setStyleField("lineHeight", v)} />
+            <RangeField label="섹션 상하 여백" value={style.sectionSpacing} min={0.6} max={1.6} step={0.05}
+              display={`${Math.round(style.sectionSpacing * 100)}%`} onChange={(v) => setStyleField("sectionSpacing", v)} />
+            <RangeField label="이미지 영역 너비" value={style.imageWidth} min={35} max={60} step={1}
+              display={`${style.imageWidth}%`} onChange={(v) => setStyleField("imageWidth", v)} />
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">이미지 비율 (높이)</label>
+              <div className="flex flex-wrap gap-2">
+                {STORY_IMAGE_RATIOS.map((r) => (
+                  <button key={r.value} onClick={() => setStyleField("imageRatio", r.value as StoryImageRatio)}
+                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${style.imageRatio === r.value ? "border-blue-400 text-blue-600 bg-blue-50" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* 실시간 미리보기 */}
+          <div className="w-full lg:w-[340px] flex-shrink-0">
+            <p className="text-xs font-semibold text-slate-500 mb-2">미리보기</p>
+            <div className="rounded-lg overflow-hidden border border-slate-200 bg-white">
+              <div style={{ zoom: 0.42, ...(storyStyleVars(style) as CSSProperties) }}>
+                <StorySectionView section={STYLE_PREVIEW_SECTION} />
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+              모든 스토리 섹션(히어로 포함)에 동시 적용됩니다. 값 조정 후 <b>디자인 저장</b>을 눌러야 반영됩니다.
+            </p>
           </div>
         </div>
       </div>
@@ -338,6 +401,7 @@ export default function AdminStoryPage() {
                       <Field label="리드 문장"><input type="text" value={editing.lead} onChange={(e) => setDecl({ lead: e.target.value })} className={INPUT} /></Field>
                       <Field label="강조 문단 (줄바꿈 Enter)"><textarea value={editing.emphasis} onChange={(e) => setDecl({ emphasis: e.target.value })} rows={2} className={`${INPUT} resize-none`} /></Field>
                       <Field label="마지막 굵은 문구"><input type="text" value={editing.emphasisStrong} onChange={(e) => setDecl({ emphasisStrong: e.target.value })} className={INPUT} placeholder="워크업이 존재합니다." /></Field>
+                      <AdminImageField value={editing.image_url} onChange={(url) => setDecl({ image_url: url })} promptType="person" promptSeed="일하는 사람, 현장, 다큐멘터리" label="우측 대형 이미지 (비우면 네이비 플레이스홀더)" recommendedSize="800 × 1000px (4:5)" />
                     </>
                   )}
 
@@ -355,6 +419,7 @@ export default function AdminStoryPage() {
                         ))}
                       </ArrayField>
                       <Field label="하단 본문 (줄바꿈 Enter)"><textarea value={editing.body} onChange={(e) => setCat({ body: e.target.value })} rows={2} className={`${INPUT} resize-none`} /></Field>
+                      <AdminImageField value={editing.image_url} onChange={(url) => setCat({ image_url: url })} promptType="person" promptSeed="워크웨어, 일상과 현장, 도시" label="좌측 대형 이미지 (비우면 네이비 플레이스홀더)" recommendedSize="800 × 1000px (4:5)" />
                     </>
                   )}
 
@@ -483,7 +548,7 @@ export default function AdminStoryPage() {
                 <div className="w-[280px] flex-shrink-0">
                   <p className="text-xs font-semibold text-slate-500 mb-2">미리보기</p>
                   <div className="rounded-lg overflow-auto border border-slate-200 bg-white max-h-[460px]">
-                    <div style={{ zoom: 0.55 }}>
+                    <div style={{ zoom: 0.55, ...(storyStyleVars(style) as CSSProperties) }}>
                       <StorySectionView section={editing} />
                     </div>
                   </div>
@@ -501,7 +566,34 @@ export default function AdminStoryPage() {
   );
 }
 
+// 전체 디자인 미리보기용 샘플 섹션(선언문) — 실제 데이터와 무관, 스타일 확인 전용.
+const STYLE_PREVIEW_SECTION: DeclarationSection = {
+  id: "style-preview", type: "declaration", visible: true, bg: "white",
+  eyebrow: "Brand Declaration",
+  heading: "대한민국에는\n수많은 사람이 일합니다.",
+  lead: "건설현장, 공장, 물류센터, 농장, 매장, 사무실까지.",
+  emphasis: "그들이 더 편하게, 더 안전하게, 더 합리적으로\n일할 수 있도록 —",
+  emphasisStrong: "워크업이 존재합니다.",
+  image_url: "/images/story-declaration.jpg",
+};
+
 // ── 작은 헬퍼 컴포넌트 ──
+function RangeField({ label, value, min, max, step, display, onChange }: {
+  label: string; value: number; min: number; max: number; step: number; display: string; onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-xs font-semibold text-gray-500">{label}</label>
+        <span className="text-xs font-mono font-semibold text-blue-600">{display}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-blue-500 cursor-pointer" />
+    </div>
+  );
+}
+
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <div>

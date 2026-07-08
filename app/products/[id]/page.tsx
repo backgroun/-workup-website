@@ -9,6 +9,8 @@ import ProductTabs from "@/components/ProductTabs";
 import StickyAside from "@/components/StickyAside";
 import MobileProductNav from "@/components/MobileProductNav";
 import InstagramFeed from "@/components/InstagramFeed";
+import JsonLd from "@/components/JsonLd";
+import { absoluteUrl } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -61,9 +63,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const product = await fetchProduct(id);
   if (!product) return { title: "제품을 찾을 수 없습니다 | WORKUP" };
+  // 관리자가 지정한 metaTitle/metaDesc 우선, 없으면 제품명·태그라인으로 자동 생성
+  const title = product.metaTitle?.trim() || `${product.name} — WORKUP ${product.line}`;
+  const description = product.metaDesc?.trim() || product.tagline;
+  const ogImage = absoluteUrl(product.imageUrl);
   return {
-    title: `${product.name} — WORKUP ${product.line}`,
-    description: product.tagline,
+    title,
+    description,
+    // 카톡·SNS 공유 시 제품 대표 이미지가 미리보기로 노출되도록 OG 이미지 지정
+    openGraph: {
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
+    },
   };
 }
 
@@ -93,8 +105,28 @@ export default async function ProductDetailPage({ params }: Props) {
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
   const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);
 
+  // 검색엔진 구조화 데이터(Product) — 온라인 판매 카탈로그가 아니므로 가격/offers는 제외.
+  // 제품명·이미지·브랜드·카테고리로 "지역명+제품명" 검색 이해도를 높인다.
+  const productLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: productDisplayName(product),
+    description: product.metaDesc?.trim() || product.tagline,
+    image: [product.imageUrl, ...(product.subImages ?? [])]
+      .map((u) => absoluteUrl(u))
+      .filter(Boolean),
+    brand: { "@type": "Brand", name: product.brand || "WORKUP" },
+    category: product.category,
+    sku: product.sku || product.id,
+    url: absoluteUrl(`/products/${product.id}`),
+    ...(product.manufacturer
+      ? { manufacturer: { "@type": "Organization", name: product.manufacturer } }
+      : {}),
+  };
+
   return (
     <main className={`bg-white min-h-screen${isNewLayout ? " pb-20 md:pb-0" : ""}`}>
+      <JsonLd data={productLd} />
 
       {/* 모바일 네비 */}
       <MobileProductNav />

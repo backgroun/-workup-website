@@ -201,23 +201,16 @@ async function submitInquiry(type: "franchise" | "wholesale", payload: FormState
   if (!res.ok) throw new Error(data.error ?? "접수에 실패했습니다.");
 }
 
-// 폼 필드 텍스트(라벨/플레이스홀더) 조회 헬퍼
-function fieldLookup(config: FormConfig) {
-  const map: Record<string, { label: string; placeholder: string }> = {};
-  for (const f of config.fields) map[f.key] = { label: f.label, placeholder: f.placeholder };
-  return (key: string) => map[key] ?? { label: key, placeholder: "" };
-}
-
-// ── 가맹 창업 문의 폼 ─────────────────────────────────
-export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: { config?: FormConfig }) {
-  const init: FormState = { name: "", phone: "", region: "", message: "" };
-  const [form, setForm] = useState(init);
+// ── 문의 폼 (공통) — 필드를 config에서 동적으로 렌더 ─────────────
+// franchise/wholesale 모두 이 컴포넌트를 사용한다. 차이는 개인정보 동의 유무뿐.
+function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale"; config: FormConfig; consent: boolean }) {
+  const emptyState = () => Object.fromEntries(config.fields.map((fld) => [fld.key, ""])) as FormState;
+  const [form, setForm] = useState<FormState>(emptyState);
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const f = fieldLookup(config);
   const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
   const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
 
@@ -226,11 +219,12 @@ export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
+    if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
     setSubmitting(true); setError("");
     try {
-      // 동의값을 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
-      await submitInquiry("franchise", { ...form, privacyAgree: "동의" });
+      // 동의 시 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
+      const payload = consent ? { ...form, privacyAgree: "동의" } : form;
+      await submitInquiry(type, payload);
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "접수에 실패했습니다. 잠시 후 다시 시도해주세요.");
@@ -239,21 +233,40 @@ export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: {
     }
   };
 
-  if (submitted) return <SuccessMessage title={config.success_title} desc={config.success_desc} onReset={() => { setForm(init); setAgreed(false); setSubmitted(false); }} />;
+  if (submitted) {
+    return (
+      <SuccessMessage
+        title={config.success_title}
+        desc={config.success_desc}
+        onReset={() => { setForm(emptyState()); setAgreed(false); setSubmitted(false); }}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Field label={f("name").label} name="name" required placeholder={f("name").placeholder} value={form.name} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-        <Field label={f("phone").label} name="phone" type="tel" required placeholder={f("phone").placeholder} value={form.phone} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
+        {config.fields.map((fld) => (
+          <div key={fld.key} className={fld.full || fld.type === "textarea" ? "col-span-2" : "col-span-1"}>
+            <Field
+              label={fld.label}
+              name={fld.key}
+              type={fld.type}
+              required={fld.required}
+              placeholder={fld.placeholder}
+              value={form[fld.key] ?? ""}
+              onChange={handleChange}
+              labelStyle={labelStyle}
+              inputStyle={inputStyle}
+            />
+          </div>
+        ))}
       </div>
-      <Field label={f("region").label} name="region" placeholder={f("region").placeholder} value={form.region} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      <Field label={f("message").label} name="message" type="textarea" placeholder={f("message").placeholder} value={form.message} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />
+      {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
-        disabled={submitting || !agreed}
+        disabled={submitting || (consent && !agreed)}
         style={{ backgroundColor: config.button_bg, color: config.button_color }}
         className="w-full text-xs font-semibold tracking-widest py-3 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -264,58 +277,12 @@ export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: {
   );
 }
 
+// ── 가맹 창업 문의 폼 (개인정보 동의 포함) ─────────────
+export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: { config?: FormConfig }) {
+  return <InquiryForm type="franchise" config={config} consent />;
+}
+
 // ── 입점 문의 폼 ──────────────────────────────────────
 export function WholesaleForm({ config = DEFAULT_PARTNERSHIP.wholesale.form }: { config?: FormConfig }) {
-  const init: FormState = { brand: "", manager: "", phone: "", category: "", link: "", message: "" };
-  const [form, setForm] = useState(init);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const f = fieldLookup(config);
-  const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
-  const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true); setError("");
-    try {
-      await submitInquiry("wholesale", form);
-      setSubmitted(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "접수에 실패했습니다. 잠시 후 다시 시도해주세요.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (submitted) return <SuccessMessage title={config.success_title} desc={config.success_desc} onReset={() => { setForm(init); setSubmitted(false); }} />;
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <Field label={f("brand").label} name="brand" required placeholder={f("brand").placeholder} value={form.brand} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-        <Field label={f("manager").label} name="manager" required placeholder={f("manager").placeholder} value={form.manager} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Field label={f("phone").label} name="phone" type="tel" required placeholder={f("phone").placeholder} value={form.phone} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-        <Field label={f("category").label} name="category" placeholder={f("category").placeholder} value={form.category} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      </div>
-      <Field label={f("link").label} name="link" type="url" placeholder={f("link").placeholder} value={form.link} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      <Field label={f("message").label} name="message" type="textarea" placeholder={f("message").placeholder} value={form.message} onChange={handleChange} labelStyle={labelStyle} inputStyle={inputStyle} />
-      {error && <p className="text-xs text-red-500">{error}</p>}
-      <button
-        type="submit"
-        disabled={submitting}
-        style={{ backgroundColor: config.button_bg, color: config.button_color }}
-        className="w-full text-xs font-semibold tracking-widest py-3 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {submitting ? "접수 중..." : config.submit_text}
-      </button>
-      <p className="text-center" style={{ fontSize: config.footer_style.size, color: config.footer_style.color }}>{config.footer_text}</p>
-    </form>
-  );
+  return <InquiryForm type="wholesale" config={config} consent={false} />;
 }

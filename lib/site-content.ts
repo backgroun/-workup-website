@@ -176,22 +176,51 @@ export const SUPPORT_CATEGORIES = ["제품·사이즈", "매장·방문", "교�
 export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
 
 // ── 문의 알림 (담당자 이메일) ───────────────────────────────────────────────
+// 문의 유형(게시판 형태)별 담당자를 따로 둘 수 있고, 각 유형에 여러 명 지정 가능.
+export const NOTIFY_TYPES = [
+  { key: "franchise", label: "가맹·창업" },
+  { key: "wholesale", label: "입점·제휴" },
+  { key: "product", label: "상품 문의" },
+  { key: "support", label: "1:1 문의" },
+] as const;
+export type NotifyType = (typeof NOTIFY_TYPES)[number]["key"];
+
 export type NotificationConfig = {
-  email_enabled: boolean;   // 접수 시 담당자 이메일 발송 여부
-  manager_email: string;    // 받는 담당자 이메일
+  email_enabled: boolean;                        // 접수 시 담당자 이메일 발송 여부
+  manager_email: string;                         // 공통 담당자 (형태별 미설정 시 사용)
+  emails_by_type: Record<NotifyType, string[]>;  // 형태별 담당자(여러 명)
 };
 
 export const DEFAULT_NOTIFICATIONS: NotificationConfig = {
   email_enabled: false,
   manager_email: "",
+  emails_by_type: { franchise: [], wholesale: [], product: [], support: [] },
 };
 
 export function normalizeNotifications(raw: Partial<NotificationConfig> | null | undefined): NotificationConfig {
   const c = raw ?? {};
+  const bt = (c.emails_by_type ?? {}) as Record<string, unknown>;
+  const arr = (v: unknown): string[] =>
+    Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : [];
   return {
     email_enabled: typeof c.email_enabled === "boolean" ? c.email_enabled : false,
     manager_email: str(c.manager_email, ""),
+    emails_by_type: {
+      franchise: arr(bt.franchise),
+      wholesale: arr(bt.wholesale),
+      product: arr(bt.product),
+      support: arr(bt.support),
+    },
   };
+}
+
+// 특정 유형의 알림 수신자 목록 — 형태별이 있으면 그것을, 없으면 공통을 사용.
+export function notifyRecipients(notif: NotificationConfig, type: string): string[] {
+  const key = (["franchise", "wholesale", "product", "support"] as const).find((k) => k === type);
+  const perType = key ? notif.emails_by_type[key] : [];
+  if (perType.length) return perType;
+  const common = notif.manager_email.trim();
+  return common ? [common] : [];
 }
 
 // ── 약관 / 개인정보처리방침 ─────────────────────────────────────────────────

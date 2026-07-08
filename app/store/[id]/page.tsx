@@ -5,6 +5,8 @@ import { createAdminClient } from "@/lib/supabase-server";
 import DirectionButtons from "./_components/DirectionButtons";
 import TrackView from "./_components/TrackView";
 import TrackedLink from "@/components/TrackedLink";
+import JsonLd from "@/components/JsonLd";
+import { absoluteUrl } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -98,8 +100,30 @@ export default async function StoreDetailPage({ params }: Props) {
     (j) => j.is_active && !isExpired(j.deadline)
   );
 
+  // 로컬 SEO 구조화 데이터(ClothingStore = LocalBusiness 하위) —
+  // 구글이 매장 주소·전화·좌표를 지도/리치 결과에 표시하도록 돕는다. 오프라인 방문 유도 핵심.
+  const storeLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "ClothingStore",
+    name: store.name,
+    image: (store.image_urls ?? []).map((u) => absoluteUrl(u)).filter(Boolean),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: store.address,
+      addressCountry: "KR",
+      ...(store.region ? { addressRegion: store.region } : {}),
+    },
+    url: absoluteUrl(`/store/${store.id}`),
+    ...(store.phone ? { telephone: store.phone } : {}),
+    ...(store.description ? { description: store.description } : {}),
+    ...(store.lat && store.lng
+      ? { geo: { "@type": "GeoCoordinates", latitude: store.lat, longitude: store.lng } }
+      : {}),
+  };
+
   return (
     <main className="min-h-screen bg-white">
+      <JsonLd data={storeLd} />
       {/* 상단 내비게이션 */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">

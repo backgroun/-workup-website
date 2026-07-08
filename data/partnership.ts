@@ -18,9 +18,19 @@ export type PartnerStyles = {
   form_desc: TextStyle;
 };
 
-// 문의 폼 — 필드 텍스트(라벨/플레이스홀더)와 버튼·안내 문구, 스타일.
-// 필드의 key(백엔드 컬럼)·필수여부·입력 타입은 코드에 고정. 여기선 표시 텍스트/스타일만 편집한다.
-export type FormFieldText = { key: string; label: string; placeholder: string };
+// 문의 폼 — 필드 정의(추가/삭제 가능)와 버튼·안내 문구, 스타일.
+// key는 payload 컬럼(생성 시 자동 부여, 이후 불변). 관리자는 라벨·안내·타입·필수·너비를 편집한다.
+export type FormFieldType = "text" | "tel" | "email" | "url" | "textarea";
+export type FormFieldText = {
+  key: string;
+  label: string;
+  placeholder: string;
+  type: FormFieldType;
+  required: boolean;
+  full: boolean;        // true=한 줄 전체 너비, false=반 칸(2개씩 나란히)
+};
+
+const FIELD_TYPES: FormFieldType[] = ["text", "tel", "email", "url", "textarea"];
 
 export type FormConfig = {
   fields: FormFieldText[];
@@ -95,10 +105,10 @@ const FRANCHISE_FORM: FormConfig = {
   ...FORM_BASE,
   submit_text: "가맹 문의 접수하기 →",
   fields: [
-    { key: "name", label: "이름", placeholder: "홍길동" },
-    { key: "phone", label: "연락처", placeholder: "010-0000-0000" },
-    { key: "region", label: "창업 희망 지역", placeholder: "예) 서울 강남, 경기 수원 등" },
-    { key: "message", label: "문의 내용", placeholder: "창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요." },
+    { key: "name", label: "이름", placeholder: "홍길동", type: "text", required: true, full: false },
+    { key: "phone", label: "연락처", placeholder: "010-0000-0000", type: "tel", required: true, full: false },
+    { key: "region", label: "창업 희망 지역", placeholder: "예) 서울 강남, 경기 수원 등", type: "text", required: false, full: true },
+    { key: "message", label: "문의 내용", placeholder: "창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요.", type: "textarea", required: false, full: true },
   ],
 };
 
@@ -106,12 +116,12 @@ const WHOLESALE_FORM: FormConfig = {
   ...FORM_BASE,
   submit_text: "입점 문의 접수하기 →",
   fields: [
-    { key: "brand", label: "브랜드명", placeholder: "브랜드 이름" },
-    { key: "manager", label: "담당자명", placeholder: "홍길동" },
-    { key: "phone", label: "연락처", placeholder: "010-0000-0000" },
-    { key: "category", label: "취급 품목", placeholder: "예) 작업복, 안전용품, 잡화 등" },
-    { key: "link", label: "브랜드 소개 링크", placeholder: "홈페이지, 인스타그램, 카탈로그 URL 등" },
-    { key: "message", label: "문의 내용", placeholder: "입점을 원하는 이유, 제품 특장점, 희망 조건 등을 자유롭게 적어주세요." },
+    { key: "brand", label: "브랜드명", placeholder: "브랜드 이름", type: "text", required: true, full: false },
+    { key: "manager", label: "담당자명", placeholder: "홍길동", type: "text", required: true, full: false },
+    { key: "phone", label: "연락처", placeholder: "010-0000-0000", type: "tel", required: true, full: false },
+    { key: "category", label: "취급 품목", placeholder: "예) 작업복, 안전용품, 잡화 등", type: "text", required: false, full: false },
+    { key: "link", label: "브랜드 소개 링크", placeholder: "홈페이지, 인스타그램, 카탈로그 URL 등", type: "url", required: false, full: true },
+    { key: "message", label: "문의 내용", placeholder: "입점을 원하는 이유, 제품 특장점, 희망 조건 등을 자유롭게 적어주세요.", type: "textarea", required: false, full: true },
   ],
 };
 
@@ -173,22 +183,33 @@ function normStyle(raw: unknown, def: TextStyle): TextStyle {
   };
 }
 
-// 폼 정규화 — 필드 key/순서는 기본값에 고정하고, 라벨·플레이스홀더만 저장값으로 덮어쓴다.
+// 필드 하나 정규화 — 저장값의 key/순서를 그대로 쓰되(추가·삭제·재정렬 반영),
+// 빠진 속성은 같은 key의 기본 필드 → 일반 기본값 순으로 채운다(하위호환).
+function normField(raw: Record<string, unknown>, defByKey: Record<string, FormFieldText>): FormFieldText | null {
+  const key = typeof raw.key === "string" ? raw.key.trim() : "";
+  if (!key) return null; // key 없는 필드는 버린다(무결성 보호)
+  const d = defByKey[key];
+  const type = FIELD_TYPES.includes(raw.type as FormFieldType) ? (raw.type as FormFieldType) : (d?.type ?? "text");
+  return {
+    key,
+    label: str(raw.label, d?.label ?? key),
+    placeholder: str(raw.placeholder, d?.placeholder ?? ""),
+    type,
+    required: typeof raw.required === "boolean" ? raw.required : (d?.required ?? false),
+    full: typeof raw.full === "boolean" ? raw.full : (d?.full ?? type === "textarea"),
+  };
+}
+
+// 폼 정규화 — 저장된 필드를 그대로 사용(추가/삭제/재정렬 반영). 없거나 비면 기본 필드로.
 function normForm(raw: unknown, def: FormConfig): FormConfig {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const rawFields = Array.isArray(r.fields) ? (r.fields as Record<string, unknown>[]) : [];
-  const byKey: Record<string, Record<string, unknown>> = {};
-  for (const f of rawFields) {
-    if (f && typeof f.key === "string") byKey[f.key] = f;
-  }
-  const fields: FormFieldText[] = def.fields.map((df) => {
-    const rf = byKey[df.key] ?? {};
-    return {
-      key: df.key,
-      label: str(rf.label, df.label),
-      placeholder: str(rf.placeholder, df.placeholder),
-    };
-  });
+  const defByKey: Record<string, FormFieldText> = {};
+  for (const df of def.fields) defByKey[df.key] = df;
+  const rawFields = Array.isArray(r.fields) ? (r.fields as Record<string, unknown>[]) : null;
+  const parsed = rawFields
+    ? rawFields.map((f) => normField((f ?? {}) as Record<string, unknown>, defByKey)).filter((f): f is FormFieldText => f !== null)
+    : [];
+  const fields: FormFieldText[] = parsed.length > 0 ? parsed : def.fields;
   return {
     fields,
     label_style: normStyle(r.label_style, def.label_style),

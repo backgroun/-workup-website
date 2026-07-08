@@ -24,6 +24,7 @@ export type DeclarationSection = SectionBase & {
   lead: string;
   emphasis: string;       // 줄바꿈 \n
   emphasisStrong: string; // 마지막 굵은 문구
+  image_url?: string;     // 우측 대형 이미지(비우면 네이비 플레이스홀더)
 };
 
 export type CategorySection = SectionBase & {
@@ -33,6 +34,7 @@ export type CategorySection = SectionBase & {
   lead: string;
   tags: string[];         // '+' 로 연결되는 칩
   body: string;           // 줄바꿈 \n
+  image_url?: string;     // 좌측 대형 이미지(비우면 네이비 플레이스홀더)
 };
 
 export type ValueItem = { num: string; en: string; title: string; desc: string }; // desc 줄바꿈 \n
@@ -90,7 +92,47 @@ export type StoryHero = {
   height: number;         // 기본 580 (px)
 };
 
-export type StoryConfig = { hero: StoryHero; sections: StorySection[] };
+// ── 전체 디자인 토큰 (스토리 페이지 공통 스타일) ──
+// CSS 변수로 공개 페이지·관리자 미리보기에 주입해 모든 섹션에 일괄 적용한다.
+export type StoryImageRatio = "4 / 3" | "3 / 2" | "16 / 9" | "1 / 1" | "4 / 5";
+export const STORY_IMAGE_RATIOS: { value: StoryImageRatio; label: string }[] = [
+  { value: "16 / 9", label: "16:9 (가장 낮음)" },
+  { value: "3 / 2", label: "3:2" },
+  { value: "4 / 3", label: "4:3" },
+  { value: "1 / 1", label: "1:1 (정사각)" },
+  { value: "4 / 5", label: "4:5 (세로 김)" },
+];
+
+export type StoryStyle = {
+  fontScale: number;           // 폰트 전체 배율 (0.8 ~ 1.4), 기본 1
+  lineHeight: number;          // 본문 줄간격 (1.4 ~ 2.2), 기본 1.8
+  sectionSpacing: number;      // 섹션 상하 여백 배율 (0.6 ~ 1.6), 기본 1
+  imageRatio: StoryImageRatio; // 이미지 비율, 기본 4:3
+  imageWidth: number;          // 이미지 영역 너비 % (35 ~ 60), 기본 50
+};
+
+export const DEFAULT_STORY_STYLE: StoryStyle = {
+  fontScale: 1,
+  lineHeight: 1.8,
+  sectionSpacing: 1,
+  imageRatio: "4 / 3",
+  imageWidth: 50,
+};
+
+// StoryStyle → CSS 변수 객체(래퍼 style 로 주입). React.CSSProperties 로 캐스팅해 사용.
+export function storyStyleVars(s: StoryStyle): Record<string, string> {
+  const imgw = Math.max(20, Math.min(70, s.imageWidth));
+  return {
+    "--st-fs": String(s.fontScale),
+    "--st-lh": String(s.lineHeight),
+    "--st-sp": String(s.sectionSpacing),
+    "--st-ratio": s.imageRatio,
+    "--st-imgcol": `${imgw}fr`,
+    "--st-textcol": `${100 - imgw}fr`,
+  };
+}
+
+export type StoryConfig = { hero: StoryHero; sections: StorySection[]; style?: StoryStyle };
 
 // 한글 타입 라벨 (관리자 목록/팔레트용)
 export const SECTION_TYPE_LABEL: Record<StorySectionType, string> = {
@@ -112,9 +154,9 @@ export function emptySection(type: StorySectionType): StorySection {
   const base = { id: uid(), visible: true, bg: "white" as SectionBg };
   switch (type) {
     case "declaration":
-      return { ...base, type, eyebrow: "", heading: "", lead: "", emphasis: "", emphasisStrong: "" };
+      return { ...base, type, eyebrow: "", heading: "", lead: "", emphasis: "", emphasisStrong: "", image_url: undefined };
     case "category":
-      return { ...base, type, eyebrow: "", heading: "", lead: "", tags: [""], body: "" };
+      return { ...base, type, eyebrow: "", heading: "", lead: "", tags: [""], body: "", image_url: undefined };
     case "values":
       return { ...base, type, eyebrow: "", heading: "", items: [{ num: "01", en: "", title: "", desc: "" }] };
     case "founding":
@@ -146,6 +188,7 @@ export const DEFAULT_STORY: StoryConfig = {
       lead: "건설현장, 공장, 물류센터, 농장, 매장, 사무실까지.",
       emphasis: "그들이 더 편하게, 더 안전하게, 더 합리적으로\n일할 수 있도록 —",
       emphasisStrong: "워크업이 존재합니다.",
+      image_url: "/images/story-declaration.jpg",
     },
     {
       id: "category", type: "category", visible: true, bg: "beige",
@@ -154,6 +197,7 @@ export const DEFAULT_STORY: StoryConfig = {
       lead: "우리는 작업복 브랜드가 아닙니다.",
       tags: ["Workwear", "Dailywear", "Functionalwear"],
       body: "일하는 삶 전체를 함께하는 브랜드.\n현장의 기능과 일상의 스타일을 동시에 담습니다.",
+      image_url: "/images/story-category.jpg",
     },
     {
       id: "values", type: "values", visible: true, bg: "white",

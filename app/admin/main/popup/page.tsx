@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 // ── 타입 ────────────────────────────────────────────────────────────────────
 
 type BgType = "solid" | "gradient" | "image";
-type LinkType = "url" | "product";
+type LinkType = "url" | "product" | "category";
 
 type AiInput = {
   productName: string;
@@ -868,12 +868,14 @@ export default function PopupManagePage() {
                   {/* 섹션 라벨 + 라디오 버튼 한 줄 */}
                   <div className="flex items-center gap-5">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest shrink-0">링크 설정</p>
-                    {(["product", "url"] as LinkType[]).map(t => (
+                    {(["product", "category", "url"] as LinkType[]).map(t => (
                       <label key={t} className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" checked={editing.link_type === t}
                           onChange={() => set("link_type", t)}
                           className="accent-blue-600" />
-                        <span className="text-sm text-gray-700">{t === "product" ? "제품 선택" : "URL"}</span>
+                        <span className="text-sm text-gray-700">
+                          {t === "product" ? "제품 선택" : t === "category" ? "카테고리" : "URL"}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -881,13 +883,22 @@ export default function PopupManagePage() {
                   <div className="grid grid-cols-2 gap-4 items-start">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        {editing.link_type === "url" ? "URL 주소" : "제품 선택"}
+                        {editing.link_type === "url" ? "URL 주소" : editing.link_type === "category" ? "카테고리 선택" : "제품 선택"}
                       </label>
                       {editing.link_type === "url" ? (
                         <input type="text" value={editing.link}
                           onChange={e => set("link", e.target.value)}
                           placeholder="/products"
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                      ) : editing.link_type === "category" ? (
+                        <CategorySelect
+                          currentLink={editing.link}
+                          onSelect={(link, label) => {
+                            set("link", link);
+                            if (!editing.link_text || editing.link_text === "상품 보러가기")
+                              set("link_text", `${label} 보러가기`);
+                          }}
+                        />
                       ) : (
                         <ProductSearch
                           currentLink={editing.link}
@@ -1254,6 +1265,90 @@ function PopupImagePicker({
           e.target.value = "";
         }}
       />
+    </div>
+  );
+}
+
+// ── 카테고리 선택 컴포넌트 ───────────────────────────────────────────────────
+
+type CatItem = { name: string; subs: string[] };
+
+const DEFAULT_CAT_LIST: CatItem[] = [
+  { name: "현장", subs: ["상의", "하의", "계절·기능", "안전용품"] },
+  { name: "일상", subs: ["데일리웨어", "아우터", "팬츠"] },
+  { name: "공용", subs: ["공용 상의", "공용 하의", "공용 아우터"] },
+  { name: "남성", subs: ["남성 상의", "남성 하의", "남성 아우터", "신발"] },
+  { name: "여성", subs: ["여성 상의", "여성 하의", "여성 아우터"] },
+  { name: "소품", subs: ["가방", "모자", "장갑", "양말", "벨트", "기타"] },
+];
+
+function CategorySelect({ currentLink, onSelect }: {
+  currentLink: string;
+  onSelect: (link: string, label: string) => void;
+}) {
+  const [cats, setCats] = useState<CatItem[]>(DEFAULT_CAT_LIST);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/site-settings/categories")
+      .then(r => r.json())
+      .then((data: { categories?: CatItem[] } | null) => {
+        if (data?.categories?.length) setCats(data.categories);
+      })
+      .catch(() => {});
+  }, []);
+
+  const parseLink = (link: string) => {
+    try {
+      const u = new URL(link, "http://x");
+      return { main: u.searchParams.get("category") ?? "", sub: u.searchParams.get("sub") ?? "" };
+    } catch { return { main: "", sub: "" }; }
+  };
+  const { main: selMain, sub: selSub } = parseLink(currentLink);
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden text-sm max-h-52 overflow-y-auto">
+      {/* 전체 상품 */}
+      <button type="button"
+        onClick={() => onSelect("/products", "전체 상품")}
+        className={`w-full text-left px-3 py-2 border-b border-gray-100 font-medium transition-colors ${
+          currentLink === "/products" ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-gray-700"
+        }`}>
+        전체 상품
+      </button>
+
+      {cats.map(cat => (
+        <div key={cat.name}>
+          {/* 대카테고리 행 */}
+          <div className="flex items-center border-b border-gray-100">
+            <button type="button"
+              onClick={() => onSelect(`/products?category=${cat.name}`, cat.name)}
+              className={`flex-1 text-left px-3 py-2 font-medium transition-colors ${
+                selMain === cat.name && !selSub ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-gray-700"
+              }`}>
+              {cat.name}
+            </button>
+            {cat.subs.length > 0 && (
+              <button type="button"
+                onClick={() => setExpanded(prev => prev === cat.name ? null : cat.name)}
+                className="px-3 text-slate-400 hover:text-slate-600 text-xs shrink-0">
+                {expanded === cat.name ? "▲" : "▼"}
+              </button>
+            )}
+          </div>
+
+          {/* 소카테고리 목록 (펼침) */}
+          {expanded === cat.name && cat.subs.map(sub => (
+            <button key={sub} type="button"
+              onClick={() => onSelect(`/products?category=${cat.name}&sub=${sub}`, `${cat.name} · ${sub}`)}
+              className={`w-full text-left pl-7 pr-3 py-1.5 text-xs border-b border-gray-100 transition-colors ${
+                selMain === cat.name && selSub === sub ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-gray-500"
+              }`}>
+              └ {sub}
+            </button>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

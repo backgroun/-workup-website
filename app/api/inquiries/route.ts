@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { getSiteSection } from "@/lib/site-settings";
-import { normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
+import { normalizeNotifications, notifyRecipients, type NotificationConfig } from "@/lib/site-content";
+import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
 
 function typeLabelOf(type: string): string {
   return type === "wholesale" ? "입점·제휴"
@@ -71,10 +72,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "문의 내용이 너무 깁니다. 줄여서 다시 시도해주세요." }, { status: 400 });
   }
 
-  // 필수값 최소 검증 (연락처) — 자릿수만 관대하게 확인.
-  // 상품 문의(product)는 연락처를 받지 않으므로 검증에서 제외한다.
-  if (type !== "product") {
-    const phone = String((payload as Record<string, unknown>).phone ?? "").trim();
+  const p = payload as Record<string, unknown>;
+
+  // 유형별 검증
+  if (type === "franchise" || type === "wholesale") {
+    // 가맹·창업은 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증(클라이언트 우회 방지).
+    if (type === "franchise" && !String(p.privacyAgree ?? "").trim()) {
+      return NextResponse.json({ error: "개인정보 수집·이용에 동의해주세요." }, { status: 400 });
+    }
+    // 관리자가 구성한 폼의 필수 항목·연락처 형식을 검증한다.
+    // 필드가 동적으로 추가/삭제되어도 저장된 폼 설정과 항상 동기화된다.
+    const cfg = normalizePartnership(await getSiteSection<PartnershipConfig>("partnership_page"));
+    for (const field of cfg[type].form.fields) {
+      const val = String(p[field.key] ?? "").trim();
+      if (field.required && !val) {
+        return NextResponse.json({ error: `${field.label}을(를) 입력해 주세요.` }, { status: 400 });
+      }
+      if (val && field.type === "tel") {
+        const digits = val.replace(/\D/g, "").length;
+        if (digits < 8 || digits > 15) {
+          return NextResponse.json({ error: "연락처를 정확히 입력해 주세요." }, { status: 400 });
+        }
+      }
+    }
+  } else if (type === "support") {
+    // 고객 1:1 문의는 연락처 필수(자릿수만 관대하게 확인).
+    const phone = String(p.phone ?? "").trim();
     if (!phone) {
       return NextResponse.json({ error: "연락처를 입력해주세요." }, { status: 400 });
     }
@@ -83,15 +106,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
     }
   }
-
-  // 가맹·창업 문의는 로그인 없이 접수하므로 개인정보 동의를 서버에서도 필수로 검증한다.
-  // (클라이언트 우회 방지 — 입점·제휴 / 고객 1:1 폼은 영향받지 않음)
-  if (type === "franchise") {
-    const agreed = String((payload as Record<string, unknown>).privacyAgree ?? "").trim();
-    if (!agreed) {
-      return NextResponse.json({ error: "개인정보 수집·이용에 동의해주세요." }, { status: 400 });
-    }
-  }
+  // 상품 문의(product)는 연락처를 받지 않으므로 별도 필수 검증 없음.
 
   try {
     const supabase = createAdminClient();
@@ -108,7 +123,8 @@ export async function POST(req: Request) {
     if (webhook) {
       // 담당자 이메일 설정을 요청 컨텍스트에서 미리 읽어 클로저에 담는다(after 내부 동적 API 회피).
       const notif = normalizeNotifications(await getSiteSection<NotificationConfig>("notifications"));
-      const notifyEmail = notif.email_enabled ? notif.manager_email.trim() : "";
+      // 유형(게시판 형태)별 담당자에게 발송 — 형태별 미설정 시 공통 담당자. 여러 명은 콤마로.
+      const notifyEmail = notif.email_enabled ? notifyRecipients(notif, type).join(",") : "";
       const outgoing = {
         type,
         type_label: typeLabelOf(type),

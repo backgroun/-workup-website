@@ -18,7 +18,9 @@ export async function POST() {
   }
 
   const notif = normalizeNotifications(await getSiteSection<NotificationConfig>("notifications"));
-  const notifyEmail = notif.email_enabled ? notif.manager_email.trim() : "";
+  // 테스트는 공통 담당자 우선, 없으면 형태별에 등록된 첫 이메일로 발송.
+  const anyEmail = notif.manager_email.trim() || Object.values(notif.emails_by_type).flat().find((e) => e.trim()) || "";
+  const notifyEmail = notif.email_enabled ? anyEmail : "";
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 9000);

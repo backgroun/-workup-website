@@ -2,19 +2,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { INQUIRY_STATUS_LABEL, type Inquiry, type InquiryStatus } from "@/data/partnership";
-import { DEFAULT_NOTIFICATIONS, normalizeNotifications, type NotificationConfig } from "@/lib/site-content";
+import { DEFAULT_NOTIFICATIONS, normalizeNotifications, NOTIFY_TYPES, type NotificationConfig, type NotifyType } from "@/lib/site-content";
 
 const FIELD_LABELS: Record<string, string> = {
   name: "이름", phone: "연락처", region: "창업 희망 지역", message: "문의 내용",
   brand: "브랜드명", manager: "담당자명", category: "취급 품목", link: "브랜드 링크",
-  subject: "문의 구분", privacyAgree: "개인정보 동의",
-  // 상품 문의 payload
+  subject: "문의 구분", privacyAgree: "개인정보 동의", title: "제목",
   productName: "문의 상품", productId: "상품 ID", sku: "제품번호",
-  title: "제목", content: "내용", secret: "공개 여부", notifyConsent: "알림 동의",
+  content: "내용", secret: "공개 여부", notifyConsent: "알림 동의",
 };
 
-// 문의 유형 라벨/배지 (가맹·입점 + 고객 1:1 + 상품 문의)
-const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "고객 1:1", product: "상품 문의" };
+const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "1:1 문의", product: "상품 문의" };
 const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#1A2B4A] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white", product: "bg-emerald-600 text-white" };
 
 const STATUS_STYLE: Record<InquiryStatus, string> = {
@@ -23,6 +21,14 @@ const STATUS_STYLE: Record<InquiryStatus, string> = {
   done: "bg-gray-100 text-gray-500",
 };
 
+// 필터 순서: 전체 / 가맹·창업 / 입점·제휴 / 상품 문의 / 1:1 문의
+const FILTERS = [["all", "전체"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"], ["product", "상품 문의"], ["support", "1:1 문의"]] as const;
+
+// 유형 변경/이동 대상
+const MOVE_TYPES = ["franchise", "wholesale", "support", "product"] as const;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function fmtDate(iso: string) {
   try {
     const d = new Date(iso);
@@ -30,12 +36,120 @@ function fmtDate(iso: string) {
   } catch { return iso; }
 }
 
+function getBody(q: Inquiry): string {
+  return String(q.payload.message ?? q.payload.content ?? "");
+}
+function getTitle(q: Inquiry): string {
+  const t = String(q.payload.title ?? "").trim();
+  if (t) return t;
+  const first = getBody(q).split("\n").map((s) => s.trim()).filter(Boolean)[0] ?? "";
+  if (!first) return "(제목 없음)";
+  return first.length > 50 ? first.slice(0, 50) + "…" : first;
+}
+
+// 펼침 상세에 표시할 필드(제목·본문·이름은 별도 표시하므로 제외)
+const HIDE_FIELDS = new Set(["title", "message", "content", "name", "manager"]);
+
+// ── 접수 목록 한 행 (아코디언: 제목 클릭 시 내용/답변 펼침) ──
+function InquiryRow({ q, selected, onToggleSelect, onStatus, onChangeType, onDelete, onSaveReply }: {
+  q: Inquiry;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
+  onStatus: (id: string, s: InquiryStatus) => void;
+  onChangeType: (id: string, t: string) => void;
+  onDelete: (id: string) => void;
+  onSaveReply: (id: string, reply: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const existing = q.payload._reply ?? "";
+  const repliedAt = q.payload._repliedAt ?? "";
+  const [draft, setDraft] = useState(existing);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setDraft(existing); }, [existing]);
+
+  const name = q.payload.name || q.payload.manager || "-";
+  const email = Object.entries(q.payload).find(([k, v]) => !k.startsWith("_") && EMAIL_RE.test(String(v)))?.[1];
+  const extras = Object.entries(q.payload).filter(([k, v]) => !k.startsWith("_") && !HIDE_FIELDS.has(k) && String(v).trim());
+  const save = async () => { setSaving(true); try { await onSaveReply(q.id, draft); } finally { setSaving(false); } };
+
+  return (
+    <div className={`border-b border-slate-100 last:border-0 ${selected ? "bg-blue-50/40" : ""}`}>
+      <div className="grid grid-cols-[32px_68px_128px_112px_1fr_84px] items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer" onClick={() => setOpen((o) => !o)}>
+        <input type="checkbox" checked={selected} onClick={(e) => e.stopPropagation()} onChange={() => onToggleSelect(q.id)} className="w-4 h-4 accent-blue-600" />
+        <span className={`text-[11px] px-2 py-0.5 rounded text-center ${TYPE_BADGE[q.type] ?? "bg-gray-500 text-white"}`}>{TYPE_LABEL[q.type] ?? q.type}</span>
+        <span className="text-xs text-slate-400 whitespace-nowrap">{fmtDate(q.created_at)}</span>
+        <span className="text-sm text-slate-700 truncate">{name}</span>
+        <span className="text-sm text-slate-800 truncate flex items-center gap-1.5">
+          {q.payload._reply && <span className="text-emerald-600 text-[11px] flex-shrink-0">✓답변</span>}
+          <span className="truncate">{getTitle(q)}</span>
+        </span>
+        <div className="flex items-center gap-1.5 justify-end">
+          <span className={`text-[11px] px-2 py-0.5 rounded ${STATUS_STYLE[q.status]}`}>{INQUIRY_STATUS_LABEL[q.status]}</span>
+          <svg className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+        </div>
+      </div>
+
+      {open && (
+        <div className="px-4 pb-4 pt-1 bg-slate-50/50">
+          <div className="text-sm text-slate-800 whitespace-pre-line break-words border border-slate-100 bg-white rounded-lg p-3.5 mb-3">{getBody(q) || "(내용 없음)"}</div>
+
+          {extras.length > 0 && (
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 mb-3">
+              {extras.map(([k, v]) => (
+                <div key={k} className="flex gap-2 text-xs">
+                  <span className="text-slate-400 w-20 shrink-0">{FIELD_LABELS[k] ?? k}</span>
+                  <span className="text-slate-700 break-words">{String(v)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="text-[11px] text-slate-400">유형</span>
+            <select value={q.type} onChange={(e) => onChangeType(q.id, e.target.value)}
+              className="text-xs border border-slate-200 rounded px-2 py-1 bg-white focus:outline-none">
+              {MOVE_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
+            </select>
+            <span className="text-[11px] text-slate-400 ml-1">상태</span>
+            <select value={q.status} onChange={(e) => onStatus(q.id, e.target.value as InquiryStatus)}
+              className="text-xs border border-slate-200 rounded px-2 py-1 bg-white focus:outline-none">
+              {(["new", "processing", "done"] as InquiryStatus[]).map((s) => <option key={s} value={s}>{INQUIRY_STATUS_LABEL[s]}</option>)}
+            </select>
+            <button onClick={() => onDelete(q.id)} className="text-[11px] text-red-400 border border-red-200 px-2 py-1 rounded hover:bg-red-50">삭제</button>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-slate-500">답변</label>
+              {repliedAt && <span className="text-[11px] text-emerald-600">답변완료 · {fmtDate(repliedAt)}</span>}
+            </div>
+            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3}
+              placeholder="고객에게 전달할 답변을 입력하고 저장하세요."
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-y bg-white" />
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <button onClick={save} disabled={saving || draft === existing}
+                className="px-4 py-1.5 text-xs font-semibold bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-40">
+                {saving ? "저장 중..." : "답변 저장"}
+              </button>
+              {email && (
+                <a href={`mailto:${email}?subject=${encodeURIComponent("[워크업] 문의에 답변드립니다")}&body=${encodeURIComponent(draft)}`}
+                  className="px-4 py-1.5 text-xs font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50">메일로 보내기</a>
+              )}
+              <span className="text-[11px] text-slate-400">저장 시 상태가 ‘완료’로 바뀝니다.</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminInquiriesPage() {
   const [tab, setTab] = useState<"list" | "notify">("list");
   const [toast, setToast] = useState("");
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
 
-  // ── 알림 설정 (담당자 이메일 + 웹훅 테스트) ──
+  // ── 알림 설정 ──
   const [notif, setNotif] = useState<NotificationConfig>(DEFAULT_NOTIFICATIONS);
   const [loadingNotif, setLoadingNotif] = useState(true);
   const [savingNotif, setSavingNotif] = useState(false);
@@ -50,12 +164,18 @@ export default function AdminInquiriesPage() {
       .finally(() => setLoadingNotif(false));
   }, []);
 
+  const addTypeEmail = (k: NotifyType) => setNotif(n => ({ ...n, emails_by_type: { ...n.emails_by_type, [k]: [...n.emails_by_type[k], ""] } }));
+  const setTypeEmail = (k: NotifyType, i: number, v: string) => setNotif(n => ({ ...n, emails_by_type: { ...n.emails_by_type, [k]: n.emails_by_type[k].map((e, idx) => idx === i ? v : e) } }));
+  const removeTypeEmail = (k: NotifyType, i: number) => setNotif(n => ({ ...n, emails_by_type: { ...n.emails_by_type, [k]: n.emails_by_type[k].filter((_, idx) => idx !== i) } }));
+
   const saveNotif = async () => {
     setSavingNotif(true);
     try {
+      const cleaned = normalizeNotifications(notif); // 빈 이메일 제거
       const r = await fetch("/api/admin/site-settings/notifications", {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(notif),
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cleaned),
       });
+      if (r.ok) setNotif(cleaned);
       flash(r.ok ? "알림 설정을 저장했습니다." : "저장에 실패했습니다.");
     } finally { setSavingNotif(false); }
   };
@@ -73,10 +193,15 @@ export default function AdminInquiriesPage() {
     } finally { setTesting(false); }
   };
 
-  // ── 접수 내역 ──
+  // ── 실제 접수 문의 ──
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [visible, setVisible] = useState(30);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [moveTarget, setMoveTarget] = useState<string>("wholesale");
+  const [moving, setMoving] = useState(false);
 
   const loadInquiries = () => {
     setLoadingList(true);
@@ -87,43 +212,108 @@ export default function AdminInquiriesPage() {
       .finally(() => setLoadingList(false));
   };
   useEffect(() => { loadInquiries(); }, []);
+  useEffect(() => { setVisible(30); setSelected(new Set()); }, [filter, search, tab]);
 
   const changeStatus = async (id: string, status: InquiryStatus) => {
-    const snapshot = inquiries;   // 실패 시 되돌릴 스냅샷
+    const snapshot = inquiries;
     setInquiries(prev => prev.map(q => q.id === id ? { ...q, status } : q));
     try {
       const res = await fetch(`/api/admin/inquiries/${id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error();
-    } catch {
-      setInquiries(snapshot);
-      flash("상태 변경에 실패했습니다.");
-    }
+    } catch { setInquiries(snapshot); flash("상태 변경에 실패했습니다."); }
+  };
+
+  const saveReply = async (id: string, reply: string) => {
+    const snapshot = inquiries;
+    const trimmed = reply.trim();
+    const repliedAt = new Date().toISOString();
+    setInquiries(prev => prev.map(q => {
+      if (q.id !== id) return q;
+      const payload = { ...q.payload };
+      if (trimmed) { payload._reply = reply; payload._repliedAt = repliedAt; }
+      else { delete payload._reply; delete payload._repliedAt; }
+      return { ...q, status: trimmed ? "done" : q.status, payload };
+    }));
+    try {
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trimmed ? { reply, status: "done" } : { reply }),
+      });
+      if (!res.ok) throw new Error();
+      flash(trimmed ? "답변을 저장했습니다." : "답변을 비웠습니다.");
+    } catch { setInquiries(snapshot); flash("답변 저장에 실패했습니다."); }
   };
 
   const deleteInquiry = async (id: string) => {
     if (!confirm("이 문의를 삭제할까요?")) return;
-    const snapshot = inquiries;   // 실패 시 되돌릴 스냅샷
+    const snapshot = inquiries;
     setInquiries(prev => prev.filter(q => q.id !== id));
     try {
       const res = await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       flash("삭제됐습니다.");
-    } catch {
-      setInquiries(snapshot);
-      flash("삭제에 실패했습니다.");
-    }
+    } catch { setInquiries(snapshot); flash("삭제에 실패했습니다."); }
   };
 
-  const filtered = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
+  // 개별 게시판 유형 변경
+  const changeType = async (id: string, type: string) => {
+    const snapshot = inquiries;
+    setInquiries(prev => prev.map(q => q.id === id ? { ...q, type: type as Inquiry["type"] } : q));
+    try {
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type }),
+      });
+      if (!res.ok) throw new Error();
+      flash(`유형을 ${TYPE_LABEL[type] ?? type}(으)로 변경했습니다.`);
+    } catch { setInquiries(snapshot); flash("유형 변경에 실패했습니다."); }
+  };
+
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  // 선택 문의 일괄 유형 이동
+  const bulkMove = async () => {
+    const ids = [...selected];
+    if (!ids.length) return;
+    if (!confirm(`${ids.length}개 문의를 '${TYPE_LABEL[moveTarget] ?? moveTarget}'(으)로 이동할까요?`)) return;
+    setMoving(true);
+    const snapshot = inquiries;
+    setInquiries(prev => prev.map(q => selected.has(q.id) ? { ...q, type: moveTarget as Inquiry["type"] } : q));
+    setSelected(new Set());
+    try {
+      const res = await fetch("/api/admin/inquiries", {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, type: moveTarget }),
+      });
+      if (!res.ok) throw new Error();
+      const d = await res.json().catch(() => ({}));
+      flash(`${d.updated ?? ids.length}개를 ${TYPE_LABEL[moveTarget] ?? moveTarget}(으)로 이동했습니다.`);
+    } catch { setInquiries(snapshot); flash("이동에 실패했습니다."); }
+    finally { setMoving(false); }
+  };
+
+  const byType = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
+  const kw = search.trim().toLowerCase();
+  const filtered = kw
+    ? byType.filter(q => {
+        const hay = [q.payload.name, q.payload.manager, getTitle(q), getBody(q), q.payload.phone].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(kw);
+      })
+    : byType;
+  const shown = filtered.slice(0, visible);
+  const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
+  const toggleSelectAll = () => setSelected(allFilteredSelected ? new Set() : new Set(filtered.map(q => q.id)));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">문의 관리</h1>
-          <p className="mt-1 text-sm text-gray-500">가맹·창업 / 입점·제휴 / 고객 1:1 문의 접수 내역과 알림을 관리합니다.</p>
+          <p className="mt-1 text-sm text-gray-500">실제 접수된 문의를 확인하고 바로 답변합니다. 제목을 클릭하면 내용이 펼쳐집니다.</p>
         </div>
         <div className="flex items-center gap-3">
           {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
@@ -133,19 +323,28 @@ export default function AdminInquiriesPage() {
 
       {/* 탭 */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {([["list", "접수 내역"], ["notify", "알림 설정"]] as const).map(([t, label]) => (
+        {([["list", "접수 목록"], ["notify", "알림 설정"]] as const).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-slate-800 text-slate-900" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-            {label}{t === "list" && inquiries.length > 0 ? ` (${inquiries.length})` : ""}
+            {label}{t === "list" && inquiries.length > 0 ? ` (${inquiries.length.toLocaleString()})` : ""}
           </button>
         ))}
       </div>
 
-      {/* ── 접수 내역 ── */}
+      {/* ── 접수 목록 ── */}
       {tab === "list" && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            {([["all", "전체"], ["product", "상품 문의"], ["franchise", "가맹·창업"], ["wholesale", "입점·제휴"], ["support", "고객 1:1"]] as const).map(([f, label]) => (
+          {/* 검색 */}
+          <div className="relative mb-3">
+            <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="이름·제목·내용·연락처 검색"
+              className="w-full border border-gray-200 rounded-lg pl-9 pr-9 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
+            {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">✕</button>}
+          </div>
+
+          {/* 필터 */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {FILTERS.map(([f, label]) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
                 {label}
@@ -154,42 +353,50 @@ export default function AdminInquiriesPage() {
             <button onClick={loadInquiries} className="text-xs text-slate-400 hover:text-slate-600 ml-auto">새로고침</button>
           </div>
 
+          {/* 선택 이동 바 */}
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3 mb-3 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg flex-wrap">
+              <span className="text-sm font-semibold text-blue-800">{selected.size.toLocaleString()}개 선택</span>
+              <span className="text-xs text-slate-500">유형 이동</span>
+              <select value={moveTarget} onChange={(e) => setMoveTarget(e.target.value)}
+                className="text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none">
+                {MOVE_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
+              </select>
+              <button onClick={bulkMove} disabled={moving}
+                className="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                {moving ? "이동 중..." : "이동"}
+              </button>
+              <button onClick={() => setSelected(new Set())} className="ml-auto text-xs text-slate-500 hover:text-slate-700">선택 해제</button>
+            </div>
+          )}
+
           {loadingList ? (
             <div className="py-12 text-center text-slate-400 text-sm">불러오는 중...</div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-slate-400 text-sm bg-white rounded-xl border border-dashed border-slate-200">
-              접수된 문의가 없습니다.
+              {kw || filter !== "all" ? "조건에 맞는 문의가 없습니다." : "접수된 문의가 없습니다."}
             </div>
           ) : (
-            <div className="space-y-3">
-              {filtered.map((q) => (
-                <div key={q.id} className="bg-white rounded-xl border border-slate-200 p-5">
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${TYPE_BADGE[q.type] ?? "bg-gray-500 text-white"}`}>
-                        {TYPE_LABEL[q.type] ?? q.type}
-                      </span>
-                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${STATUS_STYLE[q.status]}`}>{INQUIRY_STATUS_LABEL[q.status]}</span>
-                      <span className="text-xs text-slate-400">{fmtDate(q.created_at)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <select value={q.status} onChange={e => changeStatus(q.id, e.target.value as InquiryStatus)}
-                        className="text-xs border border-slate-200 rounded px-2 py-1 bg-white focus:outline-none">
-                        {(["new", "processing", "done"] as InquiryStatus[]).map(s => <option key={s} value={s}>{INQUIRY_STATUS_LABEL[s]}</option>)}
-                      </select>
-                      <button onClick={() => deleteInquiry(q.id)} className="text-[11px] text-red-400 border border-red-200 px-2 py-1 rounded hover:bg-red-50">삭제</button>
-                    </div>
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <div className="min-w-[720px]">
+                  {/* 헤더 */}
+                  <div className="grid grid-cols-[32px_68px_128px_112px_1fr_84px] items-center gap-3 px-4 py-2.5 text-[11px] font-medium text-slate-400 border-b border-slate-100 bg-slate-50/50">
+                    <input type="checkbox" checked={allFilteredSelected} onChange={toggleSelectAll} title="전체 선택" className="w-4 h-4 accent-blue-600" />
+                    <span className="text-center">유형</span><span>접수일</span><span>이름</span><span>제목</span><span className="text-right">상태</span>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
-                    {Object.entries(q.payload).filter(([, v]) => String(v).trim()).map(([k, v]) => (
-                      <div key={k} className="flex gap-2 text-sm">
-                        <span className="text-slate-400 w-24 shrink-0">{(q.type as string) === "support" && k === "subject" ? "문의 구분" : (FIELD_LABELS[k] ?? k)}</span>
-                        <span className="text-slate-800 flex-1 break-words">{String(v)}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {shown.map((q) => (
+                    <InquiryRow key={q.id} q={q} selected={selected.has(q.id)} onToggleSelect={toggleSelect}
+                      onStatus={changeStatus} onChangeType={changeType} onDelete={deleteInquiry} onSaveReply={saveReply} />
+                  ))}
                 </div>
-              ))}
+              </div>
+              {filtered.length > visible && (
+                <button onClick={() => setVisible(v => v + 50)}
+                  className="w-full py-3 text-sm font-medium text-slate-600 border-t border-slate-100 hover:bg-slate-50">
+                  더 보기 ({visible.toLocaleString()} / {filtered.length.toLocaleString()})
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -201,7 +408,7 @@ export default function AdminInquiriesPage() {
           <div className="py-12 text-center text-slate-400 text-sm">불러오는 중...</div>
         ) : (
           <div className="max-w-2xl space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
               <h2 className="font-semibold text-gray-800">담당자 이메일 알림</h2>
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input type="checkbox" checked={notif.email_enabled}
@@ -209,14 +416,44 @@ export default function AdminInquiriesPage() {
                   className="w-4 h-4 accent-blue-600" />
                 <span className="text-sm font-medium text-gray-700">문의 접수 시 담당자 이메일로 발송</span>
               </label>
+
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5">담당자 이메일</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5">공통 담당자 이메일</label>
                 <input type="email" value={notif.manager_email}
                   onChange={e => setNotif(n => ({ ...n, manager_email: e.target.value }))}
                   placeholder="manager@example.com"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                <p className="text-[11px] text-gray-400 mt-1">가맹·창업 / 입점·제휴 / 1:1 문의가 접수되면 이 주소로 메일이 발송됩니다.</p>
+                <p className="text-[11px] text-gray-400 mt-1">아래 형태별 담당자를 지정하지 않은 유형은 이 주소로 발송됩니다.</p>
               </div>
+
+              {/* 형태별 담당자 */}
+              <div className="space-y-4 border-t border-slate-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500">게시판 형태별 담당자 <span className="text-gray-400 font-normal">(유형별로 여러 명 지정 가능)</span></p>
+                {NOTIFY_TYPES.map((t) => (
+                  <div key={t.key}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-sm font-medium text-gray-700">{t.label}</label>
+                      <button onClick={() => addTypeEmail(t.key)} className="text-xs font-semibold text-blue-600 hover:text-blue-800">+ 이메일 추가</button>
+                    </div>
+                    {notif.emails_by_type[t.key].length === 0 ? (
+                      <p className="text-[11px] text-gray-400">미지정 — 공통 담당자에게 발송됩니다.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {notif.emails_by_type[t.key].map((em, i) => (
+                          <div key={i} className="flex gap-2">
+                            <input type="email" value={em} onChange={(e) => setTypeEmail(t.key, i, e.target.value)}
+                              placeholder="manager@example.com"
+                              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                            <button onClick={() => removeTypeEmail(t.key, i)} title="삭제"
+                              className="w-9 flex items-center justify-center rounded-lg border border-red-200 text-red-400 hover:bg-red-50">✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
               <button onClick={saveNotif} disabled={savingNotif}
                 className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
                 {savingNotif ? "저장 중..." : "알림 설정 저장"}

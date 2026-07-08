@@ -11,9 +11,26 @@ import {
   type InquiryType,
   type FormConfig,
   type FormFieldText,
+  type FormFieldType,
 } from "@/data/partnership";
 
 const COLOR_PRESETS = ["#ff550c", "#1A2B4A", "#2d4f72", "#0f172a", "#ffffff", "#d1d5db", "#9ca3af", "#6b7280"];
+
+const FIELD_TYPE_OPTIONS: { value: FormFieldType; label: string }[] = [
+  { value: "text", label: "텍스트" },
+  { value: "tel", label: "전화번호" },
+  { value: "email", label: "이메일" },
+  { value: "url", label: "URL" },
+  { value: "textarea", label: "여러 줄" },
+];
+
+// 새 필드 key(payload 저장 이름) — 자동 부여, 이후 불변. 기본/예약 key와 겹치지 않게 f_ 접두.
+function newFieldKey() {
+  const rand = (typeof crypto !== "undefined" && crypto.randomUUID)
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
+  return "f_" + rand;
+}
 
 // ── 색상 입력(피커 + hex + 프리셋) ──
 function ColorInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -118,6 +135,19 @@ export default function PartnershipEditPage() {
     patchForm({ [key]: { ...info.form[key], ...patch } } as Partial<FormConfig>);
   const setField = (i: number, patch: Partial<FormFieldText>) =>
     patchForm({ fields: info.form.fields.map((fld, idx) => (idx === i ? { ...fld, ...patch } : fld)) });
+  const addField = () =>
+    patchForm({ fields: [...info.form.fields, { key: newFieldKey(), label: "새 항목", placeholder: "", type: "text", required: false, full: true }] });
+  const removeField = (i: number) => {
+    if (!confirm("이 필드를 삭제할까요? 이미 접수된 기존 문의 데이터에는 영향이 없습니다.")) return;
+    patchForm({ fields: info.form.fields.filter((_, idx) => idx !== i) });
+  };
+  const moveField = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= info.form.fields.length) return;
+    const next = [...info.form.fields];
+    [next[i], next[j]] = [next[j], next[i]];
+    patchForm({ fields: next });
+  };
 
   // 혜택 리스트
   const setBenefit = (i: number, v: string) =>
@@ -262,12 +292,25 @@ export default function PartnershipEditPage() {
           </Card>
 
           <Card title="문의 폼">
-            {/* 필드 (라벨·플레이스홀더) */}
+            {/* 필드 (추가/삭제/순서 + 라벨·안내·형식·필수·너비) */}
             <div className="space-y-2.5">
-              <p className="text-[11px] text-gray-400">필드 항목 — 순서·필수여부·입력형식은 고정, 라벨·안내문구만 편집됩니다.</p>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-gray-400">필드 항목 ({info.form.fields.length}) — 저장 이름(key)은 자동 부여·고정</p>
+                <button onClick={addField} className="text-xs font-semibold text-blue-600 hover:text-blue-800">+ 필드 추가</button>
+              </div>
               {info.form.fields.map((fld, i) => (
-                <div key={fld.key} className="border border-slate-100 rounded-lg p-3 space-y-2 bg-slate-50/40">
-                  <span className="text-[10px] font-mono text-slate-400">{fld.key}</span>
+                <div key={fld.key} className="border border-slate-200 rounded-lg p-3 space-y-2.5 bg-slate-50/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-slate-400">{fld.key}</span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => moveField(i, -1)} disabled={i === 0} title="위로"
+                        className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30">↑</button>
+                      <button onClick={() => moveField(i, 1)} disabled={i === info.form.fields.length - 1} title="아래로"
+                        className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-white disabled:opacity-30">↓</button>
+                      <button onClick={() => removeField(i)} title="삭제"
+                        className="w-6 h-6 flex items-center justify-center rounded border border-red-200 text-red-400 hover:bg-red-50">✕</button>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[11px] text-gray-500 block mb-1">라벨</label>
@@ -280,8 +323,29 @@ export default function PartnershipEditPage() {
                         className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-blue-400 bg-white" />
                     </div>
                   </div>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-gray-500">형식</span>
+                      <select value={fld.type} onChange={(e) => setField(i, { type: e.target.value as FormFieldType })}
+                        className="border border-gray-200 rounded px-2 py-1 text-xs bg-white focus:outline-none focus:border-blue-400">
+                        {FIELD_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                      <input type="checkbox" checked={fld.required} onChange={(e) => setField(i, { required: e.target.checked })} className="w-3.5 h-3.5 accent-blue-600" />
+                      <span className="text-[11px] text-gray-600">필수 입력</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                      <input type="checkbox" checked={fld.full || fld.type === "textarea"} disabled={fld.type === "textarea"}
+                        onChange={(e) => setField(i, { full: e.target.checked })} className="w-3.5 h-3.5 accent-blue-600 disabled:opacity-40" />
+                      <span className="text-[11px] text-gray-600">한 줄 전체 너비</span>
+                    </label>
+                  </div>
                 </div>
               ))}
+              {info.form.fields.length === 0 && (
+                <p className="text-[11px] text-amber-600 bg-amber-50 rounded px-2 py-1.5">필드가 없습니다. ‘필드 추가’로 최소 1개 이상 만들어 주세요.</p>
+              )}
             </div>
 
             {/* 라벨·입력 글자 스타일 */}
