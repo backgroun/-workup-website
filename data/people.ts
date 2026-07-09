@@ -26,6 +26,16 @@ export type Person = {
   instagram?: PersonInstagram;
 };
 
+// MATE 인터뷰 표준 질문 6문항 — 인물 편집 시 질문이 비어 있으면 이 목록으로 자동 채운다.
+export const MATE_INTERVIEW_QUESTIONS: string[] = [
+  "지금 어떤 일을 하고 계세요?",
+  "처음 이 일을 시작하게 된 계기가 있으셨나요?",
+  "하루 중 가장 '나 일하고 있다' 싶은 순간은 언제예요?",
+  "이 일을 하면서 가장 중요하게 생각하는 것은 무엇인가요?",
+  "같은 일을 시작하는 후배에게 딱 한마디 해주신다면?",
+  "이번에 착용한 워크업 제품은 실제 현장에서 어떠셨나요?",
+];
+
 export const DEFAULT_PEOPLE: Person[] = [
   {
     id: "1",
@@ -37,14 +47,7 @@ export const DEFAULT_PEOPLE: Person[] = [
       photos: [],
       video: "",
     },
-    qna: [
-      { q: "지금 어떤 일을 하고 계세요?", a: "" },
-      { q: "처음 이 일을 시작하게 된 계기가 있으셨나요?", a: "" },
-      { q: "하루 중 가장 '나 일하고 있다' 싶은 순간은 언제예요?", a: "" },
-      { q: "이 일을 하면서 가장 중요하게 생각하는 것은 무엇인가요?", a: "" },
-      { q: "같은 일을 시작하는 후배에게 딱 한마디 해주신다면?", a: "" },
-      { q: "이번에 착용한 워크업 제품은 실제 현장에서 어떠셨나요?", a: "" },
-    ],
+    qna: MATE_INTERVIEW_QUESTIONS.map((q) => ({ q, a: "" })),
     products: [
       { name: "스트레치 카고 팬츠", href: "/products" },
       { name: "에어쿨링 팬베스트", href: "/products" },

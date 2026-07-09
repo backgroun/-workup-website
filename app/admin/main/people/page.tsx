@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DEFAULT_PEOPLE, normalizePeople, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
+import { DEFAULT_PEOPLE, normalizePeople, MATE_INTERVIEW_QUESTIONS, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
 import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
@@ -14,11 +14,16 @@ type PageData = { header?: PageHeader; items?: Person[] };
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
+// 인터뷰 질문 6문항을 기본으로 채운 목록 (답변은 빈칸)
+function defaultQna(): PersonQnA[] {
+  return MATE_INTERVIEW_QUESTIONS.map((q) => ({ q, a: "" }));
+}
+
 function emptyPerson(): Person {
   return {
     id: uid(), job: "", years: "", quote: "", image_url: "",
     workMoments: { photos: [], video: "" },
-    qna: [{ q: "", a: "" }],
+    qna: defaultQna(),
     products: [{ name: "", href: "/products" }],
     instagram: { handle: "", description: "", link: "", reels: [], photos: [] },
   };
@@ -81,7 +86,13 @@ export default function AdminMainPeoplePage() {
   };
 
   const openNew = () => { setEditing(emptyPerson()); setIsNew(true); };
-  const openEdit = (p: Person) => { setEditing(JSON.parse(JSON.stringify(p))); setIsNew(false); };
+  const openEdit = (p: Person) => {
+    const clone: Person = JSON.parse(JSON.stringify(p));
+    // 질문이 비어 있으면 표준 6문항을 자동으로 채워 답변만 입력하도록 한다.
+    if (!clone.qna?.some((qa) => qa.q.trim())) clone.qna = defaultQna();
+    setEditing(clone);
+    setIsNew(false);
+  };
 
   const handleSave = async () => {
     if (!editing) return;
