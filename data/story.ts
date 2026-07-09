@@ -183,12 +183,9 @@ export type StoryConfig = { hero: StoryHero; sections: StorySection[]; style?: S
 // ── 위지윅(WYSIWYG) 편집 API ──
 // 공개 컴포넌트(StorySectionView/StoryHeroView)에 optional 로 주입한다.
 // 없으면(공개 페이지) 순수 렌더, 있으면(관리자 편집기) 클릭 인라인 편집이 활성화된다.
-// type 리터럴은 섹션마다 달라 교집합 시 never 가 되므로 제외한 뒤 합친다.
-export type PartialSection = Partial<
-  Omit<DeclarationSection, "type"> & Omit<CategorySection, "type"> & Omit<ValuesSection, "type"> &
-  Omit<FoundingSection, "type"> & Omit<CtaSection, "type"> & Omit<RichTextSection, "type"> & Omit<PhotosSection, "type"> &
-  Omit<ProblemSection, "type"> & Omit<Features3Section, "type"> & Omit<StoreCtaSection, "type">
->;
+// 섹션 타입마다 같은 필드명(예: items)이 서로 다른 배열 타입을 가져 교집합 타입이 성립하지 않으므로
+// 느슨한 인덱스 시그니처로 정의한다 — patch() 는 항상 "이 섹션에만 있는 필드"를 부분 갱신하는 내부 API.
+export type PartialSection = { [field: string]: unknown };
 export type SectionEditApi = {
   patch: (p: PartialSection) => void;                 // 이 섹션 필드 갱신
   pickImage: (onPicked: (url: string) => void) => void; // 파일 선택창 → 업로드 → url 반환

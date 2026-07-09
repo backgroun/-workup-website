@@ -6,22 +6,6 @@ import { useState, useEffect, useRef } from "react";
 type BgType = "solid" | "gradient" | "image";
 type LinkType = "url" | "product" | "category" | "page";
 
-type AiInput = {
-  productName: string;
-  season: string;
-  features: string;
-  mood: string;
-  target: string;
-  style: string;
-};
-
-type AiResult = {
-  imagePrompt: string;
-  subtitle: string;
-  title: string;
-  ctaText: string;
-};
-
 type PopupItem = {
   id: string;
   is_active: boolean;
@@ -129,66 +113,6 @@ function toIsoOrNull(v: string): string | null {
 
 // ── 메인 페이지 ─────────────────────────────────────────────────────────────
 
-const DEFAULT_AI_INPUT: AiInput = {
-  productName: "",
-  season: "여름",
-  features: "",
-  mood: "시원한",
-  target: "",
-  style: "미니멀",
-};
-
-// ── 템플릿 기반 생성 (API 불필요, 무료) ──
-const MOOD_SUBTITLE: Record<string, string> = {
-  시원한: "안는 순간, 시원해지는",
-  따뜻한: "포근하게 감싸는",
-  세련된: "감각을 완성하는",
-  활동적인: "움직임이 자유로운",
-  고급스러운: "특별한 하루를 위한",
-  편안한: "온종일 편안한",
-};
-const MOOD_ENG: Record<string, string> = {
-  시원한: "cool and refreshing", 따뜻한: "warm and cozy", 세련된: "sophisticated and sleek",
-  활동적인: "dynamic and active", 고급스러운: "luxurious and premium", 편안한: "comfortable and relaxed",
-};
-const SEASON_ENG: Record<string, string> = {
-  봄: "spring, soft natural light", 여름: "summer, bright and airy", 가을: "autumn, warm golden tones",
-  겨울: "winter, cozy atmosphere", 사계절: "all-season, versatile",
-};
-const STYLE_ENG: Record<string, string> = {
-  미니멀: "minimal clean composition", 자연적: "natural organic feel", 도시적: "urban modern look",
-  아웃도어: "outdoor adventurous setting", 스포티: "sporty energetic vibe", 클래식: "classic timeless style",
-};
-
-function buildPopupResult(input: AiInput): AiResult {
-  const { productName, season, features, mood, target, style } = input;
-  const subtitle = MOOD_SUBTITLE[mood] ?? `${season}을 위한`;
-  const title = `${season} 필수템\n${productName}`;
-  const ctaText = "지금 보러가기";
-  const imagePrompt = [
-    `A professional product advertisement photo for "${productName}", a Korean lifestyle/workwear brand popup banner.`,
-    SEASON_ENG[season] && `${SEASON_ENG[season]}.`,
-    MOOD_ENG[mood] && `${MOOD_ENG[mood]} mood.`,
-    STYLE_ENG[style] && `${STYLE_ENG[style]}.`,
-    features.trim() && `Key features: ${features.trim()}.`,
-    target.trim() && `Target audience: ${target.trim()}.`,
-    `Clean composition with clear negative space for text overlay, vertical or square banner format, high resolution, commercial photography.`,
-  ].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
-  return { imagePrompt, subtitle, title, ctaText };
-}
-
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-      className="text-xs px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors shrink-0"
-    >
-      {copied ? "복사됨!" : "복사"}
-    </button>
-  );
-}
-
 export default function PopupManagePage() {
   const [popups, setPopups]     = useState<PopupItem[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -203,11 +127,6 @@ export default function PopupManagePage() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver,  setDragOver]  = useState<number | null>(null);
   const [separateImg, setSeparateImg] = useState(false);  // PC·모바일 이미지 분리 등록 여부 (false = 공동 사용)
-
-  // AI 상태
-  const [aiInput, setAiInput]   = useState<AiInput>(DEFAULT_AI_INPUT);
-  const [aiResult, setAiResult] = useState<AiResult | null>(null);
-  const [aiError, setAiError]   = useState("");
 
   // 로드
   useEffect(() => {
