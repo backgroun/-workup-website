@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AdminSidebar, { getNavLeafByHref } from "./AdminSidebar";
 import AdminTabBar from "./AdminTabBar";
@@ -9,12 +9,14 @@ const MAX_TABS = 10;
 const LS_TABS = "admin.tabs.v1";
 const LS_FAVS = "admin.favorites.v1";
 const LS_VISITS = "admin.visits.v1";
+// 즐겨찾기는 서버(site_settings)에 저장해 관리자 계정 기준으로 어디서든 동일하게 보이게 한다.
+const FAV_API = "/api/admin/site-settings/admin_favorites";
 
 /**
  * 관리자 본문 래퍼.
  * - 좌측 사이드바(아코디언 + 즐겨찾기)
  * - 우측 상단 멀티탭(최대 10개) + 본문
- * 탭/즐겨찾기 상태는 localStorage에 저장한다 (서버/DB 변경 없음).
+ * 탭·방문기록은 localStorage(기기별), 즐겨찾기는 서버(계정 공유)에 저장한다.
  */
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
