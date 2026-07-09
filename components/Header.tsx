@@ -21,15 +21,19 @@ export default function Header({
   logo = DEFAULT_LOGO,
   search = DEFAULT_SEARCH,
   studioEnabled = true,
+  overlay = false,
 }: {
   navItems?: NavMenuItem[];
   logo?: LogoConfig;
   search?: SearchConfig;
   studioEnabled?: boolean;
+  // overlay: 히어로 위에 투명하게 얹히는 모드(스토리 페이지). 스크롤하면 흰 헤더로 전환.
+  overlay?: boolean;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [termIndex, setTermIndex] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
   const { count } = useCart();
   const router = useRouter();
@@ -54,6 +58,27 @@ export default function Header({
     setSearchQuery("");
   }, [pathname]);
 
+  // overlay 모드: 히어로를 지나 스크롤하면 투명 → 흰 헤더로 전환.
+  // 데스크톱은 window, 모바일은 #scroll-root 가 스크롤되므로 둘 다 감지한다.
+  useEffect(() => {
+    if (!overlay) return;
+    const root = document.getElementById("scroll-root");
+    const onScroll = () => {
+      const y = window.scrollY || root?.scrollTop || 0;
+      setScrolled(y > 40);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    root?.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      root?.removeEventListener("scroll", onScroll);
+    };
+  }, [overlay]);
+
+  // 흰 글자(히어로 위 투명 상태). overlay 이면서 아직 스크롤 전.
+  const white = overlay && !scrolled;
+
   const handleSearch = (query: string) => {
     const q = query.trim();
     if (!q) return;
@@ -64,15 +89,21 @@ export default function Header({
 
   return (
     <header
-      className={`md:sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`}
-      style={{ top: "var(--wu-topbar-h, 36px)" }}
+      className={
+        overlay
+          ? `fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+              scrolled ? "bg-white border-b border-gray-200 shadow-sm" : "bg-transparent border-b border-transparent"
+            }${hideOnMobile ? " hidden md:block" : ""}`
+          : `md:sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`
+      }
+      style={overlay ? undefined : { top: "var(--wu-topbar-h, 36px)" }}
     >
       <div className="px-[15px] md:px-[70px]">
         <div className="flex items-center justify-between h-14">
 
           {/* 로고 */}
           <Link href="/" className="flex-shrink-0 py-2 active:opacity-50 active:scale-95 transition-[opacity,transform] duration-150">
-            <Image src={logo.src} alt={logo.alt} width={130} height={18} className="h-[14px] w-[100px] md:h-[18px] md:w-[130px]" priority />
+            <Image src={logo.src} alt={logo.alt} width={130} height={18} className={`h-[14px] w-[100px] md:h-[18px] md:w-[130px] transition-[filter] ${white ? "brightness-0 invert" : ""}`} priority />
           </Link>
 
           {/* 데스크탑 내비게이션 */}
@@ -83,7 +114,7 @@ export default function Header({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className="group grid place-items-center text-[#1A2B4A] whitespace-nowrap"
+                className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
                 style={{ fontWeight: 650 }}
               >
                 {/* 기본은 영문, 마우스 오버 시 한글로 크로스페이드.
@@ -98,7 +129,7 @@ export default function Header({
                 {item.labelKo && (
                   <span
                     style={{ gridArea: "1 / 1", fontWeight: 700 }}
-                    className="text-[14px] leading-none tracking-tighter text-gray-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    className={`text-[14px] leading-none tracking-tighter opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${white ? "text-white/80" : "text-gray-500"}`}
                   >
                     {item.labelKo}
                   </span>
@@ -125,7 +156,7 @@ export default function Header({
             {search.enabled && (
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-                className="p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+                className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
                 aria-label="검색"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +169,7 @@ export default function Header({
             {/* 찜 목록 — 비로그인 시 로그인 유도 */}
             <button
               onClick={() => { memberSession ? router.push("/cart") : router.push("/member/login?from=cart"); }}
-              className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
               aria-label="찜 목록"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +186,7 @@ export default function Header({
             {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 로그인 */}
             <Link
               href={memberSession ? "/mypage" : "/member/login"}
-              className="relative p-1 text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
               aria-label={memberSession ? "마이페이지" : "로그인"}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

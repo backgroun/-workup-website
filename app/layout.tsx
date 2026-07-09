@@ -51,6 +51,8 @@ export default async function RootLayout({
 }>) {
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdmin = pathname.startsWith("/admin");
+  // 스토리 페이지는 히어로 위에 헤더를 투명하게 얹는다(공지바 숨김, 스크롤 시 흰 헤더로 전환).
+  const isStory = pathname === "/story";
 
   const [topbar, footer, headerNav, logo, search, studio] = isAdmin
     ? [null, null, null, null, null, null]
@@ -85,8 +87,8 @@ export default async function RootLayout({
             >
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
-                  <AnnouncementBanner config={topbar} />
-                  <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
+                  {!isStory && <AnnouncementBanner config={topbar} />}
+                  <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} overlay={isStory} />
                 </>
               )}
               <div className={isAdmin ? "flex-1" : "relative flex-1"}>
