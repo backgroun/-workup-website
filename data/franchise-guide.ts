@@ -1,6 +1,7 @@
 // 창업안내(/franchise) 페이지 편집 콘텐츠 + 디자인(크기·자간·행간·색상·배경·이미지).
 // 관리자가 site_settings("franchise_guide")에서 수정. 계약 가맹수는 실제 매장 수로 실시간 반영.
 // 아이콘/그래픽(5km·無/0원)과 3/3/4 구조는 고정 — 텍스트/스타일/색/이미지만 편집.
+import type { CSSProperties } from "react";
 
 export type TextStyle = { size: number; color: string; tracking: number; leading: number };
 
@@ -146,6 +147,6 @@ export function normalizeFranchiseGuide(raw: Partial<FranchiseGuideConfig> | nul
 }
 
 // TextStyle → 인라인 CSS
-export function styleCss(s: TextStyle): React.CSSProperties {
+export function styleCss(s: TextStyle): CSSProperties {
   return { fontSize: s.size, color: s.color, letterSpacing: `${s.tracking}em`, lineHeight: s.leading };
 }
