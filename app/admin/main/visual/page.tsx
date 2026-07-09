@@ -35,6 +35,7 @@ type HeroSlide = {
   mobile_image_url: string;
   pc_video_url: string;
   mobile_video_url: string;
+  video_duration: number | null;       // 동영상 노출 시간(초). null이면 영상 재생 종료 시 자동 전환
   pc_image_position: string;
   mobile_image_position: string;
   pc_image_scale: number;
@@ -75,6 +76,7 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   mobile_image_url: "",
   pc_video_url: "",
   mobile_video_url: "",
+  video_duration: null,
   pc_image_position: "50% 50%",
   mobile_image_position: "50% 50%",
   pc_image_scale: 1,
@@ -183,6 +185,7 @@ export default function AdminMainVisualPage() {
       mobile_image_url: mediaTab === "video" ? null : (sameImage ? (editing.pc_image_url || null) : (editing.mobile_image_url || null)),
       pc_video_url: mediaTab === "video" ? (editing.pc_video_url || null) : null,
       mobile_video_url: mediaTab === "video" ? (editing.mobile_video_url || null) : null,
+      video_duration: mediaTab === "video" ? (editing.video_duration || null) : null,
     };
 
     const url = isNew ? "/api/admin/hero-slides" : `/api/admin/hero-slides/${editing.id}`;
@@ -1385,6 +1388,26 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
             );
           })}
 
+          {/* 가이드 격자 (10% 간격 + 중앙선 강조) */}
+          {showGrid && (
+            <div className="absolute inset-0 pointer-events-none z-[1]">
+              {Array.from({ length: 9 }, (_, i) => (i + 1) * GRID_STEP).map((p) => (
+                <div key={`gx${p}`} className={`absolute inset-y-0 ${p === 50 ? "bg-orange-400/50" : "bg-white/15"}`} style={{ left: `${p}%`, width: 1 }} />
+              ))}
+              {Array.from({ length: 9 }, (_, i) => (i + 1) * GRID_STEP).map((p) => (
+                <div key={`gy${p}`} className={`absolute inset-x-0 ${p === 50 ? "bg-orange-400/50" : "bg-white/15"}`} style={{ top: `${p}%`, height: 1 }} />
+              ))}
+            </div>
+          )}
+
+          {/* 드래그 중 스냅 가이드선 */}
+          {snapLines.x !== null && (
+            <div className="absolute inset-y-0 bg-pink-500 pointer-events-none z-[1]" style={{ left: `${snapLines.x}%`, width: 1.5 }} />
+          )}
+          {snapLines.y !== null && (
+            <div className="absolute inset-x-0 bg-pink-500 pointer-events-none z-[1]" style={{ top: `${snapLines.y}%`, height: 1.5 }} />
+          )}
+
           {/* 페이지 넘김(좌우 화살표) 영역 — PC 전용 */}
           {mode === "pc" && (
             <>
@@ -1421,6 +1444,23 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
           </button>
         ))}
       </div>
+
+      {/* ── 전체 영역(가용 영역) 정렬 — 1개 이상 선택 시 사용 가능 ── */}
+      {selIds.size >= 1 && (
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-[10px] font-semibold text-slate-500 mb-2 uppercase tracking-wide">전체 영역 정렬 · 캔버스 가용 영역 기준</p>
+          <div className="flex flex-wrap gap-1">
+            {CANVAS_ALIGN_BTNS.map(({ type, icon, label }) => (
+              <button key={type} type="button" onClick={() => alignToCanvas(type)}
+                title={label}
+                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-[10px] border rounded transition-colors min-w-[46px] bg-white text-slate-600 border-slate-200 hover:border-slate-500 hover:text-slate-800 cursor-pointer">
+                <span className="text-[14px] leading-none">{icon}</span>
+                <span className="whitespace-nowrap leading-tight">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── 다중 선택 툴바 (2개 이상 선택 시) ── */}
       {selIds.size >= 2 && (
