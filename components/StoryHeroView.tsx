@@ -23,8 +23,9 @@ export default function StoryHeroView({ hero, edit }: { hero: StoryHero; edit?: 
         </div>
       )}
 
-      {/* 그라디언트 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+      {/* 그라디언트 — 좌·하단을 어둡게 해 흰 텍스트 가독성 확보 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
 
       {/* 배경 이미지 교체 버튼(편집 모드) */}
       {edit && (
@@ -40,11 +41,11 @@ export default function StoryHeroView({ hero, edit }: { hero: StoryHero; edit?: 
         <Editable as="h1"
           className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(54px*var(--st-fs,1))] font-bold text-white leading-[1.15] mb-5 whitespace-pre-line block"
           value={hero.heading} onChange={edit ? (v) => edit.patch({ heading: v }) : undefined}
-          fx={hero.fx?.heading} onActivate={edit ? () => edit.activate("heading") : undefined} placeholder="히어로 제목" />
+          fx={hero.fx?.heading} onActivate={edit ? (px) => edit.activate("heading", px) : undefined} active={edit?.activeField === "heading"} placeholder="히어로 제목" />
         {(hero.sub || edit) && (
-          <Editable as="p" className="text-white/60 text-[calc(14px*var(--st-fs,1))] block"
+          <Editable as="p" className="text-white/70 text-[calc(14px*var(--st-fs,1))] block"
             value={hero.sub} onChange={edit ? (v) => edit.patch({ sub: v }) : undefined}
-            fx={hero.fx?.sub} onActivate={edit ? () => edit.activate("sub") : undefined} placeholder="서브 문구" multiline={false} />
+            fx={hero.fx?.sub} onActivate={edit ? (px) => edit.activate("sub", px) : undefined} active={edit?.activeField === "sub"} placeholder="서브 문구" multiline={false} />
         )}
       </div>
     </div>

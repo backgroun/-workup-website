@@ -139,7 +139,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
             <div className={`${GRID} ${COLS_TEXT_IMG}`}>
               <div>
                 <Editable as="p" className={`${eyebrow} mb-8 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Brand Declaration" multiline={false} />
-                <Editable as="h2" className="text-[calc(36px*var(--st-fs,1))] md:text-[calc(54px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.12] mb-9 whitespace-pre-line block"
+                <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(42px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.15] mb-8 whitespace-pre-line block"
                   value={section.heading} {...ep("heading")} placeholder="제목" />
                 <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] md:text-[calc(18px*var(--st-fs,1))] text-gray-600 ${LH} mb-8 block`}
                   value={section.lead} {...ep("lead")} placeholder="리드 문장" />
@@ -182,7 +182,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               </div>
               <div className="md:order-2 order-1">
                 <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Our Category" multiline={false} />
-                <Editable as="h2" className="text-[calc(44px*var(--st-fs,1))] md:text-[calc(64px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.03] mb-8 block"
+                <Editable as="h2" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(52px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.05] mb-7 block"
                   value={section.heading} {...ep("heading")} placeholder="Work Life Wear" multiline={false} />
                 <Editable as="p" className={`text-[calc(18px*var(--st-fs,1))] md:text-[calc(21px*var(--st-fs,1))] text-gray-600 ${LH} mb-10 block`}
                   value={section.lead} {...ep("lead")} placeholder="리드 문장" />

@@ -259,12 +259,12 @@ export function emptySection(type: StorySectionType): StorySection {
 // 기본값으로 삼는다. \n 은 whitespace-pre-line 줄바꿈.
 export const DEFAULT_STORY: StoryConfig = {
   hero: {
-    image_url: undefined,
+    image_url: "/images/story-hero.jpg",
     bg: "#1A2B4A",
-    showWatermark: true,
+    showWatermark: false,
     heading: "일하는 사람 편에서\n만든 브랜드",
     sub: "워크업은 현장에서 시작해 일상까지 이어지는 Work Life Wear 브랜드입니다.",
-    height: 580,
+    height: 640,
   },
   sections: [
     {
@@ -334,4 +334,6 @@ export const DEFAULT_STORY: StoryConfig = {
       ],
     },
   ],
+  // 참고 UI의 조밀한 에디토리얼 비율에 맞춘 기본값: 이미지 가로형(3:2)·폭 축소(42%)·여백 소폭 축소(0.85).
+  style: { fontScale: 1, lineHeight: 1.75, sectionSpacing: 0.85, imageRatio: "3 / 2", imageWidth: 42 },
 };
