@@ -274,7 +274,7 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
       </div>
       <div>
         <label className="block mb-1.5" style={labelStyle}>
-          비밀번호 <span className="text-gray-400">(선택 · 내 글 확인용)</span>
+          비밀번호 <span className="text-gray-400">(문의글 확인용)</span>
         </label>
         <input
           type="password"

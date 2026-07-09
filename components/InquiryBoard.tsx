@@ -113,6 +113,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [visible, setVisible] = useState(RENDER_STEP); // 점진 렌더(무한 스크롤)
   const [viewItem, setViewItem] = useState<FeedItem | null>(null); // 비밀글 열람 대상
 
@@ -121,19 +122,22 @@ export default function InquiryBoard({ type }: { type?: string }) {
     : "워크업 문의 현황";
   const accent = type === "wholesale" ? "#2563eb" : "#ff550c"; // 입점=블루, 가맹=오렌지
 
-  useEffect(() => {
-    let alive = true;
+  const load = () => {
+    setRefreshing(true);
     setVisible(RENDER_STEP);
-    fetch(`/api/inquiry-feed${type ? `?type=${type}` : ""}`)
+    fetch(`/api/inquiry-feed${type ? `?type=${type}` : ""}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
-        if (!alive) return;
         setItems(Array.isArray(d.items) ? d.items : []);
         setTotal(typeof d.total === "number" ? d.total : 0);
-        setLoaded(true);
       })
-      .catch(() => setLoaded(true));
-    return () => { alive = false; };
+      .catch(() => {})
+      .finally(() => { setLoaded(true); setRefreshing(false); });
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
   // 스크롤이 바닥 근처에 오면 더 그린다.
@@ -155,9 +159,17 @@ export default function InquiryBoard({ type }: { type?: string }) {
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />LIVE
           </span>
         </div>
-        <span className="flex-shrink-0 text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
-          누적 <b className="text-[#1A2B4A]">{total.toLocaleString()}</b>건
-        </span>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
+            누적 <b className="text-[#1A2B4A]">{total.toLocaleString()}</b>건
+          </span>
+          <button type="button" onClick={load} disabled={refreshing} title="새로고침" aria-label="새로고침"
+            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-[#1A2B4A] hover:border-gray-300 transition-colors disabled:opacity-50">
+            <svg className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* 컬럼 헤더 */}
