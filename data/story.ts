@@ -277,14 +277,6 @@ export const DEFAULT_STORY: StoryConfig = {
       image_url: "/images/story-declaration.jpg",
     },
     {
-      id: "problem", type: "problem", visible: true, bg: "beige",
-      eyebrow: "THE PROBLEM",
-      heading: "왜 작업복은 불편해도\n참고 입어야 했을까요?",
-      body: "덥고, 무겁고, 쉽게 낡고.\n퇴근 후에는 입기 애매한 옷.",
-      image_url: "/images/story-problem.jpg",
-      imageSide: "left",
-    },
-    {
       id: "features3", type: "features3", visible: true, bg: "white",
       eyebrow: "WORK LIFE WEAR",
       heading: "일할 때는 작업복처럼,\n일상에서는 평상복처럼.",

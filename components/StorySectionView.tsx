@@ -24,10 +24,10 @@ const LH = "leading-[var(--st-lh,1.8)]";
 const IMG_RATIO = "var(--st-ratio, 4 / 3)";
 
 // 이미지 클릭 교체 오버레이(편집 모드 전용)
-function ImgPick({ onPick, has, children }: { onPick?: () => void; has: boolean; children: React.ReactNode }) {
+function ImgPick({ onPick, has, children, className = "" }: { onPick?: () => void; has: boolean; children: React.ReactNode; className?: string }) {
   if (!onPick) return <>{children}</>;
   return (
-    <button type="button" onClick={(e) => { e.stopPropagation(); onPick(); }} className="group relative block w-full text-left">
+    <button type="button" onClick={(e) => { e.stopPropagation(); onPick(); }} className={`group relative block w-full text-left ${className}`}>
       {children}
       <span className="pointer-events-none absolute inset-0 flex items-center justify-center transition-colors group-hover:bg-black/40">
         <span className="opacity-0 group-hover:opacity-100 text-white text-[13px] font-semibold px-4 py-2 rounded-full bg-black/60 transition-opacity">
@@ -134,29 +134,47 @@ export default function StorySectionView({ section, edit }: { section: StorySect
     // ── 브랜드 선언문 (텍스트 좌 · 대형 이미지 우) ──
     case "declaration":
       return (
-        <section className={`${SEC} ${bg}`}>
-          <div className="px-[15px] md:px-[70px]">
-            <div className={`${GRID} ${COLS_TEXT_IMG}`}>
-              <div>
-                <Editable as="p" className={`${eyebrow} mb-8 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Brand Declaration" multiline={false} />
-                <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(42px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.15] mb-8 whitespace-pre-line block"
-                  value={section.heading} {...ep("heading")} placeholder="제목" />
-                <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] md:text-[calc(18px*var(--st-fs,1))] text-gray-600 ${LH} mb-8 block`}
-                  value={section.lead} {...ep("lead")} placeholder="리드 문장" />
-                <div className="w-10 h-[3px] bg-[#1A2B4A] mb-8" />
-                <p className="text-[calc(19px*var(--st-fs,1))] md:text-[calc(26px*var(--st-fs,1))] text-[#1A2B4A] leading-[1.5] font-medium whitespace-pre-line">
-                  <Editable as="span" value={section.emphasis} {...ep("emphasis")} placeholder="강조 문단" />
-                  {(section.emphasisStrong || edit) && (
-                    <>
-                      {"\n"}
-                      <Editable as="span" className="font-bold" value={section.emphasisStrong} {...ep("emphasisStrong")} placeholder="굵은 마무리" multiline={false} />
-                    </>
+        // Brand Declaration 전용 여백 — 가로 1900px 기준.
+        // 가로: 좌 95(5%) · 텍스트 670(내용폭 38.84%) · 간격 35(2.03%) · 이미지 우 80(4.21%).
+        // 세로: 텍스트 위/아래 120px, 제목→구분선 40px, 구분선→리드 40px → 전체 높이 ≈548px.
+        //       이미지는 그 높이에 맞춰 위·아래 80px 여백의 가로 스트립(self-stretch + py-80 + h-full)이 된다.
+        // 목업대로 상단 eyebrow 라벨은 생략. lg 미만은 세로 스택(모바일 여백).
+        <section className={bg}>
+          <div className="flex flex-col lg:flex-row lg:items-stretch gap-10 lg:gap-0
+                          px-[15px] py-16 lg:px-0 lg:py-0 lg:pl-[5%] lg:pr-[4.21%]">
+            {/* 텍스트 크기(1900px 기준): 제목 40px · 본문(리드+강조문) 20px 회색으로 통일. 강조문은 큰 네이비 → 일반 본문으로 구조 변경. */}
+            <div className="w-full lg:w-[38.84%] lg:shrink-0 lg:pt-[120px] lg:pb-[120px]">
+              <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.2] mb-0 whitespace-pre-line block"
+                value={section.heading} {...ep("heading")} placeholder="제목" />
+              <div className="w-10 h-[3px] bg-[#1A2B4A] my-6 lg:my-[40px]" />
+              <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-600 ${LH} mb-5 block`}
+                value={section.lead} {...ep("lead")} placeholder="리드 문장" />
+              <p className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-600 ${LH} whitespace-pre-line`}>
+                <Editable as="span" value={section.emphasis} {...ep("emphasis")} placeholder="본문" />
+                {(section.emphasisStrong || edit) && (
+                  <>
+                    {"\n"}
+                    <Editable as="span" className="font-bold text-[#1A2B4A]" value={section.emphasisStrong} {...ep("emphasisStrong")} placeholder="굵은 마무리(선택)" multiline={false} />
+                  </>
+                )}
+              </p>
+            </div>
+            {/* 이미지: absolute 로 흐름에서 빼 텍스트가 높이(≈548)를 결정하게 하고, 그 안에서 위·아래 80px 스트립. */}
+            <div className="w-full lg:ml-[2.03%] lg:flex-1 lg:self-stretch lg:relative">
+              <div className="lg:absolute lg:inset-x-0 lg:top-[80px] lg:bottom-[80px]">
+                <ImgPick onPick={pickInto("image_url")} has={!!section.image_url} className="lg:h-full">
+                  {section.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={section.image_url} alt={section.heading || "브랜드 선언"}
+                      className="w-full aspect-[3/2] lg:aspect-auto lg:h-full object-cover object-top" />
+                  ) : (
+                    <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:h-full overflow-hidden bg-[#1A2B4A]">
+                      <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] select-none pointer-events-none">
+                        <span className="text-white font-black leading-none text-[220px]">WU</span>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                    </div>
                   )}
-                </p>
-              </div>
-              <div>
-                <ImgPick onPick={pickInto("image_url")} has={!!section.image_url}>
-                  <StoryImagePanel src={section.image_url} alt={section.heading || "브랜드 선언"} />
                 </ImgPick>
               </div>
             </div>
