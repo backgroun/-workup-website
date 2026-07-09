@@ -120,7 +120,6 @@ export default function AdminMainVisualPage() {
   const [mediaTab, setMediaTab] = useState<"image" | "video">("image"); // 슬라이드 미디어 모드(이미지/동영상)
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
-  const [promptOpen, setPromptOpen] = useState(false);
   const [uploading, setUploading] = useState<"pc" | "mobile" | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
@@ -601,9 +600,9 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;`}</pre>
             )}
           </div>
 
-          {/* 관리용 타이틀 (기획 컨셉) + AI 자동 생성 */}
+          {/* 관리용 타이틀 (기획 컨셉) */}
           <div className="pb-7 border-b border-slate-100 space-y-4">
-            <Field label="관리용 타이틀 (기획 컨셉)" hint="목록 식별용 + AI 생성의 기준. 실제 화면에 표시되지 않음.">
+            <Field label="관리용 타이틀 (기획 컨셉)" hint="목록 식별용. 실제 화면에 표시되지 않음.">
               <input
                 type="text"
                 value={editing.admin_title}
@@ -612,12 +611,6 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;`}</pre>
                 placeholder="예: 2026 여름 — 그늘에서 쉬는 현장 작업자"
               />
             </Field>
-
-            <VisualConceptGenerator
-              concept={editing.admin_title}
-              currentLayers={editing.text_layers ?? []}
-              onChangeLayers={(next) => set("text_layers", next)}
-            />
           </div>
 
           {/* 동영상 (동영상 슬라이드 전용) */}
@@ -644,33 +637,6 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;`}</pre>
                 </div>
               )}
             </div>
-          )}
-
-          {/* AI 이미지 프롬프트 (이미지 슬라이드 전용) */}
-          {mediaTab !== "video" && (
-          <div className="pb-7 border-b border-slate-100">
-            <button
-              type="button"
-              onClick={() => setPromptOpen((v) => !v)}
-              className="w-full flex items-center justify-between group"
-            >
-              <span className="flex items-center gap-2">
-                <span className="w-1 h-4 rounded-full bg-indigo-500" />
-                <span className="text-[15px] font-bold text-slate-800 tracking-tight">AI 이미지 프롬프트</span>
-                <span className="text-xs font-medium text-slate-400">— 생략 가능</span>
-              </span>
-              <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-slate-400 group-hover:bg-slate-100 transition-all text-xs ${promptOpen ? "rotate-180" : ""}`}>▼</span>
-            </button>
-            {promptOpen && (
-              <div className="mt-4">
-                <VisualPromptBuilder
-                  title={editing.title}
-                  subtitle={editing.subtitle}
-                  pcImageUrl={editing.pc_image_url || undefined}
-                />
-              </div>
-            )}
-          </div>
           )}
 
           {/* 2. 이미지 (이미지 슬라이드 전용) */}

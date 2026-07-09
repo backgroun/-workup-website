@@ -75,6 +75,40 @@ function DelBadge({ onClick }: { onClick: () => void }) {
   );
 }
 
+// 아이콘형 항목(특징3·핵심가치)의 아이콘 클릭 교체(편집 모드 전용). 프리셋 그리드에서 골라 즉시 반영.
+function IconPickerButton({ icon, onPick, size = "w-14 h-14" }: { icon?: IconKey; onPick?: (icon: IconKey) => void; size?: string }) {
+  const [open, setOpen] = useState(false);
+  const circle = (
+    <div className={`${size} rounded-full bg-[#1A2B4A]/[0.06] flex items-center justify-center text-[#1A2B4A]`}>
+      <StoryIcon icon={icon} className="w-1/2 h-1/2" />
+    </div>
+  );
+  if (!onPick) return circle;
+  return (
+    <div className="relative inline-block">
+      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className="group/icon relative rounded-full ring-offset-2 hover:ring-2 hover:ring-blue-400 transition-shadow">
+        {circle}
+        <span className="pointer-events-none absolute inset-0 rounded-full bg-black/0 group-hover/icon:bg-black/30 flex items-center justify-center transition-colors">
+          <span className="opacity-0 group-hover/icon:opacity-100 text-white text-[10px] font-semibold">교체</span>
+        </span>
+      </button>
+      {open && (
+        <div className="absolute z-30 top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl p-2 grid grid-cols-4 gap-1 w-[176px]"
+          onClick={(e) => e.stopPropagation()}>
+          {ICON_OPTIONS.map((o) => (
+            <button key={o.value} type="button" title={o.label}
+              onClick={() => { onPick(o.value); setOpen(false); }}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center hover:bg-blue-50 ${icon === o.value ? "bg-blue-100 text-blue-600" : "text-slate-500"}`}>
+              <StoryIcon icon={o.value} className="w-5 h-5" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StorySectionView({ section, edit }: { section: StorySection; edit?: SectionEditApi }) {
   const bg = BG_CLASS[section.bg] ?? "bg-white";
   const eyebrowColor = section.bg === "beige" ? "text-gray-500" : "text-gray-400";
