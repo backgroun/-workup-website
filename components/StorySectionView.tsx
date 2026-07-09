@@ -83,12 +83,16 @@ export default function StorySectionView({ section, edit }: { section: StorySect
     edit ? (v: string) => edit.patch({ [field]: v } as unknown as PartialSection) : undefined;
   const pickInto = (field: string) =>
     edit ? () => edit.pickImage((url) => edit.patch({ [field]: url } as unknown as PartialSection)) : undefined;
-  // 편집 요소 공통 props: onChange + 개별 서식(fx) + 서식 툴바 활성화(onActivate)
-  const ep = (field: string) => ({
-    onChange: t(field),
-    fx: section.fx?.[field],
-    onActivate: edit ? () => edit.activate(field) : undefined,
+  // 편집 요소 공통 props: onChange + 개별 서식(fx) + 서식 툴바 활성화(onActivate) + 선택 표시(active).
+  // key 는 fx 저장 키이자 활성 요소 식별자 — 최상위 필드는 필드명 그대로, 배열 항목은 "tags.0" 처럼 인덱스를 포함해
+  // 서로 다른 요소가 같은 대상을 가리키는 일(=엉뚱한 텍스트가 바뀌는 버그) 없이 항상 고유해야 한다.
+  const epi = (key: string, onChange?: (v: string) => void) => ({
+    onChange,
+    fx: section.fx?.[key],
+    onActivate: edit ? (px?: number) => edit.activate(key, px) : undefined,
+    active: edit?.activeField === key,
   });
+  const ep = (field: string) => epi(field, t(field));
 
   switch (section.type) {
     // ── 브랜드 선언문 (텍스트 좌 · 대형 이미지 우) ──
@@ -152,7 +156,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                       <span className="group/item relative">
                         {edit && <DelBadge onClick={() => delTag(i)} />}
                         <Editable as="span" className="inline-block text-[calc(13px*var(--st-fs,1))] md:text-[calc(15px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-wider border border-[#1A2B4A] px-5 py-2.5"
-                          value={word} onChange={edit ? (v) => setTag(i, v) : undefined} multiline={false} />
+                          value={word} multiline={false} {...epi(`tags.${i}`, (v) => setTag(i, v))} />
                       </span>
                       {i < arr.length - 1 && <span className="text-gray-400 text-xl font-light">+</span>}
                     </div>
