@@ -1,11 +1,16 @@
 "use client";
 import { useState } from "react";
 import { SUPPORT_CATEGORIES } from "@/lib/site-content";
+import { useStores } from "@/lib/useStores";
 
-type FormState = { subject: string; name: string; phone: string; message: string };
+type FormState = { subject: string; name: string; phone: string; message: string; storeId: string; storeName: string };
+
+// 매장 선택이 의미 있는 문의 구분(매장 방문 관련 문의는 담당 매장을 알아야 안내가 정확함).
+const STORE_RELATED_CATEGORIES = new Set(["매장·방문", "교환·반품·AS"]);
 
 export default function SupportForm() {
-  const init: FormState = { subject: SUPPORT_CATEGORIES[0], name: "", phone: "", message: "" };
+  const stores = useStores();
+  const init: FormState = { subject: SUPPORT_CATEGORIES[0], name: "", phone: "", message: "", storeId: "", storeName: "" };
   const [form, setForm] = useState<FormState>(init);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);

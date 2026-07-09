@@ -420,6 +420,139 @@ export default function StorySectionView({ section, edit }: { section: StorySect
       );
     }
 
+    // ── 문제제기 (흑백 인물사진 + 짧은 공감 문구) ──
+    case "problem": {
+      const imageLeft = section.imageSide !== "right";
+      return (
+        <section className={`${SEC} ${bg}`}>
+          <div className="px-[15px] md:px-[70px]">
+            <div className={`${GRID} ${imageLeft ? COLS_IMG_TEXT : COLS_TEXT_IMG}`}>
+              <div className={imageLeft ? "md:order-1" : "md:order-2"}>
+                <ImgPick onPick={pickInto("image_url")} has={!!section.image_url}>
+                  {section.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={section.image_url} alt={section.heading || "문제 제기"} className="w-full h-full object-cover object-top grayscale"
+                      style={{ aspectRatio: IMG_RATIO }} />
+                  ) : (
+                    <StoryImagePanel src={undefined} alt={section.heading || "문제 제기"} />
+                  )}
+                </ImgPick>
+              </div>
+              <div className={imageLeft ? "md:order-2" : "md:order-1"}>
+                <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="THE PROBLEM" multiline={false} />
+                <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(42px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 whitespace-pre-line block"
+                  value={section.heading} {...ep("heading")} placeholder="왜 작업복은 불편해도 참고 입어야 했을까요?" />
+                <Editable as="p" className={`text-[calc(15px*var(--st-fs,1))] md:text-[calc(17px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
+                  value={section.body} {...ep("body")} placeholder="짧은 문제 상황" />
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ── Work·Life·Wear 3아이콘 특징 ──
+    case "features3": {
+      const items = section.items ?? [];
+      const setItem = (i: number, patch: Partial<FeatureItem>) =>
+        edit?.patch({ items: items.map((x, idx) => (idx === i ? { ...x, ...patch } : x)) });
+      const addItem = () => edit?.patch({ items: [...items, { icon: "check", label: "NEW", desc: "" }] });
+      const delItem = (i: number) => edit?.patch({ items: items.filter((_, idx) => idx !== i) });
+      return (
+        <section className={`${SEC} ${bg}`}>
+          <div className="px-[15px] md:px-[70px]">
+            <div className="max-w-2xl mb-14">
+              <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="WORK LIFE WEAR" multiline={false} />
+              <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.2] mb-6 whitespace-pre-line block"
+                value={section.heading} {...ep("heading")} placeholder="일할 때는 작업복처럼, 일상에서는 평상복처럼." />
+              <Editable as="p" className={`text-[calc(15px*var(--st-fs,1))] md:text-[calc(17px*var(--st-fs,1))] text-gray-500 ${LH} block`}
+                value={section.lead} {...ep("lead")} placeholder="리드 문장" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8">
+              {items.map((it, i) => (
+                <div key={i} className="group/item relative text-center">
+                  {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
+                  <div className="flex justify-center mb-5">
+                    <IconPickerButton icon={it.icon} onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
+                  </div>
+                  <Editable as="h3" className="text-[calc(15px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] mb-3 block"
+                    value={it.label} placeholder="WORK" multiline={false} {...epi(`items.${i}.label`, edit ? (x) => setItem(i, { label: x }) : undefined)} />
+                  <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
+                    value={it.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
+                </div>
+              ))}
+            </div>
+            {edit && <div className="mt-8 flex justify-center"><AddBtn onClick={addItem} label="항목" /></div>}
+          </div>
+        </section>
+      );
+    }
+
+    // ── 매장체험 CTA (사진 콜라주 배경 + 중앙 텍스트/버튼) ──
+    case "storeCta": {
+      const images = section.images ?? [];
+      const setImg = (i: number, url: string) => edit?.patch({ images: images.map((x, idx) => (idx === i ? { ...x, url } : x)) });
+      const addImg = () => edit?.patch({ images: [...images, { url: undefined, alt: "" } as PhotoItem] });
+      const delImg = (i: number) => edit?.patch({ images: images.filter((_, idx) => idx !== i) });
+      const ctaClass =
+        "inline-flex items-center gap-2 border border-white text-white text-[calc(12px*var(--st-fs,1))] tracking-widest font-medium px-8 py-3.5 hover:bg-white hover:text-[#1A2B4A] transition-colors";
+      const ctaBtn = section.ctaLabel && section.ctaHref
+        ? (section.ctaHref.startsWith("/")
+          ? <Link href={section.ctaHref} className={ctaClass}>{section.ctaLabel}</Link>
+          : <a href={section.ctaHref} className={ctaClass}>{section.ctaLabel}</a>)
+        : null;
+      return (
+        <section className="relative overflow-hidden">
+          {/* 배경 콜라주 */}
+          <div className="absolute inset-0 grid grid-cols-3">
+            {images.length > 0 ? (
+              images.map((img, i) => (
+                <div key={i} className="group/item relative h-full">
+                  {edit && <DelBadge onClick={() => delImg(i)} />}
+                  <ImgPick onPick={edit ? () => edit.pickImage((url) => setImg(i, url)) : undefined} has={!!img.url}>
+                    {img.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#1A2B4A]" />
+                    )}
+                  </ImgPick>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 bg-[#1A2B4A]">
+                <ImgPick onPick={edit ? () => edit.pickImage((url) => edit.patch({ images: [{ url, alt: "" }] })) : undefined} has={false}>
+                  <div className="w-full h-full min-h-[420px]" />
+                </ImgPick>
+              </div>
+            )}
+          </div>
+          <div className="absolute inset-0 bg-black/60" />
+          {/* 텍스트 */}
+          <div className="relative z-10 px-[15px] md:px-[70px] py-24 md:py-32 text-center">
+            <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] text-white/60 uppercase mb-7 block`}
+              value={section.eyebrow} {...ep("eyebrow")} placeholder="STORE EXPERIENCE" multiline={false} />
+            <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] md:text-[calc(40px*var(--st-fs,1))] font-bold text-white leading-[1.25] mb-6 whitespace-pre-line block"
+              value={section.heading} {...ep("heading")} placeholder="입어봐야 알 수 있는 옷이 있습니다." />
+            <Editable as="p" className={`text-[calc(14px*var(--st-fs,1))] md:text-[calc(16px*var(--st-fs,1))] text-white/70 ${LH} whitespace-pre-line mb-10 block`}
+              value={section.body} {...ep("body")} placeholder="본문" />
+            {edit ? (
+              <div className="inline-flex flex-col gap-2 items-center">
+                <Editable as="span" className={ctaClass} value={section.ctaLabel} {...ep("ctaLabel")} placeholder="버튼 문구" multiline={false} />
+                <Editable as="span" className="text-[11px] text-white/50 font-mono border border-dashed border-white/30 rounded px-2 py-1"
+                  value={section.ctaHref} {...ep("ctaHref")} placeholder="/store · tel:... · 카카오톡 URL" multiline={false} />
+              </div>
+            ) : ctaBtn}
+            {edit && (
+              <div className="mt-8">
+                <AddBtn onClick={addImg} label="배경 사진" />
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    }
+
     default:
       return null;
   }

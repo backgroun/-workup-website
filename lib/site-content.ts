@@ -164,8 +164,7 @@ export const DEFAULT_SUPPORT: SupportConfig = {
   hero_desc: "제품·사이즈부터 매장 방문, 교환/반품까지 — 궁금하신 점을 남겨 주시면 담당자가 빠르게 도와드립니다.",
   guide_image_url: "",
   intro_title: "무엇을 도와드릴까요?",
-  intro_desc:
-    "제품·사이즈, 매장 방문, 교환/반품 등 궁금하신 점을 남겨 주세요.\n영업일 기준 2일 이내에 담당자가 연락드립니다.",
+  intro_desc: "제품·사이즈, 매장 방문, 교환/반품 등 궁금하신 점을 남겨 주세요.",
 };
 
 export function normalizeSupport(raw: Partial<SupportConfig> | null | undefined): SupportConfig {
