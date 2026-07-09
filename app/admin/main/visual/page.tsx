@@ -154,7 +154,6 @@ export default function AdminMainVisualPage() {
     setUseSchedule(false);
     setSameImage(true);
     setMediaTab("image");
-    setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
@@ -164,7 +163,6 @@ export default function AdminMainVisualPage() {
     setUseSchedule(!!(slide.scheduled_start || slide.scheduled_end));
     setSameImage(!!(slide.pc_image_url && slide.pc_image_url === slide.mobile_image_url));
     setMediaTab(slide.pc_video_url ? "video" : "image");
-    setPromptOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 

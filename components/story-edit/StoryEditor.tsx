@@ -293,11 +293,18 @@ function SectionChrome({ section, first, last, onUp, onDown, onDup, onDel, onTog
         <ChipBtn active={section.bg === "white"} onClick={() => onBg("white")} title="흰 배경"><span className="w-3 h-3 rounded-full bg-white border border-slate-300 inline-block" /></ChipBtn>
         <ChipBtn active={section.bg === "beige"} onClick={() => onBg("beige")} title="베이지 배경"><span className="w-3 h-3 rounded-full bg-[#e6e3db] border border-slate-300 inline-block" /></ChipBtn>
         {/* 타입별 옵션 */}
-        {section.type === "founding" && (
+        {(section.type === "founding" || section.type === "problem") && (
           <>
             <div className="w-px h-4 bg-slate-200 mx-0.5" />
             <ChipBtn active={section.imageSide === "left"} onClick={() => onPatch({ imageSide: "left" })} title="이미지 왼쪽">◧</ChipBtn>
             <ChipBtn active={section.imageSide === "right"} onClick={() => onPatch({ imageSide: "right" })} title="이미지 오른쪽">◨</ChipBtn>
+          </>
+        )}
+        {section.type === "values" && (
+          <>
+            <div className="w-px h-4 bg-slate-200 mx-0.5" />
+            <ChipBtn active={section.layout === "number"} onClick={() => onPatch({ layout: "number" })} title="숫자형">01</ChipBtn>
+            <ChipBtn active={section.layout === "icon"} onClick={() => onPatch({ layout: "icon" })} title="아이콘형">◎</ChipBtn>
           </>
         )}
         {section.type === "photos" && (
@@ -368,23 +375,27 @@ function FBtn({ active, onClick, title, children }: { active?: boolean; onClick:
     </button>
   );
 }
-function FormatToolbar({ label, fx, onApply, onReset, onClose }: {
-  label: string; fx?: TextFx;
+function FormatToolbar({ label, fx, baseSize, onApply, onReset, onClose }: {
+  label: string; fx?: TextFx; baseSize?: number;
   onApply: (patch: Partial<TextFx>) => void; onReset: () => void; onClose: () => void;
 }) {
-  const size = fx?.size;
+  // 오버라이드(fx.size)가 없으면 활성화 시점에 측정한 실제 렌더 크기(baseSize)를 그대로 보여준다 —
+  // "자동"이라고만 뜨던 이전 방식은 지금 몇 px인지 몰라 감으로 +/- 눌러야 했던 불편함의 원인이었다.
+  const display = fx?.size ?? (baseSize ? Math.round(baseSize) : undefined);
   const align = fx?.align;
   const bold = fx?.weight === 700;
-  const step = (d: number) => onApply({ size: Math.max(8, Math.min(160, (size ?? 40) + d)) });
+  const step = (d: number) => onApply({ size: Math.max(8, Math.min(160, (display ?? 16) + d)) });
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60]">
       <div className="flex items-center gap-1.5 bg-slate-900/95 backdrop-blur text-white rounded-2xl shadow-2xl border border-white/10 px-3 py-2 flex-wrap max-w-[96vw]">
         <span className="text-[12px] font-bold text-blue-300 pr-1">{label}</span>
         <Sep />
         <span className="text-[11px] text-slate-400">크기</span>
-        <FBtn onClick={() => step(-2)} title="작게">−</FBtn>
-        <span className="text-[12px] font-mono w-9 text-center">{size ? size : "자동"}</span>
-        <FBtn onClick={() => step(2)} title="크게">＋</FBtn>
+        <FBtn onClick={() => step(-1)} title="작게">−</FBtn>
+        <input type="number" value={display ?? ""} placeholder="—"
+          onChange={(e) => { const n = Number(e.target.value); if (e.target.value !== "" && Number.isFinite(n)) onApply({ size: Math.max(8, Math.min(160, n)) }); }}
+          className="w-12 h-7 text-center bg-white/10 rounded font-mono text-[12px] outline-none focus:bg-white/20" />
+        <FBtn onClick={() => step(1)} title="크게">＋</FBtn>
         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onApply({ size: undefined })}
           className="text-[10px] text-slate-400 hover:text-white px-1">기본</button>
         <Sep />
