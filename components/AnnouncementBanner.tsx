@@ -67,19 +67,27 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
           .wu-tb-icon{width:${pIcon}px;height:${pIcon}px}
           .wu-tb-text{font-size:${pFS}px}
         }
+        .wu-tb-shimmer-char{
+          display:inline-block;
+          color:rgba(255,255,255,0.35);
+          animation:wu-tb-shimmer 2.4s ease-in-out infinite;
+        }
+        @keyframes wu-tb-shimmer{
+          0%,100%{color:rgba(255,255,255,0.35);}
+          50%{color:#ffffff;}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .wu-tb-shimmer-char{animation:none;color:#ffffff}
+        }
       `}</style>
       <div
         className="wu-tb sticky top-0 z-[60] flex items-center flex-shrink-0"
         style={{ backgroundColor: c.bg_color, color: c.text_color }}
       >
         <div className="px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
-          {c.left_link ? (
-            <SmartLink href={c.left_link} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
-              {leftInner}
-            </SmartLink>
-          ) : (
-            <div className="flex items-center gap-1.5 min-w-0">{leftInner}</div>
-          )}
+          <SmartLink href={c.left_link || "/"} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
+            {leftInner}
+          </SmartLink>
 
           {c.items.length > 0 && (
             <div className="flex items-center gap-2 md:gap-2.5 flex-shrink-0">

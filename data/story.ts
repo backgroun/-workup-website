@@ -8,7 +8,8 @@ export type SectionBg = "white" | "beige"; // white = bg-white, beige = bg-[#f2f
 // 네이비 섹션 배경은 의도적으로 제외(본문 대비 문제 + 현재 페이지도 섹션엔 안 씀). 히어로 기본색으로만 사용.
 
 export type StorySectionType =
-  | "declaration" | "category" | "values" | "founding" | "cta" | "richtext" | "photos";
+  | "declaration" | "category" | "values" | "founding" | "cta" | "richtext" | "photos"
+  | "problem" | "features3" | "storeCta";
 
 // 요소별(텍스트) 개별 서식 — 선택한 한 요소에만 적용되는 오버라이드. 비우면 기본(테마) 사용.
 export type TextAlign = "left" | "center" | "right";
@@ -47,12 +48,13 @@ export type CategorySection = SectionBase & {
   image_url?: string;     // 좌측 대형 이미지(비우면 네이비 플레이스홀더)
 };
 
-export type ValueItem = { num: string; en: string; title: string; desc: string }; // desc 줄바꿈 \n
+export type ValueItem = { num: string; en: string; title: string; desc: string; icon?: IconKey }; // desc 줄바꿈 \n
 export type ValuesSection = SectionBase & {
   type: "values";
   eyebrow: string;
   heading: string;
   items: ValueItem[];
+  layout: "number" | "icon"; // number = 큰 흐린 숫자(기존), icon = 원형 아이콘 + "01. 제목"
 };
 
 export type FoundingSection = SectionBase & {
