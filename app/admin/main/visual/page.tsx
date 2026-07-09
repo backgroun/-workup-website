@@ -2,6 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { bgColorWithAlpha } from "@/lib/color";
+import { DEFAULT_HEADER_NAV } from "@/lib/header-nav";
+
+// 슬라이드 클릭 이동 링크 프리셋 — 헤더 메뉴(사이트 주요 페이지) + 자주 쓰는 경로
+const LINK_PRESETS: { label: string; href: string }[] = [
+  { label: "홈", href: "/" },
+  ...DEFAULT_HEADER_NAV.items.map((it) => ({ label: it.labelKo ? `${it.label} (${it.labelKo})` : it.label, href: it.href })),
+];
 
 type TextLayer = {
   id: string;
@@ -36,6 +43,8 @@ type HeroSlide = {
   pc_video_url: string;
   mobile_video_url: string;
   video_duration: number | null;       // 동영상 노출 시간(초). null이면 영상 재생 종료 시 자동 전환
+  link_url: string | null;             // 슬라이드 클릭 시 이동할 경로. null/빈 값이면 클릭 이동 없음
+  link_new_tab: boolean;               // 새 탭에서 열기
   pc_image_position: string;
   mobile_image_position: string;
   pc_image_scale: number;
@@ -77,6 +86,8 @@ const EMPTY: Omit<HeroSlide, "id"> = {
   pc_video_url: "",
   mobile_video_url: "",
   video_duration: null,
+  link_url: null,
+  link_new_tab: false,
   pc_image_position: "50% 50%",
   mobile_image_position: "50% 50%",
   pc_image_scale: 1,
@@ -183,6 +194,7 @@ export default function AdminMainVisualPage() {
       pc_video_url: mediaTab === "video" ? (editing.pc_video_url || null) : null,
       mobile_video_url: mediaTab === "video" ? (editing.mobile_video_url || null) : null,
       video_duration: mediaTab === "video" ? (editing.video_duration || null) : null,
+      link_url: editing.link_url || null,
     };
 
     const url = isNew ? "/api/admin/hero-slides" : `/api/admin/hero-slides/${editing.id}`;
@@ -405,7 +417,9 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS pc_image_scale NUMERIC DEFAULT 1;
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_scale NUMERIC DEFAULT 1;
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]'::jsonb;
-ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;`}</pre>
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_url TEXT;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL DEFAULT FALSE;`}</pre>
         </div>
       )}
 
