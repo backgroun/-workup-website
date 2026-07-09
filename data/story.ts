@@ -281,7 +281,7 @@ export const DEFAULT_STORY: StoryConfig = {
       eyebrow: "THE PROBLEM",
       heading: "왜 작업복은 불편해도\n참고 입어야 했을까요?",
       body: "덥고, 무겁고, 쉽게 낡고.\n퇴근 후에는 입기 애매한 옷.",
-      image_url: undefined,
+      image_url: "/images/story-problem.jpg",
       imageSide: "left",
     },
     {
@@ -317,7 +317,7 @@ export const DEFAULT_STORY: StoryConfig = {
       ],
       emphasis: "",
       closing: "일하는 사람 곁에서,\n늘 함께합니다.",
-      image_url: undefined,
+      image_url: "/images/story-founding-sewing.jpg",
       imageSide: "right",
     },
     {
@@ -327,7 +327,11 @@ export const DEFAULT_STORY: StoryConfig = {
       body: "핏, 촉감, 착용감.\n이것들은 사진으로 전달되지 않습니다.",
       ctaLabel: "가까운 매장 찾기 →",
       ctaHref: "/store",
-      images: [],
+      images: [
+        { url: "/images/story-cta-1.jpg", alt: "" },
+        { url: "/images/story-cta-2.jpg", alt: "" },
+        { url: "/images/story-category.jpg", alt: "" },
+      ],
     },
   ],
 };
