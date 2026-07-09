@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DEFAULT_PEOPLE, type Person, type PersonProduct } from "@/data/people";
+import { DEFAULT_PEOPLE, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
 import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
@@ -16,8 +16,11 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 
 function emptyPerson(): Person {
   return {
-    id: uid(), job: "", years: "", quote: "", story: [""], theme: "",
-    products: [{ name: "", href: "/products" }], bg: "#1A2B4A", initial: "",
+    id: uid(), job: "", years: "", quote: "", image_url: "",
+    workMoments: { photos: [], video: "" },
+    qna: [{ q: "", a: "" }],
+    products: [{ name: "", href: "/products" }],
+    instagram: { handle: "", description: "", link: "", reels: [], photos: [] },
   };
 }
 
@@ -83,8 +86,10 @@ export default function AdminMainPeoplePage() {
     if (!editing) return;
     const cleaned: Person = {
       ...editing,
-      story: editing.story.map(s => s.trim()).filter(Boolean),
+      qna: editing.qna.filter(qa => qa.q.trim()),
       products: editing.products.filter(pr => pr.name.trim()),
+      workMoments: { photos: editing.workMoments.photos.filter(Boolean), video: editing.workMoments.video },
+      instagram: editing.instagram,
     };
     const updated = isNew ? [...items, cleaned] : items.map(p => p.id === cleaned.id ? cleaned : p);
     setItems(updated);
@@ -122,12 +127,22 @@ export default function AdminMainPeoplePage() {
   const set = <K extends keyof Person>(k: K, v: Person[K]) =>
     setEditing(prev => prev ? { ...prev, [k]: v } : prev);
 
-  // story 헬퍼
-  const setStoryLine = (i: number, v: string) =>
-    setEditing(prev => prev ? { ...prev, story: prev.story.map((s, idx) => idx === i ? v : s) } : prev);
-  const addStoryLine = () => setEditing(prev => prev ? { ...prev, story: [...prev.story, ""] } : prev);
-  const removeStoryLine = (i: number) =>
-    setEditing(prev => prev ? { ...prev, story: prev.story.filter((_, idx) => idx !== i) } : prev);
+  // WORK MOMENTS 헬퍼
+  const setWorkPhoto = (i: number, url: string) =>
+    setEditing(prev => prev ? { ...prev, workMoments: { ...prev.workMoments, photos: prev.workMoments.photos.map((p, idx) => idx === i ? url : p) } } : prev);
+  const addWorkPhoto = () =>
+    setEditing(prev => prev ? { ...prev, workMoments: { ...prev.workMoments, photos: [...prev.workMoments.photos, ""] } } : prev);
+  const removeWorkPhoto = (i: number) =>
+    setEditing(prev => prev ? { ...prev, workMoments: { ...prev.workMoments, photos: prev.workMoments.photos.filter((_, idx) => idx !== i) } } : prev);
+  const setWorkVideo = (url: string) =>
+    setEditing(prev => prev ? { ...prev, workMoments: { ...prev.workMoments, video: url } } : prev);
+
+  // qna 헬퍼
+  const setQna = (i: number, patch: Partial<PersonQnA>) =>
+    setEditing(prev => prev ? { ...prev, qna: prev.qna.map((qa, idx) => idx === i ? { ...qa, ...patch } : qa) } : prev);
+  const addQna = () => setEditing(prev => prev ? { ...prev, qna: [...prev.qna, { q: "", a: "" }] } : prev);
+  const removeQna = (i: number) =>
+    setEditing(prev => prev ? { ...prev, qna: prev.qna.filter((_, idx) => idx !== i) } : prev);
 
   // products 헬퍼
   const setProduct = (i: number, patch: Partial<PersonProduct>) =>
@@ -135,6 +150,27 @@ export default function AdminMainPeoplePage() {
   const addProduct = () => setEditing(prev => prev ? { ...prev, products: [...prev.products, { name: "", href: "/products" }] } : prev);
   const removeProduct = (i: number) =>
     setEditing(prev => prev ? { ...prev, products: prev.products.filter((_, idx) => idx !== i) } : prev);
+
+  // instagram 헬퍼
+  const setIg = <K extends keyof NonNullable<Person["instagram"]>>(k: K, v: NonNullable<Person["instagram"]>[K]) =>
+    setEditing(prev => prev ? { ...prev, instagram: { ...(prev.instagram ?? { handle: "", description: "", link: "", reels: [], photos: [] }), [k]: v } } : prev);
+  const setIgListItem = (field: "reels" | "photos", i: number, url: string) =>
+    setEditing(prev => {
+      if (!prev?.instagram) return prev;
+      const list = prev.instagram[field].map((u, idx) => idx === i ? url : u);
+      return { ...prev, instagram: { ...prev.instagram, [field]: list } };
+    });
+  const addIgListItem = (field: "reels" | "photos") =>
+    setEditing(prev => {
+      if (!prev) return prev;
+      const ig = prev.instagram ?? { handle: "", description: "", link: "", reels: [], photos: [] };
+      return { ...prev, instagram: { ...ig, [field]: [...ig[field], ""] } };
+    });
+  const removeIgListItem = (field: "reels" | "photos", i: number) =>
+    setEditing(prev => {
+      if (!prev?.instagram) return prev;
+      return { ...prev, instagram: { ...prev.instagram, [field]: prev.instagram[field].filter((_, idx) => idx !== i) } };
+    });
 
   if (loading) return <div className="p-6 text-sm text-gray-400">불러오는 중...</div>;
 
@@ -226,10 +262,15 @@ export default function AdminMainPeoplePage() {
                     onDrop={() => handleDrop(i)}
                     onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
                     className={`flex items-start gap-2.5 px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${editing?.id === p.id ? "bg-blue-50" : "hover:bg-slate-50"} ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}>
-                    <div className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold mt-0.5" style={{ backgroundColor: p.bg }}>{p.initial || "?"}</div>
+                    <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-slate-200 mt-0.5">
+                      {p.image_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-slate-800 truncate">{p.job || "(직종 없음)"}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{p.quote || p.years}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{p.quote.split("\n")[0] || p.years}</p>
                       <div className="flex items-center gap-1 mt-1.5">
                         <button onClick={() => openEdit(p)} className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2 py-0.5 hover:bg-slate-100 rounded">수정</button>
                         <button onClick={() => handleDuplicate(p)} className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2 py-0.5 hover:bg-blue-50 rounded">복제</button>
@@ -260,89 +301,143 @@ export default function AdminMainPeoplePage() {
                 </div>
               </div>
 
-              <div className="p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">직종</label>
-                    <input type="text" value={editing.job} onChange={e => set("job", e.target.value)} placeholder="예: 건설 현장직"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">경력</label>
-                    <input type="text" value={editing.years} onChange={e => set("years", e.target.value)} placeholder="예: 경력 15년"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-[100px_1fr] gap-4 items-end">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">아바타 글자</label>
-                    <input type="text" maxLength={2} value={editing.initial} onChange={e => set("initial", e.target.value)} placeholder="건"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">배경색</label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={editing.bg} onChange={e => set("bg", e.target.value)} className="w-10 h-9 rounded border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
-                      <input type="text" value={editing.bg} onChange={e => set("bg", e.target.value)} className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                      <div className="flex-1 h-9 rounded border border-gray-100 flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: editing.bg }}>{editing.initial || "미리보기"}</div>
+              <div className="p-6 space-y-8">
+                {/* 기본 정보 */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold tracking-wider text-slate-400">기본 정보</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">직종</label>
+                      <input type="text" value={editing.job} onChange={e => set("job", e.target.value)} placeholder="예: 내장목수"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">경력</label>
+                      <input type="text" value={editing.years} onChange={e => set("years", e.target.value)} placeholder="예: 경력 1년"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">인용구</label>
-                  <input type="text" value={editing.quote} onChange={e => set("quote", e.target.value)} placeholder="현장에서 옷이 불편하면 사고 납니다."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-gray-500">이야기 (문단)</label>
-                    <button type="button" onClick={addStoryLine} className="text-xs text-blue-600 hover:text-blue-800">+ 문단 추가</button>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">히어로 헤드라인 <span className="font-normal text-gray-400">(\n으로 줄 나눔)</span></label>
+                    <textarea rows={2} value={editing.quote} onChange={e => set("quote", e.target.value)} placeholder="처음엔 누구나 서툽니다.\n한 달만 버텨보세요."
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
                   </div>
-                  <div className="space-y-2">
-                    {editing.story.map((line, i) => (
-                      <div key={i} className="flex gap-2">
-                        <textarea value={line} onChange={e => setStoryLine(i, e.target.value)} rows={2}
-                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
-                        {editing.story.length > 1 && (
-                          <button type="button" onClick={() => removeStoryLine(i)} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
-                        )}
+                  <AdminImageField
+                    value={editing.image_url}
+                    onChange={url => set("image_url", url)}
+                    promptType="person"
+                    promptSeed={`${editing.job}${editing.years ? `, ${editing.years}` : ""}`}
+                    label="히어로 배경 사진"
+                  />
+                </div>
+
+                {/* WORK MOMENTS */}
+                <div className="space-y-3 pt-6 border-t border-slate-100">
+                  <h3 className="text-xs font-bold tracking-wider text-slate-400">WORK MOMENTS — 현장 사진</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {editing.workMoments.photos.map((url, i) => (
+                      <div key={i} className="relative">
+                        <AdminImageField value={url} onChange={v => setWorkPhoto(i, v)} promptType="product" promptSeed={editing.job} label="" showPrompt={false} />
+                        <button type="button" onClick={() => removeWorkPhoto(i)} className="mt-1 text-[11px] text-red-400 hover:text-red-600">삭제</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={addWorkPhoto} className="text-xs text-blue-600 hover:text-blue-800">+ 사진 추가</button>
+                  <AdminImageField value={editing.workMoments.video} onChange={setWorkVideo} promptType="product" promptSeed="" label="현장 영상(선택, URL)" showPrompt={false} />
+                </div>
+
+                {/* INTERVIEW */}
+                <div className="space-y-3 pt-6 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold tracking-wider text-slate-400">INTERVIEW — 질문·답변</h3>
+                    <button type="button" onClick={addQna} className="text-xs text-blue-600 hover:text-blue-800">+ 질문 추가</button>
+                  </div>
+                  <div className="space-y-3">
+                    {editing.qna.map((qa, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                        <div className="flex gap-2">
+                          <input type="text" value={qa.q} onChange={e => setQna(i, { q: e.target.value })} placeholder={`Q${i + 1}. 질문`}
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                          <button type="button" onClick={() => removeQna(i)} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
+                        </div>
+                        <textarea rows={2} value={qa.a} onChange={e => setQna(i, { a: e.target.value })} placeholder="답변"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <AdminImageField
-                  value={editing.image_url}
-                  onChange={url => set("image_url", url)}
-                  promptType="person"
-                  promptSeed={`${editing.job}${editing.theme ? `, ${editing.theme}` : ""}`}
-                  label="인물 사진 (등록 시 아바타 대신 표시)"
-                />
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">중요하게 여기는 것</label>
-                  <input type="text" value={editing.theme} onChange={e => set("theme", e.target.value)} placeholder="안전과 움직임"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-gray-500">추천 상품</label>
+                {/* WEAR THIS */}
+                <div className="space-y-3 pt-6 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold tracking-wider text-slate-400">WEAR THIS — 착용 제품 (최대 3개 노출)</h3>
                     <button type="button" onClick={addProduct} className="text-xs text-blue-600 hover:text-blue-800">+ 상품 추가</button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {editing.products.map((pr, i) => (
-                      <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2">
-                        <input type="text" value={pr.name} onChange={e => setProduct(i, { name: e.target.value })} placeholder="상품명"
-                          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                        <input type="text" value={pr.href} onChange={e => setProduct(i, { href: e.target.value })} placeholder="/products"
-                          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                        <button type="button" onClick={() => removeProduct(i)} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
+                      <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                        <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                          <input type="text" value={pr.name} onChange={e => setProduct(i, { name: e.target.value })} placeholder="상품명"
+                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                          <input type="text" value={pr.href} onChange={e => setProduct(i, { href: e.target.value })} placeholder="/products"
+                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                          <button type="button" onClick={() => removeProduct(i)} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
+                        </div>
+                        <AdminImageField value={pr.image_url} onChange={v => setProduct(i, { image_url: v })} promptType="product" promptSeed={pr.name} label="제품 이미지" showPrompt={false} />
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* INSTAGRAM */}
+                <div className="space-y-3 pt-6 border-t border-slate-100">
+                  <h3 className="text-xs font-bold tracking-wider text-slate-400">INSTAGRAM</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">계정 (@포함)</label>
+                      <input type="text" value={editing.instagram?.handle ?? ""} onChange={e => setIg("handle", e.target.value)} placeholder="@ko_car_in"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">프로필 링크</label>
+                      <input type="url" value={editing.instagram?.link ?? ""} onChange={e => setIg("link", e.target.value)} placeholder="https://www.instagram.com/..."
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">소개 문구 <span className="font-normal text-gray-400">(\n으로 줄 나눔)</span></label>
+                    <textarea rows={2} value={editing.instagram?.description ?? ""} onChange={e => setIg("description", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-gray-500">릴스 (최대 3개 노출)</label>
+                      <button type="button" onClick={() => addIgListItem("reels")} className="text-xs text-blue-600 hover:text-blue-800">+ 추가</button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {(editing.instagram?.reels ?? []).map((url, i) => (
+                        <div key={i}>
+                          <AdminImageField value={url} onChange={v => setIgListItem("reels", i, v)} promptType="product" promptSeed="" label="" showPrompt={false} />
+                          <button type="button" onClick={() => removeIgListItem("reels", i)} className="mt-1 text-[11px] text-red-400 hover:text-red-600">삭제</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-gray-500">사진 (최대 6개 노출)</label>
+                      <button type="button" onClick={() => addIgListItem("photos")} className="text-xs text-blue-600 hover:text-blue-800">+ 추가</button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {(editing.instagram?.photos ?? []).map((url, i) => (
+                        <div key={i}>
+                          <AdminImageField value={url} onChange={v => setIgListItem("photos", i, v)} promptType="product" promptSeed="" label="" showPrompt={false} />
+                          <button type="button" onClick={() => removeIgListItem("photos", i)} className="mt-1 text-[11px] text-red-400 hover:text-red-600">삭제</button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

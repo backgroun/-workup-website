@@ -46,7 +46,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
           <span
             key={i}
             className="wu-tb-shimmer-char"
-            style={{ animationDelay: `${i * 0.08}s` }}
+            style={{ animationDelay: `${i * 0.14}s` }}
           >
             {ch === " " ? " " : ch}
           </span>
@@ -70,7 +70,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
         .wu-tb-shimmer-char{
           display:inline-block;
           color:rgba(255,255,255,0.35);
-          animation:wu-tb-shimmer 2.4s ease-in-out infinite;
+          animation:wu-tb-shimmer 4.8s ease-in-out infinite;
         }
         @keyframes wu-tb-shimmer{
           0%,100%{color:rgba(255,255,255,0.35);}
