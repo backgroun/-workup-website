@@ -7,8 +7,9 @@ export type PersonInstagram = {
   handle: string;       // 예: "@ko_car_in" (@ 포함)
   description: string;  // 소개 문구
   link: string;         // 인스타그램 프로필 링크
-  reels: string[];      // 릴스 썸네일/영상 URL (최대 3개 노출) — embed 없을 때만 사용
-  photos: string[];     // 사진 그리드 URL (최대 6개 노출) — embed 없을 때만 사용
+  image?: string;       // 인스타그램 바에 표시할 대표 이미지 1장
+  reels: string[];      // (레거시) 릴스 URL — 이미지 폴백용으로만 유지
+  photos: string[];     // (레거시) 사진 URL — 이미지 폴백용으로만 유지
   embed?: string;       // 외부 위젯 임베드 코드(iframe/script). 있으면 실시간 피드로 대체
 };
 
@@ -99,6 +100,7 @@ export function normalizePerson(raw: unknown, fallbackId: string): Person {
           handle: typeof ig.handle === "string" ? ig.handle : "",
           description: typeof ig.description === "string" ? ig.description : "",
           link: typeof ig.link === "string" ? ig.link : "",
+          image: typeof ig.image === "string" ? ig.image : "",
           reels: Array.isArray(ig.reels) ? ig.reels.filter((p: unknown) => typeof p === "string") : [],
           photos: Array.isArray(ig.photos) ? ig.photos.filter((p: unknown) => typeof p === "string") : [],
           embed: typeof ig.embed === "string" ? ig.embed : "",

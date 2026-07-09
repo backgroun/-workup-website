@@ -41,7 +41,8 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
   const hasProducts = person.products.some((p) => p.name.trim());
   const ig = person.instagram;
   const hasIgEmbed = !!ig?.embed?.trim();
-  const hasInstagram = !!ig && (hasIgEmbed || (!!ig.handle.trim() && (ig.reels.length > 0 || ig.photos.length > 0)));
+  const igBarImage = ig ? (ig.image?.trim() || ig.photos[0] || ig.reels[0] || person.image_url || "") : "";
+  const hasInstagram = !!ig && (hasIgEmbed || !!ig.handle.trim());
 
   return (
     <section className="bg-[#F5F2ED]">
@@ -208,59 +209,50 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
         {/* ── INSTAGRAM ── */}
         {hasInstagram && ig && (
           <div className="py-12 md:py-16">
-            <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
-              <div>
-                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INSTAGRAM</h3>
-                <p className="text-[14px] font-semibold text-[#1A2B4A] mb-2">{ig.handle}</p>
-                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                  {ig.description.split("\n").map((line, i) => (
-                    <span key={i}>{line}{i < ig.description.split("\n").length - 1 && <br />}</span>
-                  ))}
-                </p>
-                {ig.link && (
-                  <a href={ig.link} target="_blank" rel="noopener noreferrer"
-                    className="inline-block text-[13px] font-semibold bg-[#1A2B4A] text-white px-4 py-2.5 hover:bg-[#ff550c] transition-colors">
-                    인스타그램 바로가기 →
-                  </a>
-                )}
-              </div>
-              {hasIgEmbed ? (
-                <InstagramEmbed html={ig.embed!} />
-              ) : (
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {ig.reels.length > 0 && (
-                    <div>
-                      <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">REELS</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {ig.reels.slice(0, 3).map((url, i) => (
-                          <div key={i} className="relative aspect-[9/16] overflow-hidden bg-black">
-                            {url.match(/\.(mp4|webm|mov)$/i) ? (
-                              <video src={url} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
-                            ) : (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {ig.photos.length > 0 && (
-                    <div>
-                      <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">PHOTOS</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {ig.photos.slice(0, 6).map((url, i) => (
-                          <div key={i} className="aspect-square overflow-hidden bg-gray-100">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={url} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+            {hasIgEmbed ? (
+              // 위젯 임베드가 있으면 실시간 피드 표시(왼쪽 계정 정보 / 오른쪽 피드)
+              <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
+                <div>
+                  <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INSTAGRAM</h3>
+                  <p className="text-[14px] font-semibold text-[#1A2B4A] mb-2">{ig.handle}</p>
+                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                    {ig.description.split("\n").map((line, i) => (
+                      <span key={i}>{line}{i < ig.description.split("\n").length - 1 && <br />}</span>
+                    ))}
+                  </p>
+                  {ig.link && (
+                    <a href={ig.link} target="_blank" rel="noopener noreferrer"
+                      className="inline-block text-[13px] font-semibold bg-[#1A2B4A] text-white px-4 py-2.5 hover:bg-[#ff550c] transition-colors">
+                      인스타그램 바로가기 →
+                    </a>
                   )}
                 </div>
-              )}
-            </div>
+                <InstagramEmbed html={ig.embed!} />
+              </div>
+            ) : (
+              // 인스타그램 바 — 대표 이미지 1장 + 계정 정보 + 바로가기 (전체를 클릭 시 프로필 이동)
+              <a
+                href={ig.link || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col sm:flex-row sm:items-center border border-gray-200 bg-white hover:border-[#ff550c] transition-colors overflow-hidden"
+              >
+                {igBarImage && (
+                  <div className="w-full sm:w-44 h-44 sm:h-32 flex-shrink-0 overflow-hidden bg-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={igBarImage} alt={ig.handle} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  </div>
+                )}
+                <div className="flex-1 px-5 py-5 sm:py-0 min-w-0">
+                  <p className="text-[11px] font-bold tracking-wider text-[#1A2B4A] mb-1">INSTAGRAM</p>
+                  <p className="text-[17px] font-semibold text-[#1A2B4A] mb-1 truncate">{ig.handle}</p>
+                  <p className="text-[13px] text-gray-500 truncate">{ig.description.replace(/\n/g, " ")}</p>
+                </div>
+                <span className="px-5 pb-5 sm:pb-0 sm:pr-6 text-[13px] font-semibold text-[#1A2B4A] group-hover:text-[#ff550c] transition-colors whitespace-nowrap">
+                  인스타그램 바로가기 →
+                </span>
+              </a>
+            )}
           </div>
         )}
 

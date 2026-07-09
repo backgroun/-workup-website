@@ -166,23 +166,6 @@ export default function AdminMainPeoplePage() {
   // instagram 헬퍼
   const setIg = <K extends keyof NonNullable<Person["instagram"]>>(k: K, v: NonNullable<Person["instagram"]>[K]) =>
     setEditing(prev => prev ? { ...prev, instagram: { ...(prev.instagram ?? { handle: "", description: "", link: "", reels: [], photos: [] }), [k]: v } } : prev);
-  const setIgListItem = (field: "reels" | "photos", i: number, url: string) =>
-    setEditing(prev => {
-      if (!prev?.instagram) return prev;
-      const list = prev.instagram[field].map((u, idx) => idx === i ? url : u);
-      return { ...prev, instagram: { ...prev.instagram, [field]: list } };
-    });
-  const addIgListItem = (field: "reels" | "photos") =>
-    setEditing(prev => {
-      if (!prev) return prev;
-      const ig = prev.instagram ?? { handle: "", description: "", link: "", reels: [], photos: [] };
-      return { ...prev, instagram: { ...ig, [field]: [...ig[field], ""] } };
-    });
-  const removeIgListItem = (field: "reels" | "photos", i: number) =>
-    setEditing(prev => {
-      if (!prev?.instagram) return prev;
-      return { ...prev, instagram: { ...prev.instagram, [field]: prev.instagram[field].filter((_, idx) => idx !== i) } };
-    });
 
   if (loading) return <div className="p-6 text-sm text-gray-400">불러오는 중...</div>;
 
@@ -431,35 +414,14 @@ export default function AdminMainPeoplePage() {
                     <p className="text-[10px] text-indigo-500 mt-1">입력하면 아래 릴스·사진 대신 <b>실시간 인스타 피드</b>가 표시됩니다. 비우면 아래 수동 릴스·사진을 사용합니다.</p>
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-gray-500">릴스 (최대 3개 노출)</label>
-                      <button type="button" onClick={() => addIgListItem("reels")} className="text-xs text-blue-600 hover:text-blue-800">+ 추가</button>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {(editing.instagram?.reels ?? []).map((url, i) => (
-                        <div key={i}>
-                          <AdminImageField value={url} onChange={v => setIgListItem("reels", i, v)} promptType="product" promptSeed="" label="" showPrompt={false} />
-                          <button type="button" onClick={() => removeIgListItem("reels", i)} className="mt-1 text-[11px] text-red-400 hover:text-red-600">삭제</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-gray-500">사진 (최대 6개 노출)</label>
-                      <button type="button" onClick={() => addIgListItem("photos")} className="text-xs text-blue-600 hover:text-blue-800">+ 추가</button>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {(editing.instagram?.photos ?? []).map((url, i) => (
-                        <div key={i}>
-                          <AdminImageField value={url} onChange={v => setIgListItem("photos", i, v)} promptType="product" promptSeed="" label="" showPrompt={false} />
-                          <button type="button" onClick={() => removeIgListItem("photos", i)} className="mt-1 text-[11px] text-red-400 hover:text-red-600">삭제</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <AdminImageField
+                    value={editing.instagram?.image}
+                    onChange={v => setIg("image", v)}
+                    promptType="person"
+                    promptSeed={editing.job}
+                    label="대표 이미지 (인스타그램 바에 표시)"
+                    showPrompt={false}
+                  />
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">
