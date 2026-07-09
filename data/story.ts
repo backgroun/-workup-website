@@ -3,6 +3,7 @@
 // 관리자(/admin/main/story)는 site_settings("story_page").config(= StoryConfig)를 편집한다.
 // 공개 페이지는 row가 없으면 DEFAULT_STORY로 폴백한다. (data/people.ts 와 동일 패턴)
 // ─────────────────────────────────────────────────────────────
+import type { IconKey } from "@/components/story-edit/StoryIcons";
 
 export type SectionBg = "white" | "beige"; // white = bg-white, beige = bg-[#f2f1ed]
 // 네이비 섹션 배경은 의도적으로 제외(본문 대비 문제 + 현재 페이지도 섹션엔 안 씀). 히어로 기본색으로만 사용.
@@ -91,9 +92,41 @@ export type PhotosSection = SectionBase & {
   images: PhotoItem[];
 };
 
+// ── 문제제기 (흑백 인물사진 + 짧은 공감 문구) ──
+export type ProblemSection = SectionBase & {
+  type: "problem";
+  eyebrow: string;
+  heading: string;        // 줄바꿈 \n
+  body: string;           // 줄바꿈 \n — 짧은 문제 나열
+  image_url?: string;     // 이미지 없으면 네이비 플레이스홀더, 있으면 흑백 처리
+  imageSide: "left" | "right";
+};
+
+// ── Work·Life·Wear 3아이콘 특징 ──
+export type FeatureItem = { icon: IconKey; label: string; desc: string };
+export type Features3Section = SectionBase & {
+  type: "features3";
+  eyebrow: string;
+  heading: string;        // 줄바꿈 \n
+  lead: string;
+  items: FeatureItem[];   // 보통 3개
+};
+
+// ── 매장체험 CTA (사진 콜라주 배경 + 중앙 텍스트/버튼) ──
+export type StoreCtaSection = SectionBase & {
+  type: "storeCta";
+  eyebrow: string;
+  heading: string;        // 줄바꿈 \n
+  body: string;           // 줄바꿈 \n
+  ctaLabel: string;
+  ctaHref: string;
+  images: PhotoItem[];    // 배경 콜라주(없으면 네이비 플레이스홀더)
+};
+
 export type StorySection =
   | DeclarationSection | CategorySection | ValuesSection
-  | FoundingSection | CtaSection | RichTextSection | PhotosSection;
+  | FoundingSection | CtaSection | RichTextSection | PhotosSection
+  | ProblemSection | Features3Section | StoreCtaSection;
 
 export type StoryHero = {
   image_url?: string;     // 설정 시 배경 이미지, 없으면 네이비 + WU 워터마크
@@ -153,7 +186,8 @@ export type StoryConfig = { hero: StoryHero; sections: StorySection[]; style?: S
 // type 리터럴은 섹션마다 달라 교집합 시 never 가 되므로 제외한 뒤 합친다.
 export type PartialSection = Partial<
   Omit<DeclarationSection, "type"> & Omit<CategorySection, "type"> & Omit<ValuesSection, "type"> &
-  Omit<FoundingSection, "type"> & Omit<CtaSection, "type"> & Omit<RichTextSection, "type"> & Omit<PhotosSection, "type">
+  Omit<FoundingSection, "type"> & Omit<CtaSection, "type"> & Omit<RichTextSection, "type"> & Omit<PhotosSection, "type"> &
+  Omit<ProblemSection, "type"> & Omit<Features3Section, "type"> & Omit<StoreCtaSection, "type">
 >;
 export type SectionEditApi = {
   patch: (p: PartialSection) => void;                 // 이 섹션 필드 갱신
@@ -178,6 +212,9 @@ export const SECTION_TYPE_LABEL: Record<StorySectionType, string> = {
   cta: "CTA",
   richtext: "자유텍스트",
   photos: "사진갤러리",
+  problem: "문제제기",
+  features3: "특징 3아이콘",
+  storeCta: "매장체험 CTA",
 };
 
 export function uid() {
