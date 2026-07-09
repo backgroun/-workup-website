@@ -14,7 +14,8 @@ export const metadata: Metadata = {
 export default async function StoryPage() {
   const config = await getSiteSection<StoryConfig>("story_page");
   const hero = config?.hero ?? DEFAULT_STORY.hero;
-  const sections = config?.sections?.length ? config.sections : DEFAULT_STORY.sections;
+  const sections = (config?.sections?.length ? config.sections : DEFAULT_STORY.sections)
+    .filter((section) => section.type !== "founding");
   const style = config?.style ?? DEFAULT_STORY_STYLE;
 
   return (

@@ -301,19 +301,6 @@ export const DEFAULT_STORY: StoryConfig = {
       ],
     },
     {
-      id: "founding", type: "founding", visible: true, bg: "white",
-      eyebrow: "Founding Story",
-      heading: "워크업은\n현장에서 시작했습니다.",
-      paragraphs: [
-        "작업복을 하루 종일 편하게 입을 수 있는 옷.",
-        "그래서 다른 옷과도 자연스럽게 어울리게 만들었습니다.",
-      ],
-      emphasis: "",
-      closing: "일하는 사람 곁에서,\n늘 함께합니다.",
-      image_url: "/images/story-founding-sewing.jpg",
-      imageSide: "right",
-    },
-    {
       id: "storeCta", type: "storeCta", visible: true, bg: "beige",
       eyebrow: "STORE EXPERIENCE",
       heading: "입어봐야 알 수 있는\n옷이 있습니다.",
