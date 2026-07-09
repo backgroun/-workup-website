@@ -49,7 +49,7 @@ export type CategorySection = SectionBase & {
   image_url?: string;     // 좌측 대형 이미지(비우면 네이비 플레이스홀더)
 };
 
-export type ValueItem = { num: string; en: string; title: string; desc: string; icon?: IconKey }; // desc 줄바꿈 \n
+export type ValueItem = { num: string; en: string; title: string; desc: string; icon?: IconKey; iconImage?: string }; // desc 줄바꿈 \n
 export type ValuesSection = SectionBase & {
   type: "values";
   eyebrow: string;
@@ -294,10 +294,10 @@ export const DEFAULT_STORY: StoryConfig = {
       heading: "워크업이 지키는 네 가지 기준",
       layout: "icon",
       items: [
-        { num: "01", en: "Function", title: "기능성", icon: "check", desc: "하루 종일 착용해도\n불편하지 않음" },
-        { num: "02", en: "Durability", title: "내구성", icon: "link", desc: "쉽게 헤지거나\n낡지 않음" },
-        { num: "03", en: "Value", title: "합리성", icon: "scale", desc: "가격이 아닌\n품질로 승부합니다" },
-        { num: "04", en: "Versatility", title: "범용성", icon: "expand", desc: "일할 때도 일상에서도\n입을 수 있어야" },
+        { num: "01", en: "Function", title: "기능성", icon: "check", iconImage: "/images/value_01.png", desc: "하루 종일 착용해도\n불편하지 않음" },
+        { num: "02", en: "Durability", title: "내구성", icon: "link", iconImage: "/images/value_02.png", desc: "쉽게 헤지거나\n낡지 않음" },
+        { num: "03", en: "Value", title: "합리성", icon: "scale", iconImage: "/images/value_03.png", desc: "가격이 아닌\n품질로 승부합니다" },
+        { num: "04", en: "Versatility", title: "범용성", icon: "expand", iconImage: "/images/value_04.png", desc: "일할 때도 일상에서도\n입을 수 있어야" },
       ],
     },
     {

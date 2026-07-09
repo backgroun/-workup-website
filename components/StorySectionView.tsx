@@ -22,6 +22,12 @@ const COLS_TEXT_IMG = "md:grid-cols-[var(--st-textcol,1fr)_var(--st-imgcol,1fr)]
 const COLS_IMG_TEXT = "md:grid-cols-[var(--st-imgcol,1fr)_var(--st-textcol,1fr)]";
 const LH = "leading-[var(--st-lh,1.8)]";
 const IMG_RATIO = "var(--st-ratio, 4 / 3)";
+const VALUE_ICON_IMAGE: Record<string, string> = {
+  "01": "/images/value_01.png",
+  "02": "/images/value_02.png",
+  "03": "/images/value_03.png",
+  "04": "/images/value_04.png",
+};
 
 // 이미지 클릭 교체 오버레이(편집 모드 전용)
 function ImgPick({ onPick, has, children, className = "" }: { onPick?: () => void; has: boolean; children: React.ReactNode; className?: string }) {
@@ -53,6 +59,20 @@ function StoryImagePanel({ src, alt }: { src?: string; alt: string }) {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
     </div>
+  );
+}
+
+function MaskedIconImage({ src, alt }: { src: string; alt: string }) {
+  return (
+    <span
+      role="img"
+      aria-label={alt}
+      className="block w-full h-full bg-[#1A2B4A]"
+      style={{
+        WebkitMask: `url("${src}") center / contain no-repeat`,
+        mask: `url("${src}") center / contain no-repeat`,
+      }}
+    />
   );
 }
 
@@ -243,7 +263,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
       };
       const delItem = (i: number) => edit?.patch({ items: items.filter((_, idx) => idx !== i) });
 
-      // "icon" 레이아웃 = WORK LIFE WEAR 와 동일한 톤(중앙정렬 · 간격 60/18/45/29/25/66 · 아이콘 70px 원 없이)
+      // "icon" 레이아웃 = WORK LIFE WEAR 와 동일한 톤(중앙정렬 · 간격 60/18/45/29/25/66 · 아이콘 60px 원 없이)
       if (layout === "icon") {
         return (
           <section className={bg}>
@@ -253,19 +273,26 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
                 value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
               <div className="mx-auto max-w-[1100px] grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
-                {items.map((v, i) => (
+                {items.map((v, i) => {
+                  const iconImage = v.iconImage ?? VALUE_ICON_IMAGE[v.num];
+                  return (
                   <div key={i} className="group/item relative flex flex-col items-center text-center">
                     {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                    <IconPickerButton icon={v.icon} size="w-[70px] h-[70px]" bare onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
+                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
+                      {iconImage ? (
+                        <MaskedIconImage src={iconImage} alt={v.title} />
+                      ) : (
+                        <IconPickerButton icon={v.icon} size="w-[60px] h-[60px]" bare onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
+                      )}
+                    </div>
                     <h3 className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.02em]">
-                      <Editable as="span" value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
-                      <span>. </span>
                       <Editable as="span" value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
                     </h3>
                     <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                       value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {edit && <div className="mt-8 flex justify-center"><AddBtn onClick={addItem} label="항목" /></div>}
             </div>
@@ -495,7 +522,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
       const pickIcon = (i: number) => edit ? () => edit.pickImage((url) => setItem(i, { iconImage: url })) : undefined;
       return (
         // WORK LIFE WEAR — 중앙 정렬. 세로(1900px 기준): 위 60 · eyebrow→제목 18 · 제목(40px)→리드 45 · 리드(20px)→아이콘 45
-        //  · 아이콘(70×70)→라벨 29 · 라벨→설명 25 · 아래 66 → 전체 ≈520px. 아이콘 3열은 중앙에 약 300px 간격(max-w-[900px]).
+        //  · 아이콘(60×60)→라벨 29 · 라벨→설명 25 · 아래 66 → 전체 ≈520px. 아이콘 3열은 중앙에 약 300px 간격(max-w-[900px]).
         <section className={bg}>
           <div className="px-[15px] md:px-[70px] text-center pt-16 pb-16 lg:pt-[60px] lg:pb-[66px]">
             <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] ${eyebrowColor} uppercase mb-3 lg:mb-[18px] block`}
@@ -508,21 +535,21 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               {items.map((it, i) => (
                 <div key={i} className="group/item relative flex flex-col items-center text-center">
                   {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                  {/* 아이콘 70×70 (커스텀 이미지 우선, 없으면 프리셋). 편집 모드는 클릭해 이미지 교체 */}
+                  {/* 아이콘 60×60 (커스텀 이미지 우선, 없으면 프리셋). 편집 모드는 클릭해 이미지 교체 */}
                   {edit ? (
                     <button type="button" onClick={(e) => { e.stopPropagation(); pickIcon(i)?.(); }}
-                      className="group/ic relative w-[70px] h-[70px] flex items-center justify-center text-[#1A2B4A]">
+                      className="group/ic relative w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
                       {it.iconImage
-                        ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={it.iconImage} alt={it.label} className="w-full h-full object-contain" />
+                        ? <MaskedIconImage src={it.iconImage} alt={it.label} />
                         : <StoryIcon icon={it.icon} className="w-full h-full" />}
                       <span className="pointer-events-none absolute inset-0 rounded-lg bg-black/0 group-hover/ic:bg-black/30 flex items-center justify-center transition-colors">
                         <span className="opacity-0 group-hover/ic:opacity-100 text-white text-[10px] font-semibold">교체</span>
                       </span>
                     </button>
                   ) : (
-                    <div className="w-[70px] h-[70px] flex items-center justify-center text-[#1A2B4A]">
+                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
                       {it.iconImage
-                        ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={it.iconImage} alt={it.label} className="w-full h-full object-contain" />
+                        ? <MaskedIconImage src={it.iconImage} alt={it.label} />
                         : <StoryIcon icon={it.icon} className="w-full h-full" />}
                     </div>
                   )}
