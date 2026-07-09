@@ -7,8 +7,9 @@ export type PersonInstagram = {
   handle: string;       // 예: "@ko_car_in" (@ 포함)
   description: string;  // 소개 문구
   link: string;         // 인스타그램 프로필 링크
-  reels: string[];      // 릴스 썸네일/영상 URL (최대 3개 노출)
-  photos: string[];     // 사진 그리드 URL (최대 6개 노출)
+  reels: string[];      // 릴스 썸네일/영상 URL (최대 3개 노출) — embed 없을 때만 사용
+  photos: string[];     // 사진 그리드 URL (최대 6개 노출) — embed 없을 때만 사용
+  embed?: string;       // 외부 위젯 임베드 코드(iframe/script). 있으면 실시간 피드로 대체
 };
 
 export type Person = {
@@ -100,6 +101,7 @@ export function normalizePerson(raw: unknown, fallbackId: string): Person {
           link: typeof ig.link === "string" ? ig.link : "",
           reels: Array.isArray(ig.reels) ? ig.reels.filter((p: unknown) => typeof p === "string") : [],
           photos: Array.isArray(ig.photos) ? ig.photos.filter((p: unknown) => typeof p === "string") : [],
+          embed: typeof ig.embed === "string" ? ig.embed : "",
         }
       : undefined,
   };

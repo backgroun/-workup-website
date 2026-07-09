@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import MateZone from "@/components/MateZone";
@@ -40,7 +40,8 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
   const hasQna = person.qna.some((qa) => qa.q.trim());
   const hasProducts = person.products.some((p) => p.name.trim());
   const ig = person.instagram;
-  const hasInstagram = !!ig && !!ig.handle.trim() && (ig.reels.length > 0 || ig.photos.length > 0);
+  const hasIgEmbed = !!ig?.embed?.trim();
+  const hasInstagram = !!ig && (hasIgEmbed || (!!ig.handle.trim() && (ig.reels.length > 0 || ig.photos.length > 0)));
 
   return (
     <section className="bg-[#F5F2ED]">
@@ -223,38 +224,42 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
                   </a>
                 )}
               </div>
-              <div className="grid sm:grid-cols-2 gap-6">
-                {ig.reels.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">REELS</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {ig.reels.slice(0, 3).map((url, i) => (
-                        <div key={i} className="relative aspect-[9/16] overflow-hidden bg-black">
-                          {url.match(/\.(mp4|webm|mov)$/i) ? (
-                            <video src={url} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
-                          ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                          )}
-                        </div>
-                      ))}
+              {hasIgEmbed ? (
+                <InstagramEmbed html={ig.embed!} />
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-6">
+                  {ig.reels.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">REELS</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {ig.reels.slice(0, 3).map((url, i) => (
+                          <div key={i} className="relative aspect-[9/16] overflow-hidden bg-black">
+                            {url.match(/\.(mp4|webm|mov)$/i) ? (
+                              <video src={url} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {ig.photos.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">PHOTOS</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {ig.photos.slice(0, 6).map((url, i) => (
-                        <div key={i} className="aspect-square overflow-hidden bg-gray-100">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      ))}
+                  )}
+                  {ig.photos.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">PHOTOS</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {ig.photos.slice(0, 6).map((url, i) => (
+                          <div key={i} className="aspect-square overflow-hidden bg-gray-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -304,6 +309,26 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
       </Link>
     </section>
   );
+}
+
+// 외부 인스타그램 위젯 임베드 코드를 삽입한다.
+// innerHTML로 넣은 <script>는 브라우저가 실행하지 않으므로, 스크립트를 새로 만들어 재실행한다.
+// (SnapWidget·LightWidget 같은 iframe 위젯과 Behold 같은 script 위젯 모두 지원)
+function InstagramEmbed({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.innerHTML = html;
+    el.querySelectorAll("script").forEach((old) => {
+      const s = document.createElement("script");
+      for (const attr of Array.from(old.attributes)) s.setAttribute(attr.name, attr.value);
+      s.text = old.textContent ?? "";
+      old.replaceWith(s);
+    });
+  }, [html]);
+  // iframe/위젯이 컨테이너를 넘지 않도록 가로 스크롤 처리
+  return <div ref={ref} className="w-full overflow-x-auto [&_iframe]:max-w-full" />;
 }
 
 function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
