@@ -167,7 +167,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 <p className="text-[13px] text-gray-500 leading-relaxed">실제 현장에서<br />착용한 제품</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                {person.products.filter((p) => p.name.trim()).map((product, i) => (
+                {person.products.filter((p) => p.name.trim()).slice(0, 3).map((product, i) => (
                   <Link key={i} href={product.href} className="group block">
                     <div className="aspect-square bg-gray-100 overflow-hidden mb-3">
                       {product.image_url ? (

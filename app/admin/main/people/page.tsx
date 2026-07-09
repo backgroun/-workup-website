@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DEFAULT_PEOPLE, normalizePeople, MATE_INTERVIEW_QUESTIONS, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
+import { DEFAULT_PEOPLE, normalizePeople, MATE_INTERVIEW_QUESTIONS, type Person, type PersonQnA } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
 import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
 type PageData = { items?: Person[] };
+// 카탈로그 상품(검색·선택용) — /api/admin/products 응답에서 필요한 필드만
+type CatalogProduct = { id: string; name: string; category: string; imageUrl?: string };
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
@@ -18,7 +20,7 @@ function emptyPerson(): Person {
     id: uid(), job: "", years: "", quote: "", image_url: "",
     workMoments: { photos: [], video: "" },
     qna: defaultQna(),
-    products: [{ name: "", href: "/products" }],
+    products: [],
     instagram: { handle: "", description: "", link: "", reels: [], photos: [] },
   };
 }
@@ -33,6 +35,11 @@ export default function AdminMainPeoplePage() {
   const [isNew, setIsNew]       = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver]   = useState<number | null>(null);
+  // WEAR THIS 제품 검색·선택
+  const [allProducts, setAllProducts] = useState<CatalogProduct[]>([]);
+  const [productModalOpen, setProductModalOpen] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productCat, setProductCat] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/site-settings/people_page")
@@ -43,6 +50,18 @@ export default function AdminMainPeoplePage() {
       })
       .catch(() => setItems(DEFAULT_PEOPLE))
       .finally(() => setLoading(false));
+  }, []);
+
+  // 전체 상품 목록(검색·선택용)
+  useEffect(() => {
+    fetch("/api/admin/products")
+      .then(r => r.ok ? r.json() : [])
+      .then((data: unknown) => {
+        if (Array.isArray(data)) {
+          setAllProducts((data as CatalogProduct[]).map(p => ({ id: p.id, name: p.name, category: p.category, imageUrl: p.imageUrl })));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(""), 2500); };
@@ -135,12 +154,26 @@ export default function AdminMainPeoplePage() {
   const removeQna = (i: number) =>
     setEditing(prev => prev ? { ...prev, qna: prev.qna.filter((_, idx) => idx !== i) } : prev);
 
-  // products 헬퍼
-  const setProduct = (i: number, patch: Partial<PersonProduct>) =>
-    setEditing(prev => prev ? { ...prev, products: prev.products.map((p, idx) => idx === i ? { ...p, ...patch } : p) } : prev);
-  const addProduct = () => setEditing(prev => prev ? { ...prev, products: [...prev.products, { name: "", href: "/products" }] } : prev);
-  const removeProduct = (i: number) =>
+  // products 헬퍼 — 카탈로그에서 검색·선택 (최대 3개)
+  const removeProductAt = (i: number) =>
     setEditing(prev => prev ? { ...prev, products: prev.products.filter((_, idx) => idx !== i) } : prev);
+  const isProductSelected = (id: string) =>
+    !!editing?.products.some(pr => pr.href === `/products/${id}`);
+  const toggleProduct = (p: CatalogProduct) =>
+    setEditing(prev => {
+      if (!prev) return prev;
+      const href = `/products/${p.id}`;
+      if (prev.products.some(pr => pr.href === href))
+        return { ...prev, products: prev.products.filter(pr => pr.href !== href) };
+      if (prev.products.length >= 3) return prev; // 최대 3개
+      return { ...prev, products: [...prev.products, { name: p.name, href, image_url: p.imageUrl }] };
+    });
+
+  // 상품 검색 결과(카테고리 + 이름)
+  const productCategories = Array.from(new Set(allProducts.map(p => p.category).filter(Boolean)));
+  const filteredProducts = allProducts
+    .filter(p => !productCat || p.category === productCat)
+    .filter(p => !productSearch.trim() || p.name.toLowerCase().includes(productSearch.trim().toLowerCase()));
 
   // instagram 헬퍼
   const setIg = <K extends keyof NonNullable<Person["instagram"]>>(k: K, v: NonNullable<Person["instagram"]>[K]) =>
@@ -305,26 +338,34 @@ export default function AdminMainPeoplePage() {
                   </div>
                 </div>
 
-                {/* WEAR THIS */}
+                {/* WEAR THIS — 카탈로그에서 제품 검색·선택 */}
                 <div className="space-y-3 pt-6 border-t border-slate-100">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold tracking-wider text-slate-400">WEAR THIS — 착용 제품 (최대 3개 노출)</h3>
-                    <button type="button" onClick={addProduct} className="text-xs text-blue-600 hover:text-blue-800">+ 상품 추가</button>
+                    <h3 className="text-xs font-bold tracking-wider text-slate-400">WEAR THIS — 착용 제품 (최대 3개)</h3>
+                    <button type="button" onClick={() => { setProductSearch(""); setProductCat(""); setProductModalOpen(true); }}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-800">＋ 제품 검색·추가</button>
                   </div>
-                  <div className="space-y-3">
-                    {editing.products.map((pr, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
-                        <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
-                          <input type="text" value={pr.name} onChange={e => setProduct(i, { name: e.target.value })} placeholder="상품명"
-                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                          <input type="text" value={pr.href} onChange={e => setProduct(i, { href: e.target.value })} placeholder="/products"
-                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                          <button type="button" onClick={() => removeProduct(i)} className="text-red-400 hover:text-red-600 text-sm px-1">✕</button>
+                  {editing.products.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-lg">
+                      선택된 제품이 없습니다. “제품 검색·추가”로 카탈로그에서 골라주세요.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {editing.products.map((pr, i) => (
+                        <div key={i} className="relative border border-gray-200 rounded-lg overflow-hidden bg-white">
+                          <div className="aspect-square bg-gray-100">
+                            {pr.image_url && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={pr.image_url} alt={pr.name} className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                          <p className="text-[11px] font-medium text-slate-700 px-2 py-1.5 truncate">{pr.name || "(이름 없음)"}</p>
+                          <button type="button" onClick={() => removeProductAt(i)}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-red-500">✕</button>
                         </div>
-                        <AdminImageField value={pr.image_url} onChange={v => setProduct(i, { image_url: v })} promptType="product" promptSeed={pr.name} label="제품 이미지" showPrompt={false} />
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* INSTAGRAM */}
@@ -383,6 +424,61 @@ export default function AdminMainPeoplePage() {
         </div>
       </div>
       </div>
+      )}
+
+      {/* 제품 검색·선택 모달 */}
+      {productModalOpen && editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setProductModalOpen(false)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-800">제품 선택 <span className="text-slate-400 font-normal">({editing.products.length}/3)</span></h3>
+              <button onClick={() => setProductModalOpen(false)} className="text-slate-400 hover:text-slate-700 text-lg leading-none">✕</button>
+            </div>
+            <div className="p-4 border-b border-slate-100 space-y-3">
+              <input value={productSearch} onChange={e => setProductSearch(e.target.value)} placeholder="상품명 검색..." autoFocus
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
+              {productCategories.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  <button onClick={() => setProductCat("")}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${!productCat ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>전체</button>
+                  {productCategories.map(c => (
+                    <button key={c} onClick={() => setProductCat(c)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${productCat === c ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{c}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+              {allProducts.length === 0 ? (
+                <p className="text-center text-sm text-slate-400 py-10">상품을 불러오는 중이거나 등록된 상품이 없습니다.</p>
+              ) : filteredProducts.length === 0 ? (
+                <p className="text-center text-sm text-slate-400 py-10">검색 결과가 없습니다.</p>
+              ) : filteredProducts.map(p => {
+                const selected = isProductSelected(p.id);
+                const full = editing.products.length >= 3;
+                return (
+                  <button key={p.id} type="button" onClick={() => toggleProduct(p)} disabled={!selected && full}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${selected ? "bg-blue-50" : "hover:bg-slate-50"} ${!selected && full ? "opacity-40 cursor-not-allowed" : ""}`}>
+                    <span className={`w-5 h-5 rounded border flex items-center justify-center text-[11px] flex-shrink-0 ${selected ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300"}`}>{selected ? "✓" : ""}</span>
+                    <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex-shrink-0">
+                      {p.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-700 truncate">{p.name}</p>
+                      <p className="text-[11px] text-slate-400">{p.category}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="px-5 py-3 border-t border-slate-100 text-right">
+              <button onClick={() => setProductModalOpen(false)} className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">완료</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
