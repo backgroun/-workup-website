@@ -46,8 +46,7 @@ export default function SupportForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="text-base font-bold text-[#1A2B4A] mb-2">문의가 접수되었습니다</p>
-        <p className="text-xs text-gray-500 leading-relaxed mb-6">영업일 기준 2일 이내에 담당자가 연락드립니다.</p>
+        <p className="text-base font-bold text-[#1A2B4A] mb-6">문의가 접수되었습니다</p>
         <button
           onClick={() => { setForm(init); setSubmitted(false); }}
           className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
@@ -68,7 +67,11 @@ export default function SupportForm() {
             <button
               key={cat}
               type="button"
-              onClick={() => setForm((f) => ({ ...f, subject: cat }))}
+              onClick={() => setForm((f) => ({
+                ...f,
+                subject: cat,
+                ...(STORE_RELATED_CATEGORIES.has(cat) ? {} : { storeId: "", storeName: "" }),
+              }))}
               className={`px-3.5 py-2 text-sm border transition-colors ${
                 form.subject === cat
                   ? "bg-[#1A2B4A] text-white border-[#1A2B4A] font-semibold"
@@ -80,6 +83,27 @@ export default function SupportForm() {
           ))}
         </div>
       </div>
+
+      {STORE_RELATED_CATEGORIES.has(form.subject) && (
+        <div>
+          <label htmlFor="support-store" className="block text-xs text-gray-500 mb-1.5">문의 매장 <span className="text-gray-400">(선택)</span></label>
+          <select
+            id="support-store"
+            value={form.storeId}
+            onChange={(e) => {
+              const id = e.target.value;
+              const store = stores.find((s) => String(s.id) === id);
+              setForm((f) => ({ ...f, storeId: id, storeName: store?.name ?? "" }));
+            }}
+            className={cls}
+          >
+            <option value="">매장을 선택해주세요</option>
+            {stores.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -110,7 +134,6 @@ export default function SupportForm() {
       >
         {submitting ? "접수 중..." : "1:1 문의 접수하기 →"}
       </button>
-      <p className="text-xs text-gray-400 text-center">영업일 기준 2일 이내 연락드립니다.</p>
     </form>
   );
 }
