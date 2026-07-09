@@ -157,26 +157,6 @@ export default function PopupManagePage() {
 
   const flash = (text: string) => { setToast(text); setTimeout(() => setToast(""), 2500); };
 
-  const handleAiGenerate = () => {
-    if (!aiInput.productName.trim()) { setAiError("제품명을 입력해주세요."); return; }
-    setAiError("");
-    setAiResult(buildPopupResult(aiInput));
-  };
-
-  const applyAiToNewPopup = () => {
-    if (!aiResult) return;
-    setEditing({
-      id: crypto.randomUUID(),
-      ...EMPTY,
-      sort_order: popups.length,
-      subtitle: aiResult.subtitle,
-      title: aiResult.title,
-      link_text: aiResult.ctaText,
-    });
-    setSeparateImg(false);
-    setIsNew(true);
-  };
-
   const saveAll = async (list: PopupItem[]) => {
     setSaving(true);
     try {
@@ -375,98 +355,6 @@ export default function PopupManagePage() {
               여러 팝업이 활성화된 경우 순서대로 슬라이드로 표시됩니다.
             </p>
           )}
-
-          {/* ── AI 생성기 ── */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
-            <div className="px-4 py-3 border-b border-slate-100">
-              <p className="text-sm font-semibold text-slate-700">✨ AI 생성기</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">팝업 문구·이미지 프롬프트 자동 생성 (무료)</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">제품명 / 종류 *</label>
-                <input type="text" value={aiInput.productName}
-                  onChange={e => setAiInput(a => ({ ...a, productName: e.target.value }))}
-                  placeholder="예: 냉감 멀티쿠션"
-                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[10px] text-gray-500 block mb-1">계절</label>
-                  <select value={aiInput.season} onChange={e => setAiInput(a => ({ ...a, season: e.target.value }))}
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
-                    {["봄", "여름", "가을", "겨울", "사계절"].map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] text-gray-500 block mb-1">분위기</label>
-                  <select value={aiInput.mood} onChange={e => setAiInput(a => ({ ...a, mood: e.target.value }))}
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
-                    {["시원한", "따뜻한", "세련된", "활동적인", "고급스러운", "편안한"].map(m => <option key={m}>{m}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 block mb-1">핵심 특징</label>
-                <input type="text" value={aiInput.features}
-                  onChange={e => setAiInput(a => ({ ...a, features: e.target.value }))}
-                  placeholder="예: 냉감, 빠른 건조, 신축성"
-                  className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[10px] text-gray-500 block mb-1">타겟</label>
-                  <input type="text" value={aiInput.target}
-                    onChange={e => setAiInput(a => ({ ...a, target: e.target.value }))}
-                    placeholder="예: 현장 작업자"
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-gray-500 block mb-1">스타일</label>
-                  <select value={aiInput.style} onChange={e => setAiInput(a => ({ ...a, style: e.target.value }))}
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-white">
-                    {["미니멀", "자연적", "도시적", "아웃도어", "스포티", "클래식"].map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
-              {aiError && <p className="text-[11px] text-red-500">{aiError}</p>}
-              <button onClick={handleAiGenerate}
-                className="w-full py-2 rounded-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 transition-colors">
-                ✨ 생성
-              </button>
-
-              {aiResult && (
-                <div className="space-y-2 pt-1 border-t border-slate-100">
-                  {/* 팝업 문구 */}
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide pt-1">팝업 문구</p>
-                  {[
-                    { label: "소제목", value: aiResult.subtitle },
-                    { label: "타이틀", value: aiResult.title },
-                    { label: "버튼",   value: aiResult.ctaText },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-start gap-2 bg-gray-50 rounded-lg p-2">
-                      <span className="text-[10px] text-gray-400 w-10 shrink-0 pt-0.5">{label}</span>
-                      <span className="text-xs text-gray-800 flex-1 whitespace-pre-line leading-snug">{value}</span>
-                      <CopyBtn text={value} />
-                    </div>
-                  ))}
-
-                  {/* 이미지 프롬프트 */}
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide pt-1">이미지 프롬프트</p>
-                  <div className="relative bg-gray-50 rounded-lg p-2">
-                    <p className="text-[11px] text-gray-700 leading-relaxed pr-10 line-clamp-4">{aiResult.imagePrompt}</p>
-                    <div className="absolute top-2 right-2"><CopyBtn text={aiResult.imagePrompt} /></div>
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-relaxed">ChatGPT·Midjourney·DALL·E 등에 붙여넣으세요.</p>
-
-                  <button onClick={applyAiToNewPopup}
-                    className="w-full py-2 rounded-lg border border-slate-800 text-slate-800 text-xs font-medium hover:bg-slate-800 hover:text-white transition-colors">
-                    이 문구로 새 팝업 만들기 →
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* ── 오른쪽: 편집 폼 ── */}
