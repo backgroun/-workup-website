@@ -510,7 +510,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                         : <StoryIcon icon={it.icon} className="w-full h-full" />}
                     </div>
                   )}
-                  <Editable as="h3" className="mt-6 lg:mt-[29px] text-[calc(15px*var(--st-fs,1))] lg:text-[calc(16px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] block"
+                  <Editable as="h3" className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] block"
                     value={it.label} placeholder="WORK" multiline={false} {...epi(`items.${i}.label`, edit ? (x) => setItem(i, { label: x }) : undefined)} />
                   <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                     value={it.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
