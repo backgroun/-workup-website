@@ -9,6 +9,12 @@ import {
   products as staticProducts,
   productDisplayName,
 } from "@/data/products";
+import {
+  DEFAULT_PRODUCT_FILTERS,
+  normalizeProductFilters,
+  priceInRange,
+  type ProductFiltersConfig,
+} from "@/lib/product-filters";
 
 // 카테고리 분류 구조 (관리자 DB 설정과 동일한 형태)
 export type CatItem = { name: string; subs: string[] };
@@ -18,17 +24,6 @@ type SortOption = "신상품순" | "낮은 가격순" | "높은 가격순";
 const SORT_OPTIONS: SortOption[] = ["신상품순", "낮은 가격순", "높은 가격순"];
 // 제품 데이터의 seasons 값("봄/가을"|"여름"|"겨울")과 일치시켜야 필터가 동작한다.
 const SEASONS = ["봄/가을", "여름", "겨울"];
-const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
-const PRICE_RANGES = ["3만원 이하", "3~5만원", "5~8만원", "8만원 이상"];
-
-function priceInRange(priceStr: string, range: string): boolean {
-  const n = parseInt(priceStr.replace(/[^0-9]/g, ""), 10);
-  if (range === "3만원 이하") return n < 30000;
-  if (range === "3~5만원") return n >= 30000 && n < 50000;
-  if (range === "5~8만원") return n >= 50000 && n < 80000;
-  if (range === "8만원 이상") return n >= 80000;
-  return true;
-}
 
 function Accordion({
   label, open, onToggle, children,
@@ -105,6 +100,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
+  const [filtersCfg, setFiltersCfg] = useState<ProductFiltersConfig>(DEFAULT_PRODUCT_FILTERS);
   const { count, hasProduct, toggleProduct } = useCart();
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
@@ -126,6 +122,14 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           setCats(data.categories as CatItem[]);
         }
       })
+      .catch(() => {});
+  }, []);
+
+  // 상단 필터(사이즈·가격 구간) 설정 — 관리자 "필터 관리"에서 조정
+  useEffect(() => {
+    fetch("/api/admin/site-settings/product_filters")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setFiltersCfg(normalizeProductFilters(d)); })
       .catch(() => {});
   }, []);
 
@@ -190,7 +194,11 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         if (activeSubCategory !== "전체" && !cats.some(c => c.main === activeCategory && c.sub === activeSubCategory)) return false;
       }
       if (selectedPrices.length > 0) {
-        if (!selectedPrices.some((r) => priceInRange(p.price, r))) return false;
+        const ok = selectedPrices.some((label) => {
+          const range = filtersCfg.priceRanges.find((pr) => pr.label === label);
+          return !!range && priceInRange(p.price, range);
+        });
+        if (!ok) return false;
       }
       if (selectedSizes.length > 0) {
         if (!selectedSizes.some((s) => (p.sizes ?? []).includes(s))) return false;
@@ -230,7 +238,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
       <Accordion label="사이즈" open={sizeOpen} onToggle={() => setSizeOpen(!sizeOpen)}>
         <div className="flex flex-wrap gap-2">
-          {SIZES.map((s) => (
+          {filtersCfg.sizes.map((s) => (
             <button key={s} onClick={() => toggleSize(s)}
               className={`px-3 py-1.5 border text-[12px] transition-colors ${
                 selectedSizes.includes(s) ? "border-[#1A2B4A] bg-[#1A2B4A] text-white" : "border-gray-200 text-gray-600 hover:border-[#1A2B4A]"
@@ -242,11 +250,11 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
       <Accordion label="가격" open={priceOpen} onToggle={() => setPriceOpen(!priceOpen)}>
         <div className="flex flex-col gap-3">
-          {PRICE_RANGES.map((r) => (
-            <label key={r} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="checkbox" checked={selectedPrices.includes(r)} onChange={() => togglePrice(r)}
+          {filtersCfg.priceRanges.map((pr) => (
+            <label key={pr.label} className="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" checked={selectedPrices.includes(pr.label)} onChange={() => togglePrice(pr.label)}
                 className="w-[14px] h-[14px] accent-[#1A2B4A] flex-shrink-0" />
-              <span className="text-[13px] text-gray-700">{r}</span>
+              <span className="text-[13px] text-gray-700">{pr.label}</span>
             </label>
           ))}
         </div>
@@ -611,8 +619,8 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
                   {/* 필터 드롭다운 + 상품 수 */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <FilterDropdown label="사이즈" options={SIZES} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
-                    <FilterDropdown label="가격" options={PRICE_RANGES} selected={selectedPrices} onToggle={togglePrice} activeCount={selectedPrices.length} />
+                    <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
+                    <FilterDropdown label="가격" options={filtersCfg.priceRanges.map((pr) => pr.label)} selected={selectedPrices} onToggle={togglePrice} activeCount={selectedPrices.length} />
                     {(selectedSeasons.length + selectedSizes.length + selectedPrices.length) > 0 && (
                       <button onClick={resetFilters}
                         className="text-[11px] text-gray-400 hover:text-[#ff550c] transition-colors underline underline-offset-2 ml-1">

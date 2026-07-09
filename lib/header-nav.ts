@@ -5,8 +5,9 @@ import { safeHref } from "./topbar";
 
 export type NavMenuItem = {
   id: string;
-  label: string;   // 메뉴 표시 텍스트(한글/영문 자유)
-  href: string;    // 이동 경로
+  label: string;    // 메뉴 표시 텍스트(한글/영문 자유)
+  labelKo?: string; // 영문 레이블 아래 작게 표시될 한글 보조 텍스트
+  href: string;     // 이동 경로
   newTab?: boolean; // 새 탭으로 열기
 };
 
@@ -17,11 +18,11 @@ export type HeaderNavConfig = {
 // 현재 사이트에 하드코딩돼 있던 기본 메뉴와 동일.
 export const DEFAULT_HEADER_NAV: HeaderNavConfig = {
   items: [
-    { id: "nav-products", label: "PRODUCTS", href: "/products" },
-    { id: "nav-store", label: "STORE", href: "/store" },
-    { id: "nav-story", label: "STORY", href: "/story" },
-    { id: "nav-mate", label: "MATE", href: "/people" },
-    { id: "nav-field-test", label: "FIELD TEST", href: "/field-test" },
+    { id: "nav-products",   label: "PRODUCTS",   labelKo: "전체 제품",     href: "/products" },
+    { id: "nav-store",      label: "STORE",      labelKo: "워크업 매장",   href: "/store" },
+    { id: "nav-story",      label: "STORY",      labelKo: "브랜드 스토리", href: "/story" },
+    { id: "nav-mate",       label: "MATE",       labelKo: "일하는 사람들", href: "/people" },
+    { id: "nav-field-test", label: "FIELD TEST", labelKo: "기능성 테스트", href: "/field-test" },
   ],
 };
 
@@ -33,12 +34,21 @@ export function normalizeHeaderNav(raw: Partial<HeaderNavConfig> | null | undefi
   const items = Array.isArray(c.items)
     ? c.items
         .filter((it): it is NavMenuItem => !!it && typeof it === "object")
-        .map((it, i) => ({
-          id: typeof it.id === "string" && it.id ? it.id : `nav-${i}`,
-          label: typeof it.label === "string" ? it.label.trim() : "",
-          href: safeHref(it.href),
-          newTab: !!it.newTab,
-        }))
+        .map((it, i) => {
+          const id = typeof it.id === "string" && it.id ? it.id : `nav-${i}`;
+          const defaultItem = DEFAULT_HEADER_NAV.items.find((d) => d.id === id);
+          const labelKo =
+            typeof it.labelKo === "string" && it.labelKo.trim()
+              ? it.labelKo.trim()
+              : defaultItem?.labelKo;
+          return {
+            id,
+            label: typeof it.label === "string" ? it.label.trim() : "",
+            labelKo,
+            href: safeHref(it.href),
+            newTab: !!it.newTab,
+          };
+        })
         .filter((it) => it.label !== "" && it.href !== "")
     : DEFAULT_HEADER_NAV.items;
 

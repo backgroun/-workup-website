@@ -1,9 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import FranchiseGuide from "./FranchiseGuide";
+import type { FranchiseGuideConfig } from "@/data/franchise-guide";
 
 // 문의 페이지에서 '창업안내'를 페이지 이동 없이 팝업(모달)으로 띄우는 버튼.
-export default function FranchiseGuideModal({ label = "창업안내 보기" }: { label?: string }) {
+export default function FranchiseGuideModal({ label = "창업안내 보기", config, storeCount }: {
+  label?: string;
+  config?: FranchiseGuideConfig;
+  storeCount?: number;
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ export default function FranchiseGuideModal({ label = "창업안내 보기" }: {
                   </svg>
                 </button>
               </div>
-              <FranchiseGuide embedded />
+              <FranchiseGuide embedded config={config} storeCount={storeCount} />
             </div>
           </div>
         </div>

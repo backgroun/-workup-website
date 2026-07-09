@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { DEFAULT_FRANCHISE_GUIDE, type FranchiseGuideConfig } from "@/data/franchise-guide";
 
 // 워크업 창업안내 콘텐츠 (반응형). /franchise 페이지와 문의 페이지 모달에서 공용으로 사용.
-// embedded=true 이면(모달 내부) 하단 문의 CTA를 숨긴다(이미 문의 화면이므로).
+// config=편집 텍스트, storeCount=실제 매장 수(계약 가맹수에 실시간 반영), embedded=모달 내부면 하단 CTA 숨김.
 
 // 사진 슬롯 — /public/images/franchise/ 에 파일을 넣으면 자동 노출. 없으면 어두운 패널.
 const HERO_IMG = "/images/franchise/hero.jpg";
@@ -31,39 +32,61 @@ function PinIcon() {
   );
 }
 
-const REQUIREMENTS = [
-  { icon: <StoreIcon />, title: "필요조건", items: ["매장 70평 이상", "초기 투자 최소화", "사업자 등록"] },
-  { icon: <ChartIcon />, title: "매출액", items: ["연매출 15억 + @", "마진율 31.5% ~ 35%"] },
-  { icon: <PinIcon />, title: "지역별 지점관리", items: ["지정 제한 5km", "(이동상거리 기준)"] },
+const REQ_ICONS = [<StoreIcon key="s" />, <ChartIcon key="c" />, <PinIcon key="p" />];
+
+const BENEFIT_PATHS = [
+  "M9 12.75l2.25 2.25 4.5-4.5m3.75.375c0 5.592-3.824 10.29-9 11.622C6.824 22.29 3 17.592 3 12V6.75c0-.621.504-1.125 1.125-1.125h.375a9.06 9.06 0 007.5-3.086 9.06 9.06 0 007.5 3.086h.375c.621 0 1.125.504 1.125 1.125V12z",
+  "M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z",
+  "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9",
+  "M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 010-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.8 3m.37 1.125a23.91 23.91 0 011.014 5.395m0 0a2.62 2.62 0 010 4.16",
 ];
 
-const BENEFITS = [
-  { title: ["검증된", "비즈니스 모델"], path: "M9 12.75l2.25 2.25 4.5-4.5m3.75.375c0 5.592-3.824 10.29-9 11.622C6.824 22.29 3 17.592 3 12V6.75c0-.621.504-1.125 1.125-1.125h.375a9.06 9.06 0 007.5-3.086 9.06 9.06 0 007.5 3.086h.375c.621 0 1.125.504 1.125 1.125V12z" },
-  { title: ["체계적인", "운영 지원"], path: "M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" },
-  { title: ["다양한 상품과", "안정적 공급"], path: "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" },
-  { title: ["전국 단위", "마케팅 지원"], path: "M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 010-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.8 3m.37 1.125a23.91 23.91 0 011.014 5.395m0 0a2.62 2.62 0 010 4.16" },
+// 창업 포인트별 미디어(고정): 01 사진 / 02 5km 그래픽 / 03 無·0원 카드
+const POINT_MEDIA = [
+  <div key="m0" className="h-40 sm:h-full min-h-[150px] rounded-xl bg-[#1a1a1a] bg-cover bg-center" style={{ backgroundImage: `url(${TEAM_IMG})` }} />,
+  <div key="m1" className="relative h-40 sm:h-full min-h-[150px] rounded-xl bg-[#141414] overflow-hidden flex items-center justify-center">
+    <div className="absolute left-10 right-10 top-1/2 border-t border-dashed border-[#ff550c]/50" />
+    <span className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-[#141414] text-xs font-black flex items-center justify-center shadow-lg">W</span>
+    <span className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-[#141414] text-xs font-black flex items-center justify-center shadow-lg">W</span>
+    <span className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-[#ff550c] bg-[#141414] flex items-center justify-center text-[#ff550c] text-lg font-bold shadow-[0_0_30px_rgba(255,85,12,0.35)]">5km</span>
+  </div>,
+  <div key="m2" className="h-40 sm:h-full min-h-[150px] rounded-xl bg-[#141414] flex items-center justify-center gap-3 sm:gap-5 px-4">
+    <div className="bg-[#0d0d0d] border border-white/10 rounded-lg px-5 sm:px-6 py-4 text-center">
+      <p className="text-3xl sm:text-4xl font-black text-gray-500 leading-none">無</p>
+      <p className="text-[10px] text-gray-400 mt-1.5">가맹보증금</p>
+    </div>
+    <div className="bg-[#0d0d0d] border border-white/10 rounded-lg px-6 sm:px-8 py-4 flex items-end">
+      <span className="text-4xl sm:text-5xl font-black text-[#ff550c] leading-none">0</span>
+      <span className="text-base sm:text-lg font-bold text-white ml-1 mb-0.5">원</span>
+    </div>
+  </div>,
 ];
 
-export default function FranchiseGuide({ embedded = false }: { embedded?: boolean }) {
+export default function FranchiseGuide({
+  config = DEFAULT_FRANCHISE_GUIDE,
+  storeCount = 0,
+  embedded = false,
+}: { config?: FranchiseGuideConfig; storeCount?: number; embedded?: boolean }) {
+  const count = storeCount > 0 ? storeCount : config.count_fallback;
+
   return (
     <div className="bg-[#0d0d0d] text-white">
-      {/* 1. 헤더 */}
+      {/* 1. 헤더 (축소) */}
       <section className="bg-[#f5f2ed]">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 items-stretch">
-          <div className="px-6 sm:px-10 py-12 md:py-24 flex flex-col justify-center order-2 md:order-1">
-            <p className="text-[11px] sm:text-xs tracking-[0.22em] text-[#ff550c] font-bold mb-3">EVERY WORKER EVERY WEAR</p>
-            <p className="text-2xl font-black text-[#111] tracking-tight mb-6">WORKUP</p>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-[#111] leading-[1.05] mb-5">
-              워크업<br />창업안내
+          <div className="px-6 sm:px-10 py-8 md:py-12 flex flex-col justify-center order-2 md:order-1">
+            <p className="text-xl sm:text-2xl font-black text-[#111] tracking-tight mb-4">{config.wordmark}</p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#111] leading-[1.08] mb-4 whitespace-pre-line">
+              {config.title}
             </h1>
-            <p className="text-sm sm:text-base text-gray-500">국내 최초 워크웨어 아울렛</p>
-            <span className="mt-5 block w-12 h-1 bg-[#ff550c]" />
+            <p className="text-sm text-gray-500">{config.subtitle}</p>
+            <span className="mt-4 block w-12 h-1 bg-[#ff550c]" />
           </div>
           <div
-            className="order-1 md:order-2 min-h-[260px] sm:min-h-[340px] md:min-h-[560px] bg-[#171717] bg-cover bg-center"
+            className="order-1 md:order-2 min-h-[200px] sm:min-h-[260px] md:min-h-[380px] bg-[#171717] bg-cover bg-center"
             style={{ backgroundImage: `url(${HERO_IMG})` }}
             role="img"
-            aria-label="워크업 워크웨어를 착용한 창업 안내 이미지"
+            aria-label="워크업 창업 안내 이미지"
           />
         </div>
       </section>
@@ -72,15 +95,15 @@ export default function FranchiseGuide({ embedded = false }: { embedded?: boolea
       <section className="px-4 sm:px-6 lg:px-10 py-10 md:py-14">
         <div className="max-w-6xl mx-auto bg-[#171717] rounded-2xl border border-white/5 p-6 sm:p-8 md:p-10">
           <div className="grid sm:grid-cols-3 gap-8">
-            {REQUIREMENTS.map((r, i) => (
-              <div key={r.title} className={i > 0 ? "sm:pl-8 sm:border-l sm:border-white/10" : ""}>
+            {config.requirements.map((r, i) => (
+              <div key={i} className={i > 0 ? "sm:pl-8 sm:border-l sm:border-white/10" : ""}>
                 <div className="flex items-center gap-2.5 mb-4">
-                  {r.icon}
+                  {REQ_ICONS[i]}
                   <h3 className="text-lg font-bold text-white">{r.title}</h3>
                 </div>
                 <ul className="space-y-2.5">
-                  {r.items.map((it) => (
-                    <li key={it} className="flex gap-2 text-sm text-gray-300 leading-relaxed">
+                  {r.items.map((it, j) => (
+                    <li key={j} className="flex gap-2 text-sm text-gray-300 leading-relaxed">
                       <span className="text-[#ff550c] mt-px">•</span>
                       <span>{it}</span>
                     </li>
@@ -105,63 +128,41 @@ export default function FranchiseGuide({ embedded = false }: { embedded?: boolea
           </div>
 
           <div className="space-y-4">
-            <PointRow no="01" title={"국내 최초\n워크웨어 아울렛"} desc={"워크웨어 시장을 선도하는\n독보적 비즈니스 모델"}>
-              <div className="h-40 sm:h-full min-h-[150px] rounded-xl bg-[#1a1a1a] bg-cover bg-center" style={{ backgroundImage: `url(${TEAM_IMG})` }} />
-            </PointRow>
-
-            <PointRow no="02" title={"안정적인 상권 보호"} desc={"지점 간 균형을 통해\n지속 가능한 매출 환경 구축"}>
-              <div className="relative h-40 sm:h-full min-h-[150px] rounded-xl bg-[#141414] overflow-hidden flex items-center justify-center">
-                <div className="absolute left-10 right-10 top-1/2 border-t border-dashed border-[#ff550c]/50" />
-                {["left-5", "right-5"].map((pos) => (
-                  <span key={pos} className={`absolute ${pos} top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-[#141414] text-xs font-black flex items-center justify-center shadow-lg`}>W</span>
-                ))}
-                <span className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-[#ff550c] bg-[#141414] flex items-center justify-center text-[#ff550c] text-lg font-bold shadow-[0_0_30px_rgba(255,85,12,0.35)]">5km</span>
-              </div>
-            </PointRow>
-
-            <PointRow no="03" title={"초기 비용 부담 감소"} desc={"교육비 및 보증금 無\n월 가맹비 50만원"}>
-              <div className="h-40 sm:h-full min-h-[150px] rounded-xl bg-[#141414] flex items-center justify-center gap-3 sm:gap-5 px-4">
-                <div className="bg-[#0d0d0d] border border-white/10 rounded-lg px-5 sm:px-6 py-4 text-center">
-                  <p className="text-3xl sm:text-4xl font-black text-gray-500 leading-none">無</p>
-                  <p className="text-[10px] text-gray-400 mt-1.5">가맹보증금</p>
-                </div>
-                <div className="bg-[#0d0d0d] border border-white/10 rounded-lg px-6 sm:px-8 py-4 flex items-end">
-                  <span className="text-4xl sm:text-5xl font-black text-[#ff550c] leading-none">0</span>
-                  <span className="text-base sm:text-lg font-bold text-white ml-1 mb-0.5">원</span>
-                </div>
-              </div>
-            </PointRow>
+            {config.points.map((p, i) => (
+              <PointRow key={i} no={String(i + 1).padStart(2, "0")} title={p.title} desc={p.desc}>
+                {POINT_MEDIA[i]}
+              </PointRow>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 4. 가맹수 CTA */}
+      {/* 4. 가맹수 (실제 매장 수 실시간) */}
       <section className="bg-[#1a1a1a] py-8 md:py-10 border-y border-white/5">
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
-          <span className="text-xl sm:text-3xl font-bold text-white">계약 가맹수</span>
-          <span className="text-4xl sm:text-6xl font-black text-[#ff550c] leading-none">130</span>
-          <span className="text-xl sm:text-3xl font-bold text-white">호점 돌파!</span>
-          <span className="text-[11px] text-gray-500 self-center sm:ml-2">* 25.6.15 기준</span>
+          <span className="text-xl sm:text-3xl font-bold text-white">{config.cta_prefix}</span>
+          <span className="text-4xl sm:text-6xl font-black text-[#ff550c] leading-none">{count.toLocaleString()}</span>
+          <span className="text-xl sm:text-3xl font-bold text-white">{config.cta_suffix}</span>
         </div>
       </section>
 
       {/* 5. 하단 혜택 */}
       <section className="px-6 py-10 md:py-12">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
-          {BENEFITS.map((b) => (
-            <div key={b.title.join("")} className="flex flex-col items-center text-center gap-3">
+          {config.benefits.map((b, i) => (
+            <div key={i} className="flex flex-col items-center text-center gap-3">
               <svg className="w-9 h-9 text-[#ff550c]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d={b.path} />
+                <path strokeLinecap="round" strokeLinejoin="round" d={BENEFIT_PATHS[i]} />
               </svg>
               <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                {b.title[0]}<br />{b.title[1]}
+                {b.line1}<br />{b.line2}
               </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 6. 문의 CTA (모달 내부에서는 숨김 — 이미 문의 화면) */}
+      {/* 6. 문의 CTA (모달 내부에서는 숨김) */}
       {!embedded && (
         <section className="px-6 pb-16 md:pb-20 text-center">
           <p className="text-sm text-gray-400 mb-5">워크업 창업, 지금 바로 상담받아 보세요.</p>

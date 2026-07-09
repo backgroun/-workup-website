@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product, MainExpose } from "@/data/products";
 import { mainCategories, subCategoriesByMain } from "@/data/products";
+import CatalogManagerModal from "@/components/admin/CatalogManagerModal";
+import FilterManagerModal from "@/components/admin/FilterManagerModal";
 
 // 수정 페이지 왕복 시 목록 뷰(페이지/필터/스크롤)를 복원하기 위한 세션 키
 const VIEW_KEY = "admin-products-view";
@@ -92,6 +94,8 @@ export default function AdminProductsPage() {
   // ─ 선택 & 정렬 ─────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최종수정순");
+  const [catalogModalOpen, setCatalogModalOpen] = useState(false);   // 브랜드/제조사 관리 팝업
+  const [filterModalOpen, setFilterModalOpen]   = useState(false);   // 필터 관리 팝업
   const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
   const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
   const [colMenuOpen, setColMenuOpen] = useState(false); // 컬럼 표시/숨김 드롭다운
@@ -481,13 +485,20 @@ export default function AdminProductsPage() {
               {seeding ? "추가 중..." : "샘플 10개 추가"}
             </button>
           )}
-          <Link href="/admin/brands"
+          <button onClick={() => setCatalogModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
             브랜드 / 제조사
-          </Link>
+          </button>
+          <button onClick={() => setFilterModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 018 17v-3.586L3.293 6.707A1 1 0 013 6V4z" />
+            </svg>
+            필터 관리
+          </button>
           <Link href="/admin/products/import"
             className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -975,6 +986,10 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* 브랜드/제조사 관리 · 필터 관리 팝업 */}
+      <CatalogManagerModal open={catalogModalOpen} onClose={() => setCatalogModalOpen(false)} />
+      <FilterManagerModal open={filterModalOpen} onClose={() => setFilterModalOpen(false)} />
     </div>
   );
 }

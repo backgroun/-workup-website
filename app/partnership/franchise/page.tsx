@@ -3,7 +3,9 @@ import { FranchiseForm } from "@/components/PartnershipForms";
 import PartnershipLayout from "@/components/PartnershipLayout";
 import FranchiseGuideModal from "@/components/FranchiseGuideModal";
 import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
+import { normalizeFranchiseGuide, type FranchiseGuideConfig } from "@/data/franchise-guide";
 import { getSiteSection } from "@/lib/site-settings";
+import { getActiveStoreCount } from "@/lib/publicStores";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteSection<PartnershipConfig>("partnership_page");
@@ -12,11 +14,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FranchisePage() {
-  const config = await getSiteSection<PartnershipConfig>("partnership_page");
-  const info = normalizePartnership(config).franchise;
+  const [pConfig, gRaw, storeCount] = await Promise.all([
+    getSiteSection<PartnershipConfig>("partnership_page"),
+    getSiteSection<FranchiseGuideConfig>("franchise_guide"),
+    getActiveStoreCount(),
+  ]);
+  const info = normalizePartnership(pConfig).franchise;
+  const guide = normalizeFranchiseGuide(gRaw);
 
   return (
-    <PartnershipLayout info={info} boardType="franchise" guideButton={<FranchiseGuideModal label="워크업 창업안내 한눈에 보기" />}>
+    <PartnershipLayout
+      info={info}
+      boardType="franchise"
+      guideButton={<FranchiseGuideModal label="워크업 창업안내 한눈에 보기" config={guide} storeCount={storeCount} />}
+    >
       <FranchiseForm config={info.form} />
     </PartnershipLayout>
   );

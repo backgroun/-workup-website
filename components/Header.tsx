@@ -83,10 +83,26 @@ export default function Header({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className={`${oxanium.className} text-[17px] text-[#1A2B4A] hover:text-[#ff550c] transition-colors tracking-wide whitespace-nowrap`}
+                className="group grid place-items-center text-[#1A2B4A] whitespace-nowrap"
                 style={{ fontWeight: 650 }}
               >
-                {item.label}
+                {/* 기본은 영문, 마우스 오버 시 한글로 크로스페이드.
+                    두 텍스트를 같은 그리드 셀(1/1)에 겹쳐 폭 밀림 없이 자연스럽게 전환한다.
+                    영문·한글의 font-size와 leading을 동일하게 맞춰 겹칠 때 위치가 어긋나지 않게 한다. */}
+                <span
+                  style={{ gridArea: "1 / 1" }}
+                  className={`${oxanium.className} text-[17px] leading-none tracking-wide transition-opacity duration-200 ${item.labelKo ? "group-hover:opacity-0" : ""}`}
+                >
+                  {item.label}
+                </span>
+                {item.labelKo && (
+                  <span
+                    style={{ gridArea: "1 / 1", fontWeight: 700 }}
+                    className="text-[14px] leading-none tracking-tighter text-gray-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                  >
+                    {item.labelKo}
+                  </span>
+                )}
               </Link>
             ))}
 

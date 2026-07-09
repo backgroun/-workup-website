@@ -24,6 +24,21 @@ function coreAddr(s: string): string {
   return a;
 }
 
+// 활성(공개) 매장 수 — 창업안내 '계약 가맹수'에 실시간 반영. 조회 실패 시 0.
+export async function getActiveStoreCount(): Promise<number> {
+  try {
+    const supabase = createAdminClient();
+    const { count, error } = await supabase
+      .from("stores")
+      .select("*", { count: "exact", head: true })
+      .eq("is_active", true);
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // 공개(고객용) 매장 목록의 단일 소스 = DB.
 // - DB의 활성 매장을 사용 (관리자 수정이 즉시 반영). 비어 있으면 고객 화면도 빈다.
 // - 좌표가 비어 있으면 정적 데이터(data/stores.ts)에서 "주소"로 매칭해 보정

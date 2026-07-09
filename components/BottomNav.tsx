@@ -97,10 +97,17 @@ export default function BottomNav({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className="flex items-center justify-between py-4 text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] active:text-[#ff550c] tracking-[0.15em] transition-[color,transform] active:scale-[0.97]"
+                className="flex items-center justify-between py-4 text-[#1A2B4A] hover:text-[#ff550c] active:text-[#ff550c] transition-[color,transform] active:scale-[0.97]"
                 onClick={() => setMenuOpen(false)}
               >
-                {item.label}
+                <span className="flex items-baseline gap-3">
+                  <span className="text-[13px] font-semibold tracking-[0.15em]">{item.label}</span>
+                  {item.labelKo && (
+                    <span className="text-[11px] font-normal tracking-normal text-gray-400">
+                      <span className="text-gray-300 mr-1">/</span>{item.labelKo}
+                    </span>
+                  )}
+                </span>
                 <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
                 </svg>
