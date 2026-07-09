@@ -15,9 +15,11 @@ export function fxToStyle(fx?: TextFx): CSSProperties {
 
 // 인라인 편집 프리미티브. onChange 가 없으면(공개 페이지) 순수 태그로 렌더 → 시각 회귀 없음.
 // onChange 가 있으면(편집기) contentEditable 로 바뀌어 그 자리에서 타이핑할 수 있다.
-// fx 는 공개·편집 양쪽 모두 적용(실제 서식). onActivate 는 편집기에서 이 요소를 서식 툴바 대상으로 지정.
+// fx 는 공개·편집 양쪽 모두 적용(실제 서식). onActivate 는 편집기에서 이 요소를 서식 툴바 대상으로 지정하며,
+// 그 순간 실제 렌더된 폰트 크기(px)를 함께 넘겨 툴바가 "자동" 대신 실제 수치를 바로 보여줄 수 있게 한다.
+// active 가 true 면(=지금 서식 툴바의 대상) 파란 테두리를 계속 표시해 "지금 뭘 고치는 중인지" 눈으로 확인 가능.
 export default function Editable({
-  as, value, onChange, className, style, placeholder, multiline = true, fx, onActivate,
+  as, value, onChange, className, style, placeholder, multiline = true, fx, onActivate, active,
 }: {
   as?: ElementType;
   value: string;
@@ -27,7 +29,8 @@ export default function Editable({
   placeholder?: string;
   multiline?: boolean;
   fx?: TextFx;
-  onActivate?: () => void;
+  onActivate?: (computedPx?: number) => void;
+  active?: boolean;
 }) {
   const Tag = (as ?? "span") as ElementType;
   const ref = useRef<HTMLElement>(null);
@@ -46,17 +49,22 @@ export default function Editable({
     if (t !== value) onChange(t);
   };
 
+  const fire = () => {
+    const px = ref.current ? parseFloat(getComputedStyle(ref.current).fontSize) : undefined;
+    onActivate?.(Number.isFinite(px) ? px : undefined);
+  };
+
   return (
     <Tag
       ref={ref as never}
-      className={`st-editable ${className ?? ""}`}
+      className={`st-editable ${active ? "st-editable-active" : ""} ${className ?? ""}`}
       style={merged}
       contentEditable
       suppressContentEditableWarning
       spellCheck={false}
       data-ph={placeholder}
-      onClick={(e: React.MouseEvent) => { e.stopPropagation(); onActivate?.(); }}
-      onFocus={() => onActivate?.()}
+      onClick={(e: React.MouseEvent) => { e.stopPropagation(); fire(); }}
+      onFocus={() => fire()}
       onBlur={commit}
       onKeyDown={(e: KeyboardEvent) => {
         if (e.key === "Escape") (e.target as HTMLElement).blur();

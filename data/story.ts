@@ -156,12 +156,15 @@ export type PartialSection = Partial<
 export type SectionEditApi = {
   patch: (p: PartialSection) => void;                 // 이 섹션 필드 갱신
   pickImage: (onPicked: (url: string) => void) => void; // 파일 선택창 → 업로드 → url 반환
-  activate: (field: string) => void;                  // 요소 선택 → 서식 툴바 대상 지정
+  // 요소 선택 → 서식 툴바 대상 지정. computedPx 는 그 요소의 실제 렌더 폰트 크기(override 없을 때 툴바 초기값용).
+  activate: (field: string, computedPx?: number) => void;
+  activeField?: string; // 현재 이 섹션에서 선택된 필드 키(없으면 선택 없음) — 요소에 선택 표시(테두리)용
 };
 export type HeroEditApi = {
   patch: (p: Partial<StoryHero>) => void;
   pickImage: (onPicked: (url: string) => void) => void;
-  activate: (field: string) => void;
+  activate: (field: string, computedPx?: number) => void;
+  activeField?: string;
 };
 
 // 한글 타입 라벨 (관리자 목록/팔레트용)
