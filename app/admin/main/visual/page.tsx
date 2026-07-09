@@ -407,7 +407,8 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS season_text_size INTEGER DEFAUL
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS font_family TEXT DEFAULT '';
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS pc_image_scale NUMERIC DEFAULT 1;
 ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS mobile_image_scale NUMERIC DEFAULT 1;
-ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]'::jsonb;`}</pre>
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS video_duration NUMERIC;`}</pre>
         </div>
       )}
 
@@ -625,6 +626,17 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS text_layers JSONB DEFAULT '[]':
               <SectionTitle title="동영상 (PC · 모바일)" accent="bg-[#ff550c]" desc="권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다." />
               <VideoField label="PC 동영상" value={editing.pc_video_url} uploading={uploading === "pc"} onUpload={(f) => uploadVideo(f, "pc")} onClear={() => set("pc_video_url", "")} />
               <VideoField label="모바일 동영상 (선택)" value={editing.mobile_video_url} uploading={uploading === "mobile"} onUpload={(f) => uploadVideo(f, "mobile")} onClear={() => set("mobile_video_url", "")} />
+              <Field label="노출 시간 (초)" hint="비워두면 영상 재생이 끝난 뒤 자동으로 다음 슬라이드로 전환됩니다. 값을 입력하면 영상 길이와 무관하게 지정한 초 후 전환됩니다.">
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={editing.video_duration ?? ""}
+                  onChange={(e) => set("video_duration", e.target.value === "" ? null : Number(e.target.value))}
+                  placeholder="예: 6 (미입력 시 영상 종료까지 재생)"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                />
+              </Field>
               {(editing.pc_video_url || editing.mobile_video_url) && (
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <VideoPositionPicker label="PC 위치·크기" videoUrl={editing.pc_video_url || editing.mobile_video_url} value={editing.pc_image_position || "50% 50%"} onChange={(v) => set("pc_image_position", v)} scale={editing.pc_image_scale ?? 1} onScaleChange={(v) => set("pc_image_scale", v)} aspect="pc" />

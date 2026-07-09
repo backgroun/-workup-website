@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import Editable from "@/components/story-edit/Editable";
-import type { StorySection, SectionBg, SectionEditApi, PartialSection, PhotoItem, ValueItem } from "@/data/story";
+import { StoryIcon, ICON_OPTIONS, type IconKey } from "@/components/story-edit/StoryIcons";
+import type { StorySection, SectionBg, SectionEditApi, PartialSection, PhotoItem, ValueItem, FeatureItem } from "@/data/story";
 
 // /story 본문 섹션 한 개. 공개 페이지와 위지윅 편집기에서 공용으로 사용(DRY) → 시각 회귀 불가능.
 // edit 이 없으면 순수 렌더(공개), 있으면 클릭 인라인 편집(관리자)이 켜진다.

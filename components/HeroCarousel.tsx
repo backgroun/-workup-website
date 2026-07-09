@@ -33,6 +33,7 @@ type HeroSlide = {
   mobile_image_url: string | null;
   pc_video_url?: string | null;
   mobile_video_url?: string | null;
+  video_duration?: number | null;
   pc_image_position?: string | null;
   mobile_image_position?: string | null;
   pc_image_scale?: number | null;
@@ -54,10 +55,16 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const videoMap = useRef<Record<number, { pc: HTMLVideoElement | null; mobile: HTMLVideoElement | null }>>({});
   const endedHandledRef = useRef(false);
 
-  // 자동 슬라이드(이미지). 동영상 슬라이드는 타이머로 넘기지 않고, 영상이 1회 재생되면 onEnded 로 넘어간다.
+  // 자동 슬라이드(이미지). 동영상 슬라이드는 노출 시간(video_duration)이 설정된 경우 그 시간 후 전환,
+  // 설정하지 않았다면 타이머로 넘기지 않고 영상이 1회 재생 완료되면 onEnded 로 넘어간다.
   useEffect(() => {
     if (total <= 1) return;
-    if (slides[current]?.pc_video_url) return;
+    const cur = slides[current];
+    if (cur?.pc_video_url) {
+      if (!cur.video_duration) return;
+      const t = setTimeout(() => setCurrent((c) => (c + 1) % total), cur.video_duration * 1000);
+      return () => clearTimeout(t);
+    }
     const t = setTimeout(() => setCurrent((c) => (c + 1) % total), AUTO_INTERVAL);
     return () => clearTimeout(t);
   }, [current, total, slides]);
@@ -118,6 +125,8 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           const mobileVideo = slide.mobile_video_url || pcVideo;
 
           const layers = slide.text_layers ?? [];
+          // 노출 시간이 지정된 동영상은 시간이 찰 때까지 루프 재생, 아니면 1회 재생 후 onEnded로 전환
+          const loopVideo = total <= 1 || !!slide.video_duration;
 
           return (
             <div
@@ -132,7 +141,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).pc = el; }}
                     src={pcVideo}
                     autoPlay muted playsInline preload="metadata"
-                    loop={total <= 1}
+                    loop={loopVideo}
                     onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
@@ -145,7 +154,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).mobile = el; }}
                     src={mobileVideo || pcVideo}
                     autoPlay muted playsInline preload="metadata"
-                    loop={total <= 1}
+                    loop={loopVideo}
                     onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{
