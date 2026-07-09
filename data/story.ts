@@ -280,7 +280,7 @@ export const DEFAULT_STORY: StoryConfig = {
     {
       id: "features3", type: "features3", visible: true, bg: "beige",
       eyebrow: "WORK LIFE WEAR",
-      heading: "일할 때는 작업복처럼. 일상에서는 평상복처럼.",
+      heading: "일할 때는 작업복처럼.\n일상에서는 평상복처럼.",
       lead: "현장의 기능과 일상의 스타일을 함께 담아\n어떤 순간에도 자연스럽게 어울리는 옷을 만듭니다.",
       items: [
         { icon: "hardhat", iconImage: "/images/wlw01.png", label: "WORK", desc: "현장에서 버티는 기능" },

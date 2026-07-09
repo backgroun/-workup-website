@@ -76,9 +76,14 @@ function DelBadge({ onClick }: { onClick: () => void }) {
 }
 
 // 아이콘형 항목(특징3·핵심가치)의 아이콘 클릭 교체(편집 모드 전용). 프리셋 그리드에서 골라 즉시 반영.
-function IconPickerButton({ icon, onPick, size = "w-14 h-14" }: { icon?: IconKey; onPick?: (icon: IconKey) => void; size?: string }) {
+// bare 이면 원형 배경 없이 아이콘만(= WORK LIFE WEAR와 동일한 톤) 렌더링한다.
+function IconPickerButton({ icon, onPick, size = "w-14 h-14", bare = false }: { icon?: IconKey; onPick?: (icon: IconKey) => void; size?: string; bare?: boolean }) {
   const [open, setOpen] = useState(false);
-  const circle = (
+  const circle = bare ? (
+    <div className={`${size} flex items-center justify-center text-[#1A2B4A]`}>
+      <StoryIcon icon={icon} className="w-full h-full" />
+    </div>
+  ) : (
     <div className={`${size} rounded-full bg-[#1A2B4A]/[0.06] flex items-center justify-center text-[#1A2B4A]`}>
       <StoryIcon icon={icon} className="w-1/2 h-1/2" />
     </div>
@@ -87,9 +92,9 @@ function IconPickerButton({ icon, onPick, size = "w-14 h-14" }: { icon?: IconKey
   return (
     <div className="relative inline-block">
       <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className="group/icon relative rounded-full ring-offset-2 hover:ring-2 hover:ring-blue-400 transition-shadow">
+        className={`group/icon relative ring-offset-2 hover:ring-2 hover:ring-blue-400 transition-shadow ${bare ? "rounded-lg" : "rounded-full"}`}>
         {circle}
-        <span className="pointer-events-none absolute inset-0 rounded-full bg-black/0 group-hover/icon:bg-black/30 flex items-center justify-center transition-colors">
+        <span className={`pointer-events-none absolute inset-0 bg-black/0 group-hover/icon:bg-black/30 flex items-center justify-center transition-colors ${bare ? "rounded-lg" : "rounded-full"}`}>
           <span className="opacity-0 group-hover/icon:opacity-100 text-white text-[10px] font-semibold">교체</span>
         </span>
       </button>
@@ -237,6 +242,37 @@ export default function StorySectionView({ section, edit }: { section: StorySect
         edit?.patch({ items: [...items, { num: String(next).padStart(2, "0"), en: "", title: "새 항목", desc: "", icon: "check" }] });
       };
       const delItem = (i: number) => edit?.patch({ items: items.filter((_, idx) => idx !== i) });
+
+      // "icon" 레이아웃 = WORK LIFE WEAR 와 동일한 톤(중앙정렬 · 간격 60/18/45/29/25/66 · 아이콘 70px 원 없이)
+      if (layout === "icon") {
+        return (
+          <section className={bg}>
+            <div className="px-[15px] md:px-[70px] text-center pt-16 pb-16 lg:pt-[60px] lg:pb-[66px]">
+              <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] ${eyebrowColor} uppercase mb-3 lg:mb-[18px] block`}
+                value={section.eyebrow} {...ep("eyebrow")} placeholder="Core Values" multiline={false} />
+              <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
+                value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
+              <div className="mx-auto max-w-[1100px] grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
+                {items.map((v, i) => (
+                  <div key={i} className="group/item relative flex flex-col items-center text-center">
+                    {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
+                    <IconPickerButton icon={v.icon} size="w-[70px] h-[70px]" bare onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
+                    <h3 className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.02em]">
+                      <Editable as="span" value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
+                      <span>. </span>
+                      <Editable as="span" value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
+                    </h3>
+                    <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
+                      value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
+                  </div>
+                ))}
+              </div>
+              {edit && <div className="mt-8 flex justify-center"><AddBtn onClick={addItem} label="항목" /></div>}
+            </div>
+          </section>
+        );
+      }
+
       return (
         <section className={`${SEC} ${bg}`}>
           <div className="px-[15px] md:px-[70px]">
@@ -246,41 +282,21 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
               {edit && <AddBtn onClick={addItem} label="항목" />}
             </div>
-            {layout === "icon" ? (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-                {items.map((v, i) => (
-                  <div key={i} className="group/item relative text-center">
-                    {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                    <div className="flex justify-center mb-5">
-                      <IconPickerButton icon={v.icon} onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
-                    </div>
-                    <h3 className="text-[calc(16px*var(--st-fs,1))] md:text-[calc(18px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-2">
-                      <Editable as="span" value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
-                      <span>. </span>
-                      <Editable as="span" value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
-                    </h3>
-                    <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
-                      value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200">
-                {items.map((v, i) => (
-                  <div key={i} className="group/item relative bg-white p-6 md:p-9">
-                    {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                    <Editable as="p" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(46px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-none mb-6 opacity-10 block"
-                      value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
-                    <Editable as="p" className="text-[calc(10px*var(--st-fs,1))] tracking-[0.18em] text-gray-400 uppercase mb-2 block"
-                      value={v.en} placeholder="Function" multiline={false} {...epi(`items.${i}.en`, edit ? (x) => setItem(i, { en: x }) : undefined)} />
-                    <Editable as="h3" className="text-[calc(18px*var(--st-fs,1))] md:text-[calc(20px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-4 block"
-                      value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
-                    <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
-                      value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200">
+              {items.map((v, i) => (
+                <div key={i} className="group/item relative bg-white p-6 md:p-9">
+                  {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
+                  <Editable as="p" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(46px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-none mb-6 opacity-10 block"
+                    value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
+                  <Editable as="p" className="text-[calc(10px*var(--st-fs,1))] tracking-[0.18em] text-gray-400 uppercase mb-2 block"
+                    value={v.en} placeholder="Function" multiline={false} {...epi(`items.${i}.en`, edit ? (x) => setItem(i, { en: x }) : undefined)} />
+                  <Editable as="h3" className="text-[calc(18px*var(--st-fs,1))] md:text-[calc(20px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-4 block"
+                    value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
+                  <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
+                    value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       );
