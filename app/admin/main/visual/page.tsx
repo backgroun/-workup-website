@@ -1069,6 +1069,9 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
   const [mode, setMode] = useState<"pc" | "mobile">("pc");
   const [selIds, setSelIds] = useState<Set<string>>(() => new Set(layers[0]?.id ? [layers[0].id] : []));
   const [editId, setEditId] = useState<string | null>(null);
+  const [showGrid, setShowGrid] = useState(false);
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [snapLines, setSnapLines] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const containerRef = useRef<HTMLDivElement>(null);
   const editRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef<{
@@ -1076,6 +1079,12 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     dx: number; dy: number;
     origins: Record<string, { x: number; y: number }>;
   } | null>(null);
+
+  // 가용 영역(넘김 영역 제외) — PC는 좌우 9%씩 제외, 모바일은 전체
+  const CANVAS_X = mode === "pc" ? { min: 9, max: 89 } : { min: 0, max: 98 };
+  const CANVAS_Y = { min: 0, max: 96 };
+  const SNAP_THRESHOLD = 1.5; // % 단위
+  const GRID_STEP = 10; // %
 
   // 인라인 편집 시작 시 포커스 + 커서를 끝으로
   useEffect(() => {
@@ -1151,6 +1160,18 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     drag.current = { primaryId: l.id, dx: curX - x, dy: curY - y, origins };
   };
 
+  // 스냅 대상 좌표(그리드선 + 중앙 + 드래그 중이 아닌 다른 레이어) 중 임계값 이내 가장 가까운 값 찾기
+  const findSnap = (value: number, others: number[]): number | null => {
+    const candidates = [50, ...Array.from({ length: 11 }, (_, i) => i * GRID_STEP), ...others];
+    let best: number | null = null;
+    let bestDist = SNAP_THRESHOLD;
+    for (const c of candidates) {
+      const d = Math.abs(value - c);
+      if (d < bestDist) { bestDist = d; best = c; }
+    }
+    return best;
+  };
+
   const onMouseMove = (e: React.MouseEvent) => {
     if (!drag.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -1158,8 +1179,23 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     const newPY = Math.max(0, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100 - drag.current.dy));
     const origin = drag.current.origins[drag.current.primaryId];
     if (!origin) return;
-    const dX = newPX - origin.x;
-    const dY = newPY - origin.y;
+    let dX = newPX - origin.x;
+    let dY = newPY - origin.y;
+
+    let snapX: number | null = null;
+    let snapY: number | null = null;
+    if (snapEnabled) {
+      const primaryNx = origin.x + dX;
+      const primaryNy = origin.y + dY;
+      const otherXs = layers.filter((l) => !drag.current!.origins[l.id]).map((l) => getXY(l).x);
+      const otherYs = layers.filter((l) => !drag.current!.origins[l.id]).map((l) => getXY(l).y);
+      snapX = findSnap(primaryNx, otherXs);
+      snapY = findSnap(primaryNy, otherYs);
+      if (snapX !== null) dX = snapX - origin.x;
+      if (snapY !== null) dY = snapY - origin.y;
+    }
+    setSnapLines({ x: snapX, y: snapY });
+
     // 선택된 모든 레이어를 같은 델타로 이동
     onChange(layers.map((layer) => {
       const o = drag.current!.origins[layer.id];

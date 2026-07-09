@@ -230,7 +230,7 @@ export function emptySection(type: StorySectionType): StorySection {
     case "category":
       return { ...base, type, eyebrow: "", heading: "", lead: "", tags: [""], body: "", image_url: undefined };
     case "values":
-      return { ...base, type, eyebrow: "", heading: "", items: [{ num: "01", en: "", title: "", desc: "" }] };
+      return { ...base, type, eyebrow: "", heading: "", layout: "number", items: [{ num: "01", en: "", title: "", desc: "" }] };
     case "founding":
       return { ...base, type, eyebrow: "", heading: "", paragraphs: [""], emphasis: "", closing: "", image_url: undefined, imageSide: "right" };
     case "cta":
@@ -239,6 +239,22 @@ export function emptySection(type: StorySectionType): StorySection {
       return { ...base, type, eyebrow: "", heading: "", body: "" };
     case "photos":
       return { ...base, type, columns: 3, images: [{ url: undefined, alt: "" }, { url: undefined, alt: "" }, { url: undefined, alt: "" }] };
+    case "problem":
+      return { ...base, type, eyebrow: "THE PROBLEM", heading: "", body: "", image_url: undefined, imageSide: "left" };
+    case "features3":
+      return {
+        ...base, type, eyebrow: "WORK LIFE WEAR", heading: "", lead: "",
+        items: [
+          { icon: "hardhat", label: "WORK", desc: "" },
+          { icon: "clock", label: "LIFE", desc: "" },
+          { icon: "hanger", label: "WEAR", desc: "" },
+        ],
+      };
+    case "storeCta":
+      return {
+        ...base, type, bg: "beige", eyebrow: "STORE EXPERIENCE", heading: "", body: "",
+        ctaLabel: "가까운 매장 찾기 →", ctaHref: "/store", images: [],
+      };
   }
 }
 
