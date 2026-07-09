@@ -77,8 +77,9 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
               </div>
               <p className="text-xs text-gray-500 leading-relaxed">작성 시 설정한 <b>비밀번호</b>를 입력하면<br />내용과 답변을 볼 수 있어요.</p>
             </div>
-            <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus placeholder="비밀번호"
-              className="w-full border border-gray-200 px-4 py-2.5 text-sm text-center focus:outline-none focus:border-[#1A2B4A] bg-white" />
+            <input type="text" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus placeholder="비밀번호"
+              autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+              className="pw-mask w-full border border-gray-200 px-4 py-2.5 text-sm text-center focus:outline-none focus:border-[#1A2B4A] bg-white" />
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
             <button type="submit" disabled={loading} className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50">
               {loading ? "확인 중..." : "확인"}

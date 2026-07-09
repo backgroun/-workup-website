@@ -321,7 +321,7 @@ export const navGroups: NavGroup[] = [
         ),
       },
       {
-        label: "문의 리스트(보여주기)",
+        label: "더미리스트",
         href: "/admin/inquiries/board",
         exact: true,
         icon: (

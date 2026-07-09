@@ -14,12 +14,26 @@ function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string;
       </div>
       <p className="text-base font-bold text-[#1A2B4A] mb-2">{title}</p>
       <p className="text-xs text-gray-500 leading-relaxed mb-4">{desc}</p>
-      {passwordHint && (
-        <div className="text-xs text-[#ff550c] bg-[#fff4ee] border border-[#ffd9c4] rounded-lg px-4 py-3 leading-relaxed mb-6 max-w-xs">
-          설정하신 <b>비밀번호를 꼭 기억해 주세요.</b><br />
-          오른쪽 <b>‘문의 현황’</b> 목록에서 내 글을 눌러 비밀번호로 내용·답변을 확인할 수 있어요.
-        </div>
-      )}
+      <div className="text-xs text-gray-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 leading-relaxed mb-6 max-w-xs text-left space-y-2.5">
+        <p className="flex items-start gap-2">
+          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center mt-px">
+            <svg className="w-3 h-3 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </span>
+          <span>오른쪽 <b>‘문의 현황’</b> 목록의 <b className="text-[#1A2B4A]">새로고침</b> 버튼을 누르면 방금 작성한 글이 나타납니다.</span>
+        </p>
+        {passwordHint && (
+          <p className="flex items-start gap-2 border-t border-slate-200 pt-2.5">
+            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#fff1e8] flex items-center justify-center mt-px">
+              <svg className="w-3 h-3 text-[#ff550c]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </span>
+            <span>설정하신 <b className="text-[#ff550c]">비밀번호를 기억해 주세요.</b> 목록에서 내 글(🔒)을 눌러 내용·답변을 확인할 수 있어요.</span>
+          </p>
+        )}
+      </div>
       <button
         onClick={onReset}
         className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
@@ -277,13 +291,16 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
           비밀번호 <span className="text-gray-400">(문의글 확인용)</span>
         </label>
         <input
-          type="password"
+          type="text"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="설정하면 오른쪽 목록에서 비밀번호로 내 글을 확인할 수 있어요"
-          autoComplete="new-password"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           style={inputStyle}
-          className="w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
+          className="pw-mask w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
         />
       </div>
       {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}

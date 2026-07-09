@@ -6,9 +6,10 @@ import InquiryBoard from "./InquiryBoard";
 // 가맹·창업 / 입점·제휴 문의 페이지 공통 레이아웃 (서버 컴포넌트, 폼은 children으로 주입)
 // 좌: 소개 패널 + 문의 폼(세로 스택) / 우: 실시간 문의 현황 보드
 // 패널 배경색·글자 크기·색상은 info(관리자 편집값)로 제어한다.
-export default function PartnershipLayout({ info, boardType, children }: {
+export default function PartnershipLayout({ info, boardType, guideButton, children }: {
   info: PartnerInfo;
-  boardType?: string;        // "franchise" | "wholesale" — 우측 보드를 해당 유형만 표시
+  boardType?: string;             // "franchise" | "wholesale" — 우측 보드를 해당 유형만 표시
+  guideButton?: React.ReactNode;  // 있으면 패널 아래 노출(예: 창업안내 모달 버튼)
   children: React.ReactNode;
 }) {
   const st = info.styles;
@@ -20,6 +21,8 @@ export default function PartnershipLayout({ info, boardType, children }: {
             {/* 좌: 소개 패널 + 폼 (세로 스택) */}
             <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">
               <PartnershipPanel info={info} />
+
+              {guideButton}
 
               <div className="px-8 py-8">
                 <h3 className="font-bold" style={{ fontSize: st.form_title.size, color: st.form_title.color }}>

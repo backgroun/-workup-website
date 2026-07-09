@@ -20,6 +20,14 @@ body.catalog-page footer {
   display: none;
 }
 
+/* '글 확인용' 비밀번호 입력 마스킹.
+   type="password" 대신 type="text" + 이 클래스를 써서, 브라우저가 로그인 비번으로 인식해
+   유출 경고·저장 팝업을 띄우는 것을 피한다. (파이어폭스는 미지원 → 평문 표시) */
+.pw-mask {
+  -webkit-text-security: disc;
+  text-security: disc;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

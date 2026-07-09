@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FranchiseForm } from "@/components/PartnershipForms";
 import PartnershipLayout from "@/components/PartnershipLayout";
+import FranchiseGuideModal from "@/components/FranchiseGuideModal";
 import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
 import { getSiteSection } from "@/lib/site-settings";
 
@@ -15,7 +16,7 @@ export default async function FranchisePage() {
   const info = normalizePartnership(config).franchise;
 
   return (
-    <PartnershipLayout info={info} boardType="franchise">
+    <PartnershipLayout info={info} boardType="franchise" guideButton={<FranchiseGuideModal label="워크업 창업안내 한눈에 보기" />}>
       <FranchiseForm config={info.form} />
     </PartnershipLayout>
   );
