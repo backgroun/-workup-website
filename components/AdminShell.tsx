@@ -65,6 +65,42 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     if (hydrated) try { localStorage.setItem(LS_FAVS, JSON.stringify(favorites)); } catch { /* noop */ }
   }, [favorites, hydrated]);
 
+  // 즐겨찾기: 서버에서 불러오기. 서버에 없고 로컬 캐시가 있으면 1회 서버로 이관(seed).
+  useEffect(() => {
+    let cancelled = false;
+    fetch(FAV_API, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const serverFavs =
+          data && Array.isArray(data.favorites)
+            ? data.favorites.filter((x: unknown): x is string => typeof x === "string")
+            : null;
+        if (serverFavs && serverFavs.length > 0) {
+          setFavorites(serverFavs);
+        } else {
+          // 서버가 비어있음 → 기존 로컬 즐겨찾기를 서버로 올려 동기화 시작
+          try {
+            const local = JSON.parse(localStorage.getItem(LS_FAVS) || "[]");
+            if (Array.isArray(local) && local.length > 0) {
+              fetch(FAV_API, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ favorites: local }),
+              }).catch(() => {});
+            }
+          } catch {
+            /* noop */
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // 현재 경로가 메뉴 항목일 때만 탭에 추가 (동적 편집/등록 페이지는 제외)
   useEffect(() => {
     if (!hydrated || !routeLeaf) return;
@@ -110,10 +146,31 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     [tabs, activeHref, router]
   );
 
-  const isFavorite = useCallback((href: string) => favorites.includes(href), [favorites]);
-  const toggleFavorite = useCallback((href: string) => {
-    setFavorites((prev) => (prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href]));
+  // 즐겨찾기 서버 저장(연속 클릭 시 마지막 상태만 전송하도록 디바운스)
+  const favSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveFavoritesToServer = useCallback((next: string[]) => {
+    if (favSaveTimer.current) clearTimeout(favSaveTimer.current);
+    favSaveTimer.current = setTimeout(() => {
+      fetch(FAV_API, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorites: next }),
+      }).catch(() => {});
+    }, 500);
   }, []);
+
+  const isFavorite = useCallback((href: string) => favorites.includes(href), [favorites]);
+  const toggleFavorite = useCallback(
+    (href: string) => {
+      const next = favorites.includes(href)
+        ? favorites.filter((h) => h !== href)
+        : [...favorites, href];
+      setFavorites(next);
+      saveFavoritesToServer(next); // 로컬 캐시는 별도 effect가 저장
+    },
+    [favorites, saveFavoritesToServer]
+  );
 
   const value = useMemo<AdminUIValue>(
     () => ({ tabs, currentHref: activeHref, selectTab, closeTab, favorites, isFavorite, toggleFavorite }),
