@@ -1256,6 +1256,38 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
     { type: "dist-v",   icon: "⇵",  label: "세로 등간격", min: 3 },
   ];
 
+  // ── 전체 영역(가용 영역) 기준 정렬 — 1개만 선택해도 사용 가능 ──
+  type CanvasAlignType = "left" | "center-h" | "right" | "top" | "middle-v" | "bottom";
+  const alignToCanvas = (type: CanvasAlignType) => {
+    const selected = layers.filter((l) => selIds.has(l.id));
+    if (selected.length === 0) return;
+    let x: number | undefined; let y: number | undefined;
+    switch (type) {
+      case "left":     x = CANVAS_X.min; break;
+      case "center-h": x = Math.round(((CANVAS_X.min + CANVAS_X.max) / 2) * 10) / 10; break;
+      case "right":    x = CANVAS_X.max; break;
+      case "top":      y = CANVAS_Y.min; break;
+      case "middle-v": y = Math.round(((CANVAS_Y.min + CANVAS_Y.max) / 2) * 10) / 10; break;
+      case "bottom":   y = CANVAS_Y.max; break;
+    }
+    onChange(layers.map((layer) => {
+      if (!selIds.has(layer.id)) return layer;
+      const p = mode === "pc"
+        ? { ...(x !== undefined ? { pc_x: x } : {}), ...(y !== undefined ? { pc_y: y } : {}) }
+        : { ...(x !== undefined ? { mobile_x: x } : {}), ...(y !== undefined ? { mobile_y: y } : {}) };
+      return { ...layer, ...p };
+    }));
+  };
+
+  const CANVAS_ALIGN_BTNS: { type: CanvasAlignType; icon: string; label: string }[] = [
+    { type: "left",     icon: "⇤",  label: "왼쪽" },
+    { type: "center-h", icon: "↔",  label: "가로 중앙" },
+    { type: "right",    icon: "⇥",  label: "오른쪽" },
+    { type: "top",      icon: "⇡",  label: "위" },
+    { type: "middle-v", icon: "↕",  label: "세로 중앙" },
+    { type: "bottom",   icon: "⇣",  label: "아래" },
+  ];
+
   return (
     <div className="space-y-4">
       {/* PC / 모바일 전환 */}
@@ -1269,6 +1301,14 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setShowGrid((v) => !v)}
+            className={`text-xs px-3 py-1.5 border rounded-lg transition-colors ${showGrid ? "bg-slate-800 text-white border-slate-800" : "border-slate-200 text-slate-500 hover:border-slate-400"}`}>
+            격자 {showGrid ? "끄기" : "보기"}
+          </button>
+          <button type="button" onClick={() => setSnapEnabled((v) => !v)}
+            className={`text-xs px-3 py-1.5 border rounded-lg transition-colors ${snapEnabled ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-500 hover:border-slate-400"}`}>
+            스냅 {snapEnabled ? "ON" : "OFF"}
+          </button>
           {layers.length >= 2 && (
             <button type="button" onClick={() => setSelIds(new Set(layers.map((l) => l.id)))}
               className="text-xs px-3 py-1.5 border border-slate-200 text-slate-500 rounded-lg hover:border-slate-400 transition-colors">
@@ -1294,8 +1334,8 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
           containerType: "inline-size",
         }}
         onMouseMove={onMouseMove}
-        onMouseUp={() => { drag.current = null; }}
-        onMouseLeave={() => { drag.current = null; }}
+        onMouseUp={() => { drag.current = null; setSnapLines({ x: null, y: null }); }}
+        onMouseLeave={() => { drag.current = null; setSnapLines({ x: null, y: null }); }}
       >
         <div className="absolute inset-0" onMouseDown={() => { setSelIds(new Set()); setEditId(null); }}>
           {bg ? (
