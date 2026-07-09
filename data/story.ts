@@ -103,7 +103,8 @@ export type ProblemSection = SectionBase & {
 };
 
 // ── Work·Life·Wear 3아이콘 특징 ──
-export type FeatureItem = { icon: IconKey; label: string; desc: string };
+// iconImage: 업로드/커스텀 아이콘 이미지 URL. 있으면 프리셋 아이콘(icon) 대신 이 이미지를 사용.
+export type FeatureItem = { icon: IconKey; label: string; desc: string; iconImage?: string };
 export type Features3Section = SectionBase & {
   type: "features3";
   eyebrow: string;
@@ -279,12 +280,12 @@ export const DEFAULT_STORY: StoryConfig = {
     {
       id: "features3", type: "features3", visible: true, bg: "beige",
       eyebrow: "WORK LIFE WEAR",
-      heading: "일할 때는 작업복처럼,\n일상에서는 평상복처럼.",
-      lead: "워크업은 현장의 기능과 일상의 스타일을 동시에 담습니다.",
+      heading: "일할 때는 작업복처럼. 일상에서는 평상복처럼.",
+      lead: "현장의 기능과 일상의 스타일을 함께 담아\n어떤 순간에도 자연스럽게 어울리는 옷을 만듭니다.",
       items: [
-        { icon: "hardhat", label: "WORK", desc: "현장에서 검증된\n기능성" },
-        { icon: "clock", label: "LIFE", desc: "퇴근 후에도\n자연스러운 스타일" },
-        { icon: "hanger", label: "WEAR", desc: "매일 갈아입지 않아도\n되는 옷" },
+        { icon: "hardhat", iconImage: "/images/wlw01.png", label: "WORK", desc: "현장에서 버티는 기능" },
+        { icon: "clock", iconImage: "/images/wlw02.png", label: "LIFE", desc: "퇴근 후에도 자연스러운 스타일" },
+        { icon: "hanger", iconImage: "/images/wlw03.png", label: "WEAR", desc: "오래 입을 수 있는 품질" },
       ],
     },
     {

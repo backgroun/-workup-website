@@ -476,26 +476,43 @@ export default function StorySectionView({ section, edit }: { section: StorySect
         edit?.patch({ items: items.map((x, idx) => (idx === i ? { ...x, ...patch } : x)) });
       const addItem = () => edit?.patch({ items: [...items, { icon: "check", label: "NEW", desc: "" }] });
       const delItem = (i: number) => edit?.patch({ items: items.filter((_, idx) => idx !== i) });
+      const pickIcon = (i: number) => edit ? () => edit.pickImage((url) => setItem(i, { iconImage: url })) : undefined;
       return (
-        <section className={`${SEC} ${bg}`}>
-          <div className="px-[15px] md:px-[70px]">
-            <div className="max-w-2xl mb-14">
-              <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="WORK LIFE WEAR" multiline={false} />
-              <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.2] mb-6 whitespace-pre-line block"
-                value={section.heading} {...ep("heading")} placeholder="일할 때는 작업복처럼, 일상에서는 평상복처럼." />
-              <Editable as="p" className={`text-[calc(15px*var(--st-fs,1))] md:text-[calc(17px*var(--st-fs,1))] text-gray-500 ${LH} block`}
-                value={section.lead} {...ep("lead")} placeholder="리드 문장" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8">
+        // WORK LIFE WEAR — 중앙 정렬. 세로(1900px 기준): 위 60 · eyebrow→제목 18 · 제목(40px)→리드 45 · 리드(20px)→아이콘 45
+        //  · 아이콘(70×70)→라벨 29 · 라벨→설명 25 · 아래 66 → 전체 ≈520px. 아이콘 3열은 중앙에 약 300px 간격(max-w-[900px]).
+        <section className={bg}>
+          <div className="px-[15px] md:px-[70px] text-center pt-16 pb-16 lg:pt-[60px] lg:pb-[66px]">
+            <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] ${eyebrowColor} uppercase mb-3 lg:mb-[18px] block`}
+              value={section.eyebrow} {...ep("eyebrow")} placeholder="WORK LIFE WEAR" multiline={false} />
+            <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
+              value={section.heading} {...ep("heading")} placeholder="일할 때는 작업복처럼. 일상에서는 평상복처럼." />
+            <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-500 ${LH} mb-10 lg:mb-[45px] max-w-[760px] mx-auto whitespace-pre-line block`}
+              value={section.lead} {...ep("lead")} placeholder="리드 문장" />
+            <div className="mx-auto max-w-[900px] grid grid-cols-1 sm:grid-cols-3 gap-12 sm:gap-6">
               {items.map((it, i) => (
-                <div key={i} className="group/item relative text-center">
+                <div key={i} className="group/item relative flex flex-col items-center text-center">
                   {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                  <div className="flex justify-center mb-5">
-                    <IconPickerButton icon={it.icon} onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
-                  </div>
-                  <Editable as="h3" className="text-[calc(15px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] mb-3 block"
+                  {/* 아이콘 70×70 (커스텀 이미지 우선, 없으면 프리셋). 편집 모드는 클릭해 이미지 교체 */}
+                  {edit ? (
+                    <button type="button" onClick={(e) => { e.stopPropagation(); pickIcon(i)?.(); }}
+                      className="group/ic relative w-[70px] h-[70px] flex items-center justify-center text-[#1A2B4A]">
+                      {it.iconImage
+                        ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={it.iconImage} alt={it.label} className="w-full h-full object-contain" />
+                        : <StoryIcon icon={it.icon} className="w-full h-full" />}
+                      <span className="pointer-events-none absolute inset-0 rounded-lg bg-black/0 group-hover/ic:bg-black/30 flex items-center justify-center transition-colors">
+                        <span className="opacity-0 group-hover/ic:opacity-100 text-white text-[10px] font-semibold">교체</span>
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="w-[70px] h-[70px] flex items-center justify-center text-[#1A2B4A]">
+                      {it.iconImage
+                        ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={it.iconImage} alt={it.label} className="w-full h-full object-contain" />
+                        : <StoryIcon icon={it.icon} className="w-full h-full" />}
+                    </div>
+                  )}
+                  <Editable as="h3" className="mt-6 lg:mt-[29px] text-[calc(15px*var(--st-fs,1))] lg:text-[calc(16px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] block"
                     value={it.label} placeholder="WORK" multiline={false} {...epi(`items.${i}.label`, edit ? (x) => setItem(i, { label: x }) : undefined)} />
-                  <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
+                  <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                     value={it.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
                 </div>
               ))}
