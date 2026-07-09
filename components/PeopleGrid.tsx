@@ -36,16 +36,21 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
   const hasPrev = current > 0;
   const hasNext = current < total - 1;
 
-  return (
-    <section className="py-20 bg-[#F5F2ED]">
-      <div className="px-[15px] md:px-[70px]">
+  const hasWorkMoments = person.workMoments.photos.length > 0 || !!person.workMoments.video;
+  const hasQna = person.qna.some((qa) => qa.q.trim());
+  const hasProducts = person.products.some((p) => p.name.trim());
+  const ig = person.instagram;
+  const hasInstagram = !!ig && !!ig.handle.trim() && (ig.reels.length > 0 || ig.photos.length > 0);
 
+  return (
+    <section className="bg-[#F5F2ED]">
+      <div className="px-[15px] md:px-[70px] py-10">
         {/* 섹션 헤더 */}
-        <div className="mb-10">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
+        <div className="mb-8">
+          <h1 className="text-[28px] md:text-[36px] font-bold text-[#1A2B4A] leading-tight mb-3">
             {h.title}
           </h1>
-          <p className="text-[14px] text-gray-500 leading-relaxed">
+          <p className="text-[13px] text-gray-500 leading-relaxed">
             {h.description.split("\n").map((line, i) => (
               <span key={i}>{line}{i < h.description.split("\n").length - 1 && <br />}</span>
             ))}
@@ -70,7 +75,6 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
               </button>
             </div>
 
-            {/* 전체 글 목록 패널 */}
             {listOpen && (
               <ul id="mate-list" className="mt-3 border border-gray-200 bg-white divide-y divide-gray-100">
                 {people.map((p, i) => {
@@ -89,7 +93,9 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
                         </span>
                         <span className="flex-1">
                           <span className="block text-[12px] text-[#ff550c] font-semibold mb-0.5">{p.job}</span>
-                          <span className="block text-[14px] text-[#1A2B4A] font-medium leading-snug">"{p.quote}"</span>
+                          <span className="block text-[14px] text-[#1A2B4A] font-medium leading-snug">
+                            {p.quote.split("\n")[0]}
+                          </span>
                         </span>
                       </button>
                     </li>
@@ -99,70 +105,163 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
             )}
           </div>
         )}
+      </div>
 
-        {/* 본문 — 한 편의 글 (모바일: 세로 / PC: 사진+본문 2단으로 화면 꽉 채움) */}
-        <article className="bg-white border border-gray-200 overflow-hidden grid lg:grid-cols-2 items-stretch">
-          {/* 대형 사진 — PC에서는 본문 높이만큼 꽉 채움 */}
-          <div className="relative overflow-hidden aspect-[16/10] lg:aspect-auto lg:min-h-[560px]" style={{ backgroundColor: person.bg }}>
-            {person.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mb-4">
-                  <span className="text-4xl font-bold text-white">{person.initial}</span>
-                </div>
-                <span className="text-xs text-white/50 tracking-widest uppercase">실제 고객 인터뷰</span>
+      {/* ── 히어로 ── */}
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#1A2B4A]">
+        {person.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1A2B4A,#101a30)" }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
+        <div className="absolute inset-0 flex flex-col justify-center px-[15px] md:px-[70px]">
+          <span className="text-[#ff550c] text-[12px] md:text-[13px] font-bold tracking-wider mb-3">WORKUP MATE</span>
+          <h2 className="text-white text-[26px] md:text-[42px] font-bold leading-tight mb-4 max-w-[600px]">
+            {person.quote.split("\n").map((line, i) => (
+              <span key={i} className="block">{line}</span>
+            ))}
+          </h2>
+          <p className="text-white/80 text-[13px] md:text-[15px]">
+            {person.job} {person.job && person.years && <span className="mx-1.5 text-white/40">|</span>} {person.years}
+          </p>
+        </div>
+      </div>
+
+      <div className="px-[15px] md:px-[70px]">
+        {/* ── WORK MOMENTS ── */}
+        {hasWorkMoments && (
+          <div className="py-12 md:py-16 border-b border-gray-200">
+            <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
+              <div>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">WORK MOMENTS</h3>
+                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">현장의 순간들을<br />기록합니다.</p>
+                {ig?.link && (
+                  <a href={ig.link} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] transition-colors">
+                    더 많은 사진/영상 보기 →
+                  </a>
+                )}
               </div>
-            )}
-            <div className="absolute top-4 left-4 bg-[#ff550c] text-white text-xs px-2.5 py-1 font-semibold z-10">
-              {person.job}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {person.workMoments.photos.map((url, i) => (
+                  <div key={i} className="aspect-[3/4] overflow-hidden bg-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+                {person.workMoments.video && (
+                  <div className="relative aspect-[3/4] overflow-hidden bg-black">
+                    <video src={person.workMoments.video} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                        <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-[#1A2B4A] ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* 글 본문 */}
-          <div className="p-6 md:p-10 lg:p-14 lg:flex lg:flex-col lg:justify-center">
-            <p className="text-xs text-gray-400 mb-3">{person.years}</p>
-
-            <blockquote className="text-[22px] md:text-[26px] font-bold text-[#1A2B4A] leading-snug mb-8">
-              "{person.quote}"
-            </blockquote>
-
-            <div className="space-y-4 mb-10">
-              {person.story.map((line, i) => (
-                <p key={i} className="text-[15px] text-gray-700 leading-loose">
-                  {line}
-                </p>
-              ))}
+        {/* ── INTERVIEW ── */}
+        {hasQna && (
+          <div className="py-12 md:py-16 border-b border-gray-200">
+            <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10">
+              <div>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INTERVIEW</h3>
+                <p className="text-[13px] text-gray-500 leading-relaxed">그가 들려주는<br />이야기</p>
+              </div>
+              <InterviewAccordion qna={person.qna} />
             </div>
+          </div>
+        )}
 
-            {/* 중요하게 여기는 것 */}
-            <div className="border-t border-gray-100 pt-6 mb-8">
-              <p className="text-xs text-gray-400 mb-1">중요하게 여기는 것</p>
-              <p className="text-[15px] font-semibold text-[#1A2B4A]">{person.theme}</p>
-            </div>
-
-            {/* 추천 제품 */}
-            <div>
-              <p className="text-xs text-gray-400 mb-3">이 분이 함께한 제품</p>
-              <div className="flex flex-wrap gap-2">
-                {person.products.map((product) => (
-                  <Link
-                    key={product.name}
-                    href={product.href}
-                    className="text-[13px] bg-[#1A2B4A] text-white px-4 py-2 hover:bg-[#ff550c] transition-colors"
-                  >
-                    {product.name} →
+        {/* ── WEAR THIS ── */}
+        {hasProducts && (
+          <div className="py-12 md:py-16 border-b border-gray-200">
+            <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
+              <div>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">WEAR THIS</h3>
+                <p className="text-[13px] text-gray-500 leading-relaxed">실제 현장에서<br />착용한 제품</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                {person.products.filter((p) => p.name.trim()).map((product, i) => (
+                  <Link key={i} href={product.href} className="group block">
+                    <div className="aspect-square bg-gray-100 overflow-hidden mb-3">
+                      {product.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
+                      ) : null}
+                    </div>
+                    <p className="text-[14px] font-semibold text-[#1A2B4A] mb-1">{product.name}</p>
+                    <span className="text-[12px] text-gray-500 group-hover:text-[#ff550c] transition-colors">자세히 보기 →</span>
                   </Link>
                 ))}
               </div>
             </div>
           </div>
-        </article>
+        )}
+
+        {/* ── INSTAGRAM ── */}
+        {hasInstagram && ig && (
+          <div className="py-12 md:py-16">
+            <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
+              <div>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INSTAGRAM</h3>
+                <p className="text-[14px] font-semibold text-[#1A2B4A] mb-2">{ig.handle}</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                  {ig.description.split("\n").map((line, i) => (
+                    <span key={i}>{line}{i < ig.description.split("\n").length - 1 && <br />}</span>
+                  ))}
+                </p>
+                {ig.link && (
+                  <a href={ig.link} target="_blank" rel="noopener noreferrer"
+                    className="inline-block text-[13px] font-semibold bg-[#1A2B4A] text-white px-4 py-2.5 hover:bg-[#ff550c] transition-colors">
+                    인스타그램 바로가기 →
+                  </a>
+                )}
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {ig.reels.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">REELS</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ig.reels.slice(0, 3).map((url, i) => (
+                        <div key={i} className="relative aspect-[9/16] overflow-hidden bg-black">
+                          {url.match(/\.(mp4|webm|mov)$/i) ? (
+                            <video src={url} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {ig.photos.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold tracking-wider text-gray-400 mb-2">PHOTOS</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ig.photos.slice(0, 6).map((url, i) => (
+                        <div key={i} className="aspect-square overflow-hidden bg-gray-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 이전 / 다음 이야기 — 해당 방향에 글이 있을 때만 버튼 노출 */}
         {hasPrev || hasNext ? (
-          <div className="mt-6 flex gap-3">
+          <div className="pb-10 flex gap-3">
             {hasPrev && (
               <button
                 onClick={() => goTo(current - 1)}
@@ -187,14 +286,13 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
             )}
           </div>
         ) : (
-          <p className="mt-6 text-center text-[13px] text-gray-400">
+          <p className="pb-10 text-center text-[13px] text-gray-400">
             더 많은 이야기가 곧 추가됩니다.
           </p>
         )}
 
         {/* MATE ZONE — 같은 페이지 흐름 안의 릴스 영역(릴스 없으면 자동 숨김) */}
         {mateZone && <MateZone config={mateZone} />}
-
       </div>
 
       {/* 데스크톱 우하단 고정 CTA — 글을 읽는 내내 매장 방문 유도(모바일은 전역 하단바 '매장' 탭이 담당) */}
@@ -205,5 +303,38 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
         가까운 매장 찾기 →
       </Link>
     </section>
+  );
+}
+
+function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
+  const [open, setOpen] = useState<number | null>(0);
+  const items = qna.filter((item) => item.q.trim());
+
+  return (
+    <div className="divide-y divide-gray-200 border-t border-b border-gray-200">
+      {items.map((item, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={i}>
+            <button
+              onClick={() => setOpen(isOpen ? null : i)}
+              className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
+              aria-expanded={isOpen}
+            >
+              <span className="text-[14px] md:text-[15px] text-[#1A2B4A]">
+                <span className="font-bold text-[#ff550c] mr-2">Q{i + 1}.</span>
+                {item.q}
+              </span>
+              <span className="text-[18px] text-gray-400 flex-shrink-0">{isOpen ? "−" : "+"}</span>
+            </button>
+            {isOpen && item.a.trim() && (
+              <div className="pb-5 pr-8">
+                <p className="text-[14px] text-gray-600 leading-loose whitespace-pre-line">{item.a}</p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }

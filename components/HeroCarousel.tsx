@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { bgColorWithAlpha } from "@/lib/color";
 
 type TextLayer = {
@@ -34,6 +35,8 @@ type HeroSlide = {
   pc_video_url?: string | null;
   mobile_video_url?: string | null;
   video_duration?: number | null;
+  link_url?: string | null;
+  link_new_tab?: boolean | null;
   pc_image_position?: string | null;
   mobile_image_position?: string | null;
   pc_image_scale?: number | null;

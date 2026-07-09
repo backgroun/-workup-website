@@ -625,6 +625,17 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
             </Field>
           </div>
 
+          {/* 클릭 시 이동 (슬라이드 전체 클릭 영역) */}
+          <div className="pb-7 border-b border-slate-100 space-y-4">
+            <SectionTitle title="클릭 시 이동" accent="bg-amber-500" desc="슬라이드를 클릭했을 때 이동할 메뉴/페이지를 지정합니다. 미지정 시 클릭해도 이동하지 않습니다." />
+            <SlideLinkField
+              value={editing.link_url}
+              newTab={editing.link_new_tab}
+              onChangeValue={(v) => set("link_url", v)}
+              onChangeNewTab={(v) => set("link_new_tab", v)}
+            />
+          </div>
+
           {/* 동영상 (동영상 슬라이드 전용) */}
           {mediaTab === "video" && (
             <div className="pb-7 border-b border-slate-100 space-y-4">
@@ -804,6 +815,56 @@ function SectionTitle({ title, desc, accent = "bg-blue-500", right }: {
         {desc && <p className="text-xs text-slate-400 mt-1.5 ml-3">{desc}</p>}
       </div>
       {right && <div className="flex-shrink-0">{right}</div>}
+    </div>
+  );
+}
+
+// ── 슬라이드 클릭 이동 링크 (헤더 메뉴 프리셋 + 직접 입력) ──
+function SlideLinkField({ value, newTab, onChangeValue, onChangeNewTab }: {
+  value: string | null; newTab: boolean;
+  onChangeValue: (v: string | null) => void; onChangeNewTab: (v: boolean) => void;
+}) {
+  const preset = value !== null && LINK_PRESETS.some((p) => p.href === value);
+  const isCustom = !!value && !preset;
+  const selectValue = !value ? "" : preset ? value : "custom";
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <select
+          value={selectValue}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") onChangeValue(null);
+            else if (v === "custom") onChangeValue(value || "https://");
+            else onChangeValue(v);
+          }}
+          className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded bg-white"
+        >
+          <option value="">이동 안 함 (기본)</option>
+          {LINK_PRESETS.map((p) => (
+            <option key={p.href} value={p.href}>{p.label} — {p.href}</option>
+          ))}
+          <option value="custom">직접 입력 (URL)</option>
+        </select>
+
+        {value && (
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600">
+            <input type="checkbox" checked={newTab} onChange={(e) => onChangeNewTab(e.target.checked)} className="w-4 h-4 accent-amber-600" />
+            새 탭에서 열기
+          </label>
+        )}
+      </div>
+
+      {isCustom && (
+        <input
+          type="text"
+          value={value ?? ""}
+          onChange={(e) => onChangeValue(e.target.value)}
+          placeholder="예: /products/123 또는 https://..."
+          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+        />
+      )}
     </div>
   );
 }
