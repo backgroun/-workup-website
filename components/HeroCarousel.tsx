@@ -51,6 +51,7 @@ type HeroSlide = {
 const AUTO_INTERVAL = 5000;
 
 export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const total = slides.length;
   const touchStartX = useRef<number | null>(null);
@@ -98,6 +99,14 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     setCurrent((c) => (c + dir + total) % total);
   };
 
+  // 슬라이드 클릭 시 이동 (link_url 설정된 경우만)
+  const goToSlideLink = (slide: HeroSlide) => {
+    if (!slide.link_url) return;
+    if (slide.link_new_tab) { window.open(slide.link_url, "_blank", "noopener,noreferrer"); return; }
+    if (slide.link_url.startsWith("/")) router.push(slide.link_url);
+    else window.location.href = slide.link_url;
+  };
+
   // 터치 스와이프
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -131,11 +140,19 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           // 노출 시간이 지정된 동영상은 시간이 찰 때까지 루프 재생, 아니면 1회 재생 후 onEnded로 전환
           const loopVideo = total <= 1 || !!slide.video_duration;
 
+          const clickable = !!slide.link_url;
+
           return (
             <div
               key={slide.id}
-              className="flex-shrink-0 w-full h-full relative flex flex-col justify-center overflow-hidden"
+              className={`flex-shrink-0 w-full h-full relative flex flex-col justify-center overflow-hidden${clickable ? " cursor-pointer" : ""}`}
               style={{ containerType: "inline-size" }}
+              {...(clickable ? {
+                role: "link",
+                tabIndex: 0,
+                onClick: () => goToSlideLink(slide),
+                onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToSlideLink(slide); } },
+              } : {})}
             >
               {/* 배경 — 동영상 슬라이드 우선, 없으면 이미지, 둘 다 없으면 액센트 */}
               {pcVideo ? (
@@ -244,6 +261,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     {slide.btn1_visible && slide.btn1_text && (
                       <a
                         href={slide.btn1_link}
+                        onClick={(e) => e.stopPropagation()}
                         className="inline-block bg-[#ff550c] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
                       >
                         {slide.btn1_text}
@@ -252,6 +270,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     {slide.btn2_visible && slide.btn2_text && (
                       <a
                         href={slide.btn2_link}
+                        onClick={(e) => e.stopPropagation()}
                         className="inline-block border border-white text-white text-sm tracking-widest px-8 py-3 hover:bg-white hover:text-[#1A2B4A] transition-colors"
                       >
                         {slide.btn2_text}
