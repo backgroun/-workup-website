@@ -150,12 +150,18 @@ export function normalizeFooter(raw: Partial<FooterConfig> | null | undefined): 
 
 // ── 고객센터(1:1) ──────────────────────────────────────────────────────────
 export type SupportConfig = {
+  hero_eyebrow: string;      // 상단 영문 라벨 (예: CUSTOMER CENTER)
+  hero_title: string;        // 상단 제목
+  hero_desc: string;         // 상단 설명 (줄바꿈 가능)
   guide_image_url: string;   // 좌측 안내 이미지
   intro_title: string;
   intro_desc: string;        // 줄바꿈 가능
 };
 
 export const DEFAULT_SUPPORT: SupportConfig = {
+  hero_eyebrow: "CUSTOMER CENTER",
+  hero_title: "고객센터 · 1:1 문의",
+  hero_desc: "제품·사이즈부터 매장 방문, 교환/반품까지 — 궁금하신 점을 남겨 주시면 담당자가 빠르게 도와드립니다.",
   guide_image_url: "",
   intro_title: "무엇을 도와드릴까요?",
   intro_desc:
@@ -165,6 +171,9 @@ export const DEFAULT_SUPPORT: SupportConfig = {
 export function normalizeSupport(raw: Partial<SupportConfig> | null | undefined): SupportConfig {
   const c = raw ?? {};
   return {
+    hero_eyebrow: str(c.hero_eyebrow, DEFAULT_SUPPORT.hero_eyebrow),
+    hero_title: str(c.hero_title, DEFAULT_SUPPORT.hero_title),
+    hero_desc: str(c.hero_desc, DEFAULT_SUPPORT.hero_desc),
     guide_image_url: safeUrl(c.guide_image_url),
     intro_title: str(c.intro_title, DEFAULT_SUPPORT.intro_title),
     intro_desc: str(c.intro_desc, DEFAULT_SUPPORT.intro_desc),

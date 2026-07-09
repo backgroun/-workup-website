@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 // ── 타입 ────────────────────────────────────────────────────────────────────
 
 type BgType = "solid" | "gradient" | "image";
-type LinkType = "url" | "product" | "category";
+type LinkType = "url" | "product" | "category" | "page";
 
 type AiInput = {
   productName: string;
@@ -868,13 +868,13 @@ export default function PopupManagePage() {
                   {/* 섹션 라벨 + 라디오 버튼 한 줄 */}
                   <div className="flex items-center gap-5">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest shrink-0">링크 설정</p>
-                    {(["product", "category", "url"] as LinkType[]).map(t => (
+                    {(["product", "category", "page", "url"] as LinkType[]).map(t => (
                       <label key={t} className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" checked={editing.link_type === t}
                           onChange={() => set("link_type", t)}
                           className="accent-blue-600" />
                         <span className="text-sm text-gray-700">
-                          {t === "product" ? "제품 선택" : t === "category" ? "카테고리" : "URL"}
+                          {t === "product" ? "제품 선택" : t === "category" ? "카테고리" : t === "page" ? "페이지" : "URL"}
                         </span>
                       </label>
                     ))}
@@ -883,7 +883,10 @@ export default function PopupManagePage() {
                   <div className="grid grid-cols-2 gap-4 items-start">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        {editing.link_type === "url" ? "URL 주소" : editing.link_type === "category" ? "카테고리 선택" : "제품 선택"}
+                        {editing.link_type === "url" ? "URL 주소"
+                          : editing.link_type === "category" ? "카테고리 선택"
+                          : editing.link_type === "page" ? "페이지 선택"
+                          : "제품 선택"}
                       </label>
                       {editing.link_type === "url" ? (
                         <input type="text" value={editing.link}
@@ -897,6 +900,15 @@ export default function PopupManagePage() {
                             set("link", link);
                             if (!editing.link_text || editing.link_text === "상품 보러가기")
                               set("link_text", `${label} 보러가기`);
+                          }}
+                        />
+                      ) : editing.link_type === "page" ? (
+                        <PageSelect
+                          currentLink={editing.link}
+                          onSelect={(link, title) => {
+                            set("link", link);
+                            if (!editing.link_text || editing.link_text === "상품 보러가기")
+                              set("link_text", title || "자세히 보기");
                           }}
                         />
                       ) : (
@@ -1424,6 +1436,80 @@ function ProductSearch({ currentLink, onSelect }: {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── PageSelect ────────────────────────────────────────────────────────────────
+
+type PopupPageItem = { id: string; admin_title: string; title: string; is_visible: boolean };
+
+function PageSelect({
+  currentLink,
+  onSelect,
+}: {
+  currentLink: string;
+  onSelect: (link: string, title: string) => void;
+}) {
+  const [pages, setPages] = useState<PopupPageItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/site-settings/popup_pages")
+      .then(r => r.json())
+      .then(data => {
+        const list = (data?.pages as PopupPageItem[] | undefined) ?? [];
+        setPages(list);
+      })
+      .catch(() => setPages([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <p className="text-xs text-gray-400 py-2">페이지 목록 로딩 중...</p>;
+  }
+
+  if (pages.length === 0) {
+    return (
+      <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center">
+        <p className="text-xs text-gray-400 mb-2">생성된 팝업 랜딩 페이지가 없습니다</p>
+        <a
+          href="/admin/main/popup/pages"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-blue-600 underline hover:text-blue-800"
+        >
+          팝업 랜딩 페이지 만들기 →
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+      {pages.map(p => {
+        const link = `/p/${p.id}`;
+        const label = p.admin_title || p.title || "(제목 없음)";
+        const selected = currentLink === link;
+        return (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => onSelect(link, label)}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-colors ${
+              selected
+                ? "bg-blue-50 border-blue-400 text-blue-700 font-medium"
+                : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+            }`}
+          >
+            <span>{label}</span>
+            {!p.is_visible && (
+              <span className="ml-2 text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">비공개</span>
+            )}
+            <span className="block text-[10px] text-gray-400 mt-0.5">{link}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

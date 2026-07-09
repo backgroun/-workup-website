@@ -1,4 +1,5 @@
 import { NextResponse, after } from "next/server";
+import { createHash, randomBytes } from "crypto";
 import { createAdminClient } from "@/lib/supabase-server";
 import { getSiteSection } from "@/lib/site-settings";
 import { normalizeNotifications, notifyRecipients, type NotificationConfig } from "@/lib/site-content";
@@ -108,6 +109,15 @@ export async function POST(req: Request) {
   }
   // 상품 문의(product)는 연락처를 받지 않으므로 별도 필수 검증 없음.
 
+  // 비밀번호 설정(선택) — 평문은 저장/전송하지 않고 솔트 SHA-256 해시만 보관한다.
+  const rawPw = String(p.password ?? "");
+  delete p.password;
+  if (rawPw) {
+    const salt = randomBytes(8).toString("hex");
+    p._pwSalt = salt;
+    p._pwHash = createHash("sha256").update(salt + rawPw).digest("hex");
+  }
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new" });
@@ -125,10 +135,12 @@ export async function POST(req: Request) {
       const notif = normalizeNotifications(await getSiteSection<NotificationConfig>("notifications"));
       // 유형(게시판 형태)별 담당자에게 발송 — 형태별 미설정 시 공통 담당자. 여러 명은 콤마로.
       const notifyEmail = notif.email_enabled ? notifyRecipients(notif, type).join(",") : "";
+      // 내부 키(_로 시작: 비밀번호 해시·답변 등)는 시트로 보내지 않는다.
+      const publicPayload = Object.fromEntries(Object.entries(payload).filter(([k]) => !k.startsWith("_")));
       const outgoing = {
         type,
         type_label: typeLabelOf(type),
-        ...payload,
+        ...publicPayload,
         submitted_at: new Date().toISOString(),
         notify_email: notifyEmail, // Apps Script가 이 값으로 담당자 메일 발송
       };

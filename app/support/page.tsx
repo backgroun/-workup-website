@@ -21,17 +21,21 @@ export default async function SupportPage() {
   return (
     <main>
       {/* 히어로 */}
-      <div className="bg-[#1A2B4A] py-16 md:py-20">
+      <section className="bg-[#F5F2ED] pt-16 md:pt-20 pb-2">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">CUSTOMER CENTER</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">고객센터 · 1:1 문의</h1>
-          <p className="text-gray-300 text-sm leading-relaxed max-w-xl">
-            제품·사이즈부터 매장 방문, 교환/반품까지 — 궁금하신 점을 남겨 주시면 담당자가 빠르게 도와드립니다.
-          </p>
+          {sup.hero_eyebrow && (
+            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{sup.hero_eyebrow}</p>
+          )}
+          {sup.hero_title && (
+            <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">{sup.hero_title}</h1>
+          )}
+          {sup.hero_desc && (
+            <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl whitespace-pre-line">{sup.hero_desc}</p>
+          )}
         </div>
-      </div>
+      </section>
 
-      <div className="bg-[#F5F2ED] py-12 md:py-16">
+      <div className="bg-[#F5F2ED] pb-12 md:pb-16 pt-8 md:pt-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-6 lg:items-stretch">
 

@@ -358,6 +358,18 @@ export default function FooterManagePage() {
       {tab === "support" && (
         <div className="max-w-2xl space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">상단(히어로)</p>
+            <p className="text-xs text-gray-400 -mt-1">고객센터 페이지 맨 위 밝은 영역의 문구입니다. 비우면 해당 줄은 표시되지 않습니다.</p>
+            <Labeled label="영문 라벨" hint="제목 위 작은 주황색 텍스트 (예: CUSTOMER CENTER)">
+              <input className={INPUT} value={support.hero_eyebrow} onChange={(e) => setS("hero_eyebrow", e.target.value)} />
+            </Labeled>
+            <Labeled label="제목"><input className={INPUT} value={support.hero_title} onChange={(e) => setS("hero_title", e.target.value)} /></Labeled>
+            <Labeled label="설명 (줄바꿈 가능)">
+              <textarea rows={2} className={INPUT + " resize-none"} value={support.hero_desc} onChange={(e) => setS("hero_desc", e.target.value)} />
+            </Labeled>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">좌측 안내 이미지</p>
             <p className="text-xs text-gray-400 -mt-1">비우면 아래 ‘안내 문구’가 네이비 패널로 표시됩니다.</p>
             {support.guide_image_url && (

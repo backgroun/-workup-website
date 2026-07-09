@@ -4,7 +4,7 @@ import { DEFAULT_PARTNERSHIP, type FormConfig } from "@/data/partnership";
 
 type FormState = Record<string, string>;
 
-function SuccessMessage({ title, desc, onReset }: { title: string; desc: string; onReset: () => void }) {
+function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string; desc: string; passwordHint?: boolean; onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-12 h-12 bg-[#ff550c] flex items-center justify-center mb-4">
@@ -13,7 +13,13 @@ function SuccessMessage({ title, desc, onReset }: { title: string; desc: string;
         </svg>
       </div>
       <p className="text-base font-bold text-[#1A2B4A] mb-2">{title}</p>
-      <p className="text-xs text-gray-500 leading-relaxed mb-6">{desc}</p>
+      <p className="text-xs text-gray-500 leading-relaxed mb-4">{desc}</p>
+      {passwordHint && (
+        <div className="text-xs text-[#ff550c] bg-[#fff4ee] border border-[#ffd9c4] rounded-lg px-4 py-3 leading-relaxed mb-6 max-w-xs">
+          설정하신 <b>비밀번호를 꼭 기억해 주세요.</b><br />
+          오른쪽 <b>‘문의 현황’</b> 목록에서 내 글을 눌러 비밀번호로 내용·답변을 확인할 수 있어요.
+        </div>
+      )}
       <button
         onClick={onReset}
         className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
@@ -207,6 +213,7 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
   const emptyState = () => Object.fromEntries(config.fields.map((fld) => [fld.key, ""])) as FormState;
   const [form, setForm] = useState<FormState>(emptyState);
   const [agreed, setAgreed] = useState(false);
+  const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -223,7 +230,9 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
     setSubmitting(true); setError("");
     try {
       // 동의 시 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
-      const payload = consent ? { ...form, privacyAgree: "동의" } : form;
+      const payload: FormState = { ...form };
+      if (consent) payload.privacyAgree = "동의";
+      if (password.trim()) payload.password = password; // 서버에서 해시로 저장(평문 미보관)
       await submitInquiry(type, payload);
       setSubmitted(true);
     } catch (err) {
@@ -238,7 +247,8 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
       <SuccessMessage
         title={config.success_title}
         desc={config.success_desc}
-        onReset={() => { setForm(emptyState()); setAgreed(false); setSubmitted(false); }}
+        passwordHint={!!password.trim()}
+        onReset={() => { setForm(emptyState()); setAgreed(false); setPassword(""); setSubmitted(false); }}
       />
     );
   }
@@ -261,6 +271,20 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
             />
           </div>
         ))}
+      </div>
+      <div>
+        <label className="block mb-1.5" style={labelStyle}>
+          비밀번호 <span className="text-gray-400">(선택 · 내 글 확인용)</span>
+        </label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="설정하면 오른쪽 목록에서 비밀번호로 내 글을 확인할 수 있어요"
+          autoComplete="new-password"
+          style={inputStyle}
+          className="w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
+        />
       </div>
       {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}
       {error && <p className="text-xs text-red-500">{error}</p>}

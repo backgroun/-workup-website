@@ -1,9 +1,11 @@
 "use client";
-import type { StoryHero } from "@/data/story";
+import Editable from "@/components/story-edit/Editable";
+import type { StoryHero, HeroEditApi } from "@/data/story";
 
-// /story 상단 히어로. 공개 페이지와 관리자 미리보기에서 공용으로 사용(DRY).
-// image_url 이 없으면 현재 디자인(네이비 + 'WU' 워터마크 + 그라디언트)을 그대로 유지한다.
-export default function StoryHeroView({ hero }: { hero: StoryHero }) {
+// /story 상단 히어로. 공개 페이지와 위지윅 편집기에서 공용으로 사용(DRY).
+// edit 이 없으면 순수 렌더, 있으면 제목/서브 인라인 편집 + 배경 이미지 클릭 교체.
+// image_url 이 없으면 네이비 + 'WU' 워터마크 + 그라디언트를 유지한다.
+export default function StoryHeroView({ hero, edit }: { hero: StoryHero; edit?: HeroEditApi }) {
   return (
     <div
       className="relative w-full overflow-hidden"
@@ -11,11 +13,7 @@ export default function StoryHeroView({ hero }: { hero: StoryHero }) {
     >
       {hero.image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={hero.image_url}
-          alt={hero.heading || "WORKUP STORY"}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <img src={hero.image_url} alt={hero.heading || "WORKUP STORY"} className="absolute inset-0 w-full h-full object-cover" />
       )}
 
       {/* WU 워터마크 */}
@@ -28,12 +26,26 @@ export default function StoryHeroView({ hero }: { hero: StoryHero }) {
       {/* 그라디언트 */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
 
+      {/* 배경 이미지 교체 버튼(편집 모드) */}
+      {edit && (
+        <button type="button"
+          onClick={() => edit.pickImage((url) => edit.patch({ image_url: url }))}
+          className="absolute top-4 right-4 z-10 text-[12px] font-semibold text-white bg-black/50 hover:bg-black/70 rounded-full px-4 py-2">
+          {hero.image_url ? "배경 이미지 교체" : "배경 이미지 추가"}
+        </button>
+      )}
+
       {/* 텍스트 — 좌하단 (폰트 배율 --st-fs 적용) */}
       <div className="absolute bottom-12 px-[15px] md:px-[70px]">
-        <h1 className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(54px*var(--st-fs,1))] font-bold text-white leading-[1.15] mb-5 whitespace-pre-line">
-          {hero.heading}
-        </h1>
-        {hero.sub && <p className="text-white/60 text-[calc(14px*var(--st-fs,1))]">{hero.sub}</p>}
+        <Editable as="h1"
+          className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(54px*var(--st-fs,1))] font-bold text-white leading-[1.15] mb-5 whitespace-pre-line block"
+          value={hero.heading} onChange={edit ? (v) => edit.patch({ heading: v }) : undefined}
+          fx={hero.fx?.heading} onActivate={edit ? () => edit.activate("heading") : undefined} placeholder="히어로 제목" />
+        {(hero.sub || edit) && (
+          <Editable as="p" className="text-white/60 text-[calc(14px*var(--st-fs,1))] block"
+            value={hero.sub} onChange={edit ? (v) => edit.patch({ sub: v }) : undefined}
+            fx={hero.fx?.sub} onActivate={edit ? () => edit.activate("sub") : undefined} placeholder="서브 문구" multiline={false} />
+        )}
       </div>
     </div>
   );

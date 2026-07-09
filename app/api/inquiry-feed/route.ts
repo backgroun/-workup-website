@@ -60,6 +60,7 @@ export async function GET(req: Request) {
         name: maskName(String(p.name ?? p.manager ?? "")),
         content: feedTitle(p, r.type as string),
         created_at: r.created_at as string,
+        locked: !!String(p._pwHash ?? "").trim(), // 비밀번호 설정된 글만 열람 가능
       };
     });
 

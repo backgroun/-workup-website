@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import StoreLocator from "@/components/StoreLocator";
 import { getPublicStores } from "@/lib/publicStores";
+import { getSiteSection } from "@/lib/site-settings";
+import { normalizeStorePage, type StorePageConfig } from "@/lib/store-page";
 
 export const metadata: Metadata = {
   title: "매장 찾기 — WORKUP",
@@ -8,10 +10,14 @@ export const metadata: Metadata = {
 };
 
 export default async function StorePage() {
-  const stores = await getPublicStores();
+  const [stores, headerCfg] = await Promise.all([
+    getPublicStores(),
+    getSiteSection<Partial<StorePageConfig>>("store_page"),
+  ]);
+  const header = normalizeStorePage(headerCfg);
   return (
     <main>
-      <StoreLocator stores={stores} />
+      <StoreLocator stores={stores} header={header} />
     </main>
   );
 }

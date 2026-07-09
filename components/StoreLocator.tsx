@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { type Store } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 import { trackStoreEvent } from "@/lib/track";
+import { DEFAULT_STORE_PAGE, type StorePageConfig } from "@/lib/store-page";
 
 const NEARBY_COUNT = 5;
 const KAKAO_CHANNEL = "https://pf.kakao.com/_workup"; // 실제 채널 URL로 교체
@@ -128,7 +129,15 @@ function NaverDirBtn({ store, userCoords: passedCoords }: {
   );
 }
 
-export default function StoreLocator({ id, stores }: { id?: string; stores: Store[] }) {
+export default function StoreLocator({
+  id,
+  stores,
+  header = DEFAULT_STORE_PAGE,
+}: {
+  id?: string;
+  stores: Store[];
+  header?: StorePageConfig;
+}) {
   const [locStatus, setLocStatus] = useState<LocStatus>("idle");
   const [locError, setLocError] = useState("");
   const [nearbyStores, setNearbyStores] = useState<StoreWithDistance[]>([]);
@@ -259,24 +268,24 @@ export default function StoreLocator({ id, stores }: { id?: string; stores: Stor
       <div className="bg-white py-16 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
-            직접 입어봐야 압니다.
+            {header.title}
           </h1>
-          <p className="text-[14px] text-gray-500 leading-relaxed mb-8">
-            몸으로 느끼는 기능은 화면으로 전할 수 없습니다. 전국 {stores.length}개 매장에서 직접 확인해 보세요.
-          </p>
+          {header.description && (
+            <p className="text-[14px] text-gray-500 leading-relaxed mb-8 whitespace-pre-line">
+              {header.description.replace(/\{count\}/g, String(stores.length))}
+            </p>
+          )}
           {/* 방문 안내 */}
-          <ul className="flex flex-col gap-2">
-            {[
-              "직종을 말씀해 주시면 맞춤 추천해 드립니다.",
-              "방문 전 피팅리스트 제품 재고 상황을 유선상으로 확인할 수 있습니다.",
-              "사이즈 교환은 매장에 사이즈가 있을 경우 가능합니다.",
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-2 text-[13px] text-gray-500">
-                <span className="text-[#ff550c] font-bold flex-shrink-0 mt-0.5">✓</span>
-                {item}
-              </li>
-            ))}
-          </ul>
+          {header.bullets.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {header.bullets.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-[13px] text-gray-500">
+                  <span className="text-[#ff550c] font-bold flex-shrink-0 mt-0.5">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

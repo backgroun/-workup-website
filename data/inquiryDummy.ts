@@ -8,6 +8,7 @@ export type FeedItem = {
   name: string;       // 마스킹된 표시 이름
   content: string;
   created_at: string; // ISO
+  locked?: boolean;   // 비밀번호로 보호된 실제 글 — 목록에서 눌러 비밀번호로 열람
 };
 
 const SURNAMES = ["김","이","박","최","정","강","조","윤","장","임","오","한","서","신","권","황","안","송","류","홍","전","고","문","손","양","배","백","허","유","남"];

@@ -10,11 +10,21 @@ export type SectionBg = "white" | "beige"; // white = bg-white, beige = bg-[#f2f
 export type StorySectionType =
   | "declaration" | "category" | "values" | "founding" | "cta" | "richtext" | "photos";
 
+// 요소별(텍스트) 개별 서식 — 선택한 한 요소에만 적용되는 오버라이드. 비우면 기본(테마) 사용.
+export type TextAlign = "left" | "center" | "right";
+export type TextFx = {
+  size?: number;    // px (설정 시 기본 크기 대체)
+  color?: string;   // 글자색
+  align?: TextAlign;
+  weight?: number;  // 400 | 700
+};
+
 export type SectionBase = {
   id: string;
   type: StorySectionType;
   visible: boolean;
   bg: SectionBg;
+  fx?: Record<string, TextFx>; // 필드명 → 개별 서식 (예: "heading", "lead")
 };
 
 export type DeclarationSection = SectionBase & {
@@ -90,6 +100,7 @@ export type StoryHero = {
   heading: string;        // 줄바꿈 \n
   sub: string;
   height: number;         // 기본 580 (px)
+  fx?: Record<string, TextFx>; // 요소별 개별 서식 ("heading", "sub")
 };
 
 // ── 전체 디자인 토큰 (스토리 페이지 공통 스타일) ──
@@ -133,6 +144,25 @@ export function storyStyleVars(s: StoryStyle): Record<string, string> {
 }
 
 export type StoryConfig = { hero: StoryHero; sections: StorySection[]; style?: StoryStyle };
+
+// ── 위지윅(WYSIWYG) 편집 API ──
+// 공개 컴포넌트(StorySectionView/StoryHeroView)에 optional 로 주입한다.
+// 없으면(공개 페이지) 순수 렌더, 있으면(관리자 편집기) 클릭 인라인 편집이 활성화된다.
+// type 리터럴은 섹션마다 달라 교집합 시 never 가 되므로 제외한 뒤 합친다.
+export type PartialSection = Partial<
+  Omit<DeclarationSection, "type"> & Omit<CategorySection, "type"> & Omit<ValuesSection, "type"> &
+  Omit<FoundingSection, "type"> & Omit<CtaSection, "type"> & Omit<RichTextSection, "type"> & Omit<PhotosSection, "type">
+>;
+export type SectionEditApi = {
+  patch: (p: PartialSection) => void;                 // 이 섹션 필드 갱신
+  pickImage: (onPicked: (url: string) => void) => void; // 파일 선택창 → 업로드 → url 반환
+  activate: (field: string) => void;                  // 요소 선택 → 서식 툴바 대상 지정
+};
+export type HeroEditApi = {
+  patch: (p: Partial<StoryHero>) => void;
+  pickImage: (onPicked: (url: string) => void) => void;
+  activate: (field: string) => void;
+};
 
 // 한글 타입 라벨 (관리자 목록/팔레트용)
 export const SECTION_TYPE_LABEL: Record<StorySectionType, string> = {
