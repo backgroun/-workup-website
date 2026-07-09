@@ -154,31 +154,33 @@ export default function HomeNewArrivals() {
           </div>
         )}
 
-        {/* PC 가로 스크롤 캐러셀 — 좌우에 화살표 전용 여백(카드 영역을 52px 안쪽으로 inset), 화살표는 그 여백에 두어 이미지와 겹치지 않음. 다음 카드 peek은 이미지 영역 끝에서 보임 */}
-        <div className="hidden md:block relative">
+        {/* PC 가로 스크롤 캐러셀 — 화살표는 마우스 오버 시에만 표시되는 반투명 흰 원형 버튼(작은 chevron), 이미지 위에 오버레이 */}
+        <div className="hidden md:block relative group/nav -mr-[70px]">
           {showLeft && (
             <button
               onClick={() => scroll("left")}
               aria-label="이전"
-              className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-              style={{ left: "8px" }}
+              className="absolute left-4 top-[140px] -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:bg-white/90"
             >
-              <img src="/images/arrow_prev.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
+              <svg className="w-4 h-4 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
           )}
           <button
             onClick={() => scroll("right")}
             aria-label="다음"
-            className="absolute top-[140px] -translate-y-1/2 z-10 flex items-center justify-center hover:opacity-60 transition-opacity"
-            style={{ right: "8px" }}
+            className="absolute right-4 top-[140px] -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:bg-white/90"
           >
-            <img src="/images/arrow_next.svg" alt="" width={40} height={40} className="w-9 h-9 select-none" />
+            <svg className="w-4 h-4 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
 
           <div
             ref={pcRef}
             onScroll={handlePcScroll}
-            className="flex gap-4 overflow-x-auto pb-1 mx-[52px]"
+            className="flex gap-4 overflow-x-auto pb-1 pr-[70px]"
             style={{ scrollbarWidth: "none" }}
           >
             {newItems.map((p) => (
