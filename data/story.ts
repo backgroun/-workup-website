@@ -277,7 +277,7 @@ export const DEFAULT_STORY: StoryConfig = {
       image_url: "/images/story-declaration.jpg",
     },
     {
-      id: "features3", type: "features3", visible: true, bg: "white",
+      id: "features3", type: "features3", visible: true, bg: "beige",
       eyebrow: "WORK LIFE WEAR",
       heading: "일할 때는 작업복처럼,\n일상에서는 평상복처럼.",
       lead: "워크업은 현장의 기능과 일상의 스타일을 동시에 담습니다.",
@@ -288,7 +288,7 @@ export const DEFAULT_STORY: StoryConfig = {
       ],
     },
     {
-      id: "values", type: "values", visible: true, bg: "beige",
+      id: "values", type: "values", visible: true, bg: "white",
       eyebrow: "Core Values",
       heading: "워크업이 지키는 네 가지 기준",
       layout: "icon",

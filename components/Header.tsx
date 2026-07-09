@@ -21,14 +21,11 @@ export default function Header({
   logo = DEFAULT_LOGO,
   search = DEFAULT_SEARCH,
   studioEnabled = true,
-  overlay = false,
 }: {
   navItems?: NavMenuItem[];
   logo?: LogoConfig;
   search?: SearchConfig;
   studioEnabled?: boolean;
-  // overlay: 히어로 위에 투명하게 얹히는 모드(스토리 페이지). 스크롤하면 흰 헤더로 전환.
-  overlay?: boolean;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,6 +37,8 @@ export default function Header({
   const pathname = usePathname();
   // 모바일 상품 상세 페이지에서는 MobileProductNav가 대신 담당
   const hideOnMobile = /^\/products\/[^/]+$/.test(pathname ?? "");
+  // 스토리 페이지에서만 히어로 위 투명 오버레이 헤더. 클라이언트 경로 기준이라 soft navigation 시에도 정확히 갱신된다.
+  const overlay = pathname === "/story";
 
   useEffect(() => {
     fetch("/api/member/me")
