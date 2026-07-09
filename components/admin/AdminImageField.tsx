@@ -23,7 +23,7 @@ function buildImagePrompt(type: "person" | "product", seed: string, size?: strin
 }
 
 export default function AdminImageField({
-  value, onChange, promptType, promptSeed, label = "이미지", recommendedSize,
+  value, onChange, promptType, promptSeed, label = "이미지", recommendedSize, showPrompt = true,
 }: {
   value?: string;
   onChange: (url: string) => void;
@@ -31,6 +31,7 @@ export default function AdminImageField({
   promptSeed: string;
   label?: string;
   recommendedSize?: string;
+  showPrompt?: boolean;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -80,11 +81,13 @@ export default function AdminImageField({
           {value && (
             <button type="button" onClick={() => onChange("")} className="text-xs text-red-400 hover:text-red-600">이미지 제거</button>
           )}
+          {showPrompt && (
           <button type="button" onClick={() => setPrompt(buildImagePrompt(promptType, promptSeed, recommendedSize))}
             className="block text-xs px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-medium transition-colors">
             ✨ AI 이미지 프롬프트 생성
           </button>
-          {prompt && (
+          )}
+          {showPrompt && prompt && (
             <div className="relative bg-gray-50 rounded-lg p-3 border border-gray-200">
               <p className="text-xs text-gray-600 leading-relaxed pr-12">{prompt}</p>
               <button type="button"
@@ -115,7 +118,9 @@ export default function AdminImageField({
           </span>
         )}
       </div>
-      <p className="text-[10px] text-gray-400 mt-1">프롬프트를 복사해 ChatGPT·이미지 생성 도구로 사진을 만든 뒤 업로드하세요.</p>
+      {showPrompt && (
+        <p className="text-[10px] text-gray-400 mt-1">프롬프트를 복사해 ChatGPT·이미지 생성 도구로 사진을 만든 뒤 업로드하세요.</p>
+      )}
     </div>
   );
 }

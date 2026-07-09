@@ -10,12 +10,15 @@ import {
   type TextFx, type TextAlign,
 } from "@/data/story";
 
-const SECTION_TYPES: StorySectionType[] = ["declaration", "category", "values", "founding", "cta", "richtext", "photos"];
+const SECTION_TYPES: StorySectionType[] = [
+  "declaration", "problem", "features3", "category", "values", "founding", "storeCta", "cta", "richtext", "photos",
+];
 
-// 선택 요소(서식 툴바 대상)
+// 선택 요소(서식 툴바 대상). baseSize 는 활성화 순간 실제 렌더된 폰트 크기(px) — fx.size 를 아직 지정 안 했을 때
+// 툴바가 "자동" 대신 이 값을 그대로 보여줘서, 사용자가 감으로 +/- 하지 않고 실제 수치에서 바로 조정하게 한다.
 type ActiveField =
-  | { scope: "hero"; field: string }
-  | { scope: "section"; id: string; field: string };
+  | { scope: "hero"; field: string; baseSize?: number }
+  | { scope: "section"; id: string; field: string; baseSize?: number };
 
 const FIELD_LABEL: Record<string, string> = {
   heading: "제목", eyebrow: "라벨", lead: "리드", emphasis: "강조문", emphasisStrong: "굵은 문구",
@@ -216,7 +219,11 @@ export default function StoryEditor() {
       <div style={canvasVars}>
         {/* 히어로 */}
         <div className="relative group/sec">
-          <StoryHeroView hero={hero} edit={{ patch: patchHero, pickImage: openPicker, activate: (field) => setActive({ scope: "hero", field }) }} />
+          <StoryHeroView hero={hero} edit={{
+            patch: patchHero, pickImage: openPicker,
+            activate: (field, px) => setActive({ scope: "hero", field, baseSize: px }),
+            activeField: active?.scope === "hero" ? active.field : undefined,
+          }} />
           <Inserter show={palette === 0} onToggle={() => setPalette(palette === 0 ? null : 0)} onPick={(t) => insertSection(0, t)} />
         </div>
 
@@ -240,7 +247,11 @@ export default function StoryEditor() {
               onBg={(bg) => patchSection(s.id, { bg })}
               onPatch={(p) => patchSection(s.id, p)}
             />
-            <StorySectionView section={s} edit={{ patch: (p) => patchSection(s.id, p), pickImage: openPicker, activate: (field) => setActive({ scope: "section", id: s.id, field }) }} />
+            <StorySectionView section={s} edit={{
+              patch: (p) => patchSection(s.id, p), pickImage: openPicker,
+              activate: (field, px) => setActive({ scope: "section", id: s.id, field, baseSize: px }),
+              activeField: active?.scope === "section" && active.id === s.id ? active.field : undefined,
+            }} />
             <Inserter show={palette === i + 1} onToggle={() => setPalette(palette === i + 1 ? null : i + 1)} onPick={(t) => insertSection(i + 1, t)} />
           </div>
         ))}
@@ -255,6 +266,7 @@ export default function StoryEditor() {
         <FormatToolbar
           label={FIELD_LABEL[active.field] ?? active.field}
           fx={activeFx}
+          baseSize={active.baseSize}
           onApply={applyFx}
           onReset={resetActiveFx}
           onClose={() => setActive(null)}

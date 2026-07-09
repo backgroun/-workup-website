@@ -92,6 +92,7 @@ export default function AdminProductBannersPage() {
               promptType="product"
               promptSeed={`상품 상세 하단 배너 ${idx + 1}`}
               recommendedSize="가로형 배너"
+              showPrompt={false}
             />
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1.5">연결 링크 (선택)</label>
