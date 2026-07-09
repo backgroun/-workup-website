@@ -42,7 +42,15 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
         <TopbarIcon name={c.left_icon} className="wu-tb-icon flex-shrink-0" />
       )}
       <span className={`wu-tb-text ${oxanium.className} whitespace-nowrap`} style={sharedStyle}>
-        {c.left_text}
+        {c.left_text.split("").map((ch, i) => (
+          <span
+            key={i}
+            className="wu-tb-shimmer-char"
+            style={{ animationDelay: `${i * 0.08}s` }}
+          >
+            {ch === " " ? " " : ch}
+          </span>
+        ))}
       </span>
     </>
   );

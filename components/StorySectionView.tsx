@@ -196,13 +196,13 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 <div key={i} className="group/item relative bg-white p-6 md:p-9">
                   {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
                   <Editable as="p" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(46px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-none mb-6 opacity-10 block"
-                    value={v.num} onChange={edit ? (x) => setItem(i, { num: x }) : undefined} multiline={false} />
+                    value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
                   <Editable as="p" className="text-[calc(10px*var(--st-fs,1))] tracking-[0.18em] text-gray-400 uppercase mb-2 block"
-                    value={v.en} onChange={edit ? (x) => setItem(i, { en: x }) : undefined} placeholder="Function" multiline={false} />
+                    value={v.en} placeholder="Function" multiline={false} {...epi(`items.${i}.en`, edit ? (x) => setItem(i, { en: x }) : undefined)} />
                   <Editable as="h3" className="text-[calc(18px*var(--st-fs,1))] md:text-[calc(20px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-4 block"
-                    value={v.title} onChange={edit ? (x) => setItem(i, { title: x }) : undefined} placeholder="제목" multiline={false} />
+                    value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
                   <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
-                    value={v.desc} onChange={edit ? (x) => setItem(i, { desc: x }) : undefined} placeholder="설명" />
+                    value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
                 </div>
               ))}
             </div>
@@ -230,7 +230,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                   {paras.map((para, i) => (
                     <div key={i} className="group/item relative">
                       {edit && paras.length > 1 && <DelBadge onClick={() => delPara(i)} />}
-                      <Editable as="p" value={para} onChange={edit ? (v) => setPara(i, v) : undefined} placeholder="본문 문단" />
+                      <Editable as="p" value={para} placeholder="본문 문단" {...epi(`paragraphs.${i}`, edit ? (v) => setPara(i, v) : undefined)} />
                       {i === 0 && section.emphasis && !edit && null}
                       {/* 인용구는 첫 문단 바로 다음에 표시 */}
                       {i === 0 && (section.emphasis || edit) && (
