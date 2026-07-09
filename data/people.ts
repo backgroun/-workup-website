@@ -62,3 +62,47 @@ export const DEFAULT_PEOPLE: Person[] = [
 
 // NOTE: 블로그형 MATE 페이지는 글이 쌓이기 전까지 한 편만 노출한다.
 // 관리자가 site_settings("people_page")에 글을 추가하면 자동으로 목록/이전·다음이 활성화된다.
+
+// 이전 레이아웃(story/theme/bg/initial 기반)으로 저장된 DB 데이터를 새 구조로 안전하게 보정.
+// 필드가 없거나 타입이 어긋나도 페이지가 죽지 않도록 항상 기본값을 채워 반환한다.
+export function normalizePerson(raw: unknown, fallbackId: string): Person {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, any>;
+  const wm = (r.workMoments && typeof r.workMoments === "object" ? r.workMoments : {}) as Record<string, any>;
+  const ig = r.instagram && typeof r.instagram === "object" ? (r.instagram as Record<string, any>) : null;
+
+  return {
+    id: typeof r.id === "string" && r.id ? r.id : fallbackId,
+    job: typeof r.job === "string" ? r.job : "",
+    years: typeof r.years === "string" ? r.years : "",
+    quote: typeof r.quote === "string" ? r.quote : "",
+    image_url: typeof r.image_url === "string" ? r.image_url : "",
+    workMoments: {
+      photos: Array.isArray(wm.photos) ? wm.photos.filter((p: unknown) => typeof p === "string") : [],
+      video: typeof wm.video === "string" ? wm.video : "",
+    },
+    qna: Array.isArray(r.qna)
+      ? r.qna.map((qa: any) => ({ q: typeof qa?.q === "string" ? qa.q : "", a: typeof qa?.a === "string" ? qa.a : "" }))
+      : [],
+    products: Array.isArray(r.products)
+      ? r.products.map((p: any) => ({
+          name: typeof p?.name === "string" ? p.name : "",
+          href: typeof p?.href === "string" ? p.href : "/products",
+          image_url: typeof p?.image_url === "string" ? p.image_url : undefined,
+        }))
+      : [],
+    instagram: ig
+      ? {
+          handle: typeof ig.handle === "string" ? ig.handle : "",
+          description: typeof ig.description === "string" ? ig.description : "",
+          link: typeof ig.link === "string" ? ig.link : "",
+          reels: Array.isArray(ig.reels) ? ig.reels.filter((p: unknown) => typeof p === "string") : [],
+          photos: Array.isArray(ig.photos) ? ig.photos.filter((p: unknown) => typeof p === "string") : [],
+        }
+      : undefined,
+  };
+}
+
+export function normalizePeople(list: unknown): Person[] {
+  if (!Array.isArray(list)) return [];
+  return list.map((p, i) => normalizePerson(p, typeof (p as any)?.id === "string" ? (p as any).id : `p-${i}`));
+}

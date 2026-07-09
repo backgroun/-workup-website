@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PeopleGrid from "@/components/PeopleGrid";
-import { DEFAULT_PEOPLE, type Person } from "@/data/people";
+import { DEFAULT_PEOPLE, normalizePeople, type Person } from "@/data/people";
 import { normalizeMateZone, type MateZoneConfig } from "@/data/mate-zone";
 import { getSiteSection } from "@/lib/site-settings";
 
@@ -17,7 +17,8 @@ export default async function PeoplePage() {
     getSiteSection<PageData>("people_page"),
     getSiteSection<MateZoneConfig>("mate_zone"),
   ]);
-  const items = config?.items?.length ? config.items : DEFAULT_PEOPLE;
+  const normalized = normalizePeople(config?.items);
+  const items = normalized.length ? normalized : DEFAULT_PEOPLE;
   const header = config?.header;
   const mateZone = normalizeMateZone(mateZoneRaw);
 

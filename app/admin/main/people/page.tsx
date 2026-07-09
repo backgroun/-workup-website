@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DEFAULT_PEOPLE, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
+import { DEFAULT_PEOPLE, normalizePeople, type Person, type PersonProduct, type PersonQnA } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
 import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
@@ -42,7 +42,8 @@ export default function AdminMainPeoplePage() {
       .then(r => r.json())
       .then((data: PageData | null) => {
         if (data?.header) setHeader(data.header);
-        setItems(data?.items?.length ? data.items : DEFAULT_PEOPLE);
+        const normalized = normalizePeople(data?.items);
+        setItems(normalized.length ? normalized : DEFAULT_PEOPLE);
       })
       .catch(() => setItems(DEFAULT_PEOPLE))
       .finally(() => setLoading(false));
