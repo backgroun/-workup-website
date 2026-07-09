@@ -5,16 +5,8 @@ import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import MateZone from "@/components/MateZone";
 import type { MateZoneConfig } from "@/data/mate-zone";
 
-type PageHeader = { title: string; description: string };
-
-const DEFAULT_HEADER: PageHeader = {
-  title: "일하는 사람이 제일 멋있다.",
-  description: "워크업이 만드는 옷의 주인공은 제품이 아닙니다.\n매일 현장에서 땀 흘리는 사람들의 이야기입니다.",
-};
-
-export default function PeopleGrid({ items, header, mateZone }: { items?: Person[]; header?: PageHeader; mateZone?: MateZoneConfig }) {
+export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mateZone?: MateZoneConfig }) {
   const people: Person[] = items && items.length ? items : DEFAULT_PEOPLE;
-  const h = header ?? DEFAULT_HEADER;
 
   const [current, setCurrent] = useState(0);
   const [listOpen, setListOpen] = useState(false);
@@ -46,22 +38,32 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
 
   return (
     <section className="bg-[#F5F2ED]">
-      <div className="px-[15px] md:px-[70px] py-10">
-        {/* 섹션 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-[28px] md:text-[36px] font-bold text-[#1A2B4A] leading-tight mb-3">
-            {h.title}
-          </h1>
-          <p className="text-[13px] text-gray-500 leading-relaxed">
-            {h.description.split("\n").map((line, i) => (
-              <span key={i}>{line}{i < h.description.split("\n").length - 1 && <br />}</span>
+      {/* ── 히어로 (최상단) ── */}
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#1A2B4A]">
+        {person.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1A2B4A,#101a30)" }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
+        <div className="absolute inset-0 flex flex-col justify-center px-[15px] md:px-[70px]">
+          <span className="text-[#ff550c] text-[12px] md:text-[13px] font-bold tracking-wider mb-3">WORKUP MATE</span>
+          <h2 className="text-white text-[26px] md:text-[42px] font-bold leading-tight mb-4 max-w-[600px]">
+            {person.quote.split("\n").map((line, i) => (
+              <span key={i} className="block">{line}</span>
             ))}
+          </h2>
+          <p className="text-white/80 text-[13px] md:text-[15px]">
+            {person.job} {person.job && person.years && <span className="mx-1.5 text-white/40">|</span>} {person.years}
           </p>
         </div>
+      </div>
 
-        {/* 목록 바 — 글이 2편 이상일 때만 */}
+      <div className="px-[15px] md:px-[70px]">
+        {/* 목록 바 — 히어로 아래, 글이 2편 이상일 때만 */}
         {hasMultiple && (
-          <div className="mb-6">
+          <div className="pt-6">
             <div className="flex items-center justify-between border-y border-gray-200 py-3">
               <span className="text-[12px] text-gray-500">
                 MATE 이야기 · 총 <span className="font-semibold text-[#1A2B4A]">{total}</span>편 중{" "}
@@ -107,31 +109,7 @@ export default function PeopleGrid({ items, header, mateZone }: { items?: Person
             )}
           </div>
         )}
-      </div>
 
-      {/* ── 히어로 ── */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#1A2B4A]">
-        {person.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1A2B4A,#101a30)" }} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
-        <div className="absolute inset-0 flex flex-col justify-center px-[15px] md:px-[70px]">
-          <span className="text-[#ff550c] text-[12px] md:text-[13px] font-bold tracking-wider mb-3">WORKUP MATE</span>
-          <h2 className="text-white text-[26px] md:text-[42px] font-bold leading-tight mb-4 max-w-[600px]">
-            {person.quote.split("\n").map((line, i) => (
-              <span key={i} className="block">{line}</span>
-            ))}
-          </h2>
-          <p className="text-white/80 text-[13px] md:text-[15px]">
-            {person.job} {person.job && person.years && <span className="mx-1.5 text-white/40">|</span>} {person.years}
-          </p>
-        </div>
-      </div>
-
-      <div className="px-[15px] md:px-[70px]">
         {/* ── WORK MOMENTS ── */}
         {hasWorkMoments && (
           <div className="py-12 md:py-16 border-b border-gray-200">

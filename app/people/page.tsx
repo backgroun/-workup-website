@@ -19,12 +19,11 @@ export default async function PeoplePage() {
   ]);
   const normalized = normalizePeople(config?.items);
   const items = normalized.length ? normalized : DEFAULT_PEOPLE;
-  const header = config?.header;
   const mateZone = normalizeMateZone(mateZoneRaw);
 
   return (
     <main>
-      <PeopleGrid items={items} header={header} mateZone={mateZone} />
+      <PeopleGrid items={items} mateZone={mateZone} />
     </main>
   );
 }
