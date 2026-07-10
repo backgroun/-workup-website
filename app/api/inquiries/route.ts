@@ -110,9 +110,12 @@ export async function POST(req: Request) {
   }
   // 상품 문의(product)는 연락처를 받지 않으므로 별도 필수 검증 없음.
 
-  // 비밀번호 설정(선택) — 평문은 저장/전송하지 않고 솔트 SHA-256 해시만 보관한다.
+  // 비밀번호 설정(선택) — 숫자 4자리만 허용. 평문은 저장/전송하지 않고 솔트 SHA-256 해시만 보관한다.
   const rawPw = String(p.password ?? "");
   delete p.password;
+  if (rawPw && !/^\d{4}$/.test(rawPw)) {
+    return NextResponse.json({ error: "비밀번호는 숫자 4자리로 입력해주세요." }, { status: 400 });
+  }
   if (rawPw) {
     const salt = randomBytes(8).toString("hex");
     p._pwSalt = salt;
