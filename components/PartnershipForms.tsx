@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { DEFAULT_PARTNERSHIP, type FormConfig } from "@/data/partnership";
+import type { FranchiseGuideConfig } from "@/data/franchise-guide";
+import FranchiseGuide from "./FranchiseGuide";
 
 type FormState = Record<string, string>;
 
@@ -223,7 +226,10 @@ async function submitInquiry(type: "franchise" | "wholesale", payload: FormState
 
 // ── 문의 폼 (공통) — 필드를 config에서 동적으로 렌더 ─────────────
 // franchise/wholesale 모두 이 컴포넌트를 사용한다. 차이는 개인정보 동의 유무뿐.
-function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale"; config: FormConfig; consent: boolean }) {
+function InquiryForm({ type, config, consent, franchiseGuide }: {
+  type: "franchise" | "wholesale"; config: FormConfig; consent: boolean;
+  franchiseGuide?: { config?: FranchiseGuideConfig; storeCount?: number };
+}) {
   const emptyState = () => Object.fromEntries(config.fields.map((fld) => [fld.key, ""])) as FormState;
   const [form, setForm] = useState<FormState>(emptyState);
   const [agreed, setAgreed] = useState(false);
@@ -231,6 +237,20 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideSeen, setGuideSeen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (!guideOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setGuideOpen(false); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [guideOpen]);
 
   const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
   const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
@@ -240,6 +260,8 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // 가맹 문의는 접수 전 창업안내를 먼저 한 번 보여준다 — 실제 접수는 안내를 닫은 뒤 버튼을 다시 누르면 진행된다.
+    if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
     if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
     setSubmitting(true); setError("");
     try {
@@ -268,6 +290,7 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         {config.fields.map((fld) => (
@@ -315,12 +338,45 @@ function InquiryForm({ type, config, consent }: { type: "franchise" | "wholesale
       </button>
       <p className="text-center" style={{ fontSize: config.footer_style.size, color: config.footer_style.color }}>{config.footer_text}</p>
     </form>
+
+    {franchiseGuide && guideOpen && mounted && createPortal(
+      <div
+        className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/70 backdrop-blur-sm"
+        onClick={() => setGuideOpen(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-label="워크업 창업안내"
+      >
+        <div
+          className="relative w-full sm:w-[min(960px,calc(100vw-48px))] max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-[22px] border border-white/10 shadow-2xl bg-[#0d0d0d]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="min-h-0 overflow-y-auto overscroll-contain">
+            <FranchiseGuide embedded config={franchiseGuide.config} storeCount={franchiseGuide.storeCount} onClose={() => setGuideOpen(false)} />
+          </div>
+          <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
+            <button
+              type="button"
+              onClick={() => setGuideOpen(false)}
+              className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
+            >
+              확인했어요, 문의 이어서 작성하기
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }
 
 // ── 가맹 창업 문의 폼 (개인정보 동의 포함) ─────────────
-export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form }: { config?: FormConfig }) {
-  return <InquiryForm type="franchise" config={config} consent />;
+// guideConfig/storeCount를 넘기면 접수 버튼 첫 클릭 시 창업안내 팝업을 먼저 보여준 뒤 실제 접수를 진행한다.
+export function FranchiseForm({ config = DEFAULT_PARTNERSHIP.franchise.form, guideConfig, storeCount }: {
+  config?: FormConfig; guideConfig?: FranchiseGuideConfig; storeCount?: number;
+}) {
+  return <InquiryForm type="franchise" config={config} consent franchiseGuide={{ config: guideConfig, storeCount }} />;
 }
 
 // ── 입점 문의 폼 (개인정보 동의 포함) ──────────────────

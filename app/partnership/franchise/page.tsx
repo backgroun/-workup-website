@@ -35,7 +35,7 @@ export default async function FranchisePage() {
         </>
       }
     >
-      <FranchiseForm config={info.form} />
+      <FranchiseForm config={info.form} guideConfig={guide} storeCount={storeCount} />
     </PartnershipLayout>
   );
 }
