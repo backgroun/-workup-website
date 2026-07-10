@@ -28,3 +28,6 @@ products-inbox/
 
 # Claude 임시 dev 로그
 scratchpad_dev.log
+
+# Cloudinary → ImageKit 마이그레이션 진행 상황(재실행 시 재개용, 커밋 대상 아님)
+scripts/.cloudinary-imagekit-map.json
