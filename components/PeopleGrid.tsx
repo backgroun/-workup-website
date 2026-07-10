@@ -188,17 +188,11 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 <div>
                   <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INSTAGRAM</h3>
                   <p className="text-[14px] font-semibold text-[#1A2B4A] mb-2">{ig.handle}</p>
-                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                  <p className="text-[13px] text-gray-500 leading-relaxed">
                     {ig.description.split("\n").map((line, i) => (
                       <span key={i}>{line}{i < ig.description.split("\n").length - 1 && <br />}</span>
                     ))}
                   </p>
-                  {ig.link && (
-                    <a href={ig.link} target="_blank" rel="noopener noreferrer"
-                      className="inline-block text-[13px] font-semibold bg-[#1A2B4A] text-white px-4 py-2.5 hover:bg-[#ff550c] transition-colors">
-                      인스타그램 바로가기 →
-                    </a>
-                  )}
                 </div>
                 <InstagramEmbed html={ig.embed!} />
               </div>
