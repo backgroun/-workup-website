@@ -202,6 +202,7 @@ export default function AdminInquiriesPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [moveTarget, setMoveTarget] = useState<string>("wholesale");
   const [moving, setMoving] = useState(false);
+  const [deletingBulk, setDeletingBulk] = useState(false);
 
   const loadInquiries = () => {
     setLoadingList(true);
@@ -296,6 +297,26 @@ export default function AdminInquiriesPage() {
     finally { setMoving(false); }
   };
 
+  // 선택 문의 일괄 삭제
+  const bulkDelete = async () => {
+    const ids = [...selected];
+    if (!ids.length) return;
+    if (!confirm(`${ids.length}개 문의를 삭제할까요? 되돌릴 수 없습니다.`)) return;
+    setDeletingBulk(true);
+    const snapshot = inquiries;
+    setInquiries(prev => prev.filter(q => !selected.has(q.id)));
+    setSelected(new Set());
+    try {
+      const res = await fetch("/api/admin/inquiries", {
+        method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error();
+      const d = await res.json().catch(() => ({}));
+      flash(`${d.deleted ?? ids.length}개를 삭제했습니다.`);
+    } catch { setInquiries(snapshot); flash("삭제에 실패했습니다."); }
+    finally { setDeletingBulk(false); }
+  };
+
   const byType = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
   const kw = search.trim().toLowerCase();
   const filtered = kw
@@ -371,6 +392,10 @@ export default function AdminInquiriesPage() {
               <button onClick={bulkMove} disabled={moving}
                 className="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
                 {moving ? "이동 중..." : "이동"}
+              </button>
+              <button onClick={bulkDelete} disabled={deletingBulk}
+                className="px-4 py-1.5 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">
+                {deletingBulk ? "삭제 중..." : "선택 삭제"}
               </button>
               <button onClick={() => setSelected(new Set())} className="ml-auto text-xs text-slate-500 hover:text-slate-700">선택 해제</button>
             </div>
