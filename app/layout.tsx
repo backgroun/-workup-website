@@ -74,6 +74,11 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Montserrat:wght@400;600;700;900&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@400;600;700&family=Oswald:wght@400;500;700&family=Oxanium:wght@400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap"
         />
+        {/* 본문 기본 서체(Pretendard) 굵기 400/700 우선 preload — 폰트 교체 시점의 텍스트 리플로우(레이아웃 흔들림) 완화 */}
+        <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2" />
+        <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <ScrollToTop />
         {!isAdmin && <PixelManager />}

@@ -129,7 +129,7 @@ export default function FranchiseGuideEditPage() {
           </Card>
 
           <Card title="상단 슬림바">
-            <p className="text-[11px] text-gray-400">높이 30px 고정, 좌측 정렬로 표시됩니다.</p>
+            <p className="text-[11px] text-gray-400">높이 모바일 39px · PC 60px 고정, 좌측 정렬로 표시됩니다.</p>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">제목</label>
               <input value={cfg.title} onChange={(e) => setC({ title: e.target.value })} className={inputCls} />
@@ -157,15 +157,9 @@ export default function FranchiseGuideEditPage() {
               <textarea value={cfg.hero_desc} onChange={(e) => setC({ hero_desc: e.target.value })} rows={3} className={inputCls + " resize-none"} />
               <StyleControls value={cfg.styles.hero_desc} onChange={(p) => setStyle("hero_desc", p)} />
             </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">기본 버튼 문구</label>
-                <input value={cfg.hero_primary_label} onChange={(e) => setC({ hero_primary_label: e.target.value })} className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">보조 버튼 문구</label>
-                <input value={cfg.hero_secondary_label} onChange={(e) => setC({ hero_secondary_label: e.target.value })} className={inputCls} />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">버튼 문구 <span className="text-gray-400 font-normal">("창업 기본 조건" 섹션으로 스크롤 이동)</span></label>
+              <input value={cfg.hero_secondary_label} onChange={(e) => setC({ hero_secondary_label: e.target.value })} className={inputCls} />
             </div>
           </Card>
 

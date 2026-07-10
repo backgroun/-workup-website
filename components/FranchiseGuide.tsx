@@ -6,6 +6,16 @@ import { DEFAULT_FRANCHISE_GUIDE, styleCss, type FranchiseGuideConfig } from "@/
 
 const LINE = "#2a2a2a";
 
+// 모바일에서 더 작아지고 데스크톱에서 설정값(size)에 도달하는 반응형 폰트 크기
+function fluidStyle(min: number, vw: number, base: { size: number; color: string; tracking: number; leading: number }) {
+  return {
+    fontSize: `clamp(${min}px, ${vw}vw, ${base.size}px)`,
+    color: base.color,
+    letterSpacing: `${base.tracking}em`,
+    lineHeight: base.leading,
+  };
+}
+
 export default function FranchiseGuide({
   config = DEFAULT_FRANCHISE_GUIDE,
   storeCount = 0,
@@ -20,15 +30,15 @@ export default function FranchiseGuide({
 
   return (
     <div style={{ backgroundColor: col.page_bg }}>
-      {/* 상단 슬림바 (높이 30px 고정) */}
-      <div className="flex items-center justify-between h-[30px] px-4 sm:px-6 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
-        <span className="font-bold whitespace-nowrap truncate text-left" style={styleCss(s.title)}>{config.title}</span>
+      {/* 상단 슬림바 (모바일 39px / PC 60px) */}
+      <div className="flex items-center justify-between h-[39px] md:h-[60px] px-4 sm:px-6 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
+        <span className="font-bold whitespace-nowrap truncate text-left flex-1 min-w-0" style={styleCss(s.title)}>{config.title}</span>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="창업안내 닫기"
-            className="flex-shrink-0 w-5 h-5 rounded-full bg-[#66635f] text-white flex items-center justify-center text-xs leading-none hover:bg-black transition-colors"
+            className="flex-shrink-0 w-[26px] h-[26px] rounded-full bg-[#66635f] text-white flex items-center justify-center text-sm leading-none hover:bg-black transition-colors"
           >
             ×
           </button>
@@ -38,7 +48,7 @@ export default function FranchiseGuide({
       {/* 히어로 — 전체 배경 이미지 */}
       <section className="relative overflow-hidden border-b" style={{ borderColor: LINE }}>
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center opacity-60"
           style={{ background: config.hero_bg_img ? `url(${config.hero_bg_img}) center / cover no-repeat` : "linear-gradient(135deg, #242424, #111 65%)" }}
           aria-hidden="true"
         />
@@ -46,16 +56,9 @@ export default function FranchiseGuide({
 
         <div className="relative z-10 px-5 sm:px-8 md:px-10 py-12 sm:py-16 md:py-24">
           <p className="font-black mb-3" style={styleCss(s.hero_eyebrow)}>{config.hero_eyebrow}</p>
-          <h1 className="font-medium whitespace-pre-line max-w-2xl" style={styleCss(s.hero_title)}>{config.hero_title}</h1>
-          <p className="mt-4 max-w-xl" style={{ ...styleCss(s.hero_desc), wordBreak: "keep-all" }}>{heroDesc}</p>
+          <h1 className="font-medium whitespace-pre-line max-w-2xl" style={fluidStyle(22, 8, s.hero_title)}>{config.hero_title}</h1>
+          <p className="mt-4 max-w-xl whitespace-pre-line" style={{ ...fluidStyle(13, 3.6, s.hero_desc), wordBreak: "keep-all" }}>{heroDesc}</p>
           <div className="flex flex-wrap gap-2.5 mt-6">
-            <Link
-              href="/partnership/franchise"
-              style={{ backgroundColor: col.accent }}
-              className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-xl text-white text-sm font-extrabold hover:opacity-90 hover:-translate-y-0.5 transition-all"
-            >
-              {config.hero_primary_label}
-            </Link>
             <a
               href="#conditions"
               className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-xl border border-white/30 text-white text-sm font-extrabold hover:border-white/60 hover:bg-white/10 hover:-translate-y-0.5 transition-all"
