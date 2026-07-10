@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0",
     "@imagekit/nodejs": "^7.9.1",
+    "@supabase/supabase-js": "^2.107.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "cloudinary": "^2.10.0",
@@ -20,6 +20,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-pageflip": "^2.0.3",
+    "resend": "^6.17.2",
     "tesseract.js": "^7.0.0",
     "xlsx": "^0.18.5"
   },

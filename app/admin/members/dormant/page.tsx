@@ -190,14 +190,14 @@ export default function DormantMembersPage() {
                         <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleOne(m.id)}
                           className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                       </td>
-                      <td className="px-5 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
-                      <td className="px-5 py-4 text-[15px] text-gray-600">{m.email}</td>
-                      <td className="px-5 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
+                      <td className="px-5 py-4 text-[15px] font-bold text-gray-900 whitespace-nowrap">{m.name}</td>
+                      <td className="px-5 py-4 text-[15px] text-gray-600 whitespace-nowrap">{m.email}</td>
+                      <td className="px-5 py-4 text-[14px] text-gray-500 whitespace-nowrap">{m.phone ?? "-"}</td>
                       <td className="px-5 py-4">
-                        <span className="px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
+                        <span className="inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${m.status === "dormant" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
+                        <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${m.status === "dormant" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
                           {m.status === "dormant" ? "휴면" : "미접속"}
                         </span>
                       </td>

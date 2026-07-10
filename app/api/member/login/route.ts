@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { createHash } from "crypto";
 import { createAdminClient } from "@/lib/supabase-server";
+import { hashPassword } from "@/lib/password";
 import { cookies } from "next/headers";
-
-function hashPassword(pw: string): string {
-  return createHash("sha256").update(pw + (process.env.PASSWORD_SALT ?? "wu-salt")).digest("hex");
-}
 
 export async function POST(req: Request) {
   try {
