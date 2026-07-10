@@ -37,6 +37,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
   const [error, setError] = useState("");
   const [post, setPost] = useState<ViewedPost | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [viewportH, setViewportH] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -49,6 +50,19 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
   }, [onClose]);
+
+  // 모바일 키보드가 올라오면 layout viewport(고정 위치 기준)와 실제 보이는 영역(visual viewport)이
+  // 달라져 화면 하단의 확인 버튼이 키보드 뒤로 가려질 수 있다. visualViewport 크기를 추적해
+  // 팝업 높이를 실제 보이는 영역에 맞춰, 하단 버튼이 항상 화면 안에 들어오도록 한다.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setViewportH(vv.height);
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +82,14 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pt-6 sm:p-6 bg-black/50" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="relative bg-white w-full sm:max-w-md max-h-[88dvh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed left-0 right-0 top-0 z-50 flex items-end sm:items-center justify-center pt-6 sm:p-6 bg-black/50"
+      style={{ height: viewportH != null ? `${viewportH}px` : "100dvh" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="relative bg-white w-full sm:max-w-md max-h-full flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-2xl sm:max-h-[88dvh] shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <button type="button" onClick={onClose} aria-label="닫기" className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#1A2B4A]">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>

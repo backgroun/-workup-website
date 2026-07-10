@@ -63,7 +63,7 @@ function Field({
         <textarea
           id={`pf-${name}`}
           name={name}
-          rows={4}
+          rows={3}
           required={required}
           placeholder={placeholder}
           value={value}
@@ -266,9 +266,16 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
     setGuideOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
+  // 폼 검증 + 실제 접수 처리 — 일반 제출 버튼과 창업안내 팝업의 완료 버튼이 함께 사용한다.
+  const performSubmit = async () => {
+    for (const fld of config.fields) {
+      const val = (form[fld.key] ?? "").trim();
+      if (fld.required && !val) { setError(`${fld.label}을(를) 입력해 주세요.`); return; }
+      if ((fld.key === "title" || fld.key === "message") && val && val.length < 10) {
+        setError(`${fld.label}은(는) 10자 이상 입력해 주세요.`);
+        return;
+      }
+    }
     if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
     if (password && password.length !== 4) { setError("비밀번호는 숫자 4자리로 입력해주세요."); return; }
     setSubmitting(true); setError("");
@@ -284,6 +291,18 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
+    await performSubmit();
+  };
+
+  // 창업안내 팝업의 "가맹 문의 완료하기" 버튼 — 팝업을 닫고 곧바로 접수를 완료한다.
+  const handleGuideComplete = async () => {
+    setGuideOpen(false);
+    await performSubmit();
   };
 
   if (submitted) {
@@ -319,7 +338,7 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
       </div>
       <div>
         <label className="block mb-1.5" style={labelStyle}>
-          비밀번호 <span className="text-gray-400">(문의글 확인용 / 숫자 4글자)</span>
+          비밀번호 <span className="text-gray-400">(문의글 확인용)</span>
         </label>
         <input
           type="text"
@@ -369,10 +388,11 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
           <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
             <button
               type="button"
-              onClick={() => setGuideOpen(false)}
-              className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
+              onClick={handleGuideComplete}
+              disabled={submitting}
+              className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold disabled:opacity-60"
             >
-              확인했어요, 문의 이어서 작성하기
+              {submitting ? "접수 중..." : "가맹 문의 완료하기"}
             </button>
           </div>
         </div>
