@@ -151,7 +151,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10">
               <div>
                 <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INTERVIEW</h3>
-                <p className="text-[13px] text-gray-500 leading-relaxed">그가 들려주는<br />이야기</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">그들이 들려주는<br />이야기</p>
               </div>
               <InterviewAccordion qna={person.qna} />
             </div>
@@ -316,8 +316,8 @@ function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
               className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
               aria-expanded={isOpen}
             >
-              <span className="text-[14px] md:text-[15px] text-[#1A2B4A]">
-                <span className="font-bold text-[#ff550c] mr-2">Q{i + 1}.</span>
+              <span className="text-[15px] md:text-[17px] font-bold text-[#1A2B4A]">
+                <span className="text-[#ff550c] mr-2">Q{i + 1}.</span>
                 {item.q}
               </span>
               <span className="text-[18px] text-gray-400 flex-shrink-0">{isOpen ? "−" : "+"}</span>
