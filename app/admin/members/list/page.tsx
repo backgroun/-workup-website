@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
+import TempPasswordModal from "@/components/admin/TempPasswordModal";
 
 interface Member {
   id: number;
@@ -102,47 +103,6 @@ function EditModal({ member, onSave, onClose }: {
             className="px-6 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-bold hover:bg-[#243d5e] disabled:opacity-50 rounded">
             {saving ? "저장 중..." : "저장"}
           </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TempPasswordModal({ member, tempPassword, onClose }: {
-  member: Member;
-  tempPassword: string;
-  onClose: () => void;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(tempPassword);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
-        <div className="px-7 py-5 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">비밀번호가 변경됐습니다</h2>
-          <p className="text-[14px] text-gray-400 mt-0.5">{member.name} · {member.email}</p>
-        </div>
-        <div className="px-7 py-6">
-          <p className="text-[14px] text-gray-600 mb-3">아래 임시 비밀번호를 회원에게 전화, 카카오톡 등으로 직접 전달해주세요.</p>
-          <div className="flex items-center gap-2">
-            <p className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded text-xl font-bold tracking-wide text-center text-[#1A2B4A]">
-              {tempPassword}
-            </p>
-            <button onClick={copy}
-              className="px-4 py-3 border border-gray-200 text-[14px] font-semibold text-gray-600 hover:border-gray-400 rounded whitespace-nowrap">
-              {copied ? "복사됨" : "복사"}
-            </button>
-          </div>
-        </div>
-        <div className="px-7 py-5 border-t border-gray-200 flex justify-end">
-          <button onClick={onClose}
-            className="px-6 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-bold hover:bg-[#243d5e] rounded">닫기</button>
         </div>
       </div>
     </div>
