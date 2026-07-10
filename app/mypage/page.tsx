@@ -29,6 +29,11 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   done:       { label: "답변완료", cls: "bg-green-100 text-green-700" },
 };
 
+// PC(2×2 배치)에서 각 행의 좌우 카드 초기 높이를 맞추기 위한 최소 높이.
+// 내용이 많아지면(문의가 쌓이면) 카드는 이 값을 넘어 자연히 늘어난다.
+const ROW_TOP_MIN_H = "lg:min-h-[256px]";     // 회원 정보 / 찜한 제품
+const ROW_BOTTOM_MIN_H = "lg:min-h-[144px]";  // 내 문의 내역 / 빠른 메뉴
+
 function fmtDate(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "";
@@ -113,11 +118,13 @@ export default function MyPage() {
           </button>
         </div>
 
-        {/* PC(lg~)에서는 2×2 배치, 모바일은 1열 유지 */}
+        {/* PC(lg~)에서는 2×2 배치, 모바일은 1열 유지.
+            items-start + 행별 최소 높이(ROW_*_MIN_H) 로, 처음엔 좌우 높이가 같고
+            문의가 쌓이면 왼쪽 카드만 늘어난다(오른쪽은 그대로). */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
 
         {/* 회원 정보 카드 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-7 lg:p-8">
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-7 lg:p-8 ${ROW_TOP_MIN_H}`}>
           <div className="flex items-center gap-4 mb-6">
             {/* 아바타 */}
             <div className="w-14 h-14 rounded-full bg-[#1A2B4A] flex items-center justify-center flex-shrink-0">
@@ -153,7 +160,7 @@ export default function MyPage() {
         </div>
 
         {/* 찜한 제품 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_TOP_MIN_H}`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <p className="text-sm font-bold text-gray-800">찜한 제품</p>
             {wishlist.length > 0 && (
@@ -198,7 +205,7 @@ export default function MyPage() {
         </div>
 
         {/* 내 문의 내역 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_BOTTOM_MIN_H}`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <p className="text-sm font-bold text-gray-800">내 문의 내역</p>
             {inquiries.length > 0 && (
@@ -272,7 +279,7 @@ export default function MyPage() {
         </div>
 
         {/* 빠른 메뉴 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_BOTTOM_MIN_H}`}>
           {[
             { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
             { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },
