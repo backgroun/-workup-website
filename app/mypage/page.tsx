@@ -175,7 +175,8 @@ export default function MyPage() {
               <div className="p-4 grid grid-cols-4 gap-3">
                 {wishlist.slice(0, 4).map(item => (
                   <Link key={item.cartId} href={`/products/${item.productId}`} className="group">
-                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    {/* 이미지가 없는 제품은 제품 대표색(bg)이 보이도록 — 제품 카드와 동일한 방식 */}
+                    <div className={`${item.bg} aspect-square rounded-lg overflow-hidden`}>
                       {item.imageUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

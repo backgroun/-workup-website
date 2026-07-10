@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createAdminClient } from "@/lib/supabase-server";
+import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
+import { getProductById } from "@/data/products";
 
 // 회원별 찜(피팅 리스트). 로그인 회원만 사용하며, 비로그인은 클라이언트 localStorage 를 그대로 쓴다.
 // 제품 정보는 저장하지 않고 products 에서 최신값을 조회해 조립한다(가격·이미지 변경 자동 반영).
@@ -47,27 +48,28 @@ export async function GET() {
 
     const { data: products } = await sb
       .from("products")
-      .select("id, name, sku, line, price, bg, image_url, sizes, colors")
+      .select("*")
       .in("id", list.map((r) => r.product_id));
 
-    const byId = new Map((products ?? []).map((p) => [p.id, p]));
+    const byId = new Map((products ?? []).map((row) => [row.id as string, mapFromDb(row)]));
 
-    // 삭제된 제품은 목록에서 제외한다.
+    // DB에 없으면 정적 제품 데이터로 폴백한다(정적 제품은 슬러그 id 사용).
+    // 어디에도 없는 제품(삭제됨)은 목록에서 제외한다.
     const items = list.flatMap((r) => {
-      const p = byId.get(r.product_id);
+      const p = byId.get(r.product_id) ?? getProductById(r.product_id);
       if (!p) return [];
       return [{
         cartId: `srv-${r.id}`,
         productId: r.product_id,
         name: p.name,
-        sku: p.sku ?? undefined,
+        sku: p.sku,
         line: p.line ?? "",
         price: p.price ?? "",
         size: r.size,
         color: r.color,
         colorHex: r.color_hex,
         bg: p.bg ?? "bg-[#1A2B4A]",
-        imageUrl: p.image_url ?? undefined,
+        imageUrl: p.imageUrl,
         allSizes: p.sizes ?? [],
         allColors: p.colors ?? [],
       }];
