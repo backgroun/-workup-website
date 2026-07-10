@@ -125,7 +125,15 @@ export async function POST(req: Request) {
 
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new", member_id: memberId });
+    let { error } = await supabase.from("inquiries").insert({ type, payload, status: "new", member_id: memberId });
+
+    // member_id 컬럼이 아직 없는 환경에서도 문의 접수는 절대 막히면 안 된다.
+    // (마이그레이션 전이면 회원 연결 없이 저장 — 접수 자체가 최우선)
+    if (error && error.message.includes("member_id")) {
+      console.warn("[inquiries] member_id 컬럼 없음 — 회원 연결 없이 저장합니다. migrate_add_inquiries_member_id.sql 실행 필요");
+      ({ error } = await supabase.from("inquiries").insert({ type, payload, status: "new" }));
+    }
+
     if (error) {
       // DB 오류 원인은 서버 로그로만 남기고, 고객에게는 일반 안내 문구만 노출(내부 정보 비노출).
       console.error("[inquiries] insert 실패:", error.message);
