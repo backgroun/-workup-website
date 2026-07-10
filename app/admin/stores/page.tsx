@@ -21,6 +21,7 @@ type StoreRow = {
   kakao_channel_url: string;
   store_url: string;
   is_active: boolean;
+  page_active: boolean;
   sort_order: number;
   product_ids: string[] | null;
   created_at: string;
@@ -142,6 +143,7 @@ export default function AdminStoresPage() {
   };
 
   const toggleActive = (store: StoreRow) => updateStore(store, { is_active: !store.is_active });
+  const togglePageActive = (store: StoreRow) => updateStore(store, { page_active: !store.page_active });
 
   const toggleOne = (id: number) => {
     setSelected((prev) => {
@@ -316,6 +318,7 @@ export default function AdminStoresPage() {
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">전화</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상태</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">스토어 페이지</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상세보기</th>
                 <th className="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">관리</th>
               </tr>
@@ -323,7 +326,7 @@ export default function AdminStoresPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
                       불러오는 중...
@@ -332,7 +335,7 @@ export default function AdminStoresPage() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
                     {stores.length === 0
                       ? <div>
                           <p className="text-base font-medium mb-2">등록된 매장이 없습니다.</p>
@@ -373,13 +376,25 @@ export default function AdminStoresPage() {
                       </button>
                     </td>
                     <td className="px-5 py-4">
-                      <Link
-                        href={`/store/${store.id}`}
-                        target="_blank"
-                        className="text-xs text-blue-600 hover:underline"
+                      <button
+                        onClick={() => togglePageActive(store)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-full cursor-pointer transition-colors ${store.page_active ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
                       >
-                        공개 페이지 ↗
-                      </Link>
+                        {store.page_active ? "노출" : "비노출"}
+                      </button>
+                    </td>
+                    <td className="px-5 py-4">
+                      {store.page_active ? (
+                        <Link
+                          href={`/store/${store.id}`}
+                          target="_blank"
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          공개 페이지 ↗
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-gray-300">페이지 비노출</span>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

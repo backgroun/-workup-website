@@ -69,7 +69,7 @@ function KakaoDirBtn({ store, userCoords: passedCoords }: {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="flex flex-1 md:flex-none items-center justify-center gap-1.5 bg-[#FAE100] text-black text-xs px-3 py-2 hover:bg-[#e6cf00] transition-colors disabled:opacity-60"
+      className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#FAE100] text-black text-xs px-3 py-2 hover:bg-[#e6cf00] transition-colors disabled:opacity-60"
     >
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -119,7 +119,7 @@ function NaverDirBtn({ store, userCoords: passedCoords }: {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="flex flex-1 md:flex-none items-center justify-center gap-1.5 bg-[#03C75A] text-white text-xs px-3 py-2 hover:bg-[#02b350] transition-colors disabled:opacity-60"
+      className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#03C75A] text-white text-xs px-3 py-2 hover:bg-[#02b350] transition-colors disabled:opacity-60"
     >
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -621,7 +621,7 @@ export default function StoreLocator({
                         {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
                         {store.products && store.products.length > 0 && (
                           <div className="md:w-56 md:flex-shrink-0 md:border-l md:border-gray-100 md:pl-4">
-                            <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 취급 제품</p>
+                            <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 베스트 상품</p>
                             <ul className="space-y-1.5">
                               {store.products.map((p, i) => (
                                 <li key={p.id}>
@@ -629,7 +629,7 @@ export default function StoreLocator({
                                     href={`/products/${p.id}`}
                                     className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors"
                                   >
-                                    <span className="w-4 h-4 flex items-center justify-center bg-gray-100 text-gray-500 text-[10px] font-bold flex-shrink-0">
+                                    <span className="w-4 h-4 flex items-center justify-center bg-[#1A2B4A] text-white text-[10px] font-bold flex-shrink-0">
                                       {i + 1}
                                     </span>
                                     <span className="truncate">{p.name}</span>
@@ -641,19 +641,19 @@ export default function StoreLocator({
                         )}
                       </div>
 
-                      {/* 액션 버튼 — 모바일 한 줄, 데스크탑 자연 너비 */}
-                      <div className="flex gap-2">
+                      {/* 액션 버튼 — 모바일 2x2 그리드, 데스크탑 한 줄 */}
+                      <div className="grid grid-cols-2 gap-2 md:flex">
 
                         {/* 전화하기 */}
                         <a
                           href={`tel:${store.phone.replace(/-/g, "")}`}
                           onClick={() => trackStoreEvent("call", { id: store.id, name: store.name })}
-                          className="flex flex-1 md:flex-none items-center justify-center gap-1.5 bg-[#1A2B4A] text-white text-xs px-3 py-2 hover:bg-[#243d5e] transition-colors"
+                          className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#1A2B4A] text-white text-xs px-3 py-2 hover:bg-[#243d5e] transition-colors"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
-                          전화하기
+                          전화
                         </a>
 
                         {/* 카카오맵 길찾기 */}
@@ -662,14 +662,16 @@ export default function StoreLocator({
                         {/* 네이버맵 길찾기 */}
                         <NaverDirBtn store={store} userCoords={userCoords} />
 
-                        {/* 스토어 상세 페이지 */}
-                        <Link
-                          href={`/store/${store.id}`}
-                          onClick={() => trackStoreEvent("list_click", { id: store.id, name: store.name })}
-                          className="flex flex-1 md:flex-none items-center justify-center gap-1.5 border border-[#1A2B4A] text-[#1A2B4A] text-xs px-3 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors"
-                        >
-                          스토어 페이지
-                        </Link>
+                        {/* 매장 소개 페이지 */}
+                        {store.pageActive !== false && (
+                          <Link
+                            href={`/store/${store.id}`}
+                            onClick={() => trackStoreEvent("list_click", { id: store.id, name: store.name })}
+                            className="flex w-full md:w-auto items-center justify-center gap-1.5 border border-[#1A2B4A] text-[#1A2B4A] text-xs px-3 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                          >
+                            매장소개
+                          </Link>
+                        )}
                       </div>
                     </div>
                   )}

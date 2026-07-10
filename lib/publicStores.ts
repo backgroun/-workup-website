@@ -87,6 +87,7 @@ export async function getPublicStores(region?: string): Promise<Store[]> {
         lng: s.lng ?? fb?.lng ?? 0,
         hours: s.hours ?? "",
         phone: s.phone ?? "",
+        pageActive: s.page_active ?? true,
         ...(products.length > 0 ? { products } : {}),
       };
     });

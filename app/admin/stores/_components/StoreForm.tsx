@@ -16,6 +16,7 @@ export type StoreFormData = {
   kakao_channel_url: string;
   store_url: string;
   is_active: boolean;
+  page_active: boolean;
   sort_order: string;
   image_urls: string[];
   product_ids: string[];
@@ -119,7 +120,7 @@ type InitialData = Partial<{
   name: string; region: string; address: string; hours: string; phone: string;
   store_type: string; description: string; brands: string[] | string;
   parking: boolean; kakao_channel_url: string; store_url: string;
-  is_active: boolean; sort_order: number | string; image_urls: string[];
+  is_active: boolean; page_active: boolean; sort_order: number | string; image_urls: string[];
   product_ids: string[]; lat: unknown; lng: unknown;
 }>;
 
@@ -150,6 +151,7 @@ export default function StoreForm({
         kakao_channel_url: d?.kakao_channel_url ?? "",
         store_url: d?.store_url ?? "",
         is_active: d?.is_active ?? true,
+        page_active: d?.page_active ?? true,
         sort_order: String(d?.sort_order ?? "0"),
         image_urls: Array.isArray(d?.image_urls) ? d.image_urls : [],
         product_ids: Array.isArray(d?.product_ids) ? d.product_ids : [],
@@ -436,7 +438,19 @@ export default function StoreForm({
               />
               <span className="text-sm font-medium text-gray-700">활성 (공개)</span>
             </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.page_active}
+                onChange={(e) => set("page_active", e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+              />
+              <span className="text-sm font-medium text-gray-700">스토어 페이지 노출</span>
+            </label>
           </div>
+          <p className="col-span-2 text-xs text-gray-400 -mt-2">
+            "활성 (공개)"는 매장 자체의 공개 여부이고, "스토어 페이지 노출"은 이 매장의 상세 페이지(/store/{"{id}"})만 별도로 켜고 끕니다. 둘 다 켜져 있어야 상세 페이지를 볼 수 있습니다.
+          </p>
         </div>
       </section>
 
