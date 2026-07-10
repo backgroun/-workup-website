@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, FITTING_LIST_KEY } from "@/contexts/CartContext";
+import PasswordInput from "@/components/PasswordInput";
 
 type MemberInfo = {
   id: string | number;
@@ -50,6 +51,104 @@ const GRADE_COLOR: Record<string, string> = {
   관리자:   "bg-red-100 text-red-700",
 };
 
+function ChangePasswordModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ currentPassword: "", newPassword: "", newPasswordConfirm: "" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!form.currentPassword || !form.newPassword) {
+      setError("모든 항목을 입력해주세요."); return;
+    }
+    if (form.newPassword.length < 8) {
+      setError("새 비밀번호는 8자 이상이어야 합니다."); return;
+    }
+    if (form.newPassword !== form.newPasswordConfirm) {
+      setError("새 비밀번호가 일치하지 않습니다."); return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/member/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: form.currentPassword, newPassword: form.newPassword }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) setDone(true);
+      else setError(d.error ?? "비밀번호 변경에 실패했습니다.");
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
+        <div className="px-6 py-5 border-b border-gray-100">
+          <h2 className="text-base font-bold text-gray-900">비밀번호 변경</h2>
+        </div>
+
+        {done ? (
+          <div className="px-6 py-8 text-center">
+            <p className="text-sm text-gray-700">비밀번호가 변경됐습니다.</p>
+            <button onClick={onClose}
+              className="mt-5 w-full py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
+              확인
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+            {error && (
+              <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">{error}</div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">현재 비밀번호</label>
+              <PasswordInput
+                value={form.currentPassword} onChange={e => set("currentPassword", e.target.value)}
+                autoComplete="current-password"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">새 비밀번호</label>
+              <PasswordInput
+                value={form.newPassword} onChange={e => set("newPassword", e.target.value)}
+                placeholder="8자 이상" autoComplete="new-password"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">새 비밀번호 확인</label>
+              <PasswordInput
+                value={form.newPasswordConfirm} onChange={e => set("newPasswordConfirm", e.target.value)}
+                placeholder="새 비밀번호 재입력" autoComplete="new-password"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              />
+            </div>
+            <div className="pt-1 flex gap-2.5">
+              <button type="button" onClick={onClose}
+                className="flex-1 py-3 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                취소
+              </button>
+              <button type="submit" disabled={saving}
+                className="flex-1 py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors">
+                {saving ? "변경 중..." : "변경하기"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MyPage() {
   const [member, setMember] = useState<MemberInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +156,7 @@ export default function MyPage() {
   const [inquiries, setInquiries] = useState<MyInquiry[]>([]);
   const [inquiriesLoading, setInquiriesLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { items: wishlist } = useCart();
   const router = useRouter();
 
@@ -156,6 +256,10 @@ export default function MyPage() {
                 {member.grade}
               </span>
             </div>
+            <button onClick={() => setShowPasswordModal(true)}
+              className="w-full mt-1 py-2.5 border border-gray-200 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
+              비밀번호 변경
+            </button>
           </div>
         </div>
 
@@ -308,6 +412,10 @@ export default function MyPage() {
         </button>
 
       </div>
+
+      {showPasswordModal && (
+        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
+      )}
     </div>
   );
 }
