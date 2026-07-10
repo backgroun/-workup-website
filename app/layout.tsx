@@ -66,6 +66,9 @@ export default async function RootLayout({
         getStudioSettings(),
       ]);
 
+  // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
+  const visibleNavItems = headerNav?.items.filter((it) => it.isVisible !== false);
+
   // PC/모바일 탑바 높이를 CSS 변수로 주입 — 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조.
   const tbMobile = topbar?.enabled ? topbar.mobile_height : 0;
   const tbPc     = topbar?.enabled ? topbar.height : 0;
@@ -93,7 +96,7 @@ export default async function RootLayout({
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
                   <AnnouncementBanner config={topbar} />
-                  <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
+                  <Header navItems={visibleNavItems} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
                 </>
               )}
               <div className={isAdmin ? "flex-1" : "relative flex-1"}>
@@ -102,7 +105,7 @@ export default async function RootLayout({
               {!isAdmin && <SideBanner />}
               {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
             </div>
-            {!isAdmin && headerNav && <BottomNav navItems={headerNav.items} studioEnabled={studio?.enabled ?? true} />}
+            {!isAdmin && headerNav && <BottomNav navItems={visibleNavItems} studioEnabled={studio?.enabled ?? true} />}
         </CartProvider>
         {/* Vercel 방문/전환 분석 · Core Web Vitals 측정 (대시보드에서 활성화 필요) */}
         <Analytics />
