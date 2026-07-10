@@ -3,11 +3,14 @@ import { useRef, type CSSProperties, type ElementType, type KeyboardEvent } from
 import type { TextFx } from "@/data/story";
 
 // 요소별 개별 서식(fx) → inline style. 설정된 값만 기본 클래스를 덮는다.
+// 관리자 폼에서 조정 가능한 항목: 폰트크기·색상·줄간격·자간. align/weight 는 레거시 데이터 호환용.
 export function fxToStyle(fx?: TextFx): CSSProperties {
   if (!fx) return {};
   return {
     fontSize: fx.size ? `${fx.size}px` : undefined,
     color: fx.color || undefined,
+    lineHeight: fx.lineHeight ?? undefined,
+    letterSpacing: fx.letterSpacing !== undefined ? `${fx.letterSpacing}em` : undefined,
     textAlign: fx.align || undefined,
     fontWeight: fx.weight || undefined,
   };

@@ -3,7 +3,6 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
-import StoryAwareTopbar from "@/components/StoryAwareTopbar";
 import SideBanner from "@/components/SideBanner";
 import BottomNav from "@/components/BottomNav";
 import { CartProvider } from "@/contexts/CartContext";
@@ -86,7 +85,7 @@ export default async function RootLayout({
             >
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
-                  <StoryAwareTopbar><AnnouncementBanner config={topbar} /></StoryAwareTopbar>
+                  <AnnouncementBanner config={topbar} />
                   <Header navItems={headerNav.items} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
                 </>
               )}

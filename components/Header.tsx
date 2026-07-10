@@ -37,7 +37,8 @@ export default function Header({
   const pathname = usePathname();
   // 모바일 상품 상세 페이지에서는 MobileProductNav가 대신 담당
   const hideOnMobile = /^\/products\/[^/]+$/.test(pathname ?? "");
-  // 스토리 페이지에서만 히어로 위 투명 오버레이 헤더. 클라이언트 경로 기준이라 soft navigation 시에도 정확히 갱신된다.
+  // 스토리 페이지에서만 히어로 위 투명 오버레이 헤더(탑바는 다른 페이지와 동일하게 항상 노출 — 헤더만 탑바 바로 아래에서 겹친다).
+  // 클라이언트 경로 기준이라 soft navigation 시에도 정확히 갱신된다.
   const overlay = pathname === "/story";
 
   useEffect(() => {
@@ -90,12 +91,12 @@ export default function Header({
     <header
       className={
         overlay
-          ? `fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+          ? `fixed left-0 right-0 z-50 transition-colors duration-300 ${
               scrolled ? "bg-white border-b border-gray-200 shadow-sm" : "bg-transparent border-b border-transparent"
             }${hideOnMobile ? " hidden md:block" : ""}`
           : `md:sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`
       }
-      style={overlay ? undefined : { top: "var(--wu-topbar-h, 36px)" }}
+      style={{ top: "var(--wu-topbar-h, 36px)" }}
     >
       <div className="px-[15px] md:px-[70px]">
         <div className="flex items-center justify-between h-14">

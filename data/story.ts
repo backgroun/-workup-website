@@ -13,12 +13,16 @@ export type StorySectionType =
   | "problem" | "features3" | "storeCta";
 
 // 요소별(텍스트) 개별 서식 — 선택한 한 요소에만 적용되는 오버라이드. 비우면 기본(테마) 사용.
+// 관리자 폼에서 필드마다 노출하는 조정 항목은 정확히 4가지: 폰트크기·색상·줄간격·자간.
+// align/weight 는 과거 위지윅 서식 툴바가 남긴 값으로, 이미 저장된 데이터 호환을 위해 타입만 유지한다(신규 UI에 노출 안 함).
 export type TextAlign = "left" | "center" | "right";
 export type TextFx = {
-  size?: number;    // px (설정 시 기본 크기 대체)
-  color?: string;   // 글자색
-  align?: TextAlign;
-  weight?: number;  // 400 | 700
+  size?: number;         // px (설정 시 기본 크기 대체)
+  color?: string;        // 글자색
+  lineHeight?: number;   // 배수(예: 1.0~2.5), 설정 시 기본 줄간격 대체
+  letterSpacing?: number; // em 단위(예: -0.05~0.3), 설정 시 기본 자간 대체
+  align?: TextAlign;     // 레거시(관리자 UI 미노출)
+  weight?: number;       // 레거시(관리자 UI 미노출)
 };
 
 export type SectionBase = {
