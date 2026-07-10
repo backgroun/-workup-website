@@ -37,15 +37,17 @@ body {
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
+  /* 안드로이드 Chrome의 "텍스트 자동 확대(font boosting)" 비활성화 — html에만 걸어도
+     되지 않는 경우가 있어 body에도 명시하고 !important로 다른 규칙에 밀리지 않게 한다. */
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 html {
   scroll-behavior: smooth;
   min-height: 100dvh;
-  /* 안드로이드 Chrome의 "텍스트 자동 확대(font boosting)" 비활성화 —
-     레이아웃 계산 이후 글자를 자동으로 키워 박스가 뒤늦게 커지는 현상을 막는다. */
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 @keyframes marquee {
