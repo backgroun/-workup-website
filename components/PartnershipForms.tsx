@@ -357,7 +357,7 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
         aria-label="워크업 창업안내"
       >
         <div
-          className="relative w-full sm:w-[min(960px,calc(100vw-48px))] max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-[22px] border border-white/10 shadow-2xl bg-[#0d0d0d]"
+          className="relative w-full sm:w-[min(960px,calc(100vw-48px))] max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-[22px] border border-white/10 shadow-2xl bg-[#0d0d0d]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="min-h-0 overflow-y-auto overscroll-contain">
