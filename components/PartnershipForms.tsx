@@ -257,27 +257,37 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // 가맹 문의는 접수 전 창업안내를 먼저 한 번 보여준다 — 폼 유효성 검사(required)나 동의 체크로
-  // 제출 이벤트 자체가 막히지 않도록, 버튼 클릭 시점에 폼 검증 전에 가로챈다.
+  // 폼 검증 — 필수 항목·제목/문의내용 글자수·동의·비밀번호 형식을 확인하고,
+  // 문제가 있으면 안내 문구를 반환한다(없으면 null).
+  const validate = (): string | null => {
+    for (const fld of config.fields) {
+      const val = (form[fld.key] ?? "").trim();
+      if (fld.required && !val) return `${fld.label}을(를) 입력해 주세요.`;
+      if ((fld.key === "title" || fld.key === "message") && val && val.length < 10) {
+        return `${fld.label}은(는) 10자 이상 입력해 주세요.`;
+      }
+    }
+    if (consent && !agreed) return "개인정보 수집·이용에 동의해주세요.";
+    if (password && password.length !== 4) return "비밀번호는 숫자 4자리로 입력해주세요.";
+    return null;
+  };
+
+  // 가맹 문의는 접수 전 창업안내를 먼저 한 번 보여준다 — 단, 필수 항목이 미비하면
+  // 안내 팝업을 띄우지 않고 그 자리에서 바로 오류를 보여준다.
   const handleGuideIntercept = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!franchiseGuide || guideSeen) return;
     e.preventDefault();
+    const err = validate();
+    if (err) { setError(err); return; }
+    setError("");
     setGuideSeen(true);
     setGuideOpen(true);
   };
 
-  // 폼 검증 + 실제 접수 처리 — 일반 제출 버튼과 창업안내 팝업의 완료 버튼이 함께 사용한다.
+  // 실제 접수 처리 — 일반 제출 버튼과 창업안내 팝업의 완료 버튼이 함께 사용한다.
   const performSubmit = async () => {
-    for (const fld of config.fields) {
-      const val = (form[fld.key] ?? "").trim();
-      if (fld.required && !val) { setError(`${fld.label}을(를) 입력해 주세요.`); return; }
-      if ((fld.key === "title" || fld.key === "message") && val && val.length < 10) {
-        setError(`${fld.label}은(는) 10자 이상 입력해 주세요.`);
-        return;
-      }
-    }
-    if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
-    if (password && password.length !== 4) { setError("비밀번호는 숫자 4자리로 입력해주세요."); return; }
+    const err = validate();
+    if (err) { setError(err); return; }
     setSubmitting(true); setError("");
     try {
       // 동의 시 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
@@ -295,7 +305,14 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
+    if (franchiseGuide && !guideSeen) {
+      const err = validate();
+      if (err) { setError(err); return; }
+      setError("");
+      setGuideSeen(true);
+      setGuideOpen(true);
+      return;
+    }
     await performSubmit();
   };
 
