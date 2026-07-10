@@ -7,7 +7,7 @@ import FranchiseGuide from "./FranchiseGuide";
 
 type FormState = Record<string, string>;
 
-function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string; desc: string; passwordHint?: boolean; onReset: () => void }) {
+function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc: string; passwordHint?: boolean; onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-12 h-12 bg-[#ff550c] flex items-center justify-center mb-4">
@@ -15,8 +15,7 @@ function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string;
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <p className="text-base font-bold text-[#1A2B4A] mb-2">{title}</p>
-      <p className="text-xs text-gray-500 leading-relaxed mb-4">{desc}</p>
+      <p className="text-base font-bold text-[#1A2B4A] mb-4">{title}</p>
       <div className="text-xs text-gray-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 leading-relaxed mb-6 max-w-xs text-left space-y-2.5">
         <p className="flex items-start gap-2">
           <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center mt-px">
@@ -24,7 +23,7 @@ function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string;
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </span>
-          <span>오른쪽 <b>‘문의 현황’</b> 목록의 <b className="text-[#1A2B4A]">새로고침</b> 버튼을 누르면 방금 작성한 글이 나타납니다.</span>
+          <span>문의현황 목록의 <b className="text-[#1A2B4A]">새로고침</b> 버튼을 누르면 게시글을 확인할 수 있습니다.</span>
         </p>
         {passwordHint && (
           <p className="flex items-start gap-2 border-t border-slate-200 pt-2.5">
@@ -33,7 +32,7 @@ function SuccessMessage({ title, desc, passwordHint, onReset }: { title: string;
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </span>
-            <span>설정하신 <b className="text-[#ff550c]">비밀번호를 기억해 주세요.</b> 목록에서 내 글(🔒)을 눌러 내용·답변을 확인할 수 있어요.</span>
+            <span>비로그인 문의 작성시 <b className="text-[#ff550c]">비밀번호를 꼭 기억하셔야</b> 확인할 수 있습니다.</span>
           </p>
         )}
       </div>
@@ -271,6 +270,7 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
     e.preventDefault();
     if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
     if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
+    if (password && password.length !== 4) { setError("비밀번호는 숫자 4자리로 입력해주세요."); return; }
     setSubmitting(true); setError("");
     try {
       // 동의 시 payload에 기록 — 접수 시각(created_at)이 곧 동의 시각.
@@ -319,13 +319,16 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
       </div>
       <div>
         <label className="block mb-1.5" style={labelStyle}>
-          비밀번호 <span className="text-gray-400">(문의글 확인용)</span>
+          비밀번호 <span className="text-gray-400">(문의글 확인용 / 숫자 4글자)</span>
         </label>
         <input
           type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          maxLength={4}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="설정하면 오른쪽 목록에서 비밀번호로 내 글을 확인할 수 있어요"
+          onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          placeholder="숫자 4자리 (예: 1234)"
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
