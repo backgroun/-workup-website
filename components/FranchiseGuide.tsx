@@ -61,14 +61,14 @@ export default function FranchiseGuide({
       <span className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-[#141414] text-xs font-black flex items-center justify-center shadow-lg">W</span>
       <span className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 flex items-center justify-center text-lg font-bold" style={{ borderColor: col.accent, color: col.accent, backgroundColor: "#141414", boxShadow: `0 0 30px ${col.accent}59` }}>5km</span>
     </div>,
-    <div key="m2" className="h-40 sm:h-full min-h-[150px] rounded-xl flex items-center justify-center gap-3 sm:gap-5 px-4" style={{ backgroundColor: "#141414" }}>
-      <div className="border border-white/10 rounded-lg px-5 sm:px-6 py-4 text-center" style={{ backgroundColor: col.page_bg }}>
-        <p className="text-3xl sm:text-4xl font-black text-gray-500 leading-none">無</p>
-        <p className="text-[10px] text-gray-400 mt-1.5">가맹보증금</p>
+    <div key="m2" className="h-40 sm:h-full min-h-[150px] rounded-xl flex items-center justify-center gap-4 sm:gap-6 px-4" style={{ backgroundColor: "#141414" }}>
+      <div className="rounded-xl px-6 sm:px-8 py-5 text-center border" style={{ backgroundColor: col.page_bg, borderColor: `${col.accent}40` }}>
+        <p className="text-4xl sm:text-5xl font-black text-white leading-none">無</p>
+        <p className="text-xs sm:text-sm font-bold mt-2" style={{ color: col.accent }}>가맹보증금·교육비</p>
       </div>
-      <div className="border border-white/10 rounded-lg px-6 sm:px-8 py-4 flex items-end" style={{ backgroundColor: col.page_bg }}>
-        <span className="text-4xl sm:text-5xl font-black leading-none" style={{ color: col.accent }}>0</span>
-        <span className="text-base sm:text-lg font-bold text-white ml-1 mb-0.5">원</span>
+      <div className="rounded-xl px-7 sm:px-9 py-5 flex items-end border" style={{ backgroundColor: col.page_bg, borderColor: `${col.accent}40`, boxShadow: `0 0 26px ${col.accent}45` }}>
+        <span className="text-5xl sm:text-6xl font-black leading-none" style={{ color: col.accent }}>0</span>
+        <span className="text-lg sm:text-xl font-bold text-white ml-1.5 mb-1">원</span>
       </div>
     </div>,
   ];
@@ -76,14 +76,15 @@ export default function FranchiseGuide({
   return (
     <div className="text-white" style={{ backgroundColor: col.page_bg }}>
       {/* 1. 헤더 (컴팩트, 이미지 생략) */}
-      <section className="px-6 sm:px-10 py-5 md:py-6" style={{ backgroundColor: col.header_bg }}>
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="font-black whitespace-pre-line" style={styleCss(s.title)}>{config.title.replace(/\n/g, " ")}</h1>
+      <section className="px-6 sm:px-10 py-6 md:py-8" style={{ backgroundColor: col.header_bg }}>
+        <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
+          <span className="w-8 h-[3px] rounded-full mb-3" style={{ backgroundColor: col.accent }} />
+          <h1 className="font-bold tracking-tight whitespace-pre-line" style={styleCss(s.title)}>{config.title.replace(/\n/g, " ")}</h1>
         </div>
       </section>
 
       {/* 2. 필요조건 / 매출액 / 가맹비 / 지역 (2x2) */}
-      <section className="px-4 sm:px-6 lg:px-10 py-6 md:py-8">
+      <section className="px-4 sm:px-6 lg:px-10 py-6 md:py-8" style={{ backgroundColor: col.header_bg }}>
         <div className="max-w-6xl mx-auto rounded-2xl border border-white/5 overflow-hidden" style={{ backgroundColor: col.card_bg }}>
           <div className="grid sm:grid-cols-2">
             {config.requirements.map((r, i) => {
@@ -119,14 +120,14 @@ export default function FranchiseGuide({
       </section>
 
       {/* 3. 창업 포인트 */}
-      <section className="px-4 sm:px-6 lg:px-10 pb-6 md:pb-8">
+      <section className="px-4 sm:px-6 lg:px-10 py-6 md:py-8" style={{ backgroundColor: col.header_bg }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-5 md:mb-6">
             <p className="font-bold mb-1.5" style={styleCss(s.eyebrow)}>{config.eyebrow}</p>
             <div className="flex items-center justify-center gap-4">
-              <span className="hidden sm:block h-px w-14 bg-white/20" />
+              <span className="hidden sm:block h-px w-14 bg-black/15" />
               <h2 className="font-black" style={styleCss(s.section_title)}>{config.section_title}</h2>
-              <span className="hidden sm:block h-px w-14 bg-white/20" />
+              <span className="hidden sm:block h-px w-14 bg-black/15" />
             </div>
           </div>
 
@@ -148,7 +149,7 @@ export default function FranchiseGuide({
       </section>
 
       {/* 4. 가맹수 (실시간) */}
-      <section className="py-5 md:py-6 border-y border-white/5" style={{ backgroundColor: col.cta_bg }}>
+      <section className="py-5 md:py-6 border-y border-black/5" style={{ backgroundColor: col.header_bg }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
           <span className="font-bold" style={styleCss(s.cta_label)}>{config.cta_prefix}</span>
           <span className="font-black" style={styleCss(s.cta_number)}>{count.toLocaleString()}</span>

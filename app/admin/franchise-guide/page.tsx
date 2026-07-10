@@ -130,7 +130,6 @@ export default function FranchiseGuideEditPage() {
               <ColorField label="페이지 배경" value={cfg.colors.page_bg} onChange={(v) => setColor("page_bg", v)} />
               <ColorField label="헤더 배경" value={cfg.colors.header_bg} onChange={(v) => setColor("header_bg", v)} />
               <ColorField label="카드 배경" value={cfg.colors.card_bg} onChange={(v) => setColor("card_bg", v)} />
-              <ColorField label="가맹수 배경" value={cfg.colors.cta_bg} onChange={(v) => setColor("cta_bg", v)} />
             </div>
           </Card>
 
