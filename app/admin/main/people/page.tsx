@@ -389,13 +389,21 @@ export default function AdminMainPeoplePage() {
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-none" />
                   </div>
 
-                  {/* 위젯 임베드 — 넣으면 아래 릴스·사진 대신 실시간 피드가 표시됨 */}
+                  {/* 게시물 임베드 — 넣으면 인스타그램 바 대신 임베드된 게시물이 표시됨 */}
                   <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
-                    <label className="block text-xs font-semibold text-indigo-700 mb-1.5">📷 위젯 임베드 코드 <span className="font-normal text-indigo-400">(실시간 피드 · 선택)</span></label>
+                    <label className="block text-xs font-semibold text-indigo-700 mb-1">
+                      게시물 임베드 코드 <span className="font-normal text-indigo-400">(선택 · 비워두면 인스타그램 바 표시)</span>
+                    </label>
+                    <p className="text-[11px] text-indigo-600 mb-2 leading-relaxed">
+                      인스타 <b>공개 게시물</b> → 우측 상단 <b>···</b> → <b>임베드</b> → 코드 복사 후 붙여넣기 (무료·가입 불필요).
+                      여러 게시물을 넣으려면 코드를 이어서 붙이세요.
+                    </p>
                     <textarea rows={3} value={editing.instagram?.embed ?? ""} onChange={e => setIg("embed", e.target.value)}
-                      placeholder="SnapWidget · LightWidget · Behold 등에서 발급받은 임베드 코드(<iframe ...> 또는 <script ...>)를 붙여넣으세요."
+                      placeholder={'<blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/XXXX/">...</blockquote>\n<script async src="//www.instagram.com/embed.js"></script>'}
                       className="w-full border border-indigo-200 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-indigo-400 resize-none bg-white" />
-                    <p className="text-[10px] text-indigo-500 mt-1">입력하면 아래 릴스·사진 대신 <b>실시간 인스타 피드</b>가 표시됩니다. 비우면 아래 수동 릴스·사진을 사용합니다.</p>
+                    <p className="text-[10px] text-indigo-400 mt-1">
+                      입력하면 <b>인스타그램 바 대신</b> 이 게시물들이 표시됩니다. 유료 위젯(SnapWidget·Behold 등)의 iframe/script 코드도 동일하게 작동합니다.
+                    </p>
                   </div>
 
                   <AdminImageField
