@@ -57,3 +57,30 @@ export async function PATCH(req: Request) {
   });
   return NextResponse.json({ ok: true, updated });
 }
+
+// 여러 문의 일괄 삭제 (관리자). body: { ids: string[] }
+export async function DELETE(req: Request) {
+  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = await req.json().catch(() => ({}));
+  const ids: string[] = Array.isArray(body.ids) ? body.ids.filter((x: unknown) => typeof x === "string") : [];
+
+  if (!ids.length) return NextResponse.json({ error: "선택된 문의가 없습니다." }, { status: 400 });
+  if (ids.length > 2000) return NextResponse.json({ error: "한 번에 삭제할 수 있는 문의는 2000건까지입니다." }, { status: 400 });
+
+  const supabase = createAdminClient();
+  // URL 길이 제한을 피하기 위해 id를 청크로 나눠 삭제한다.
+  const CHUNK = 100;
+  let deleted = 0;
+  for (let i = 0; i < ids.length; i += CHUNK) {
+    const { error } = await supabase.from("inquiries").delete().in("id", ids.slice(i, i + CHUNK));
+    if (error) return NextResponse.json({ error: error.message, deleted }, { status: 500 });
+    deleted += Math.min(CHUNK, ids.length - i);
+  }
+  await logAudit({
+    action: "delete",
+    resource: "inquiries",
+    resourceLabel: "문의",
+    summary: `문의 ${deleted}건 일괄 삭제`,
+  });
+  return NextResponse.json({ ok: true, deleted });
+}
