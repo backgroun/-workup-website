@@ -270,24 +270,27 @@ export default function AdminMainVisualPage() {
     }
   };
 
-  // 동영상 직접 업로드(브라우저 → Cloudinary, resource_type video) — 대용량 우회
+  // 동영상 직접 업로드(브라우저 → ImageKit 직접 업로드) — 대용량 우회
   const uploadVideo = async (file: File, field: "pc" | "mobile") => {
     if (file.size > 100 * 1024 * 1024) { flash("동영상이 너무 큽니다 (100MB 이하 · 짧고 압축된 영상 권장)", "err"); return; }
     setUploading(field);
     try {
-      const sig = await fetch("/api/admin/cloudinary-sign", {
+      const sig = await fetch("/api/admin/imagekit-auth", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "workup/videos" }),
       }).then((r) => r.json());
       if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)", "err"); setUploading(null); return; }
       const form = new FormData();
       form.append("file", file);
-      form.append("api_key", sig.apiKey);
-      form.append("timestamp", String(sig.timestamp));
-      form.append("folder", sig.folder);
+      form.append("fileName", file.name);
+      form.append("publicKey", sig.publicKey);
       form.append("signature", sig.signature);
-      const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, { method: "POST", body: form }).then((r) => r.json());
-      if (up.error) { flash(`업로드 실패: ${up.error.message ?? ""}`, "err"); return; }
-      setEditing((prev) => prev ? { ...prev, [field === "pc" ? "pc_video_url" : "mobile_video_url"]: up.secure_url } : prev);
+      form.append("expire", String(sig.expire));
+      form.append("token", sig.token);
+      form.append("folder", sig.folder);
+      form.append("useUniqueFileName", "true");
+      const up = await fetch("https://upload.imagekit.io/api/v2/files/upload", { method: "POST", body: form }).then((r) => r.json());
+      if (!up?.url) { flash(`업로드 실패: ${up?.message ?? ""}`, "err"); return; }
+      setEditing((prev) => prev ? { ...prev, [field === "pc" ? "pc_video_url" : "mobile_video_url"]: up.url } : prev);
     } catch {
       flash("업로드 실패 (네트워크/용량 확인)", "err");
     } finally {
@@ -916,7 +919,7 @@ function ImageField({ label, hint, value, onChange, uploading, onUpload, inputRe
   );
 }
 
-// ── 동영상 업로드 필드 (직접 Cloudinary 업로드) ──
+// ── 동영상 업로드 필드 (직접 ImageKit 업로드) ──
 
 function VideoField({ label, value, uploading, onUpload, onClear }: {
   label: string; value: string; uploading: boolean; onUpload: (f: File) => void; onClear: () => void;

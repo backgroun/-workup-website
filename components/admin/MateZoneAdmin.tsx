@@ -47,30 +47,33 @@ export default function MateZoneAdmin() {
     } finally { setSaving(false); }
   };
 
-  // 영상 업로드(브라우저 → Cloudinary, resource_type video) — Vercel 4.5MB 우회
+  // 영상 업로드(브라우저 → ImageKit 직접 업로드) — Vercel 4.5MB 우회
   const uploadVideo = async (file: File, reelId: string) => {
     if (file.size > 100 * 1024 * 1024) { flash("영상이 너무 큽니다 (100MB 이하 · 짧은 압축본 권장)"); return; }
     setUploadingId(reelId);
     try {
-      const sig = await fetch("/api/admin/cloudinary-sign", {
+      const sig = await fetch("/api/admin/imagekit-auth", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folder: "workup/videos" }),
       }).then(r => r.json());
       if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)"); return; }
       const form = new FormData();
       form.append("file", file);
-      form.append("api_key", sig.apiKey);
-      form.append("timestamp", String(sig.timestamp));
-      form.append("folder", sig.folder);
+      form.append("fileName", file.name);
+      form.append("publicKey", sig.publicKey);
       form.append("signature", sig.signature);
-      const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, { method: "POST", body: form }).then(r => r.json());
-      if (up.error) { flash(`업로드 실패: ${up.error.message ?? ""}`); return; }
+      form.append("expire", String(sig.expire));
+      form.append("token", sig.token);
+      form.append("folder", sig.folder);
+      form.append("useUniqueFileName", "true");
+      const up = await fetch("https://upload.imagekit.io/api/v2/files/upload", { method: "POST", body: form }).then(r => r.json());
+      if (!up?.url) { flash(`업로드 실패: ${up?.message ?? ""}`); return; }
 
       // 최신 config(ref) 기준으로 영상 URL 반영 후 저장(낙관적 — 실패해도 미리보기는 유지)
       const latest = configRef.current;
       const next: MateZoneConfig = {
         ...latest,
-        reels: latest.reels.map(r => r.id === reelId ? { ...r, video_url: up.secure_url as string } : r),
+        reels: latest.reels.map(r => r.id === reelId ? { ...r, video_url: up.url as string } : r),
       };
       setConfig(next);
       await saveConfig(next);

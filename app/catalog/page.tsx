@@ -28,7 +28,7 @@ async function getData(): Promise<{ pages: CatalogPage[]; brands: BrandCatalog[]
 }
 
 export default async function CatalogPage() {
-  const cloud = process.env.CLOUDINARY_CLOUD_NAME ?? "";
+  const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT ?? "";
   const { pages, brands } = await getData();
 
   const brandEntries: BrandEntry[] = brands
@@ -36,8 +36,8 @@ export default async function CatalogPage() {
     .map((b) => ({
       id: b.id,
       name: b.brand_name,
-      cover: b.thumbnail_url || (cloud ? brandCoverUrl(cloud, b.pdf_public_id) : ""),
-      pages: cloud && b.page_count > 0 ? Array.from({ length: b.page_count }, (_, i) => brandPageUrl(cloud, b.pdf_public_id, i + 1)) : [],
+      cover: b.thumbnail_url || (urlEndpoint ? brandCoverUrl(urlEndpoint, b.pdf_public_id) : ""),
+      pages: urlEndpoint && b.page_count > 0 ? Array.from({ length: b.page_count }, (_, i) => brandPageUrl(urlEndpoint, b.pdf_public_id, i + 1)) : [],
       pdf_url: b.pdf_url || "",
     }));
 

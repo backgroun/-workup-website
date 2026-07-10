@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 // 모든 응답에 적용할 보안 헤더.
-// CSP는 외부 리소스(구글폰트·jsdelivr·Supabase·Cloudinary·픽셀 등) 전수 점검이
+// CSP는 외부 리소스(구글폰트·jsdelivr·Supabase·ImageKit·픽셀 등) 전수 점검이
 // 필요해 오작동 위험이 있어 제외했다. 추후 별도 작업으로 도입 권장.
 const securityHeaders = [
   // HTTPS 강제 (2년). 커스텀 도메인 preload 등록 전이므로 preload 지시어는 제외.
@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "ik.imagekit.io",
       },
     ],
   },
