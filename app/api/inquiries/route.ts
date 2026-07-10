@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       if (field.required && !val) {
         return NextResponse.json({ error: `${field.label}을(를) 입력해 주세요.` }, { status: 400 });
       }
-      if ((field.key === "title" || field.key === "message") && val && val.length < 10) {
+      if (field.key === "message" && val && val.length < 10) {
         return NextResponse.json({ error: `${field.label}은(는) 10자 이상 입력해 주세요.` }, { status: 400 });
       }
       if (val && field.type === "tel") {
