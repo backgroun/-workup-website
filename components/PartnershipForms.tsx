@@ -7,6 +7,14 @@ import FranchiseGuide from "./FranchiseGuide";
 
 type FormState = Record<string, string>;
 
+// 연락처 입력을 010-0000-0000 형태로 자동 하이픈 포맷팅.
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
+
 function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc: string; passwordHint?: boolean; onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -254,8 +262,12 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
   const labelStyle: CSSProperties = { fontSize: config.label_style.size, color: config.label_style.color };
   const inputStyle: CSSProperties = { fontSize: config.input_size, color: config.input_color };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const fld = config.fields.find((f) => f.key === name);
+    const nextValue = fld?.type === "tel" ? formatPhone(value) : value;
+    setForm((prev) => ({ ...prev, [name]: nextValue }));
+  };
 
   // 폼 검증 — 필수 항목·제목/문의내용 글자수·동의·비밀번호 형식을 확인하고,
   // 문제가 있으면 안내 문구를 반환한다(없으면 null).
