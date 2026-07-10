@@ -94,7 +94,7 @@ export default function WithdrawnMembersPage() {
     <div className="space-y-5">
       <div>
         <div className="flex items-center gap-3">
-          <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 회원 현황</Link>
+          <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#303236]">← 회원 현황</Link>
           <span className="text-gray-200">/</span>
           <h1 className="text-3xl font-bold text-gray-900">회원 탈퇴 관리</h1>
         </div>
@@ -159,7 +159,7 @@ export default function WithdrawnMembersPage() {
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="이름 또는 이메일 검색..."
-              className="border border-gray-200 px-4 py-2 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A] w-64" />
+              className="border border-gray-200 px-4 py-2 text-[14px] rounded focus:outline-none focus:border-[#303236] w-64" />
           </div>
 
           <div className="overflow-x-auto">
@@ -168,7 +168,7 @@ export default function WithdrawnMembersPage() {
                 <tr>
                   <th className="px-4 py-4 w-10">
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
-                      className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                      className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
                   {["탈퇴일시", "이름", "이메일", "연락처", "등급", "탈퇴 사유", "가입일", "관리"].map(h => (
                     <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
@@ -184,7 +184,7 @@ export default function WithdrawnMembersPage() {
                   <tr key={m.id} className={selected.has(m.id) ? "bg-red-50/40" : "hover:bg-gray-50 transition-colors"}>
                     <td className="px-4 py-4">
                       <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleOne(m.id)}
-                        className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                        className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                     </td>
                     <td className="px-5 py-4 text-[14px] text-gray-400 whitespace-nowrap">{fmtDate(m.withdrawn_at)}</td>
                     <td className="px-5 py-4 text-[15px] font-bold text-gray-700 whitespace-nowrap">{m.name}</td>

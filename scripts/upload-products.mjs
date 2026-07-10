@@ -44,7 +44,7 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
 
 // ── 유틸 ──
 const COLOR_HEX = {
-  그레이: "#5b5f63", 차콜그린: "#4a5247", 블랙: "#1c1c1c", 네이비: "#1a2b4a",
+  그레이: "#5b5f63", 차콜그린: "#4a5247", 블랙: "#1c1c1c", 네이비: "#303236",
   화이트: "#f0f0f0", 카키: "#4a5240", 베이지: "#c9b99a", 올리브: "#556b2f",
 };
 const slugify = (name) =>
@@ -141,7 +141,7 @@ function buildRow(get, { id, name, image_url, sub_images, detail_blocks }) {
     job_sites: listSplit(get("현장추천", "jobSites")),
     seasons: listSplit(get("시즌", "seasons")),
     main_expose: mainExpose,
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     colors,
     sizes: listSplit(get("사이즈", "sizes")),
     image_url, sub_images, detail_blocks,

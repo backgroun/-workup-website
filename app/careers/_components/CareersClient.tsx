@@ -61,7 +61,7 @@ export default function CareersClient({ jobs, regions }: { jobs: Job[]; regions:
         <select
           value={regionFilter}
           onChange={(e) => setRegionFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         >
           <option value="전체">지역 전체</option>
           {regions.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -69,7 +69,7 @@ export default function CareersClient({ jobs, regions }: { jobs: Job[]; regions:
         <select
           value={etFilter}
           onChange={(e) => setEtFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         >
           {employmentTypes.map((t) => <option key={t} value={t}>{t === "전체" ? "고용형태 전체" : t}</option>)}
         </select>
@@ -153,7 +153,7 @@ export default function CareersClient({ jobs, regions }: { jobs: Job[]; regions:
                           {job.stores.phone && (
                             <a
                               href={`tel:${job.stores.phone}`}
-                              className="flex items-center gap-1.5 px-4 py-2 bg-[#1A2B4A] text-white text-xs font-semibold rounded-lg hover:bg-[#243a63] transition-colors"
+                              className="flex items-center gap-1.5 px-4 py-2 bg-[#303236] text-white text-xs font-semibold rounded-lg hover:bg-[#243a63] transition-colors"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -163,7 +163,7 @@ export default function CareersClient({ jobs, regions }: { jobs: Job[]; regions:
                           )}
                           <Link
                             href={`/store/${job.stores.id}`}
-                            className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors"
+                            className="flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors"
                           >
                             매장 정보 보기
                           </Link>
@@ -180,12 +180,12 @@ export default function CareersClient({ jobs, regions }: { jobs: Job[]; regions:
       )}
 
       {/* 하단 CTA */}
-      <div className="mt-10 bg-[#1A2B4A] rounded-2xl px-6 py-8 text-center">
+      <div className="mt-10 bg-[#303236] rounded-2xl px-6 py-8 text-center">
         <p className="text-white font-bold text-lg mb-2">원하는 매장을 직접 찾아보세요</p>
         <p className="text-blue-300 text-sm mb-5">전국 매장 목록과 위치를 확인하고 방문 문의드리세요.</p>
         <Link
           href="/store"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#1A2B4A] text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#303236] text-sm font-bold rounded-xl hover:bg-gray-100 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />

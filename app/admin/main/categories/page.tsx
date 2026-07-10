@@ -279,7 +279,7 @@ export default function AdminCombinedCategoriesPage() {
             <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center gap-1.5">
               {cats[selectedCatIdx] ? (
                 <>
-                  <span className="font-semibold text-[#1A2B4A]">{cats[selectedCatIdx].name}</span>
+                  <span className="font-semibold text-[#303236]">{cats[selectedCatIdx].name}</span>
                   <span className="text-gray-300">›</span>
                   <span className="text-gray-400">소분류 편집</span>
                 </>
@@ -300,7 +300,7 @@ export default function AdminCombinedCategoriesPage() {
                       onClick={() => setSelectedCatIdx(catIdx)}
                       className={`group flex items-center gap-1.5 px-3 py-2.5 text-sm border-b border-gray-50 last:border-0 cursor-pointer transition-colors ${
                         selectedCatIdx === catIdx
-                          ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                          ? "bg-blue-50 text-[#303236] font-semibold"
                           : "hover:bg-gray-50 text-gray-700"
                       }`}
                     >
@@ -326,7 +326,7 @@ export default function AdminCombinedCategoriesPage() {
                             if (e.key === "Escape") setEditingMain(null);
                           }}
                           onClick={e => e.stopPropagation()}
-                          className="flex-1 min-w-0 border border-[#1A2B4A] px-1.5 py-0.5 text-sm focus:outline-none rounded" />
+                          className="flex-1 min-w-0 border border-[#303236] px-1.5 py-0.5 text-sm focus:outline-none rounded" />
                       ) : (
                         <span className="flex-1 min-w-0 truncate">{cat.name}</span>
                       )}
@@ -335,7 +335,7 @@ export default function AdminCombinedCategoriesPage() {
                       <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button type="button"
                           onClick={e => { e.stopPropagation(); startEditMain(catIdx); }}
-                          className="text-[10px] text-gray-400 hover:text-[#1A2B4A] px-1 py-0.5 border border-gray-200 rounded hover:border-[#1A2B4A] transition-colors">
+                          className="text-[10px] text-gray-400 hover:text-[#303236] px-1 py-0.5 border border-gray-200 rounded hover:border-[#303236] transition-colors">
                           수정
                         </button>
                         <button type="button"
@@ -346,7 +346,7 @@ export default function AdminCombinedCategoriesPage() {
                       </div>
 
                       {/* > 화살표 */}
-                      <svg className={`w-4 h-4 flex-shrink-0 ${selectedCatIdx === catIdx ? "text-[#1A2B4A]" : "text-gray-300"}`}
+                      <svg className={`w-4 h-4 flex-shrink-0 ${selectedCatIdx === catIdx ? "text-[#303236]" : "text-gray-300"}`}
                         fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
@@ -362,10 +362,10 @@ export default function AdminCombinedCategoriesPage() {
                       onChange={e => setNewMain(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
                       placeholder="새 대카테고리"
-                      className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#1A2B4A] rounded"
+                      className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#303236] rounded"
                     />
                     <button type="button" onClick={addMainCat}
-                      className="px-3 py-1.5 bg-[#1A2B4A] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
+                      className="px-3 py-1.5 bg-[#303236] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
                       +
                     </button>
                   </div>
@@ -412,10 +412,10 @@ export default function AdminCombinedCategoriesPage() {
                           onChange={e => setNewSubInputs(p => ({ ...p, [selectedCatIdx]: e.target.value }))}
                           onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSub(selectedCatIdx); } }}
                           placeholder={`"${cats[selectedCatIdx].name}" 소분류 추가`}
-                          className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#1A2B4A] rounded"
+                          className="flex-1 border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#303236] rounded"
                         />
                         <button type="button" onClick={() => addSub(selectedCatIdx)}
-                          className="px-3 py-1.5 bg-[#1A2B4A] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
+                          className="px-3 py-1.5 bg-[#303236] text-white text-xs font-bold hover:bg-[#243d5e] transition-colors rounded">
                           +
                         </button>
                       </div>
@@ -440,7 +440,7 @@ export default function AdminCombinedCategoriesPage() {
                 {catSaveMsg === "err" && <span className="ml-2 text-red-500 font-medium">저장 실패</span>}
               </p>
               <button onClick={saveCats} disabled={catSaving}
-                className="px-5 py-1.5 text-xs font-semibold bg-[#1A2B4A] text-white hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded">
+                className="px-5 py-1.5 text-xs font-semibold bg-[#303236] text-white hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded">
                 {catSaving ? "저장 중..." : "저장"}
               </button>
             </div>
@@ -475,7 +475,7 @@ export default function AdminCombinedCategoriesPage() {
                 <p className="text-[11px] text-gray-400 mt-0.5">메인 페이지에서 퀵 카테고리 섹션 전체 표시 여부</p>
               </div>
               <button onClick={() => setQcConfig(p => ({ ...p, is_section_visible: !p.is_section_visible }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${qcConfig.is_section_visible ? "bg-[#1A2B4A]" : "bg-gray-300"}`}>
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${qcConfig.is_section_visible ? "bg-[#303236]" : "bg-gray-300"}`}>
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${qcConfig.is_section_visible ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
@@ -486,7 +486,7 @@ export default function AdminCombinedCategoriesPage() {
               </div>
               <select value={qcConfig.display_count}
                 onChange={e => setQcConfig(p => ({ ...p, display_count: Number(e.target.value) }))}
-                className="text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30">
+                className="text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30">
                 {[4, 5, 6, 7, 8, 10, 12].map(n => <option key={n} value={n}>{n}개</option>)}
               </select>
             </div>
@@ -507,19 +507,19 @@ export default function AdminCombinedCategoriesPage() {
                   <span className="block text-[11px] text-gray-500 mb-1">배치 수량 (개)</span>
                   <input type="number" inputMode="numeric" min={1} step={1} value={qcPcCols}
                     onChange={e => setColumns("pc_columns", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
                 <label className="block">
                   <span className="block text-[11px] text-gray-500 mb-1">가로 간격 (px)</span>
                   <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGapX}
                     onChange={e => setGap("pc_gap_x", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
                 <label className="block">
                   <span className="block text-[11px] text-gray-500 mb-1">세로 간격 (px)</span>
                   <input type="number" inputMode="numeric" min={0} step={1} value={qcPcGapY}
                     onChange={e => setGap("pc_gap_y", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
               </div>
             </div>
@@ -532,19 +532,19 @@ export default function AdminCombinedCategoriesPage() {
                   <span className="block text-[11px] text-gray-500 mb-1">배치 수량 (개)</span>
                   <input type="number" inputMode="numeric" min={1} step={1} value={qcMobileCols}
                     onChange={e => setColumns("mobile_columns", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
                 <label className="block">
                   <span className="block text-[11px] text-gray-500 mb-1">가로 간격 (px)</span>
                   <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGapX}
                     onChange={e => setGap("mobile_gap_x", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
                 <label className="block">
                   <span className="block text-[11px] text-gray-500 mb-1">세로 간격 (px)</span>
                   <input type="number" inputMode="numeric" min={0} step={1} value={qcMobileGapY}
                     onChange={e => setGap("mobile_gap_y", e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                    className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                 </label>
               </div>
             </div>
@@ -575,7 +575,7 @@ export default function AdminCombinedCategoriesPage() {
                                 ? <img src={it.icon_url} alt="" className="w-6 h-6 object-contain" />
                                 : <span className="leading-none select-none">{it.emoji}</span>}
                             </div>
-                            <span className="text-[9px] text-[#1A2B4A] whitespace-nowrap">{it.name}</span>
+                            <span className="text-[9px] text-[#303236] whitespace-nowrap">{it.name}</span>
                           </div>
                         ))}
                       </div>
@@ -600,7 +600,7 @@ export default function AdminCombinedCategoriesPage() {
                                 ? <img src={it.icon_url} alt="" className="w-5 h-5 object-contain" />
                                 : <span className="leading-none select-none">{it.emoji}</span>}
                             </div>
-                            <span className="text-[9px] text-[#1A2B4A] truncate max-w-full">{it.name}</span>
+                            <span className="text-[9px] text-[#303236] truncate max-w-full">{it.name}</span>
                           </div>
                         ))}
                       </div>
@@ -664,7 +664,7 @@ export default function AdminCombinedCategoriesPage() {
                             <label className="block text-xs font-medium text-gray-600 mb-1">카테고리명</label>
                             <input type="text" value={item.name}
                               onChange={e => updateItem(item.id, { name: e.target.value })}
-                              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
                               placeholder="예: 남성" />
                           </div>
 
@@ -673,7 +673,7 @@ export default function AdminCombinedCategoriesPage() {
                             <label className="block text-xs font-medium text-gray-600 mb-1">이모지 (이미지 없을 때)</label>
                             <input type="text" value={item.emoji}
                               onChange={e => updateItem(item.id, { emoji: e.target.value })}
-                              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
                               placeholder="예: 👔" />
                           </div>
 
@@ -685,10 +685,10 @@ export default function AdminCombinedCategoriesPage() {
                               <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center gap-1.5">
                                 {parseLinkMain(item.link) ? (
                                   <>
-                                    <span className="font-semibold text-[#1A2B4A]">{parseLinkMain(item.link)}</span>
+                                    <span className="font-semibold text-[#303236]">{parseLinkMain(item.link)}</span>
                                     <span className="text-gray-300">›</span>
                                     {parseLinkSub(item.link)
-                                      ? <span className="font-semibold text-[#1A2B4A]">{parseLinkSub(item.link)}</span>
+                                      ? <span className="font-semibold text-[#303236]">{parseLinkSub(item.link)}</span>
                                       : <span className="text-gray-400">소분류 전체</span>}
                                   </>
                                 ) : (
@@ -702,7 +702,7 @@ export default function AdminCombinedCategoriesPage() {
                                   {/* 전체 제품 */}
                                   <button type="button"
                                     onClick={() => { updateItem(item.id, { link: "/products" }); setPickerMain(p => ({ ...p, [item.id]: "" })); }}
-                                    className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between transition-colors border-b border-gray-50 ${!parseLinkMain(item.link) ? "bg-blue-50 text-[#1A2B4A] font-semibold" : "hover:bg-gray-50 text-gray-500"}`}>
+                                    className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between transition-colors border-b border-gray-50 ${!parseLinkMain(item.link) ? "bg-blue-50 text-[#303236] font-semibold" : "hover:bg-gray-50 text-gray-500"}`}>
                                     전체 제품
                                   </button>
                                   {cats.map(cat => (
@@ -713,7 +713,7 @@ export default function AdminCombinedCategoriesPage() {
                                       }}
                                       className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors border-b border-gray-50 last:border-0 ${
                                         (pickerMain[item.id] ?? parseLinkMain(item.link)) === cat.name
-                                          ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                                          ? "bg-blue-50 text-[#303236] font-semibold"
                                           : "hover:bg-gray-50 text-gray-700"
                                       }`}>
                                       <span>{cat.name}</span>
@@ -737,7 +737,7 @@ export default function AdminCombinedCategoriesPage() {
                                       <>
                                         <button type="button"
                                           onClick={() => updateItem(item.id, { link: buildLink(activeMain, "") })}
-                                          className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between transition-colors border-b border-gray-50 ${!parseLinkSub(item.link) && parseLinkMain(item.link) === activeMain ? "bg-blue-50 text-[#1A2B4A] font-semibold" : "hover:bg-gray-50 text-gray-500"}`}>
+                                          className={`w-full text-left px-4 py-2.5 text-xs flex items-center justify-between transition-colors border-b border-gray-50 ${!parseLinkSub(item.link) && parseLinkMain(item.link) === activeMain ? "bg-blue-50 text-[#303236] font-semibold" : "hover:bg-gray-50 text-gray-500"}`}>
                                           전체
                                         </button>
                                         {activeSubs.map(sub => (
@@ -745,12 +745,12 @@ export default function AdminCombinedCategoriesPage() {
                                             onClick={() => updateItem(item.id, { link: buildLink(activeMain, sub) })}
                                             className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors border-b border-gray-50 last:border-0 ${
                                               parseLinkSub(item.link) === sub && parseLinkMain(item.link) === activeMain
-                                                ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                                                ? "bg-blue-50 text-[#303236] font-semibold"
                                                 : "hover:bg-gray-50 text-gray-700"
                                             }`}>
                                             <span>{sub}</span>
                                             {parseLinkSub(item.link) === sub && parseLinkMain(item.link) === activeMain && (
-                                              <svg className="w-3.5 h-3.5 text-[#1A2B4A] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                              <svg className="w-3.5 h-3.5 text-[#303236] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                               </svg>
                                             )}
@@ -785,7 +785,7 @@ export default function AdminCombinedCategoriesPage() {
                                 <div className="flex items-center gap-2 mb-1.5">
                                   <button onClick={() => fileInputRefs.current[item.id]?.click()}
                                     disabled={uploadingId === item.id}
-                                    className="px-3 py-1.5 bg-[#1A2B4A] text-white text-xs rounded-lg hover:bg-[#243d6a] disabled:opacity-50">
+                                    className="px-3 py-1.5 bg-[#303236] text-white text-xs rounded-lg hover:bg-[#243d6a] disabled:opacity-50">
                                     {uploadingId === item.id ? "업로드 중..." : "이미지 업로드"}
                                   </button>
                                   {item.icon_url && (
@@ -810,7 +810,7 @@ export default function AdminCombinedCategoriesPage() {
                                 className="w-8 h-8 rounded border border-gray-300 cursor-pointer" />
                               <input type="text" value={item.bg_color}
                                 onChange={e => updateItem(item.id, { bg_color: e.target.value })}
-                                className="flex-1 text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30" />
+                                className="flex-1 text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#303236]/30" />
                               <button onClick={() => updateItem(item.id, { bg_color: "#f0f0f0" })}
                                 className="text-xs px-2 py-1.5 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 whitespace-nowrap">초기화</button>
                             </div>
@@ -823,7 +823,7 @@ export default function AdminCombinedCategoriesPage() {
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" checked={item.open_in_new_tab}
                                   onChange={e => updateItem(item.id, { open_in_new_tab: e.target.checked })}
-                                  className="w-4 h-4 accent-[#1A2B4A]" />
+                                  className="w-4 h-4 accent-[#303236]" />
                                 <span className="text-sm text-gray-700">새 탭에서 열기</span>
                               </label>
                             </div>
@@ -831,7 +831,7 @@ export default function AdminCombinedCategoriesPage() {
                               <label className="block text-xs font-medium text-gray-600 mb-1">노출 여부</label>
                               <div className="flex items-center gap-2">
                                 <button onClick={() => updateItem(item.id, { is_visible: !item.is_visible })}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${item.is_visible ? "bg-[#1A2B4A]" : "bg-gray-300"}`}>
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${item.is_visible ? "bg-[#303236]" : "bg-gray-300"}`}>
                                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${item.is_visible ? "translate-x-6" : "translate-x-1"}`} />
                                 </button>
                                 <span className="text-sm text-gray-600">{item.is_visible ? "노출됨" : "숨겨짐"}</span>

@@ -486,21 +486,21 @@ export default function AdminProductsPage() {
             </button>
           )}
           <button onClick={() => setCatalogModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
             브랜드 / 제조사
           </button>
           <button onClick={() => setFilterModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 018 17v-3.586L3.293 6.707A1 1 0 013 6V4z" />
             </svg>
             필터 관리
           </button>
           <Link href="/admin/products/import"
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -529,17 +529,17 @@ export default function AdminProductsPage() {
           <span className="text-[15px] font-semibold text-gray-600 w-24 shrink-0">검색 분류</span>
           <div className="flex gap-2 flex-1">
             <select value={searchType} onChange={e => setSearchType(e.target.value as SearchType)}
-              className="border border-gray-200 px-3 py-2 text-[15px] bg-white rounded w-32 focus:outline-none focus:border-[#1A2B4A]">
+              className="border border-gray-200 px-3 py-2 text-[15px] bg-white rounded w-32 focus:outline-none focus:border-[#303236]">
               {SEARCH_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
             <input value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSearch()}
               placeholder={`${searchType}으로 검색...`}
-              className="flex-1 border border-gray-200 px-4 py-2 text-[15px] focus:outline-none focus:border-[#1A2B4A] rounded"
+              className="flex-1 border border-gray-200 px-4 py-2 text-[15px] focus:outline-none focus:border-[#303236] rounded"
             />
             <button onClick={handleSearch}
-              className="px-6 py-2 bg-[#1A2B4A] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
+              className="px-6 py-2 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
             <button onClick={handleReset}
               className={`px-4 py-2 border text-[15px] rounded transition-colors ${
                 isFiltered
@@ -558,19 +558,19 @@ export default function AdminProductsPage() {
                 onClick={() => { setDatePreset(preset); if (preset !== "전체") { setDateStart(""); setDateEnd(""); } setPage(1); }}
                 className={`px-3.5 py-1.5 text-sm border rounded transition-colors ${
                   datePreset === preset
-                    ? "bg-[#1A2B4A] text-white border-[#1A2B4A]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
+                    ? "bg-[#303236] text-white border-[#303236]"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
                 }`}>{preset}</button>
             ))}
           </div>
           <div className="flex items-center gap-2 ml-1">
             <input type="date" value={dateStart}
               onChange={e => { setDateStart(e.target.value); setDatePreset("전체"); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
             <span className="text-gray-400 text-sm">~</span>
             <input type="date" value={dateEnd}
               onChange={e => { setDateEnd(e.target.value); setDatePreset("전체"); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
           </div>
         </div>
 
@@ -582,7 +582,7 @@ export default function AdminProductsPage() {
               <label key={f} className="flex items-center gap-1.5 cursor-pointer">
                 <input type="radio" name="disp" checked={displayFilter === f}
                   onChange={() => { setDisplayFilter(f); setPage(1); }}
-                  className="accent-[#1A2B4A] w-4 h-4" />
+                  className="accent-[#303236] w-4 h-4" />
                 <span className="text-[15px] text-gray-700">{f}</span>
               </label>
             ))}
@@ -590,7 +590,7 @@ export default function AdminProductsPage() {
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-gray-600">판매 상태</span>
             <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
@@ -599,7 +599,7 @@ export default function AdminProductsPage() {
 
       {/* ── 결과 요약 ─────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1 flex-wrap text-[15px] text-gray-600">
-        <span className="font-bold text-[#1A2B4A] text-lg">{stats.total}</span><span>건</span>
+        <span className="font-bold text-[#303236] text-lg">{stats.total}</span><span>건</span>
         {stats.판매중 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-emerald-600">판매중 <b>{stats.판매중}</b></span></>}
         {stats.품절 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-red-500">품절 <b>{stats.품절}</b></span></>}
         {stats.예약판매 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-blue-500">예약판매 <b>{stats.예약판매}</b></span></>}
@@ -619,7 +619,7 @@ export default function AdminProductsPage() {
           <div className="px-5 py-3 border-b border-gray-200 bg-gray-50 rounded-t-xl">
             <div className="flex items-center gap-2 flex-wrap">
               {selected.size > 0 && (
-                <span className="text-[15px] font-bold text-[#1A2B4A] mr-1">{selected.size}개 선택</span>
+                <span className="text-[15px] font-bold text-[#303236] mr-1">{selected.size}개 선택</span>
               )}
               {[
                 { label: "진열함",   action: () => bulkStatus("판매중") },
@@ -643,7 +643,7 @@ export default function AdminProductsPage() {
                 카테고리 추가
               </button>
               <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
-                className="px-3 py-1.5 text-[14px] border border-[#1A2B4A] bg-white text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
+                className="px-3 py-1.5 text-[14px] border border-[#303236] bg-white text-[#303236] hover:bg-[#303236] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
                 메인진열수정
               </button>
               <Link href="/admin/products/main-expose"
@@ -673,7 +673,7 @@ export default function AdminProductsPage() {
                         {TOGGLE_COLS.map(c => (
                           <label key={c} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
                             <input type="checkbox" checked={visibleCols[c] ?? true} onChange={() => toggleCol(c)}
-                              className="w-3.5 h-3.5 accent-[#1A2B4A]" />
+                              className="w-3.5 h-3.5 accent-[#303236]" />
                             <span className="text-[13px] text-gray-700">{c}</span>
                           </label>
                         ))}
@@ -702,7 +702,7 @@ export default function AdminProductsPage() {
                 <tr>
                   <th className="px-4 py-4 w-10">
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
-                      className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                      className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
                   {["상품명", "카테고리", "가격", "판매 상태", "최종수정", "관리"]
                     .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
@@ -723,7 +723,7 @@ export default function AdminProductsPage() {
                     {/* 체크박스 */}
                     <td className="px-4 py-4">
                       <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleOne(p.id)}
-                        className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                        className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                     </td>
 
                     {/* 상품명 (인라인 수정 · 한 줄) */}
@@ -746,7 +746,7 @@ export default function AdminProductsPage() {
                             inputClassName="w-full border border-blue-300 rounded px-1.5 py-1 text-[14px] font-semibold text-gray-900 focus:outline-none"
                           />
                           <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                            {p.brand && <span className="text-[12px] text-[#1A2B4A] font-semibold truncate flex-shrink-0">{p.brand}</span>}
+                            {p.brand && <span className="text-[12px] text-[#303236] font-semibold truncate flex-shrink-0">{p.brand}</span>}
                             <span className="text-[12px] text-gray-400 font-mono truncate">{p.sku || p.id}</span>
                           </div>
                         </div>
@@ -767,20 +767,20 @@ export default function AdminProductsPage() {
                         {catRowId === p.id ? (
                           <span className="inline-flex items-center gap-1">
                             <select value={rowMain} onChange={e => { setRowMain(e.target.value); setRowSub(""); }}
-                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#1A2B4A]">
+                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#303236]">
                               {catList.map(c => <option key={c.name}>{c.name}</option>)}
                             </select>
                             <select value={rowSub} onChange={e => setRowSub(e.target.value)}
-                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#1A2B4A]">
+                              className="border border-gray-200 rounded px-1.5 py-0.5 text-[12px] bg-white focus:outline-none focus:border-[#303236]">
                               <option value="">서브 없음</option>
                               {(catList.find(c => c.name === rowMain)?.subs ?? []).map(s => <option key={s}>{s}</option>)}
                             </select>
-                            <button onClick={() => addRowCat(p)} className="text-[12px] font-bold text-[#1A2B4A] px-1 hover:text-[#ff550c]">추가</button>
+                            <button onClick={() => addRowCat(p)} className="text-[12px] font-bold text-[#303236] px-1 hover:text-[#ff550c]">추가</button>
                             <button onClick={() => setCatRowId(null)} className="text-[12px] text-gray-400 px-0.5 hover:text-gray-600">취소</button>
                           </span>
                         ) : (
                           <button onClick={() => openRowCat(p)} title="카테고리 추가"
-                            className="inline-flex items-center justify-center w-5 h-5 text-[14px] leading-none text-gray-400 border border-dashed border-gray-300 rounded hover:border-[#1A2B4A] hover:text-[#1A2B4A]">+</button>
+                            className="inline-flex items-center justify-center w-5 h-5 text-[14px] leading-none text-gray-400 border border-dashed border-gray-300 rounded hover:border-[#303236] hover:text-[#303236]">+</button>
                         )}
                       </div>
                     </td>
@@ -828,7 +828,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-2 justify-end">
                         <Link href={`/admin/products/${p.id}/edit`}
                           onClick={() => { try { const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}"); const sc = document.querySelector("main"); sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...prev, scrollTop: sc ? sc.scrollTop : 0 })); } catch { /* noop */ } }}
-                          className="text-[14px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] px-3.5 py-1.5 hover:bg-[#1A2B4A] hover:text-white rounded whitespace-nowrap">
+                          className="text-[14px] font-semibold text-[#303236] border border-[#303236] px-3.5 py-1.5 hover:bg-[#303236] hover:text-white rounded whitespace-nowrap">
                           수정
                         </Link>
                         <button onClick={() => handleDuplicate(p)} title="복제"
@@ -861,7 +861,7 @@ export default function AdminProductsPage() {
                 const n = Math.max(1, Math.min(page - 3, totalPages - 6)) + i;
                 return n <= totalPages ? (
                   <button key={n} onClick={() => setPage(n)}
-                    className={`px-3 py-1.5 text-[14px] border rounded ${page === n ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>
+                    className={`px-3 py-1.5 text-[14px] border rounded ${page === n ? "bg-[#303236] text-white border-[#303236]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>
                     {n}
                   </button>
                 ) : null;
@@ -893,7 +893,7 @@ export default function AdminProductsPage() {
                     <span className="text-[13px] text-gray-300 self-center">카테고리를 추가해 주세요</span>
                   )}
                   {catModalCats.map((c, i) => (
-                    <span key={i} className="inline-flex items-center gap-1 text-[13px] bg-[#1A2B4A] text-white px-2.5 py-1 rounded">
+                    <span key={i} className="inline-flex items-center gap-1 text-[13px] bg-[#303236] text-white px-2.5 py-1 rounded">
                       {c.main}{c.sub ? ` / ${c.sub}` : ""}
                       <button onClick={() => removeModalCat(i)} className="text-white/60 hover:text-white ml-0.5 leading-none text-base">×</button>
                     </span>
@@ -906,18 +906,18 @@ export default function AdminProductsPage() {
                 <div className="flex gap-2">
                   <select value={catAddMain}
                     onChange={e => { setCatAddMain(e.target.value); setCatAddSub(""); }}
-                    className="flex-1 border border-gray-200 px-3 py-2 text-[14px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+                    className="flex-1 border border-gray-200 px-3 py-2 text-[14px] bg-white rounded focus:outline-none focus:border-[#303236]">
                     {catList.map(c => <option key={c.name}>{c.name}</option>)}
                   </select>
                   <select value={catAddSub} onChange={e => setCatAddSub(e.target.value)}
-                    className="flex-1 border border-gray-200 px-3 py-2 text-[14px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+                    className="flex-1 border border-gray-200 px-3 py-2 text-[14px] bg-white rounded focus:outline-none focus:border-[#303236]">
                     <option value="">서브 없음</option>
                     {(catList.find(c => c.name === catAddMain)?.subs ?? []).map(s => (
                       <option key={s}>{s}</option>
                     ))}
                   </select>
                   <button onClick={addModalCat}
-                    className="px-4 py-2 text-[14px] border border-[#1A2B4A] text-[#1A2B4A] rounded hover:bg-[#1A2B4A] hover:text-white font-bold transition-colors">
+                    className="px-4 py-2 text-[14px] border border-[#303236] text-[#303236] rounded hover:bg-[#303236] hover:text-white font-bold transition-colors">
                     + 추가
                   </button>
                 </div>
@@ -942,7 +942,7 @@ export default function AdminProductsPage() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
             <div className="px-7 py-5 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">메인 진열 수정</h2>
-              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#1A2B4A]">{selected.size}개</span> 상품에 일괄 적용됩니다.</p>
+              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#303236]">{selected.size}개</span> 상품에 일괄 적용됩니다.</p>
             </div>
             <div className="px-7 py-6 space-y-5">
               <div>
@@ -951,7 +951,7 @@ export default function AdminProductsPage() {
                   {(["추가", "교체", "제거"] as const).map(m => (
                     <label key={m} className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="em" checked={exposeMode === m} onChange={() => setExposeMode(m)}
-                        className="accent-[#1A2B4A] w-4 h-4" />
+                        className="accent-[#303236] w-4 h-4" />
                       <span className="text-[16px] text-gray-700">{m}</span>
                     </label>
                   ))}

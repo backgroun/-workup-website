@@ -133,7 +133,7 @@ export default function CategoriesPage() {
             </span>
           )}
           <button onClick={save} disabled={saving}
-            className="px-5 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded-lg">
+            className="px-5 py-2.5 bg-[#303236] text-white text-sm font-semibold hover:bg-[#243d5e] disabled:opacity-50 transition-colors rounded-lg">
             {saving ? "저장 중..." : "저장"}
           </button>
         </div>
@@ -163,7 +163,7 @@ export default function CategoriesPage() {
                     onChange={(e) => setEditMainVal(e.target.value)}
                     onBlur={() => commitEditMain(catIdx)}
                     onKeyDown={(e) => { if (e.key === "Enter") commitEditMain(catIdx); if (e.key === "Escape") setEditingMain(null); }}
-                    className="flex-1 border border-[#1A2B4A] px-3 py-1.5 text-sm font-bold text-[#1A2B4A] focus:outline-none rounded-lg"
+                    className="flex-1 border border-[#303236] px-3 py-1.5 text-sm font-bold text-[#303236] focus:outline-none rounded-lg"
                   />
                 ) : (
                   <button onClick={() => startEditMain(catIdx)}
@@ -209,7 +209,7 @@ export default function CategoriesPage() {
                     onChange={(e) => setNewSubInputs((p) => ({ ...p, [catIdx]: e.target.value }))}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSub(catIdx); } }}
                     placeholder={`"${cat.name}" 하위 카테고리 추가`}
-                    className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#1A2B4A] rounded-lg"
+                    className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#303236] rounded-lg"
                   />
                   <button type="button" onClick={() => addSub(catIdx)}
                     className="px-4 py-2 bg-gray-100 text-gray-700 text-[13px] hover:bg-gray-200 transition-colors rounded-lg font-medium">
@@ -231,10 +231,10 @@ export default function CategoriesPage() {
             onChange={(e) => setNewMain(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMainCat(); } }}
             placeholder="새 대카테고리 이름 (예: 안전용품)"
-            className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#1A2B4A] rounded-lg"
+            className="flex-1 border border-gray-200 px-3 py-2 text-[13px] focus:outline-none focus:border-[#303236] rounded-lg"
           />
           <button type="button" onClick={addMainCat}
-            className="px-5 py-2 bg-[#1A2B4A] text-white text-[13px] font-semibold hover:bg-[#243d5e] transition-colors rounded-lg">
+            className="px-5 py-2 bg-[#303236] text-white text-[13px] font-semibold hover:bg-[#243d5e] transition-colors rounded-lg">
             추가
           </button>
         </div>

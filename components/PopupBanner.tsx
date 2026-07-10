@@ -53,7 +53,7 @@ const DEFAULT_POPUP: PopupItem = {
   link: "/products",
   link_text: "상품 보러가기",
   bg_type: "gradient",
-  bg_solid: "#1A2B4A",
+  bg_solid: "#303236",
   bg_gradient_from: "#7eb8d4",
   bg_gradient_to: "#a8d8b8",
   bg_gradient_angle: 135,
@@ -62,7 +62,7 @@ const DEFAULT_POPUP: PopupItem = {
 
 function computeBg(item: PopupItem, device: "pc" | "mobile" = "pc"): string {
   const type = item.bg_type ?? (item.bg_image_url ? "image" : "gradient");
-  if (type === "solid") return item.bg_solid || "#1A2B4A";
+  if (type === "solid") return item.bg_solid || "#303236";
   if (type === "gradient") {
     const from  = item.bg_gradient_from  || "#7eb8d4";
     const to    = item.bg_gradient_to    || "#a8d8b8";
@@ -75,7 +75,7 @@ function computeBg(item: PopupItem, device: "pc" | "mobile" = "pc"): string {
       : item.bg_image_url;
     if (url) return `url('${url}') center/cover no-repeat`;
   }
-  return item.bg_solid || "#1A2B4A";
+  return item.bg_solid || "#303236";
 }
 
 function isVisible(item: PopupItem): boolean {
@@ -191,7 +191,7 @@ export default function PopupBanner() {
       <div className="relative flex flex-col p-5 overflow-hidden"
         style={{
           height,
-          background: isImageBg ? (bgImageUrl ? undefined : (current.bg_solid || "#1A2B4A")) : computeBg(current, device),
+          background: isImageBg ? (bgImageUrl ? undefined : (current.bg_solid || "#303236")) : computeBg(current, device),
           justifyContent: TEXT_V_JUSTIFY[current.text_position ?? "split"],
           alignItems: TEXT_H_ALIGN[current.text_align ?? "left"],
           textAlign: current.text_align ?? "left",

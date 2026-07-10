@@ -24,7 +24,7 @@ export default async function FieldTestPage() {
       {/* ── 페이지 타이틀 ── */}
       <section className="pt-16 pb-0 bg-[#F5F2ED]">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
             {header.title}
           </h1>
           <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl">
@@ -40,7 +40,7 @@ export default async function FieldTestPage() {
         <div className="px-[15px] md:px-[70px]">
 
           <div className="mb-8 flex items-center gap-3">
-            <span className="bg-[#1A2B4A] text-white text-xs font-bold px-3 py-1.5">
+            <span className="bg-[#303236] text-white text-xs font-bold px-3 py-1.5">
               통과 {tests.length}건
             </span>
             <span className="text-xs text-gray-400">누적 {tests.length}건 테스트</span>
@@ -56,12 +56,12 @@ export default async function FieldTestPage() {
 
                   {/* 테스트 이미지 (등록 시) 또는 플레이스홀더 */}
                   {test.image_url ? (
-                    <div className="bg-[#1A2B4A] aspect-video lg:aspect-auto relative overflow-hidden min-h-[200px]">
+                    <div className="bg-[#303236] aspect-video lg:aspect-auto relative overflow-hidden min-h-[200px]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={test.image_url} alt={test.product} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="bg-[#1A2B4A] aspect-video lg:aspect-auto flex flex-col items-center justify-center gap-3 p-8">
+                    <div className="bg-[#303236] aspect-video lg:aspect-auto flex flex-col items-center justify-center gap-3 p-8">
                       <div className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center">
                         <svg className="w-6 h-6 text-white/50 ml-1" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
@@ -77,7 +77,7 @@ export default async function FieldTestPage() {
                     <div className="flex items-start justify-between gap-4 mb-5">
                       <div>
                         <p className="text-xs text-gray-400 tracking-widest uppercase mb-1">{test.category}</p>
-                        <h3 className="text-[18px] font-bold text-[#1A2B4A] mb-1">{test.product}</h3>
+                        <h3 className="text-[18px] font-bold text-[#303236] mb-1">{test.product}</h3>
                         <p className="text-sm text-gray-500">{test.title}</p>
                       </div>
                       <span className="flex-shrink-0 text-xs font-bold px-4 py-2 bg-[#ff550c] text-white">
@@ -123,7 +123,7 @@ export default async function FieldTestPage() {
       <section className="py-20 bg-white border-t border-gray-100">
         <div className="px-[15px] md:px-[70px]">
           <p className="text-[11px] tracking-[0.2em] text-gray-400 uppercase mb-5">Experience</p>
-          <h2 className="text-[26px] font-bold text-[#1A2B4A] mb-4">
+          <h2 className="text-[26px] font-bold text-[#303236] mb-4">
             테스트 통과 제품을 직접 확인하세요.
           </h2>
           <p className="text-[13px] text-gray-500 mb-8 leading-relaxed">
@@ -131,7 +131,7 @@ export default async function FieldTestPage() {
           </p>
           <Link
             href="/store"
-            className="inline-flex items-center gap-2 border border-[#1A2B4A] text-[#1A2B4A] text-[12px] tracking-widest font-medium px-8 py-3.5 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 border border-[#303236] text-[#303236] text-[12px] tracking-widest font-medium px-8 py-3.5 hover:bg-[#303236] hover:text-white transition-colors"
           >
             근처 매장 찾아보기 →
           </Link>

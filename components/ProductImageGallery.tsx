@@ -134,7 +134,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           {media.length > 1 && media.map((m, i) => (
             <button key={i} onClick={() => go(i)} aria-label={`미디어 ${i + 1}`}
               className={`w-2 h-2 rounded-full transition-all ${
-                i === activeIdx ? "bg-[#1A2B4A] scale-125" : "bg-gray-300"
+                i === activeIdx ? "bg-[#303236] scale-125" : "bg-gray-300"
               } ${m.kind === "video" ? "ring-1 ring-[#ff550c] ring-offset-1" : ""}`}
             />
           ))}
@@ -148,7 +148,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           <div className="w-[80px] bg-white flex flex-col flex-shrink-0">
             <button type="button" aria-label="이전 썸네일"
               onClick={() => stripRef.current?.scrollBy({ top: -180, behavior: "smooth" })}
-              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
+              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#303236] transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
               </svg>
@@ -160,7 +160,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
                   className={`relative w-full aspect-[4/5] flex-shrink-0 overflow-hidden transition-opacity ${
                     i === activeIdx ? "opacity-100" : "opacity-50 hover:opacity-80"
                   }`}
-                  style={{ outline: i === activeIdx ? "2px solid #1A2B4A" : "none", outlineOffset: "-2px" }}
+                  style={{ outline: i === activeIdx ? "2px solid #303236" : "none", outlineOffset: "-2px" }}
                 >
                   {m.kind === "video" ? (
                     <span className="absolute inset-0 bg-black">
@@ -179,7 +179,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
 
             <button type="button" aria-label="다음 썸네일"
               onClick={() => stripRef.current?.scrollBy({ top: 180, behavior: "smooth" })}
-              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#1A2B4A] transition-colors">
+              className="flex items-center justify-center py-2 text-gray-300 hover:text-[#303236] transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>

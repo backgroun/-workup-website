@@ -115,7 +115,7 @@ export default function LogoManagePage() {
           {/* 어두운 배경 — 검정 로고는 안 보일 수 있음 안내 */}
           <div>
             <p className="text-[11px] text-gray-400 mb-1.5">어두운 배경 (참고)</p>
-            <div className="border border-gray-100 rounded-lg bg-[#1A2B4A] px-5 py-4 flex items-center">
+            <div className="border border-gray-100 rounded-lg bg-[#303236] px-5 py-4 flex items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={cfg.src} alt={cfg.alt} className="h-[18px] w-auto" />
             </div>

@@ -58,11 +58,11 @@ export const EMPTY_CATALOG_PAGE: Omit<CatalogPage, "id"> = {
 export function emptyDataFor(type: CatalogPageType): CatalogPageData {
   switch (type) {
     case "cover":
-      return { eyebrow: "Product Catalog", season: "2026 Spring / Summer", brand: "WORKUP", badge: "2026 SS", note: "", code: "Cat. WU-2026-SS-001", bg: "#1A2B4A" };
+      return { eyebrow: "Product Catalog", season: "2026 Spring / Summer", brand: "WORKUP", badge: "2026 SS", note: "", code: "Cat. WU-2026-SS-001", bg: "#303236" };
     case "contents":
       return { eyebrow: "Contents", items: [{ name: "", count: "", page: "" }], footer: "WORKUP 2026 SS CATALOG" };
     case "divider":
-      return { eyebrow: "Category 01", no: "01", title: "", desc: "", count: "", bg: "#1A2B4A" };
+      return { eyebrow: "Category 01", no: "01", title: "", desc: "", count: "", bg: "#303236" };
     default:
       return {};
   }

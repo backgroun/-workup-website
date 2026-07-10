@@ -39,7 +39,7 @@ export default async function PrRoomPage() {
       {/* ── 페이지 타이틀 (메이트·필드테스트와 동일 스타일) ── */}
       <section className="pt-16 pb-0 bg-[#F5F2ED]">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
             {config.title}
           </h1>
           <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl">
@@ -86,7 +86,7 @@ export default async function PrRoomPage() {
                         {post.date && (
                           <p className="text-[11px] font-medium text-[#ff550c] tracking-wide mb-2">{post.date}</p>
                         )}
-                        <h2 className="text-[15px] md:text-base font-bold text-[#1A2B4A] leading-snug line-clamp-2">
+                        <h2 className="text-[15px] md:text-base font-bold text-[#303236] leading-snug line-clamp-2">
                           {post.title}
                         </h2>
                         {post.summary && (

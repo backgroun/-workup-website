@@ -30,7 +30,7 @@ type EditorialBlock = {
 // ── 헬퍼 ─────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function emptyItem(): ProductItem { return { id: uid(), product_id: "", name: "", price: "", image_url: "", bg: "#e5e7eb" }; }
-function emptyBanner(): Banner { return { title: "", desc: "", section_bg: "#1A2B4A", image_url: "", items: [emptyItem(), emptyItem(), emptyItem()], tags: [] }; }
+function emptyBanner(): Banner { return { title: "", desc: "", section_bg: "#303236", image_url: "", items: [emptyItem(), emptyItem(), emptyItem()], tags: [] }; }
 
 // ── 개별 카드 ─────────────────────────────────────────────────
 function BlockCard({
@@ -69,10 +69,10 @@ function BlockCard({
         isDragging
           ? "opacity-40 scale-[0.99] shadow-none border-gray-200"
           : isDragOver
-          ? "border-[#1A2B4A] shadow-lg ring-2 ring-[#1A2B4A]/20"
+          ? "border-[#303236] shadow-lg ring-2 ring-[#303236]/20"
           : isSaving
           ? "opacity-60 border-gray-200"
-          : "border-gray-200 hover:border-[#1A2B4A]/20 hover:shadow-sm"
+          : "border-gray-200 hover:border-[#303236]/20 hover:shadow-sm"
       }`}
     >
       {/* 드래그 핸들 + 순서 번호 + 이동 버튼 */}
@@ -174,7 +174,7 @@ function BlockCard({
             onClick={onToggleVisible}
             disabled={isSaving}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
-              block.is_visible ? "bg-[#1A2B4A]" : "bg-gray-300"
+              block.is_visible ? "bg-[#303236]" : "bg-gray-300"
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
@@ -188,7 +188,7 @@ function BlockCard({
         <div className="flex flex-col gap-1 mt-1">
           <Link
             href="/admin/main/editorial"
-            className="flex items-center justify-center gap-1 px-3 py-1.5 text-[11px] font-medium text-[#1A2B4A] bg-[#f5f7ff] border border-[#1A2B4A]/20 rounded-lg hover:bg-[#e8ecf9] transition-colors whitespace-nowrap"
+            className="flex items-center justify-center gap-1 px-3 py-1.5 text-[11px] font-medium text-[#303236] bg-[#f5f7ff] border border-[#303236]/20 rounded-lg hover:bg-[#e8ecf9] transition-colors whitespace-nowrap"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -346,7 +346,7 @@ export default function AdminEditorialListPage() {
         </div>
         <Link
           href="/admin/main/editorial"
-          className="px-6 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d6a] transition-colors"
+          className="px-6 py-2.5 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d6a] transition-colors"
         >
           편집 모드
         </Link>
@@ -369,7 +369,7 @@ export default function AdminEditorialListPage() {
         <div className="text-center py-20 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
           <p className="mb-4">등록된 기획전 블록이 없습니다.</p>
           <Link href="/admin/main/editorial"
-            className="inline-block px-6 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d6a] transition-colors">
+            className="inline-block px-6 py-2.5 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d6a] transition-colors">
             편집 모드에서 추가하기
           </Link>
         </div>

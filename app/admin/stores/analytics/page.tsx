@@ -70,7 +70,7 @@ export default function StoreAnalyticsPage() {
 
   const summary = [
     { label: "지점 조회", value: totals?.view ?? 0, color: "text-gray-900" },
-    { label: "길찾기", value: totals?.directions ?? 0, color: "text-[#1A2B4A]" },
+    { label: "길찾기", value: totals?.directions ?? 0, color: "text-[#303236]" },
     { label: "전화 문의", value: totals?.call ?? 0, color: "text-emerald-600" },
     { label: "카카오톡 상담", value: totals?.kakao_chat ?? 0, color: "text-yellow-600" },
     { label: "전환 합계", value: totals?.conversions ?? 0, color: "text-[#ff550c]" },
@@ -132,7 +132,7 @@ export default function StoreAnalyticsPage() {
             <button
               key={p.days}
               onClick={() => setRange({ type: "preset", days: p.days })}
-              className={`px-3.5 py-2 text-sm font-medium transition-colors ${range.type === "preset" && range.days === p.days ? "bg-[#1A2B4A] text-white" : "text-gray-500 hover:text-gray-900"}`}
+              className={`px-3.5 py-2 text-sm font-medium transition-colors ${range.type === "preset" && range.days === p.days ? "bg-[#303236] text-white" : "text-gray-500 hover:text-gray-900"}`}
             >
               {p.label}
             </button>
@@ -145,7 +145,7 @@ export default function StoreAnalyticsPage() {
             value={from}
             max={to}
             onChange={(e) => setFrom(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
           />
           <span className="text-gray-400">~</span>
           <input
@@ -153,11 +153,11 @@ export default function StoreAnalyticsPage() {
             value={to}
             min={from}
             onChange={(e) => setTo(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
           />
           <button
             onClick={() => from && to && setRange({ type: "custom", from, to })}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${range.type === "custom" ? "bg-[#1A2B4A] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${range.type === "custom" ? "bg-[#303236] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           >
             조회
           </button>
@@ -194,7 +194,7 @@ export default function StoreAnalyticsPage() {
               {loading ? (
                 <tr><td colSpan={9} className="px-5 py-16 text-center text-gray-400">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
                     불러오는 중...
                   </div>
                 </td></tr>

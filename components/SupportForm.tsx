@@ -16,7 +16,7 @@ export default function SupportForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const cls = "w-full border border-gray-200 px-4 py-2.5 text-sm text-[#1A2B4A] placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white";
+  const cls = "w-full border border-gray-200 px-4 py-2.5 text-sm text-[#303236] placeholder-gray-300 focus:outline-none focus:border-[#303236] transition-colors bg-white";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,10 +46,10 @@ export default function SupportForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="text-base font-bold text-[#1A2B4A] mb-6">문의가 접수되었습니다</p>
+        <p className="text-base font-bold text-[#303236] mb-6">문의가 접수되었습니다</p>
         <button
           onClick={() => { setForm(init); setSubmitted(false); }}
-          className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
+          className="text-xs text-gray-400 underline hover:text-[#303236] transition-colors"
         >
           다시 문의하기
         </button>
@@ -74,8 +74,8 @@ export default function SupportForm() {
               }))}
               className={`px-3.5 py-2 text-sm border transition-colors ${
                 form.subject === cat
-                  ? "bg-[#1A2B4A] text-white border-[#1A2B4A] font-semibold"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
+                  ? "bg-[#303236] text-white border-[#303236] font-semibold"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
               }`}
             >
               {cat}
@@ -130,7 +130,7 @@ export default function SupportForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
+        className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
       >
         {submitting ? "접수 중..." : "1:1 문의 접수하기 →"}
       </button>

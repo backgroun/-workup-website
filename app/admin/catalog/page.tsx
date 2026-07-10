@@ -7,7 +7,7 @@ import {
 import CatalogPageView from "@/components/CatalogPageView";
 
 const PAGE_TYPES: CatalogPageType[] = ["image", "cover", "contents", "divider"];
-const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded";
+const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded";
 
 export default function AdminCatalogPage() {
   const [pages, setPages] = useState<CatalogPage[]>([]);
@@ -355,7 +355,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                   {/* 노출 + 관리용 제목 */}
                   <div className="flex items-center gap-6 flex-wrap">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={editing.is_visible} onChange={(e) => set("is_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
+                      <input type="checkbox" checked={editing.is_visible} onChange={(e) => set("is_visible", e.target.checked)} className="w-4 h-4 accent-[#303236]" />
                       <span className="text-sm text-gray-700">카탈로그에 노출</span>
                     </label>
                   </div>
@@ -403,7 +403,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                       <Field label="메모 (선택)"><input type="text" value={d.note ?? ""} onChange={(e) => setData({ note: e.target.value })} placeholder="예: 12 PRODUCTS" className={INPUT} /></Field>
                       <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
                         <Field label="하단 코드"><input type="text" value={d.code ?? ""} onChange={(e) => setData({ code: e.target.value })} placeholder="Cat. WU-2026-SS-001" className={INPUT} /></Field>
-                        <ColorField label="배경색" value={d.bg ?? "#1A2B4A"} onChange={(v) => setData({ bg: v })} />
+                        <ColorField label="배경색" value={d.bg ?? "#303236"} onChange={(v) => setData({ bg: v })} />
                       </div>
                       <Field label="배경 이미지 (선택)" hint="표지 전체에 이미지가 깔리고 그 위에 글자가 표시됩니다. 비우면 배경색만.">
                         <div className="space-y-2">
@@ -459,7 +459,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                       <Field label="설명 (줄바꿈 Enter)"><textarea value={d.desc ?? ""} onChange={(e) => setData({ desc: e.target.value })} rows={2} placeholder="현장에서 검증된 퍼포먼스." className={`${INPUT} resize-none`} /></Field>
                       <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
                         <Field label="개수 문구"><input type="text" value={d.count ?? ""} onChange={(e) => setData({ count: e.target.value })} placeholder="5개 제품" className={INPUT} /></Field>
-                        <ColorField label="배경색" value={d.bg ?? "#1A2B4A"} onChange={(v) => setData({ bg: v })} />
+                        <ColorField label="배경색" value={d.bg ?? "#303236"} onChange={(v) => setData({ bg: v })} />
                       </div>
                       <Field label="배경 이미지 (선택)" hint="구분 페이지 전체에 이미지가 깔립니다. 비우면 배경색만.">
                         <div className="space-y-2">
@@ -513,7 +513,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
       <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
       <div className="flex items-center gap-2">
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-9 rounded border border-gray-200 cursor-pointer p-0.5" />
-        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-24 border border-gray-200 rounded px-2 py-2 text-sm font-mono focus:outline-none focus:border-[#1A2B4A]" />
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-24 border border-gray-200 rounded px-2 py-2 text-sm font-mono focus:outline-none focus:border-[#303236]" />
       </div>
     </div>
   );

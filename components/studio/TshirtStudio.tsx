@@ -210,7 +210,7 @@ export default function TshirtStudio({
       text: "텍스트",
       font: TEXT_FONTS[0].family,
       weight: TEXT_FONTS[0].weight,
-      color: shirt.id === "white" || shirt.id === "ivory" || shirt.id === "sand" || shirt.id === "sky" ? "#1A2B4A" : "#FFFFFF",
+      color: shirt.id === "white" || shirt.id === "ivory" || shirt.id === "sand" || shirt.id === "sky" ? "#303236" : "#FFFFFF",
     });
 
   // 프리셋 디자인 → fetch → File → handleFiles 경유 (canvas CORS 안전)
@@ -354,7 +354,7 @@ export default function TshirtStudio({
       } else {
         const fs = BASE_TEXT * EXPORT_W * l.scale;
         ctx.font = `${l.weight ?? 700} ${fs}px ${l.font ?? "sans-serif"}`;
-        ctx.fillStyle = l.color ?? "#1A2B4A";
+        ctx.fillStyle = l.color ?? "#303236";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(l.text ?? "", 0, 0);
@@ -446,7 +446,7 @@ export default function TshirtStudio({
                 e.stopPropagation();
                 removeLayer(l.id);
               }}
-              className="absolute -right-2 -top-2 flex h-7 w-7 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-[#1A2B4A] text-white shadow-md"
+              className="absolute -right-2 -top-2 flex h-7 w-7 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-[#303236] text-white shadow-md"
               aria-label="삭제"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -456,7 +456,7 @@ export default function TshirtStudio({
             <button
               type="button"
               onPointerDown={(e) => startRotate(e, l)}
-              className="absolute left-1/2 top-0 flex h-7 w-7 -translate-x-1/2 -translate-y-[170%] cursor-grab touch-none items-center justify-center rounded-full bg-white text-[#1A2B4A] shadow-md ring-1 ring-gray-200"
+              className="absolute left-1/2 top-0 flex h-7 w-7 -translate-x-1/2 -translate-y-[170%] cursor-grab touch-none items-center justify-center rounded-full bg-white text-[#303236] shadow-md ring-1 ring-gray-200"
               aria-label="회전"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,7 +485,7 @@ export default function TshirtStudio({
       {/* 헤더 */}
       <div className="mb-6 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff550c]">WORKUP STUDIO</p>
-        <h1 className="mt-1 text-2xl font-extrabold text-[#1A2B4A] md:text-3xl">
+        <h1 className="mt-1 text-2xl font-extrabold text-[#303236] md:text-3xl">
           {heading ?? "나만의 티셔츠 꾸미기"}
         </h1>
         <p className="mt-2 text-sm text-gray-500">
@@ -537,7 +537,7 @@ export default function TshirtStudio({
           {!shirtImageUrl && (
             <div className="mt-4">
               <p className="mb-2 text-center text-xs font-semibold text-gray-500">
-                색상 — <span className="text-[#1A2B4A]">{shirt.label}</span>
+                색상 — <span className="text-[#303236]">{shirt.label}</span>
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {availableColors.map((c) => (
@@ -570,7 +570,7 @@ export default function TshirtStudio({
                 key={key}
                 type="button"
                 onClick={() => setTab(key as typeof tab)}
-                className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${tab === key ? "bg-white text-[#1A2B4A] shadow-sm" : "text-gray-500"}`}
+                className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${tab === key ? "bg-white text-[#303236] shadow-sm" : "text-gray-500"}`}
               >
                 {label}
               </button>
@@ -628,7 +628,7 @@ export default function TshirtStudio({
                   <svg className="h-8 w-8 text-[#ff550c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16m-2-2l1.6-1.6a2 2 0 0 1 2.8 0L20 14M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" />
                   </svg>
-                  <span className="text-sm font-semibold text-[#1A2B4A]">이미지 업로드</span>
+                  <span className="text-sm font-semibold text-[#303236]">이미지 업로드</span>
                   <span className="text-xs text-gray-400">탭하거나 끌어다 놓기 · PNG·JPG · 배경 없는 PNG 추천</span>
                 </button>
                 <p className="mt-3 text-xs text-gray-400">올린 이미지는 드래그로 이동, 모서리로 크기·회전할 수 있어요. 여러 장을 겹쳐 콜라주처럼 꾸며보세요.</p>
@@ -640,7 +640,7 @@ export default function TshirtStudio({
                 <button
                   type="button"
                   onClick={addText}
-                  className="w-full rounded-lg bg-[#1A2B4A] py-3 text-sm font-semibold text-white transition hover:bg-[#ff550c]"
+                  className="w-full rounded-lg bg-[#303236] py-3 text-sm font-semibold text-white transition hover:bg-[#ff550c]"
                 >
                   + 텍스트 추가
                 </button>
@@ -725,7 +725,7 @@ export default function TshirtStudio({
 
       {/* 마무리 — 오프라인 전환 액션 바 */}
       <div className="sticky z-30 mt-8 flex gap-2 border-t border-gray-200 bg-white/95 px-1 py-3 backdrop-blur md:rounded-xl md:border md:px-3" style={{ bottom: "var(--wu-bottom-nav-h, 0px)" }}>
-        <button type="button" onClick={handleSave} disabled={busy} className="flex-1 rounded-lg bg-[#1A2B4A] py-3 text-sm font-bold text-white transition hover:bg-[#0f1d36] disabled:opacity-50">
+        <button type="button" onClick={handleSave} disabled={busy} className="flex-1 rounded-lg bg-[#303236] py-3 text-sm font-bold text-white transition hover:bg-[#0f1d36] disabled:opacity-50">
           {busy ? "처리 중..." : "이미지 저장"}
         </button>
         <button type="button" onClick={handleKakao} disabled={busy} className="flex-1 rounded-lg bg-[#FEE500] py-3 text-sm font-bold text-[#3C1E1E] transition hover:brightness-95 disabled:opacity-50">
@@ -737,7 +737,7 @@ export default function TshirtStudio({
       </div>
 
       {notice && (
-        <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#1A2B4A] px-5 py-2.5 text-center text-xs font-medium text-white shadow-lg" style={{ bottom: "calc(var(--wu-bottom-nav-h, 0px) + 80px)" }} role="status">
+        <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#303236] px-5 py-2.5 text-center text-xs font-medium text-white shadow-lg" style={{ bottom: "calc(var(--wu-bottom-nav-h, 0px) + 80px)" }} role="status">
           {notice}
         </div>
       )}

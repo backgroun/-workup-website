@@ -62,7 +62,7 @@ function CatalogEmpty() {
       <p className="text-sm text-gray-400 leading-relaxed mb-8">새 카탈로그가 곧 공개됩니다.<br />그동안 제품과 가까운 매장을 먼저 둘러보세요.</p>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Link href="/products" className="inline-block bg-[#ff550c] text-white text-sm tracking-widest px-7 py-3 hover:bg-[#d05518] transition-colors">제품 보기</Link>
-        <Link href="/store" className="inline-block border border-white/40 text-white text-sm tracking-widest px-7 py-3 hover:bg-white hover:text-[#1A2B4A] transition-colors">매장 찾기</Link>
+        <Link href="/store" className="inline-block border border-white/40 text-white text-sm tracking-widest px-7 py-3 hover:bg-white hover:text-[#303236] transition-colors">매장 찾기</Link>
       </div>
       <Link href="/" className="mt-6 text-xs text-white/40 hover:text-white/80 tracking-widest transition-colors">메인으로 ←</Link>
     </div>

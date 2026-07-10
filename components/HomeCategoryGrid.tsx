@@ -119,7 +119,7 @@ export default async function HomeCategoryGrid() {
                   <span className="text-3xl leading-none select-none">{cat.emoji}</span>
                 )}
               </div>
-              <span className="text-[12px] text-[#1A2B4A] text-center leading-tight whitespace-pre-line">
+              <span className="text-[12px] text-[#303236] text-center leading-tight whitespace-pre-line">
                 {cat.name}
               </span>
             </Link>
@@ -159,7 +159,7 @@ export default async function HomeCategoryGrid() {
                   <span className="text-2xl leading-none select-none">{cat.emoji}</span>
                 )}
               </div>
-              <span className="text-[11px] text-[#1A2B4A] text-center leading-tight whitespace-pre-line">
+              <span className="text-[11px] text-[#303236] text-center leading-tight whitespace-pre-line">
                 {cat.name}
               </span>
             </Link>

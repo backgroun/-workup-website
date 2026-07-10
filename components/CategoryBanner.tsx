@@ -4,7 +4,7 @@
     sub: "현장을 위한 라인",
     desc: "혹독한 환경에서 살아남도록 설계된 순수 기능 워크웨어",
     href: "/site",
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     text: "text-white",
     sub_color: "text-[#ff550c]",
   },
@@ -32,7 +32,7 @@
     desc: "이번 시즌 가장 많이 팔린 이유가 있습니다",
     href: "/site",
     bg: "bg-[#F5F2ED]",
-    text: "text-[#1A2B4A]",
+    text: "text-[#303236]",
     sub_color: "text-[#ff550c]",
   },
 ];
@@ -41,7 +41,7 @@ export default function CategoryBanner() {
   return (
     <section className="py-16 bg-[#F5F2ED]">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-2xl font-bold text-[#1A2B4A] tracking-wide mb-8">
+        <h2 className="text-2xl font-bold text-[#303236] tracking-wide mb-8">
           라인업
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

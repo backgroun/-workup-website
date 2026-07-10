@@ -75,7 +75,7 @@ export default function MainExposePage() {
         <div>
           <div className="flex items-center gap-3">
             <Link href="/admin/products"
-              className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 제품 목록</Link>
+              className="text-[15px] text-gray-400 hover:text-[#303236]">← 제품 목록</Link>
             <span className="text-gray-200">/</span>
             <h1 className="text-3xl font-bold text-gray-900">메인 진열 관리</h1>
           </div>
@@ -104,8 +104,8 @@ export default function MainExposePage() {
           <button key={cat} onClick={() => setCatFilter(cat)}
             className={`px-4 py-2 text-[15px] border rounded font-medium transition-colors ${
               catFilter === cat
-                ? "bg-[#1A2B4A] text-white border-[#1A2B4A]"
-                : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
+                ? "bg-[#303236] text-white border-[#303236]"
+                : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
             }`}>{cat}</button>
         ))}
         <span className="text-[14px] text-gray-400 ml-2">{filtered.length}개</span>
@@ -155,7 +155,7 @@ export default function MainExposePage() {
                         </div>
                         <div>
                           <p className="font-bold text-[15px] text-gray-900 leading-tight">{product.name}</p>
-                          {product.brand && <p className="text-[13px] text-[#1A2B4A]">{product.brand}</p>}
+                          {product.brand && <p className="text-[13px] text-[#303236]">{product.brand}</p>}
                         </div>
                       </div>
                     </td>
@@ -212,7 +212,7 @@ export default function MainExposePage() {
               return (
                 <span key={s.key}>
                   <span className="font-semibold text-gray-700">{s.label}</span>{" "}
-                  <span className="font-bold text-[#1A2B4A]">{count}</span>개 노출 중
+                  <span className="font-bold text-[#303236]">{count}</span>개 노출 중
                 </span>
               );
             })}

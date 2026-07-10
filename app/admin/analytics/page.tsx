@@ -100,7 +100,7 @@ export default function AnalyticsDashboardPage() {
       <div className="grid grid-cols-3 gap-5">
         {/* 회원 요약 카드 */}
         {[
-          { label: "전체 회원",   value: memberStats.total,     color: "text-[#1A2B4A]" },
+          { label: "전체 회원",   value: memberStats.total,     color: "text-[#303236]" },
           { label: "이번달 신규", value: memberStats.thisMonth, color: "text-[#ff550c]" },
           { label: "활성 회원",   value: memberStats.active,    color: "text-emerald-600" },
         ].map(s => (
@@ -116,7 +116,7 @@ export default function AnalyticsDashboardPage() {
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-gray-800">월별 신규 회원 추이</h2>
-          <Link href="/admin/members" className="text-[14px] text-[#1A2B4A] hover:underline">회원 관리 →</Link>
+          <Link href="/admin/members" className="text-[14px] text-[#303236] hover:underline">회원 관리 →</Link>
         </div>
         {loadingM ? (
           <div className="h-40 flex items-center justify-center text-gray-400">불러오는 중...</div>
@@ -128,10 +128,10 @@ export default function AnalyticsDashboardPage() {
           <div className="flex items-end gap-4 h-44">
             {memberStats.byMonth.map(({ month, count }) => (
               <div key={month} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-[13px] font-bold text-[#1A2B4A]">{count > 0 ? count : ""}</span>
+                <span className="text-[13px] font-bold text-[#303236]">{count > 0 ? count : ""}</span>
                 <div className="w-full relative">
                   <div
-                    className="w-full bg-[#1A2B4A] rounded-t-md transition-all"
+                    className="w-full bg-[#303236] rounded-t-md transition-all"
                     style={{ height: `${Math.max(4, (count / memberStats.max) * 120)}px` }}
                   />
                 </div>

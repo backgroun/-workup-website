@@ -12,15 +12,15 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
     <main>
       <section className="bg-[#F5F2ED] py-12 min-h-[60vh]">
         <div className="max-w-3xl mx-auto px-6">
-          <h1 className="text-xl font-bold text-[#1A2B4A] mb-8">피팅 리스트</h1>
+          <h1 className="text-xl font-bold text-[#303236] mb-8">피팅 리스트</h1>
 
           {items.length === 0 ? (
             <div className="text-center py-24">
-              <p className="text-2xl font-bold text-[#1A2B4A] mb-3">{c.emptyTitle}</p>
+              <p className="text-2xl font-bold text-[#303236] mb-3">{c.emptyTitle}</p>
               <p className="text-sm text-gray-500 mb-8">{c.emptyDesc}</p>
               <Link
                 href={c.emptyCtaHref}
-                className="inline-block bg-[#1A2B4A] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#ff550c] transition-colors"
+                className="inline-block bg-[#303236] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#ff550c] transition-colors"
               >
                 {c.emptyCtaLabel}
               </Link>
@@ -56,7 +56,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-[#1A2B4A] leading-tight group-hover:text-[#ff550c] transition-colors">{item.name}</p>
+                        <p className="text-sm font-bold text-[#303236] leading-tight group-hover:text-[#ff550c] transition-colors">{item.name}</p>
                         {item.sku && (
                           <p className="text-xs text-gray-400 mt-0.5">품번 {item.sku}</p>
                         )}
@@ -85,7 +85,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                       </div>
                     </Link>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-[#1A2B4A] mb-2">{item.price}</p>
+                      <p className="text-sm font-bold text-[#303236] mb-2">{item.price}</p>
                       <button
                         onClick={() => removeItem(item.cartId)}
                         className="text-xs text-gray-400 hover:text-red-500 transition-colors"
@@ -107,7 +107,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                 </Link>
                 <Link
                   href={c.secondaryHref}
-                  className="flex-1 text-center border border-[#1A2B4A] text-[#1A2B4A] text-sm py-4 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                  className="flex-1 text-center border border-[#303236] text-[#303236] text-sm py-4 hover:bg-[#303236] hover:text-white transition-colors"
                 >
                   {c.secondaryLabel}
                 </Link>

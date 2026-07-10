@@ -163,9 +163,9 @@ export const products: Product[] = [
       years: "경력 15년",
       text: "현장에서 옷이 불편하면 사고 납니다. 이 바지는 어떤 자세에서도 안 당겨요.",
     },
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "카키", hex: "#4A5240" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
@@ -192,7 +192,7 @@ export const products: Product[] = [
     },
     bg: "bg-[#243d5e]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
       { name: "올리브", hex: "#556B2F" },
     ],
@@ -271,7 +271,7 @@ export const products: Product[] = [
     colors: [
       { name: "화이트", hex: "#F5F2ED" },
       { name: "그레이", hex: "#6B6B6B" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
   },
@@ -288,7 +288,7 @@ export const products: Product[] = [
     price: "79,000원",
     features: ["360도 반사 테이프", "형광 옐로우 원단", "다용도 포켓 8개"],
     jobTypes: ["건설·현장"],
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     colors: [
       { name: "형광 옐로우", hex: "#FFD700" },
       { name: "형광 오렌지", hex: "#FF6600" },
@@ -339,7 +339,7 @@ export const products: Product[] = [
       { name: "베이지", hex: "#C8B89A" },
       { name: "카키", hex: "#4A5240" },
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
   {
@@ -360,7 +360,7 @@ export const products: Product[] = [
     colors: [
       { name: "차콜", hex: "#3D3D3D" },
       { name: "아이보리", hex: "#FFFFF0" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
   {
@@ -380,7 +380,7 @@ export const products: Product[] = [
     bg: "bg-[#5a5a5a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "올리브", hex: "#556B2F" },
     ],
   },
@@ -401,7 +401,7 @@ export const products: Product[] = [
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
       { name: "차콜", hex: "#3D3D3D" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
   {
@@ -448,7 +448,7 @@ export const products: Product[] = [
     seasons: ["봄/가을", "여름"],
     bg: "bg-[#2d4f72]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "그레이", hex: "#7A7A7A" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
@@ -513,7 +513,7 @@ export const products: Product[] = [
     bg: "bg-[#1a4060]",
     colors: [
       { name: "화이트", hex: "#F5F2ED" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "그린", hex: "#2D7A3A" },
     ],
   },
@@ -557,7 +557,7 @@ export const products: Product[] = [
       { name: "화이트", hex: "#F5F2ED" },
       { name: "그레이", hex: "#7A7A7A" },
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
 
@@ -576,9 +576,9 @@ export const products: Product[] = [
     featureTags: ["방수", "고내구성"],
     jobTypes: ["건설·현장", "아웃도어"],
     seasons: ["봄/가을"],
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
       { name: "카키", hex: "#4A5240" },
     ],
@@ -623,7 +623,7 @@ export const products: Product[] = [
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
       { name: "차콜", hex: "#3a3a3a" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
   {
@@ -662,7 +662,7 @@ export const products: Product[] = [
     seasons: ["겨울"],
     bg: "bg-[#1a2a3a]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
   },
@@ -684,7 +684,7 @@ export const products: Product[] = [
     bg: "bg-[#2a4a6a]",
     colors: [
       { name: "그레이", hex: "#7A7A7A" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
   },
@@ -704,9 +704,9 @@ export const products: Product[] = [
     featureTags: ["보온", "방풍"],
     jobTypes: ["건설·현장"],
     seasons: ["겨울"],
-    bg: "bg-[#1a2b4a]",
+    bg: "bg-[#303236]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
       { name: "올리브", hex: "#556B2F" },
     ],
@@ -748,7 +748,7 @@ export const products: Product[] = [
     seasons: ["겨울", "봄/가을"],
     bg: "bg-[#2a3a4a]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "블랙", hex: "#1C1C1C" },
       { name: "레드", hex: "#CC2020" },
     ],
@@ -876,7 +876,7 @@ export const products: Product[] = [
       { name: "화이트", hex: "#F5F2ED" },
       { name: "그레이", hex: "#7A7A7A" },
       { name: "핑크", hex: "#CC4080" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
   {
@@ -939,7 +939,7 @@ export const products: Product[] = [
     bg: "bg-[#1a4060]",
     colors: [
       { name: "화이트", hex: "#F5F2ED" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "핑크", hex: "#CC4080" },
     ],
   },
@@ -960,7 +960,7 @@ export const products: Product[] = [
     bg: "bg-[#2a3a4a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "그레이", hex: "#7A7A7A" },
     ],
   },
@@ -1005,7 +1005,7 @@ export const products: Product[] = [
     bg: "bg-[#2a2a2a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "그레이", hex: "#7A7A7A" },
     ],
   },
@@ -1026,7 +1026,7 @@ export const products: Product[] = [
     bg: "bg-[#1a3a5a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "카키", hex: "#4A5240" },
     ],
   },
@@ -1049,7 +1049,7 @@ export const products: Product[] = [
     seasons: ["봄/가을"],
     bg: "bg-[#1a3a5a]",
     colors: [
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "퍼플", hex: "#6B3FA0" },
       { name: "블랙", hex: "#1C1C1C" },
     ],
@@ -1071,7 +1071,7 @@ export const products: Product[] = [
     bg: "bg-[#1a2a3a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "베이지", hex: "#C9B99A" },
     ],
   },
@@ -1155,7 +1155,7 @@ export const products: Product[] = [
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
       { name: "그레이", hex: "#7A7A7A" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
     ],
   },
 
@@ -1241,7 +1241,7 @@ export const products: Product[] = [
     bg: "bg-[#1a2a3a]",
     colors: [
       { name: "블랙", hex: "#1C1C1C" },
-      { name: "네이비", hex: "#1A2B4A" },
+      { name: "네이비", hex: "#303236" },
       { name: "그레이", hex: "#7A7A7A" },
     ],
   },

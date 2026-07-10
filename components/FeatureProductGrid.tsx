@@ -41,7 +41,7 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
               <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-1">
                 {product.category} · {product.subCategory}
               </p>
-              <h3 className="text-base font-bold text-[#1A2B4A] mb-3">
+              <h3 className="text-base font-bold text-[#303236] mb-3">
                 <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">
                   {productDisplayName(product)}
                 </Link>
@@ -66,11 +66,11 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
                 </div>
               )}
 
-              <p className="text-lg font-bold text-[#1A2B4A] mb-5 mt-auto">{product.price}</p>
+              <p className="text-lg font-bold text-[#303236] mb-5 mt-auto">{product.price}</p>
 
               <button
                 onClick={() => setModalProduct(product.name)}
-                className="w-full text-center bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors"
+                className="w-full text-center bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors"
               >
                 근처 매장 찾아보기
               </button>

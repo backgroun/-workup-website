@@ -70,7 +70,7 @@ function emptyBanner(): Banner {
   return {
     title: "",
     desc: "",
-    section_bg: "#1A2B4A",
+    section_bg: "#303236",
     image_url: "",
     items: [emptyItem(), emptyItem(), emptyItem()],
     tags: [],
@@ -92,7 +92,7 @@ function emptyBlock(order: number, reversed = false): EditorialBlock {
       hero_subtitle: "",
       desc: "",
       image_url: "",
-      bg_color: "#1A2B4A",
+      bg_color: "#303236",
       tags: [],
     },
     banner1: emptyBanner(),
@@ -149,7 +149,7 @@ function ProductPicker({ products, value, onSelect }: {
           onFocus={openDropdown}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder="제품명으로 검색..."
-          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
         />
         <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -212,7 +212,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         tags: [
           tag(32, 22, "쿨링 반팔 티셔츠", "19,000원", "cooling-short-sleeve", "#2d4f72"),
           tag(58, 45, "흡한속건 긴팔 티셔츠", "25,000원", "quick-dry-long-sleeve", "#243d5e"),
-          tag(42, 68, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          tag(42, 68, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
         ],
       },
       banner1: {
@@ -228,9 +228,9 @@ function createDefaultBlocks(): EditorialBlock[] {
       banner2: {
         title: "현장을 버티는 하의",
         desc: "움직임이 많은 현장 환경에서도 불편함 없이 착용 가능한 스트레치 소재 하의 라인업입니다.",
-        section_bg: "#1A2B4A", image_url: "",
+        section_bg: "#303236", image_url: "",
         items: [
-          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
           di("워크 치노 팬츠", "45,000원", "work-chino-pants", "#3D3D3D"),
           di("멀티포켓 조끼", "35,000원", "multi-pocket-vest", "#5a5a5a"),
         ],
@@ -250,7 +250,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         desc: "여성 작업자를 위한 UV 차단 전용 라인. 슬림 핏으로 작업 효율과 스타일을 동시에 잡았습니다.",
         section_bg: "#2e4a6a", image_url: "",
         items: [
-          di("여성 UV 슬림 팬츠", "42,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("여성 UV 슬림 팬츠", "42,000원", "stretch-cargo-pants", "#303236"),
           di("여성 쿨링 상의", "22,000원", "cooling-short-sleeve", "#2d4f72"),
           di("여성 기능 조끼", "33,000원", "multi-pocket-vest", "#3a5a6a"),
         ],
@@ -265,10 +265,10 @@ function createDefaultBlocks(): EditorialBlock[] {
         subtitle: "내구성과 안전을 동시에",
         hero_subtitle: "현장 작업자가 직접 선택한",
         desc: "15년 경력자도 인정한 현장 최강 라인업. 1,000회 내구성 테스트와 KC 인증 안전 소재로 어떤 현장에서도 믿을 수 있습니다.",
-        image_url: "", image_scale: 1.0, image_scale_mobile: 1.0, bg_color: "#1A2B4A",
+        image_url: "", image_scale: 1.0, image_scale_mobile: 1.0, bg_color: "#303236",
         tags: [
-          tag(30, 28, "반사띠 안전 자켓", "79,000원", "reflective-safety-jacket", "#1A2B4A"),
-          tag(52, 48, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          tag(30, 28, "반사띠 안전 자켓", "79,000원", "reflective-safety-jacket", "#303236"),
+          tag(52, 48, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
           tag(38, 70, "쿨링 반팔 티셔츠", "19,000원", "cooling-short-sleeve", "#2d4f72"),
         ],
       },
@@ -277,7 +277,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         desc: "1,000회 내구성 테스트를 통과한 소재. 현장의 거친 환경에서도 형태를 유지하는 워크업 SITE 라인입니다.",
         section_bg: "#243d5e", image_url: "",
         items: [
-          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
           di("쿨링 반팔 티셔츠", "19,000원", "cooling-short-sleeve", "#2d4f72"),
           di("멀티포켓 조끼", "35,000원", "multi-pocket-vest", "#5a5a5a"),
         ],
@@ -287,7 +287,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         desc: "KC 인증을 받은 반사 소재와 형광 원단으로 어두운 현장에서도 내 존재를 알립니다.",
         section_bg: "#2e3d28", image_url: "",
         items: [
-          di("반사띠 안전 자켓", "79,000원", "reflective-safety-jacket", "#1A2B4A"),
+          di("반사띠 안전 자켓", "79,000원", "reflective-safety-jacket", "#303236"),
           di("경량 방풍 자켓", "59,000원", "lightweight-windproof-jacket", "#243d5e"),
           di("흡한속건 긴팔 티셔츠", "25,000원", "quick-dry-long-sleeve", "#243d5e"),
         ],
@@ -298,7 +298,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         section_bg: "#1a2e4a", image_url: "",
         items: [
           di("고시인성 안전 조끼", "45,000원", "reflective-safety-jacket", "#2d4a2a"),
-          di("방호 카고 팬츠", "55,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("방호 카고 팬츠", "55,000원", "stretch-cargo-pants", "#303236"),
           di("안전 멀티포켓 조끼", "39,000원", "multi-pocket-vest", "#3a3a5a"),
         ],
       },
@@ -326,7 +326,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         tags: [
           tag(35, 25, "경량 방풍 자켓", "59,000원", "lightweight-windproof-jacket", "#243d5e"),
           tag(55, 50, "방풍 후드 집업", "65,000원", "windproof-hoodie-zip", "#3D3D3D"),
-          tag(40, 72, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          tag(40, 72, "스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
         ],
       },
       banner1: {
@@ -344,7 +344,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         desc: "험한 지형에서도 자유로운 움직임을 보장하는 스트레치 하의. 다용도 포켓으로 편의성을 높였습니다.",
         section_bg: "#3d5c3f", image_url: "",
         items: [
-          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
           di("워크 치노 팬츠", "45,000원", "work-chino-pants", "#3D3D3D"),
           di("흡한속건 긴팔 티셔츠", "25,000원", "quick-dry-long-sleeve", "#243d5e"),
         ],
@@ -402,7 +402,7 @@ function createDefaultBlocks(): EditorialBlock[] {
         section_bg: "#3D3D3D", image_url: "",
         items: [
           di("워크 치노 팬츠", "45,000원", "work-chino-pants", "#3D3D3D"),
-          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#1A2B4A"),
+          di("스트레치 카고 팬츠", "39,000원", "stretch-cargo-pants", "#303236"),
           di("멀티포켓 조끼", "35,000원", "multi-pocket-vest", "#5a5a5a"),
         ],
       },
@@ -519,7 +519,7 @@ function ImageField({
           className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
             dragging ? "border-[#ff550c] bg-orange-50" :
             value ? "border-gray-200 hover:border-gray-300" :
-                    "border-dashed border-gray-300 hover:border-[#1A2B4A]"
+                    "border-dashed border-gray-300 hover:border-[#303236]"
           }`}
           style={{ aspectRatio: aspectRatio ?? "3/4" }}
         >
@@ -547,7 +547,7 @@ function ImageField({
             <p className="text-[10px] text-gray-400 leading-snug">{hint}</p>
             <div className="flex items-center gap-2 mt-0.5">
               <button type="button" onClick={(e) => { e.stopPropagation(); ref.current?.click(); }}
-                className="text-[11px] text-[#1A2B4A] hover:underline">이미지 변경</button>
+                className="text-[11px] text-[#303236] hover:underline">이미지 변경</button>
               <button type="button" onClick={(e) => { e.stopPropagation(); onChange(""); }}
                 className="text-[11px] text-red-400 hover:text-red-600">제거</button>
             </div>
@@ -569,7 +569,7 @@ function ImageField({
         className={`relative rounded-xl border-2 transition-all cursor-pointer ${
           dragging ? "border-[#ff550c] bg-orange-50 scale-[1.01]" :
           value     ? "border-gray-200 hover:border-gray-300" :
-                      "border-dashed border-gray-300 hover:border-[#1A2B4A]"
+                      "border-dashed border-gray-300 hover:border-[#303236]"
         }`}
       >
         <input ref={ref} type="file" accept="image/*" className="hidden"
@@ -583,7 +583,7 @@ function ImageField({
               <p className="text-[11px] text-gray-400 mt-0.5">{hint}</p>
               <button
                 onClick={(e) => { e.stopPropagation(); ref.current?.click(); }}
-                className="text-[11px] text-[#1A2B4A] hover:underline mt-1"
+                className="text-[11px] text-[#303236] hover:underline mt-1"
               >이미지 변경</button>
             </div>
             <button
@@ -626,7 +626,7 @@ function Field({
   label: string; value: string; onChange: (v: string) => void;
   placeholder?: string; multiline?: boolean; showCount?: boolean;
 }) {
-  const cls = "w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30";
+  const cls = "w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30";
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
@@ -655,8 +655,8 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)}
           className="w-9 h-9 rounded-lg border border-gray-300 cursor-pointer flex-shrink-0" />
         <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
-          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
-          placeholder="#1A2B4A" />
+          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
+          placeholder="#303236" />
       </div>
     </div>
   );
@@ -727,7 +727,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    const next = [...tags, { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#1A2B4A" }];
+    const next = [...tags, { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#303236" }];
     onChange(next);
     setSelectedIdx(next.length - 1);
   }
@@ -793,7 +793,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
               <span className={`flex items-center justify-center rounded-full transition-all ${
                 selectedIdx === idx ? "w-5 h-5 bg-[#ff550c]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
               }`}>
-                <span className="text-[8px] font-bold text-[#1A2B4A]">{idx + 1}</span>
+                <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
               </span>
             </button>
           ))}
@@ -1226,7 +1226,7 @@ function BannerEditor({ banner, label, onChange, products }: {
     <div className="space-y-4">
       {/* 카드 타입 — 상품형(기본) / 통이미지형 */}
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-[13px] font-semibold text-[#1A2B4A]">카드 타입</span>
+        <span className="text-[13px] font-semibold text-[#303236]">카드 타입</span>
         <div className="flex rounded-lg overflow-hidden border border-gray-200">
           {(["product", "image"] as const).map((t) => (
             <button
@@ -1234,7 +1234,7 @@ function BannerEditor({ banner, label, onChange, products }: {
               type="button"
               onClick={() => onChange({ card_type: t })}
               className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                (banner.card_type ?? "product") === t ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                (banner.card_type ?? "product") === t ? "bg-[#303236] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
               }`}
             >
               {t === "product" ? "상품형 (기본)" : "통이미지형"}
@@ -1324,7 +1324,7 @@ function BannerEditor({ banner, label, onChange, products }: {
                 onClick={() => setItemTab(i)}
                 className={`px-5 py-2.5 text-sm font-semibold transition-colors border-r last:border-r-0 border-gray-200 text-left whitespace-nowrap ${
                   itemTab === i
-                    ? "bg-[#1A2B4A] text-white"
+                    ? "bg-[#303236] text-white"
                     : "bg-gray-50 text-gray-500 hover:bg-gray-100"
                 }`}
               >
@@ -1355,11 +1355,11 @@ function BannerEditor({ banner, label, onChange, products }: {
       {/* 상세페이지 추가 상품 — 섹션이미지 클릭 시 이동하는 상세페이지에만 노출 (메인 3개 뒤) */}
       <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/60">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-[13px] font-semibold text-[#1A2B4A]">상세페이지 추가 상품</p>
+          <p className="text-[13px] font-semibold text-[#303236]">상세페이지 추가 상품</p>
           <button
             type="button"
             onClick={addDetailItem}
-            className="flex items-center gap-1 text-[12px] font-medium text-white bg-[#1A2B4A] hover:bg-[#26385c] px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1 text-[12px] font-medium text-white bg-[#303236] hover:bg-[#26385c] px-3 py-1.5 rounded-lg transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -1401,14 +1401,14 @@ function BannerEditor({ banner, label, onChange, products }: {
                       value={item.name}
                       onChange={(e) => updateDetailItem(idx, { name: e.target.value })}
                       placeholder="상품명"
-                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
                     />
                     <input
                       type="text"
                       value={item.price}
                       onChange={(e) => updateDetailItem(idx, { price: e.target.value })}
                       placeholder="가격"
-                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30"
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#303236]/30"
                     />
                   </div>
                 </div>
@@ -1457,7 +1457,7 @@ function HeroEditor({ hero, onChange, products }: {
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
     if (posView === "mobile") {
-      const newTag: HeroTag = { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#1A2B4A" };
+      const newTag: HeroTag = { id: uid(), x, y, name: "", price: "", product_id: "", image_url: "", bg: "#303236" };
       const next = [...hero.tags, newTag];
       onChange({ tags: next });
       setSelectedIdx(next.length - 1);
@@ -1584,7 +1584,7 @@ function HeroEditor({ hero, onChange, products }: {
                 <button key={v} type="button" onClick={() => setPosView(v)}
                   className={`flex-1 text-[10px] font-semibold py-1 rounded border transition-colors ${
                     posView === v
-                      ? (v === "pc" ? "bg-indigo-600 text-white border-indigo-600" : "bg-[#1A2B4A] text-white border-[#1A2B4A]")
+                      ? (v === "pc" ? "bg-indigo-600 text-white border-indigo-600" : "bg-[#303236] text-white border-[#303236]")
                       : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
                   }`}>
                   {v === "pc" ? "🖥️ PC" : "📱 모바일"}
@@ -1639,7 +1639,7 @@ function HeroEditor({ hero, onChange, products }: {
                   if (posView === "pc") onChange({ image_scale: scale });
                   else onChange({ image_scale_mobile: scale });
                 }}
-                className="w-full h-1.5 accent-[#1A2B4A] cursor-pointer" />
+                className="w-full h-1.5 accent-[#303236] cursor-pointer" />
               <div className="flex justify-between text-[9px] text-gray-400 mt-0.5">
                 <span>80%</span><span>원본</span><span>200%</span>
               </div>
@@ -1726,7 +1726,7 @@ function HeroEditor({ hero, onChange, products }: {
                         ? "w-6 h-6 bg-[#ff550c]/90 border-2 border-white shadow-lg"
                         : "w-4 h-4 bg-white/80 border-2 border-white shadow-md hover:w-5 hover:h-5"
                     }`}>
-                      <span className="text-[8px] font-bold text-[#1A2B4A]">{idx + 1}</span>
+                      <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
                     </span>
                   </button>
                 );
@@ -1856,10 +1856,10 @@ function BlockCard({
   ];
 
   return (
-    <div className={`border rounded-xl overflow-hidden ${isOpen ? "border-[#1A2B4A]/30 shadow-sm" : "border-gray-200"}`}>
+    <div className={`border rounded-xl overflow-hidden ${isOpen ? "border-[#303236]/30 shadow-sm" : "border-gray-200"}`}>
       {/* 블록 헤더 — 아코디언 모드에서만 표시 */}
       {!alwaysOpen && (
-      <div className={`flex items-center gap-3 px-5 py-4 ${isOpen ? "bg-[#f5f7ff] border-b border-[#1A2B4A]/10" : "bg-white hover:bg-gray-50"} transition-colors`}>
+      <div className={`flex items-center gap-3 px-5 py-4 ${isOpen ? "bg-[#f5f7ff] border-b border-[#303236]/10" : "bg-white hover:bg-gray-50"} transition-colors`}>
         {/* 순서 이동 */}
         <div className="flex flex-col gap-0.5 flex-shrink-0">
           <button onClick={() => onMove(-1)} disabled={index === 0}
@@ -1873,7 +1873,7 @@ function BlockCard({
 
         {/* 제목 */}
         <button className="flex-1 text-left min-w-0" onClick={() => setOpen((v) => !v)}>
-          <p className="text-sm font-semibold text-[#1A2B4A] truncate">
+          <p className="text-sm font-semibold text-[#303236] truncate">
             {block.hero.title || "제목 없음"}
           </p>
           <p className="text-xs text-gray-400 mt-0.5 truncate">
@@ -1910,7 +1910,7 @@ function BlockCard({
         <button
           onClick={() => onUpdate({ is_visible: !block.is_visible })}
           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${
-            block.is_visible ? "bg-[#1A2B4A]" : "bg-gray-300"
+            block.is_visible ? "bg-[#303236]" : "bg-gray-300"
           }`}
         >
           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
@@ -1951,7 +1951,7 @@ function BlockCard({
                     onClick={() => onUpdate({ reversed: v === "reversed" })}
                     className={`text-xs px-3 py-1.5 transition-colors ${
                       (v === "reversed") === block.reversed
-                        ? "bg-[#1A2B4A] text-white"
+                        ? "bg-[#303236] text-white"
                         : "bg-white text-gray-600 hover:bg-gray-50"
                     }`}
                   >
@@ -1968,7 +1968,7 @@ function BlockCard({
                 value={block.hero.title}
                 onChange={(e) => onUpdate({ hero: { ...block.hero, title: e.target.value } })}
                 placeholder="UV 대책 특집"
-                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#1A2B4A]"
+                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#303236]"
               />
             </div>
             {/* 부제목 */}
@@ -1979,7 +1979,7 @@ function BlockCard({
                 value={block.hero.subtitle}
                 onChange={(e) => onUpdate({ hero: { ...block.hero, subtitle: e.target.value, hero_subtitle: e.target.value } })}
                 placeholder="이미지 위 작은 문구"
-                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#1A2B4A]"
+                className="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#303236]"
               />
             </div>
           </div>
@@ -1992,7 +1992,7 @@ function BlockCard({
                 onClick={() => setTab(t.key)}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   tab === t.key
-                    ? "text-[#1A2B4A] border-b-2 border-[#1A2B4A]"
+                    ? "text-[#303236] border-b-2 border-[#303236]"
                     : "text-gray-400 hover:text-gray-600"
                 }`}
               >
@@ -2149,7 +2149,7 @@ export default function AdminMainEditorialPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-6 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d6a] disabled:opacity-50 transition-colors"
+            className="px-6 py-2.5 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d6a] disabled:opacity-50 transition-colors"
           >
             {saving ? "저장 중..." : "전체 저장"}
           </button>
@@ -2182,8 +2182,8 @@ export default function AdminMainEditorialPage() {
                   onClick={() => setActiveIdx(index)}
                   className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeIdx === index
-                      ? "text-[#1A2B4A] border-[#1A2B4A] bg-[#f5f7ff]"
-                      : "text-gray-500 border-transparent hover:text-[#1A2B4A] hover:bg-gray-50"
+                      ? "text-[#303236] border-[#303236] bg-[#f5f7ff]"
+                      : "text-gray-500 border-transparent hover:text-[#303236] hover:bg-gray-50"
                   }`}
                 >
                   <span className="text-[10px] text-gray-400 mr-1">#{index + 1}</span>
@@ -2202,7 +2202,7 @@ export default function AdminMainEditorialPage() {
             {/* + 추가 버튼 */}
             <button
               onClick={addBlock}
-              className="px-4 py-3 text-sm text-gray-400 hover:text-[#1A2B4A] border-b-2 border-transparent hover:border-[#1A2B4A] transition-colors flex-shrink-0 whitespace-nowrap"
+              className="px-4 py-3 text-sm text-gray-400 hover:text-[#303236] border-b-2 border-transparent hover:border-[#303236] transition-colors flex-shrink-0 whitespace-nowrap"
             >+ 추가</button>
           </div>
 

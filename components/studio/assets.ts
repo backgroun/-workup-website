@@ -65,7 +65,7 @@ export const TEXT_FONTS: { label: string; family: string; weight: number }[] = [
 
 // ── 텍스트 색상 팔레트 ────────────────────────────────────
 export const PALETTE_COLORS = [
-  "#FFFFFF", "#1A2B4A", "#FF550C", "#000000", "#F5C518", "#2E7D32",
+  "#FFFFFF", "#303236", "#FF550C", "#000000", "#F5C518", "#2E7D32",
   "#1976D2", "#C62828", "#7B1FA2", "#E91E63", "#00897B", "#8D6E63",
 ];
 

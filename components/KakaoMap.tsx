@@ -23,15 +23,15 @@ function CardMarker({ name, selected }: { name: string; selected: boolean }) {
       <div style={{
         padding: "5px 9px", borderRadius: "4px", fontSize: "11px", fontWeight: 700,
         whiteSpace: "nowrap", lineHeight: 1.4,
-        background: selected ? "#ff550c" : "#1A2B4A",
-        color: selected ? "#1A2B4A" : "#fff",
+        background: selected ? "#ff550c" : "#303236",
+        color: selected ? "#303236" : "#fff",
         boxShadow: selected ? "0 3px 12px rgba(244,171,28,0.45)" : "0 2px 8px rgba(0,0,0,0.28)",
         transition: "background 0.15s,color 0.15s",
       }}>{name}</div>
       <div style={{
         width: 0, height: 0, marginTop: "-2px",
         borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
-        borderTop: `5px solid ${selected ? "#ff550c" : "#1A2B4A"}`,
+        borderTop: `5px solid ${selected ? "#ff550c" : "#303236"}`,
       }} />
     </div>
   );
@@ -43,7 +43,7 @@ function PinMarker({ selected }: { selected: boolean }) {
     <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", transform: "translateX(-50%)", cursor: "pointer" }}>
       <div style={{
         width: 26, height: 26, borderRadius: "50%",
-        background: selected ? "#1A2B4A" : "#ff550c",
+        background: selected ? "#303236" : "#ff550c",
         boxShadow: "0 3px 10px rgba(0,0,0,0.45)",
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 11, fontWeight: 900, fontFamily: "sans-serif",
@@ -53,7 +53,7 @@ function PinMarker({ selected }: { selected: boolean }) {
       <div style={{
         width: 0, height: 0, marginTop: "-2px",
         borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
-        borderTop: `7px solid ${selected ? "#1A2B4A" : "#ff550c"}`,
+        borderTop: `7px solid ${selected ? "#303236" : "#ff550c"}`,
       }} />
     </div>
   );

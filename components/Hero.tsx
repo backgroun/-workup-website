@@ -62,7 +62,7 @@ export default async function Hero({ slideType = "main" }: { slideType?: string 
 
 function HeroDefault() {
   return (
-    <section className="relative bg-[#1A2B4A] overflow-hidden min-h-[520px] md:min-h-[700px] flex flex-col justify-center">
+    <section className="relative bg-[#303236] overflow-hidden min-h-[520px] md:min-h-[700px] flex flex-col justify-center">
       <div className="max-w-6xl mx-auto px-6 py-16 w-full">
         <div className="max-w-2xl">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">
@@ -87,7 +87,7 @@ function HeroDefault() {
             </a>
             <a
               href="/story"
-              className="inline-block border border-white text-white text-sm tracking-widest px-8 py-3 hover:bg-white hover:text-[#1A2B4A] transition-colors"
+              className="inline-block border border-white text-white text-sm tracking-widest px-8 py-3 hover:bg-white hover:text-[#303236] transition-colors"
             >
               브랜드 스토리
             </a>

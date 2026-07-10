@@ -284,10 +284,10 @@ export default function AdminStoryPage() {
               fx={hero.fx?.sub} onFxChange={(p) => setHeroFx("sub", p)} onFxReset={() => resetHeroFx("sub")} />
             <div className="grid grid-cols-2 gap-4">
               <Field label="높이(px)"><input type="number" value={hero.height} onChange={(e) => setHeroField("height", Number(e.target.value) || 0)} className={INPUT} /></Field>
-              <Field label="배경색(사진 없을 때)"><input type="color" value={hero.bg || "#1A2B4A"} onChange={(e) => setHeroField("bg", e.target.value)} className="w-full h-[38px] rounded-lg border border-gray-200 cursor-pointer" /></Field>
+              <Field label="배경색(사진 없을 때)"><input type="color" value={hero.bg || "#303236"} onChange={(e) => setHeroField("bg", e.target.value)} className="w-full h-[38px] rounded-lg border border-gray-200 cursor-pointer" /></Field>
             </div>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-              <input type="checkbox" checked={hero.showWatermark} onChange={(e) => setHeroField("showWatermark", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
+              <input type="checkbox" checked={hero.showWatermark} onChange={(e) => setHeroField("showWatermark", e.target.checked)} className="w-4 h-4 accent-[#303236]" />
               WU 워터마크 표시(사진 없을 때만 보임)
             </label>
           </div>
@@ -386,7 +386,7 @@ export default function AdminStoryPage() {
                   {/* 공통: 노출 + 배경 */}
                   <div className="flex items-center gap-6 pb-4 border-b border-gray-100">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={editing.visible} onChange={(e) => setCommon({ visible: e.target.checked })} className="w-4 h-4 accent-[#1A2B4A]" />
+                      <input type="checkbox" checked={editing.visible} onChange={(e) => setCommon({ visible: e.target.checked })} className="w-4 h-4 accent-[#303236]" />
                       <span className="text-sm text-gray-700">이 섹션 노출</span>
                     </label>
                     <div className="flex items-center gap-2">
@@ -679,7 +679,7 @@ function StyledField({
           <div>
             <label className="text-[10px] text-gray-400 block mb-1">색상</label>
             <div className="flex items-center gap-1.5">
-              <input type="color" value={fx?.color || "#1A2B4A"} onChange={(e) => onFxChange({ color: e.target.value })}
+              <input type="color" value={fx?.color || "#303236"} onChange={(e) => onFxChange({ color: e.target.value })}
                 className="w-8 h-8 rounded border border-gray-200 cursor-pointer p-0.5" />
               {fx?.color && <button type="button" onClick={() => onFxChange({ color: undefined })} className="text-[10px] text-gray-400 hover:text-red-500">기본</button>}
             </div>

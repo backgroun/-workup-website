@@ -54,15 +54,15 @@ function CrudSection({ title, apiPath, addPlaceholder }: {
     <div className="border border-gray-200 rounded-lg overflow-hidden flex flex-col min-h-0">
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-baseline justify-between">
         <h3 className="text-sm font-bold text-gray-900">{title}</h3>
-        <span className="text-xs font-bold text-[#1A2B4A]">{items.length}개</span>
+        <span className="text-xs font-bold text-[#303236]">{items.length}개</span>
       </div>
       <div className="px-4 py-3 border-b border-gray-100">
         {error && <p className="text-xs text-red-500 mb-1.5">{error}</p>}
         <form onSubmit={handleAdd} className="flex gap-2">
           <input ref={inputRef} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={addPlaceholder}
-            className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A]" />
+            className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
           <button type="submit" disabled={saving || !newName.trim()}
-            className="px-4 py-2 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50">
+            className="px-4 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50">
             {saving ? "…" : "추가"}
           </button>
         </form>
@@ -109,7 +109,7 @@ export default function CatalogManagerModal({ open, onClose }: { open: boolean; 
       <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-[#1A2B4A]">브랜드 / 제조사 관리</h2>
+            <h2 className="text-lg font-bold text-[#303236]">브랜드 / 제조사 관리</h2>
             <p className="text-xs text-gray-400 mt-0.5">제품 등록 시 선택할 브랜드·제조사 목록을 관리합니다.</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700">

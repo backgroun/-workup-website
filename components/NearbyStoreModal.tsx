@@ -105,7 +105,7 @@ export default function NearbyStoreModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="bg-[#1A2B4A] px-6 py-5 flex items-start justify-between">
+        <div className="bg-[#303236] px-6 py-5 flex items-start justify-between">
           <div>
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-1">내 주변 매장</p>
             <p className="text-base font-bold text-white">{productName}</p>
@@ -136,7 +136,7 @@ export default function NearbyStoreModal({
               <Link
                 href="/store"
                 onClick={onClose}
-                className="inline-block bg-[#1A2B4A] text-white text-xs px-5 py-2.5 hover:bg-[#ff550c] transition-colors"
+                className="inline-block bg-[#303236] text-white text-xs px-5 py-2.5 hover:bg-[#ff550c] transition-colors"
               >
                 전체 매장 보기 →
               </Link>
@@ -154,7 +154,7 @@ export default function NearbyStoreModal({
                       {i + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-bold text-[#1A2B4A]">{s.name}</p>
+                      <p className="text-sm font-bold text-[#303236]">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{s.address}</p>
                     </div>
                   </div>
@@ -164,7 +164,7 @@ export default function NearbyStoreModal({
                     </p>
                     <button
                       onClick={() => openKakao(s)}
-                      className="text-xs text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors"
+                      className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors"
                     >
                       길찾기
                     </button>
@@ -179,13 +179,13 @@ export default function NearbyStoreModal({
           <Link
             href="/store"
             onClick={onClose}
-            className="flex-1 text-center bg-[#1A2B4A] text-white text-xs font-semibold py-3 hover:bg-[#ff550c] transition-colors"
+            className="flex-1 text-center bg-[#303236] text-white text-xs font-semibold py-3 hover:bg-[#ff550c] transition-colors"
           >
             전체 매장 보기 →
           </Link>
           <button
             onClick={onClose}
-            className="flex-1 border border-gray-300 text-gray-600 text-xs py-3 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors"
+            className="flex-1 border border-gray-300 text-gray-600 text-xs py-3 hover:border-[#303236] hover:text-[#303236] transition-colors"
           >
             닫기
           </button>

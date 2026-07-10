@@ -14,7 +14,7 @@ import {
   type FormFieldType,
 } from "@/data/partnership";
 
-const COLOR_PRESETS = ["#ff550c", "#1A2B4A", "#2d4f72", "#0f172a", "#ffffff", "#d1d5db", "#9ca3af", "#6b7280"];
+const COLOR_PRESETS = ["#ff550c", "#303236", "#2d4f72", "#0f172a", "#ffffff", "#d1d5db", "#9ca3af", "#6b7280"];
 
 const FIELD_TYPE_OPTIONS: { value: FormFieldType; label: string }[] = [
   { value: "text", label: "텍스트" },
@@ -482,7 +482,7 @@ export default function PartnershipEditPage() {
                 {(tab === "franchise" || tab === "wholesale") && (
                   <p className="text-xs text-gray-500 leading-relaxed">
                     <span className="text-[#ff550c] font-medium">[필수]</span> {info.form.consent_text}{" "}
-                    <span className="underline text-[#1A2B4A]">내용 보기</span>
+                    <span className="underline text-[#303236]">내용 보기</span>
                     {info.form.consent_note && <span className="block text-gray-400 mt-0.5">{info.form.consent_note}</span>}
                   </p>
                 )}

@@ -37,7 +37,7 @@ function ReelCard({ reel }: { reel: Reel }) {
         {!playing && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover:bg-black/35 pointer-events-none">
             <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <svg className="w-7 h-7 text-[#1A2B4A] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              <svg className="w-7 h-7 text-[#303236] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             </div>
           </div>
         )}
@@ -72,7 +72,7 @@ export default function MateZone({ config }: { config: MateZoneConfig }) {
   return (
     <div className="mt-16 pt-12 border-t border-gray-200">
       <div className="mb-8">
-        <h2 className="text-[24px] md:text-[30px] font-bold text-[#1A2B4A] leading-tight">{config.title}</h2>
+        <h2 className="text-[24px] md:text-[30px] font-bold text-[#303236] leading-tight">{config.title}</h2>
         {config.subtitle && (
           <p className="mt-2 text-[14px] text-gray-500">{config.subtitle}</p>
         )}

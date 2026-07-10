@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS products (
   job_types JSONB NOT NULL DEFAULT '[]',
   field_test TEXT,
   wearer_quote JSONB,
-  bg TEXT NOT NULL DEFAULT 'bg-[#1A2B4A]',
+  bg TEXT NOT NULL DEFAULT 'bg-[#303236]',
   colors JSONB NOT NULL DEFAULT '[]',
   image_url TEXT,
   sub_images JSONB NOT NULL DEFAULT '[]',

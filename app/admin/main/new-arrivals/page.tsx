@@ -124,7 +124,7 @@ export default function AdminNewArrivalsPage() {
           <label className="flex items-center gap-2 cursor-pointer">
             <div
               onClick={() => set("is_visible", !cfg.is_visible)}
-              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${cfg.is_visible ? "bg-[#1A2B4A]" : "bg-gray-300"}`}
+              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${cfg.is_visible ? "bg-[#303236]" : "bg-gray-300"}`}
             >
               <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${cfg.is_visible ? "translate-x-5" : "translate-x-0.5"}`} />
             </div>
@@ -162,7 +162,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
           type="text"
           value={cfg.title}
           onChange={(e) => set("title", e.target.value)}
-          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236]"
           placeholder="신상품이 입고 되었어요"
         />
       </Section>
@@ -174,7 +174,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
             <button
               key={m}
               onClick={() => set("mode", m)}
-              className={`flex-1 py-2.5 text-sm border transition-colors ${cfg.mode === m ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "border-gray-200 text-gray-600 hover:border-[#1A2B4A]"}`}
+              className={`flex-1 py-2.5 text-sm border transition-colors ${cfg.mode === m ? "bg-[#303236] text-white border-[#303236]" : "border-gray-200 text-gray-600 hover:border-[#303236]"}`}
             >
               {m === "auto" ? "자동 (정렬기준)" : "수동 (직접선택)"}
             </button>
@@ -191,7 +191,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                 <button
                   key={s}
                   onClick={() => set("sort_by", s)}
-                  className={`px-4 py-2 text-sm border transition-colors ${cfg.sort_by === s ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "border-gray-200 text-gray-600 hover:border-[#1A2B4A]"}`}
+                  className={`px-4 py-2 text-sm border transition-colors ${cfg.sort_by === s ? "bg-[#303236] text-white border-[#303236]" : "border-gray-200 text-gray-600 hover:border-[#303236]"}`}
                 >
                   {s === "latest" ? "최신 등록순" : s === "sales" ? "판매순" : "추천순"}
                 </button>
@@ -207,9 +207,9 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                 max={20}
                 value={cfg.count}
                 onChange={(e) => set("count", Number(e.target.value))}
-                className="flex-1 accent-[#1A2B4A]"
+                className="flex-1 accent-[#303236]"
               />
-              <span className="text-sm font-bold text-[#1A2B4A] w-12 text-right">{cfg.count}개</span>
+              <span className="text-sm font-bold text-[#303236] w-12 text-right">{cfg.count}개</span>
             </div>
           </Section>
 
@@ -219,7 +219,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                 <button
                   key={cat}
                   onClick={() => set("category_filter", cat)}
-                  className={`px-3 py-1.5 text-xs border transition-colors ${cfg.category_filter === cat ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "border-gray-200 text-gray-600 hover:border-[#1A2B4A]"}`}
+                  className={`px-3 py-1.5 text-xs border transition-colors ${cfg.category_filter === cat ? "bg-[#303236] text-white border-[#303236]" : "border-gray-200 text-gray-600 hover:border-[#303236]"}`}
                 >
                   {cat}
                 </button>
@@ -235,7 +235,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                 max={365}
                 value={cfg.new_product_days}
                 onChange={(e) => set("new_product_days", Number(e.target.value))}
-                className="w-24 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]"
+                className="w-24 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236]"
               />
               <span className="text-sm text-gray-500">일 이내</span>
             </div>
@@ -253,7 +253,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
               placeholder="상품명 또는 ID로 검색..."
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236]"
             />
             {searchResults.length > 0 && (
               <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 border-t-0 max-h-52 overflow-y-auto">
@@ -268,7 +268,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                       {p.imageUrl ? <img src={p.imageUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-white/20 text-[6px]">W</span>}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-[#1A2B4A] truncate">{p.name}</p>
+                      <p className="text-xs font-medium text-[#303236] truncate">{p.name}</p>
                       <p className="text-[10px] text-gray-400">{p.price} · {p.category}</p>
                     </div>
                     {cfg.manual_ids.includes(p.id) && <span className="ml-auto text-[10px] text-green-600 flex-shrink-0">추가됨</span>}
@@ -290,14 +290,14 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
                     {p.imageUrl ? <img src={p.imageUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-white/20 text-[6px]">W</span>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-[#1A2B4A] truncate">{p.name}</p>
+                    <p className="text-xs font-medium text-[#303236] truncate">{p.name}</p>
                     <p className="text-[10px] text-gray-400">{p.price}</p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => moveManual(i, -1)} disabled={i === 0} className="p-1 text-gray-400 hover:text-[#1A2B4A] disabled:opacity-30">
+                    <button onClick={() => moveManual(i, -1)} disabled={i === 0} className="p-1 text-gray-400 hover:text-[#303236] disabled:opacity-30">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" /></svg>
                     </button>
-                    <button onClick={() => moveManual(i, 1)} disabled={i === manualProducts.length - 1} className="p-1 text-gray-400 hover:text-[#1A2B4A] disabled:opacity-30">
+                    <button onClick={() => moveManual(i, 1)} disabled={i === manualProducts.length - 1} className="p-1 text-gray-400 hover:text-[#303236] disabled:opacity-30">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     <button onClick={() => removeManual(p.id)} className="p-1 text-red-400 hover:text-red-600 ml-1">
@@ -326,7 +326,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
           type="text"
           value={cfg.view_all_link}
           onChange={(e) => set("view_all_link", e.target.value)}
-          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236]"
           placeholder="/products?new=true"
         />
       </Section>
@@ -336,7 +336,7 @@ CREATE POLICY "public_read" ON site_settings FOR SELECT USING (true);`}</pre>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-8 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243d5e] transition-colors disabled:opacity-50"
+          className="px-8 py-2.5 bg-[#303236] text-white text-sm font-semibold hover:bg-[#243d5e] transition-colors disabled:opacity-50"
         >
           {saving ? "저장 중..." : "저장"}
         </button>
@@ -351,7 +351,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-3">
-        <p className="text-sm font-semibold text-[#1A2B4A]">{title}</p>
+        <p className="text-sm font-semibold text-[#303236]">{title}</p>
         {sub && <p className="text-xs text-gray-400">{sub}</p>}
       </div>
       {children}
@@ -363,12 +363,12 @@ function Toggle({ label, sub, checked, onChange }: { label: string; sub?: string
   return (
     <label className="flex items-center justify-between py-2.5 border-b border-gray-100 cursor-pointer group">
       <div>
-        <p className="text-sm text-gray-700 group-hover:text-[#1A2B4A]">{label}</p>
+        <p className="text-sm text-gray-700 group-hover:text-[#303236]">{label}</p>
         {sub && <p className="text-xs text-gray-400">{sub}</p>}
       </div>
       <div
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-5 rounded-full transition-colors ${checked ? "bg-[#1A2B4A]" : "bg-gray-300"}`}
+        className={`relative w-10 h-5 rounded-full transition-colors ${checked ? "bg-[#303236]" : "bg-gray-300"}`}
       >
         <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
       </div>

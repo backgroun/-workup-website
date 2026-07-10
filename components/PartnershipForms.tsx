@@ -24,15 +24,15 @@ function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc:
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <p className="text-base font-bold text-[#1A2B4A] mb-4">{title}</p>
+      <p className="text-base font-bold text-[#303236] mb-4">{title}</p>
       <div className="text-xs text-gray-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 leading-relaxed mb-6 max-w-xs text-left space-y-2.5">
         <p className="flex items-start gap-2">
           <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center mt-px">
-            <svg className="w-3 h-3 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-3 h-3 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </span>
-          <span>문의현황 목록의 <b className="text-[#1A2B4A]">새로고침</b> 버튼을 누르면 게시글을 확인할 수 있습니다.</span>
+          <span>문의현황 목록의 <b className="text-[#303236]">새로고침</b> 버튼을 누르면 게시글을 확인할 수 있습니다.</span>
         </p>
         {passwordHint && (
           <p className="flex items-start gap-2 border-t border-slate-200 pt-2.5">
@@ -47,7 +47,7 @@ function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc:
       </div>
       <button
         onClick={onReset}
-        className="text-xs text-gray-400 underline hover:text-[#1A2B4A] transition-colors"
+        className="text-xs text-gray-400 underline hover:text-[#303236] transition-colors"
       >
         다시 문의하기
       </button>
@@ -62,7 +62,7 @@ function Field({
   placeholder?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   labelStyle: CSSProperties; inputStyle: CSSProperties;
 }) {
-  const cls = "w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white";
+  const cls = "w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#303236] transition-colors bg-white";
   return (
     <div>
       <label htmlFor={`pf-${name}`} className="block mb-1.5" style={labelStyle}>
@@ -128,12 +128,12 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
-          <h2 id="consent-modal-title" className="text-sm font-bold text-[#1A2B4A]">개인정보 수집·이용 동의</h2>
+          <h2 id="consent-modal-title" className="text-sm font-bold text-[#303236]">개인정보 수집·이용 동의</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="w-8 h-8 -mr-2 flex items-center justify-center text-gray-400 hover:text-[#1A2B4A] transition-colors"
+            className="w-8 h-8 -mr-2 flex items-center justify-center text-gray-400 hover:text-[#303236] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -148,15 +148,15 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
           <table className="w-full border-t border-gray-200 text-left">
             <tbody className="divide-y divide-gray-100">
               <tr>
-                <th className="py-2.5 pr-3 align-top font-medium text-[#1A2B4A] whitespace-nowrap w-24">수집 항목</th>
+                <th className="py-2.5 pr-3 align-top font-medium text-[#303236] whitespace-nowrap w-24">수집 항목</th>
                 <td className="py-2.5 text-gray-600">이름, 연락처</td>
               </tr>
               <tr>
-                <th className="py-2.5 pr-3 align-top font-medium text-[#1A2B4A] whitespace-nowrap">수집·이용 목적</th>
+                <th className="py-2.5 pr-3 align-top font-medium text-[#303236] whitespace-nowrap">수집·이용 목적</th>
                 <td className="py-2.5 text-gray-600">문의 접수 및 상담 안내</td>
               </tr>
               <tr>
-                <th className="py-2.5 pr-3 align-top font-medium text-[#1A2B4A] whitespace-nowrap">보유·이용 기간</th>
+                <th className="py-2.5 pr-3 align-top font-medium text-[#303236] whitespace-nowrap">보유·이용 기간</th>
                 <td className="py-2.5 text-gray-600">문의 처리 완료 후 지체 없이 파기 (관계 법령에 따라 보관이 필요한 경우 해당 기간 동안 보관)</td>
               </tr>
             </tbody>
@@ -168,7 +168,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
 
           <p className="text-gray-400">
             자세한 내용은{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#1A2B4A] hover:text-[#ff550c]">
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#303236] hover:text-[#ff550c]">
               개인정보처리방침
             </a>
             에서 확인하실 수 있습니다.
@@ -180,7 +180,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-2.5 hover:bg-[#ff550c] transition-colors"
+            className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-2.5 hover:bg-[#ff550c] transition-colors"
           >
             확인
           </button>
@@ -204,14 +204,14 @@ function PrivacyConsent({
           name="privacyAgree"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[#1A2B4A]"
+          className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[#303236]"
         />
         <span className="text-xs text-gray-500 leading-relaxed">
           <span className="text-[#ff550c] font-medium">[필수]</span> {text}{" "}
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="underline text-[#1A2B4A] hover:text-[#ff550c] transition-colors"
+            className="underline text-[#303236] hover:text-[#ff550c] transition-colors"
           >
             내용 보기
           </button>
@@ -386,7 +386,7 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
           autoCapitalize="off"
           spellCheck={false}
           style={inputStyle}
-          className="w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
+          className="w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#303236] transition-colors bg-white"
         />
       </div>
       {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}

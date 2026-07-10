@@ -27,7 +27,7 @@ export default async function SupportPage() {
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{sup.hero_eyebrow}</p>
           )}
           {sup.hero_title && (
-            <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">{sup.hero_title}</h1>
+            <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">{sup.hero_title}</h1>
           )}
           {sup.hero_desc && (
             <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl whitespace-pre-line">{sup.hero_desc}</p>
@@ -45,7 +45,7 @@ export default async function SupportPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={sup.guide_image_url} alt="고객센터 안내" className="w-full object-cover" />
               ) : (
-                <div className="bg-[#1A2B4A] px-8 py-12">
+                <div className="bg-[#303236] px-8 py-12">
                   <h2 className="text-2xl font-bold text-white mb-3 whitespace-pre-line">{sup.intro_title}</h2>
                   <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">{sup.intro_desc}</p>
                 </div>
@@ -57,7 +57,7 @@ export default async function SupportPage() {
                 )}
 
                 <p className="text-xs text-gray-400 tracking-widest uppercase mb-1">고객센터</p>
-                <a href={telHref} className="text-2xl font-bold text-[#1A2B4A] hover:text-[#ff550c] transition-colors">
+                <a href={telHref} className="text-2xl font-bold text-[#303236] hover:text-[#ff550c] transition-colors">
                   {footer.cs_phone}
                 </a>
                 <div className="text-sm text-gray-500 mt-2 leading-relaxed">
@@ -72,11 +72,11 @@ export default async function SupportPage() {
                     전화 문의
                   </a>
                   <Link href="/store"
-                    className="inline-flex items-center gap-1.5 border border-[#1A2B4A] text-[#1A2B4A] text-sm font-semibold px-5 py-2.5 hover:bg-[#1A2B4A] hover:text-white transition-colors">
+                    className="inline-flex items-center gap-1.5 border border-[#303236] text-[#303236] text-sm font-semibold px-5 py-2.5 hover:bg-[#303236] hover:text-white transition-colors">
                     매장 찾기
                   </Link>
                   <Link href="/catalog"
-                    className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm font-semibold px-5 py-2.5 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                    className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm font-semibold px-5 py-2.5 hover:border-[#303236] hover:text-[#303236] transition-colors">
                     카탈로그
                   </Link>
                 </div>
@@ -86,7 +86,7 @@ export default async function SupportPage() {
             {/* 우: 1:1 문의 폼 */}
             <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">
               <div className="px-8 py-8">
-                <h3 className="text-base font-bold text-[#1A2B4A] mb-1">1:1 문의하기</h3>
+                <h3 className="text-base font-bold text-[#303236] mb-1">1:1 문의하기</h3>
                 <p className="text-xs text-gray-400 mb-6">문의 구분을 선택하고 내용을 남겨 주세요.</p>
                 <SupportForm />
               </div>
@@ -96,9 +96,9 @@ export default async function SupportPage() {
 
           {/* 다른 문의 경로 */}
           <div className="flex items-center justify-center gap-5 text-xs flex-wrap mt-8">
-            <Link href="/partnership/franchise" className="text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">가맹·창업 문의</Link>
-            <Link href="/partnership/wholesale" className="text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">입점·제휴 문의</Link>
-            <Link href="/store" className="text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">매장 안내</Link>
+            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">가맹·창업 문의</Link>
+            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">입점·제휴 문의</Link>
+            <Link href="/store" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">매장 안내</Link>
           </div>
         </div>
       </div>

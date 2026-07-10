@@ -89,7 +89,7 @@ function ImageField({ value, onChange }: { value: string; onChange: (url: string
         className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer aspect-[4/3] ${
           dragging ? "border-[#ff550c] bg-orange-50" :
           value ? "border-gray-200 hover:border-gray-300" :
-                  "border-dashed border-gray-300 hover:border-[#1A2B4A]"
+                  "border-dashed border-gray-300 hover:border-[#303236]"
         }`}
       >
         <input ref={ref} type="file" accept="image/*" className="hidden"
@@ -168,7 +168,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
 
   const Btn = ({ onClick, label, title }: { onClick: () => void; label: React.ReactNode; title: string }) => (
     <button type="button" title={title} onMouseDown={(e) => e.preventDefault()} onClick={onClick}
-      className="px-2.5 h-8 min-w-8 flex items-center justify-center text-[13px] text-gray-600 rounded hover:bg-white hover:text-[#1A2B4A] border border-transparent hover:border-gray-200 transition-colors">
+      className="px-2.5 h-8 min-w-8 flex items-center justify-center text-[13px] text-gray-600 rounded hover:bg-white hover:text-[#303236] border border-transparent hover:border-gray-200 transition-colors">
       {label}
     </button>
   );
@@ -204,8 +204,8 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
         onBlur={emit}
         data-placeholder="상세 내용을 입력하세요. 위 도구로 제목·목록·링크·사진을 넣을 수 있습니다."
         className="pr-editor min-h-[240px] px-4 py-3 text-[14px] text-gray-800 leading-[1.9] focus:outline-none
-          [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-[#1A2B4A] [&_h2]:my-2
-          [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-[#1A2B4A] [&_h3]:my-2
+          [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-[#303236] [&_h2]:my-2
+          [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-[#303236] [&_h3]:my-2
           [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-0.5
           [&_a]:text-blue-600 [&_a]:underline [&_img]:rounded-lg [&_img]:my-2 [&_img]:max-w-full [&_img]:h-auto"
       />
@@ -296,7 +296,7 @@ export default function PrRoomManagePage() {
     return (
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-5">
-          <button onClick={cancelEdit} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1A2B4A]">
+          <button onClick={cancelEdit} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#303236]">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>

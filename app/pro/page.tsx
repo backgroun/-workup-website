@@ -22,7 +22,7 @@ export default function ProPage() {
       <section className="py-32 bg-[#F5F2ED]">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">COMING SOON</p>
-          <h2 className="text-3xl font-bold text-[#1A2B4A] mb-6">
+          <h2 className="text-3xl font-bold text-[#303236] mb-6">
             WORKUP PRO를 준비하고 있습니다.
           </h2>
           <p className="text-gray-500 text-sm leading-loose max-w-md mx-auto mb-10">
@@ -32,7 +32,7 @@ export default function ProPage() {
           </p>
           <Link
             href="/site"
-            className="inline-block bg-[#1A2B4A] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#243d5e] transition-colors"
+            className="inline-block bg-[#303236] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#243d5e] transition-colors"
           >
             WORKUP SITE 보러가기
           </Link>

@@ -142,7 +142,7 @@ export default function StoreImportPage() {
       </div>
 
       <div
-        className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-14 text-center cursor-pointer hover:border-[#1A2B4A] transition-colors mb-8"
+        className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-14 text-center cursor-pointer hover:border-[#303236] transition-colors mb-8"
         onClick={() => fileRef.current?.click()}
       >
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="hidden" />
@@ -293,7 +293,7 @@ export default function StoreImportPage() {
               { label: "활성여부",         desc: "true(공개) / false(비공개)", req: false, ex: "true" },
             ].map((col) => (
               <tr key={col.label} className="hover:bg-gray-50">
-                <td className="px-5 py-3.5 font-mono text-sm text-[#1A2B4A] font-semibold">{col.label}</td>
+                <td className="px-5 py-3.5 font-mono text-sm text-[#303236] font-semibold">{col.label}</td>
                 <td className="px-5 py-3.5 text-gray-600">{col.desc}</td>
                 <td className="px-5 py-3.5">
                   {col.req

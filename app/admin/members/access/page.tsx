@@ -115,7 +115,7 @@ export default function MemberAccessPage() {
     <div className="space-y-5">
       <div>
         <div className="flex items-center gap-3">
-          <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 회원 현황</Link>
+          <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#303236]">← 회원 현황</Link>
           <span className="text-gray-200">/</span>
           <h1 className="text-3xl font-bold text-gray-900">회원 접속 관리</h1>
         </div>
@@ -129,7 +129,7 @@ export default function MemberAccessPage() {
         {[
           { label: "오늘 접속",  value: accessStats.today, color: "text-emerald-600" },
           { label: "7일 이내",   value: accessStats.week,  color: "text-blue-600" },
-          { label: "30일 이내",  value: accessStats.month, color: "text-[#1A2B4A]" },
+          { label: "30일 이내",  value: accessStats.month, color: "text-[#303236]" },
           { label: "미접속",     value: accessStats.never, color: "text-gray-400" },
         ].map(s => (
           <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-6 text-center">
@@ -157,7 +157,7 @@ export default function MemberAccessPage() {
         <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="이름 또는 이메일 검색..."
-            className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+            className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236]" />
           <span className="text-[14px] text-gray-400">{filtered.length}명 표시</span>
         </div>
 

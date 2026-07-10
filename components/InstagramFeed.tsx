@@ -77,13 +77,13 @@ export default function InstagramFeed({ posts, contained }: { posts?: InstagramM
       <div className="relative">
         {items.length > 1 && nav.left && (
           <button type="button" onClick={() => scrollByView(-1)} aria-label="이전"
-            className="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-md text-[#1A2B4A] hover:bg-gray-50 transition-colors">
+            className="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-md text-[#303236] hover:bg-gray-50 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
           </button>
         )}
         {items.length > 1 && nav.right && (
           <button type="button" onClick={() => scrollByView(1)} aria-label="다음"
-            className="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-md text-[#1A2B4A] hover:bg-gray-50 transition-colors">
+            className="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-white shadow-md text-[#303236] hover:bg-gray-50 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
         )}

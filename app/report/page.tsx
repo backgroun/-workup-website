@@ -8,7 +8,7 @@ export default function ReportPage() {
       <div className="max-w-3xl mx-auto mb-6 flex justify-end print:hidden">
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 bg-[#1A2B4A] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#243d5e] transition-colors"
+          className="flex items-center gap-2 bg-[#303236] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#243d5e] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -22,15 +22,15 @@ export default function ReportPage() {
       <div className="max-w-3xl mx-auto bg-white shadow-sm p-10 print:shadow-none print:p-0">
 
         {/* 헤더 */}
-        <div className="border-b-2 border-[#1A2B4A] pb-6 mb-8">
+        <div className="border-b-2 border-[#303236] pb-6 mb-8">
           <p className="text-xs text-gray-400 mb-1">내부 보고용 문서</p>
-          <h1 className="text-2xl font-bold text-[#1A2B4A] mb-2">개발 인프라 계정 이전 및 비용 보고서</h1>
+          <h1 className="text-2xl font-bold text-[#303236] mb-2">개발 인프라 계정 이전 및 비용 보고서</h1>
           <p className="text-sm text-gray-500">작성일: 2026년 6월 10일</p>
         </div>
 
         {/* 섹션 1 — 서비스 소개 */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-[#1A2B4A] mb-5 pb-2 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-[#303236] mb-5 pb-2 border-b border-gray-200">
             1. 사용 중인 서비스 소개
           </h2>
 
@@ -60,7 +60,7 @@ export default function ReportPage() {
             ].map((s) => (
               <div key={s.name} className={`border rounded-lg p-4 ${s.color}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <p className="font-bold text-[#1A2B4A] text-sm">{s.name}</p>
+                  <p className="font-bold text-[#303236] text-sm">{s.name}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${s.tagColor}`}>
                     {s.tag}
                   </span>
@@ -73,13 +73,13 @@ export default function ReportPage() {
 
         {/* 섹션 2 — 현황 */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-[#1A2B4A] mb-5 pb-2 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-[#303236] mb-5 pb-2 border-b border-gray-200">
             2. 현황
           </h2>
           <p className="text-sm text-gray-600 mb-4">현재 아래 3가지 서비스를 개인 계정으로 운영 중입니다.</p>
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-[#1A2B4A] text-white">
+              <tr className="bg-[#303236] text-white">
                 <th className="text-left px-4 py-2.5">서비스</th>
                 <th className="text-left px-4 py-2.5">하는 일</th>
                 <th className="text-left px-4 py-2.5">현재 상태</th>
@@ -105,7 +105,7 @@ export default function ReportPage() {
 
         {/* 섹션 3 — 이전 절차 */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-[#1A2B4A] mb-5 pb-2 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-[#303236] mb-5 pb-2 border-b border-gray-200">
             3. 계정 이전 절차
           </h2>
           <div className="space-y-6">
@@ -147,7 +147,7 @@ export default function ReportPage() {
             ].map((item, i) => (
               <div key={item.title} className="border border-gray-200 rounded-lg overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
-                  <p className="font-bold text-[#1A2B4A]">3-{i + 1}. {item.title}</p>
+                  <p className="font-bold text-[#303236]">3-{i + 1}. {item.title}</p>
                   <div className="flex gap-3 text-xs text-gray-500">
                     <span>소요시간: <strong>{item.time}</strong></span>
                     <span>데이터 손실: <strong className="text-green-600">{item.loss}</strong></span>
@@ -157,7 +157,7 @@ export default function ReportPage() {
                   <ol className="space-y-1.5">
                     {item.steps.map((step, j) => (
                       <li key={j} className="flex gap-2 text-sm text-gray-600">
-                        <span className="flex-shrink-0 w-5 h-5 bg-[#1A2B4A] text-white rounded-full text-xs flex items-center justify-center font-bold">{j + 1}</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-[#303236] text-white rounded-full text-xs flex items-center justify-center font-bold">{j + 1}</span>
                         {step}
                       </li>
                     ))}
@@ -175,7 +175,7 @@ export default function ReportPage() {
 
         {/* 섹션 4 — 비용 */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-[#1A2B4A] mb-5 pb-2 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-[#303236] mb-5 pb-2 border-b border-gray-200">
             4. 비용 분석
           </h2>
 
@@ -185,7 +185,7 @@ export default function ReportPage() {
 
           <table className="w-full text-sm border-collapse mb-6">
             <thead>
-              <tr className="bg-[#1A2B4A] text-white">
+              <tr className="bg-[#303236] text-white">
                 <th className="text-left px-4 py-2.5">서비스</th>
                 <th className="text-left px-4 py-2.5">플랜</th>
                 <th className="text-left px-4 py-2.5">월 비용</th>
@@ -201,14 +201,14 @@ export default function ReportPage() {
                 <tr key={service} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                   <td className="px-4 py-2.5 font-semibold">{service}</td>
                   <td className="px-4 py-2.5 text-gray-600">{plan}</td>
-                  <td className="px-4 py-2.5 font-semibold text-[#1A2B4A]">{cost}</td>
+                  <td className="px-4 py-2.5 font-semibold text-[#303236]">{cost}</td>
                   <td className="px-4 py-2.5 text-gray-600 text-xs">{desc}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div className="bg-[#1A2B4A] text-white rounded-lg px-6 py-4 flex justify-between items-center">
+          <div className="bg-[#303236] text-white rounded-lg px-6 py-4 flex justify-between items-center">
             <p className="font-bold">월 예상 총 비용</p>
             <p className="text-xl font-bold text-[#ff550c]">$45 <span className="text-sm font-normal text-gray-300">(약 61,000원/월)</span></p>
           </div>
@@ -216,12 +216,12 @@ export default function ReportPage() {
 
         {/* 섹션 5 — 권고안 */}
         <section className="mb-10">
-          <h2 className="text-lg font-bold text-[#1A2B4A] mb-5 pb-2 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-[#303236] mb-5 pb-2 border-b border-gray-200">
             5. 전환 권고안 및 일정
           </h2>
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-[#1A2B4A] text-white">
+              <tr className="bg-[#303236] text-white">
                 <th className="text-left px-4 py-2.5">일정</th>
                 <th className="text-left px-4 py-2.5">작업 내용</th>
               </tr>
@@ -234,7 +234,7 @@ export default function ReportPage() {
                 ["2일차", "연결 정보 업데이트 및 정상 작동 확인"],
               ].map(([day, task], i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                  <td className="px-4 py-2.5 font-semibold text-[#1A2B4A] whitespace-nowrap">{day}</td>
+                  <td className="px-4 py-2.5 font-semibold text-[#303236] whitespace-nowrap">{day}</td>
                   <td className="px-4 py-2.5 text-gray-600">{task}</td>
                 </tr>
               ))}

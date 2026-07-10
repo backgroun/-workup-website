@@ -47,7 +47,7 @@ const TEXT_H_ALIGN:   Record<string, string> = { left: "flex-start", center: "ce
 const GRADIENT_PRESETS = [
   { label: "여름 바다",      from: "#7eb8d4", to: "#a8d8b8", angle: 135 },
   { label: "새벽 노을",      from: "#ff9a44", to: "#fc6076", angle: 135 },
-  { label: "딥 네이비",      from: "#1A2B4A", to: "#2d4a7a", angle: 135 },
+  { label: "딥 네이비",      from: "#303236", to: "#2d4a7a", angle: 135 },
   { label: "민트 그린",      from: "#43b89c", to: "#2b6cb0", angle: 135 },
   { label: "핑크 드림",      from: "#f093fb", to: "#f5576c", angle: 135 },
   { label: "워크업 오렌지",  from: "#ff550c", to: "#ff9a44", angle: 135 },
@@ -62,7 +62,7 @@ const EMPTY: Omit<PopupItem, "id"> = {
   link: "/products",
   link_text: "상품 보러가기",
   bg_type: "gradient",
-  bg_solid: "#1A2B4A",
+  bg_solid: "#303236",
   bg_gradient_from: "#7eb8d4",
   bg_gradient_to: "#a8d8b8",
   bg_gradient_angle: 135,
@@ -84,7 +84,7 @@ const EMPTY: Omit<PopupItem, "id"> = {
 // ── 헬퍼 ────────────────────────────────────────────────────────────────────
 
 function computeBg(item: Omit<PopupItem, "id"> | PopupItem, device: "pc" | "mobile" = "pc"): string {
-  if (item.bg_type === "solid") return item.bg_solid || "#1A2B4A";
+  if (item.bg_type === "solid") return item.bg_solid || "#303236";
   if (item.bg_type === "gradient")
     return `linear-gradient(${item.bg_gradient_angle}deg, ${item.bg_gradient_from}, ${item.bg_gradient_to})`;
   if (item.bg_type === "image") {
@@ -93,7 +93,7 @@ function computeBg(item: Omit<PopupItem, "id"> | PopupItem, device: "pc" | "mobi
       : item.bg_image_url;
     if (url) return `url('${url}') center/cover no-repeat`;
   }
-  return item.bg_solid || "#1A2B4A";
+  return item.bg_solid || "#303236";
 }
 
 function getStatusBadge(item: PopupItem): { label: string; cls: string } {
@@ -432,7 +432,7 @@ export default function PopupManagePage() {
                             className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 flex-shrink-0" />
                           <input type="text" value={editing.bg_solid}
                             onChange={e => set("bg_solid", e.target.value)}
-                            placeholder="#1A2B4A"
+                            placeholder="#303236"
                             className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
                           <div className="w-20 h-10 rounded-lg border border-gray-100 flex-shrink-0"
                             style={{ background: editing.bg_solid }} />
@@ -625,8 +625,8 @@ export default function PopupManagePage() {
                               className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
                             <button type="button" onClick={() => set("text_color", "#ffffff")}
                               title="흰색" className="w-8 h-8 rounded border border-gray-200 bg-white shrink-0" />
-                            <button type="button" onClick={() => set("text_color", "#1A2B4A")}
-                              title="남색" className="w-8 h-8 rounded border border-gray-200 shrink-0" style={{ background: "#1A2B4A" }} />
+                            <button type="button" onClick={() => set("text_color", "#303236")}
+                              title="남색" className="w-8 h-8 rounded border border-gray-200 shrink-0" style={{ background: "#303236" }} />
                           </div>
                         </div>
                         {/* 텍스트 크기 */}
@@ -786,7 +786,7 @@ export default function PopupManagePage() {
                         <div className="relative flex flex-col p-5 overflow-hidden"
                           style={{
                             height: 200,
-                            background: editing.bg_type === "image" ? (editing.bg_image_url ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "pc"),
+                            background: editing.bg_type === "image" ? (editing.bg_image_url ? undefined : (editing.bg_solid || "#303236")) : computeBg(editing, "pc"),
                             justifyContent: TEXT_V_JUSTIFY[editing.text_position ?? "split"],
                             alignItems: TEXT_H_ALIGN[editing.text_align ?? "left"],
                             textAlign: editing.text_align ?? "left",
@@ -832,7 +832,7 @@ export default function PopupManagePage() {
                               <div className="relative flex flex-col p-4 rounded-xl overflow-hidden"
                                 style={{
                                   height: 150,
-                                  background: editing.bg_type === "image" ? (mUrl ? undefined : (editing.bg_solid || "#1A2B4A")) : computeBg(editing, "mobile"),
+                                  background: editing.bg_type === "image" ? (mUrl ? undefined : (editing.bg_solid || "#303236")) : computeBg(editing, "mobile"),
                                   justifyContent: TEXT_V_JUSTIFY[editing.text_position ?? "split"],
                                   alignItems: TEXT_H_ALIGN[editing.text_align ?? "left"],
                                   textAlign: editing.text_align ?? "left",

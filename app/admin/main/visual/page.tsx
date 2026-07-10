@@ -600,7 +600,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
                     type="datetime-local"
                     value={editing.scheduled_start ? editing.scheduled_start.slice(0, 16) : ""}
                     onChange={(e) => set("scheduled_start", toIsoOrNull(e.target.value))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded"
                   />
                 </Field>
                 <Field label="노출 종료일">
@@ -608,7 +608,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
                     type="datetime-local"
                     value={editing.scheduled_end ? editing.scheduled_end.slice(0, 16) : ""}
                     onChange={(e) => set("scheduled_end", toIsoOrNull(e.target.value))}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded"
                   />
                 </Field>
               </div>
@@ -622,7 +622,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
                 type="text"
                 value={editing.admin_title}
                 onChange={(e) => set("admin_title", e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded"
                 placeholder="예: 2026 여름 — 그늘에서 쉬는 현장 작업자"
               />
             </Field>
@@ -653,7 +653,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
                   value={editing.video_duration ?? ""}
                   onChange={(e) => set("video_duration", e.target.value === "" ? null : Number(e.target.value))}
                   placeholder="예: 6 (미입력 시 영상 종료까지 재생)"
-                  className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded"
                 />
               </Field>
               {(editing.pc_video_url || editing.mobile_video_url) && (
@@ -842,7 +842,7 @@ function SlideLinkField({ value, newTab, onChangeValue, onChangeNewTab }: {
             else if (v === "custom") onChangeValue(value || "https://");
             else onChangeValue(v);
           }}
-          className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded bg-white"
+          className="border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded bg-white"
         >
           <option value="">이동 안 함 (기본)</option>
           {LINK_PRESETS.map((p) => (
@@ -865,7 +865,7 @@ function SlideLinkField({ value, newTab, onChangeValue, onChangeNewTab }: {
           value={value ?? ""}
           onChange={(e) => onChangeValue(e.target.value)}
           placeholder="예: /products/123 또는 https://..."
-          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded"
+          className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded"
         />
       )}
     </div>
@@ -1591,7 +1591,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
               onChange={(e) => patch(sel.id, { text: e.target.value })}
               rows={2}
               placeholder="여기에 문구를 입력하세요"
-              className="w-full border border-gray-200 px-2.5 py-2 text-sm rounded bg-white focus:outline-none focus:border-[#1A2B4A] resize-none"
+              className="w-full border border-gray-200 px-2.5 py-2 text-sm rounded bg-white focus:outline-none focus:border-[#303236] resize-none"
             />
           </div>
 
@@ -1599,7 +1599,7 @@ function TextCanvasEditor({ layers, onChange, pcImage, mobileImage, pcVideo, mob
             <div>
               <label className="block text-[11px] text-slate-500 mb-1">폰트</label>
               <select value={sel.font_family} onChange={(e) => patch(sel.id, { font_family: e.target.value })}
-                className="w-full border border-gray-200 px-2 py-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#1A2B4A]">
+                className="w-full border border-gray-200 px-2 py-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#303236]">
                 {FONT_OPTIONS.map((f) => (
                   <option key={f.value} value={f.value} style={{ fontFamily: f.value || undefined }}>{f.label}</option>
                 ))}

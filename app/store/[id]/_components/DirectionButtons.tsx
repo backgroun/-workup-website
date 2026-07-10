@@ -51,7 +51,7 @@ export default function DirectionButtons({ storeId, name, address, lat, lng }: P
       <button
         onClick={() => handle("kakao")}
         disabled={loading === "kakao"}
-        className="flex items-center justify-center gap-2 w-full py-4 bg-[#1A2B4A] text-white font-bold text-base rounded-xl hover:bg-[#243a63] transition-colors disabled:opacity-70"
+        className="flex items-center justify-center gap-2 w-full py-4 bg-[#303236] text-white font-bold text-base rounded-xl hover:bg-[#243a63] transition-colors disabled:opacity-70"
       >
         <PinIcon />
         {loading === "kakao" ? "위치 확인 중..." : "카카오맵"}

@@ -36,8 +36,8 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
                 t.y < 22 ? "top-full mt-1.5" : "bottom-full mb-1.5"
               }`}
             >
-              {t.name && <p className="text-[11px] text-[#1A2B4A] font-medium leading-snug">{t.name}</p>}
-              {t.price && <p className="text-[12px] font-bold text-[#1A2B4A]">{t.price}</p>}
+              {t.name && <p className="text-[11px] text-[#303236] font-medium leading-snug">{t.name}</p>}
+              {t.price && <p className="text-[12px] font-bold text-[#303236]">{t.price}</p>}
             </div>
           )}
         </div>
@@ -138,7 +138,7 @@ function WhiteBox({
             aria-label={`${section.title} 기획전 보기`}
             className="absolute inset-0 z-[2]"
           >
-            <span className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/95 text-[#1A2B4A] text-[11px] font-semibold px-2.5 py-1.5 shadow-md opacity-0 translate-y-1 group-hover/img:opacity-100 group-hover/img:translate-y-0 transition-all">
+            <span className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/95 text-[#303236] text-[11px] font-semibold px-2.5 py-1.5 shadow-md opacity-0 translate-y-1 group-hover/img:opacity-100 group-hover/img:translate-y-0 transition-all">
               기획전 보기
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -164,7 +164,7 @@ function WhiteBox({
           style={{
             fontSize: "16px",
             fontWeight: "bold",
-            color: "#1A2B4A",
+            color: "#303236",
             lineHeight: 1.3,
             marginBottom: "20px",
           }}
@@ -205,10 +205,10 @@ function WhiteBox({
                   <span className="text-gray-300 text-[10px] font-black">WU</span>
                 )}
               </div>
-              <p style={{ fontSize: "11px", color: "#1A2B4A", lineHeight: 1.3, marginBottom: "3px" }}>
+              <p style={{ fontSize: "11px", color: "#303236", lineHeight: 1.3, marginBottom: "3px" }}>
                 {item.displayName || item.name}
               </p>
-              <p style={{ fontSize: "12px", fontWeight: "bold", color: "#1A2B4A" }}>
+              <p style={{ fontSize: "12px", fontWeight: "bold", color: "#303236" }}>
                 {item.price}
               </p>
             </Link>
@@ -304,11 +304,11 @@ export default function FeatureHeroLayout({
             />
             {hoveredTag === i && (
               <div className="absolute left-8 top-1/2 -translate-y-1/2 bg-white shadow-xl z-20 w-[220px] p-4">
-                <p className="text-[13px] text-[#1A2B4A] font-medium mb-0.5 leading-snug">{tag.name}</p>
-                <p className="text-[15px] font-bold text-[#1A2B4A] mb-4">{tag.price}</p>
+                <p className="text-[13px] text-[#303236] font-medium mb-0.5 leading-snug">{tag.name}</p>
+                <p className="text-[15px] font-bold text-[#303236] mb-4">{tag.price}</p>
                 <Link
                   href={`/products/${tag.productId}`}
-                  className="flex items-center justify-between border border-gray-300 px-3 py-2 text-[12px] text-[#1A2B4A] hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between border border-gray-300 px-3 py-2 text-[12px] text-[#303236] hover:bg-gray-50 transition-colors"
                 >
                   상품 보러가기
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -467,7 +467,7 @@ export default function FeatureHeroLayout({
                     aria-label={`${section.title} 기획전 보기`}
                     className="absolute inset-0 z-[2]"
                   >
-                    <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-white/95 text-[#1A2B4A] text-[11px] font-semibold px-2.5 py-1.5 shadow-md">
+                    <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-white/95 text-[#303236] text-[11px] font-semibold px-2.5 py-1.5 shadow-md">
                       기획전 보기
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -480,7 +480,7 @@ export default function FeatureHeroLayout({
 
               {/* 텍스트 + 상품 목록 */}
               <div style={{ paddingTop: "20px", paddingLeft: "15px", paddingRight: "15px", paddingBottom: "20px" }}>
-                <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#1A2B4A", margin: 0, marginBottom: "16px" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#303236", margin: 0, marginBottom: "16px" }}>
                   {section.title}
                 </h3>
                 <p style={{ fontSize: "13px", color: "#6b7280", lineHeight: 1.7, margin: 0, marginBottom: "16px" }}>
@@ -505,10 +505,10 @@ export default function FeatureHeroLayout({
                         )}
                       </div>
                       <div>
-                        <p style={{ fontSize: "13px", color: "#1A2B4A", lineHeight: 1.5, margin: 0, marginBottom: "3px" }}>
+                        <p style={{ fontSize: "13px", color: "#303236", lineHeight: 1.5, margin: 0, marginBottom: "3px" }}>
                           {item.displayName || item.name}
                         </p>
-                        <p style={{ fontSize: "14px", fontWeight: "bold", color: "#1A2B4A", margin: 0 }}>
+                        <p style={{ fontSize: "14px", fontWeight: "bold", color: "#303236", margin: 0 }}>
                           {item.price}
                         </p>
                       </div>
@@ -543,7 +543,7 @@ export default function FeatureHeroLayout({
           </div>
 
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 flex-shrink-0">
-            <h3 className="text-[15px] font-bold text-[#1A2B4A]">대표 상품</h3>
+            <h3 className="text-[15px] font-bold text-[#303236]">대표 상품</h3>
             <button
               onClick={() => setSheetOpen(false)}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -575,8 +575,8 @@ export default function FeatureHeroLayout({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-[#1A2B4A] mb-0.5 leading-snug">{tag.name}</p>
-                    <p className="text-[14px] font-bold text-[#1A2B4A]">{tag.price}</p>
+                    <p className="text-[13px] text-[#303236] mb-0.5 leading-snug">{tag.name}</p>
+                    <p className="text-[14px] font-bold text-[#303236]">{tag.price}</p>
                   </div>
                   <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -589,7 +589,7 @@ export default function FeatureHeroLayout({
           <div className="px-5 pb-6 pt-3 flex-shrink-0">
             <Link
               href={`/products/feature/${editorial.slug}`}
-              className="flex items-center justify-center gap-2 w-full bg-[#1A2B4A] text-white py-4 text-[14px] font-semibold tracking-wide"
+              className="flex items-center justify-center gap-2 w-full bg-[#303236] text-white py-4 text-[14px] font-semibold tracking-wide"
               onClick={() => setSheetOpen(false)}
             >
               기획전 바로가기

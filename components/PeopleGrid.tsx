@@ -39,12 +39,12 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
   return (
     <section className="bg-[#F5F2ED]">
       {/* ── 히어로 (최상단) ── */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#1A2B4A]">
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#303236]">
         {person.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1A2B4A,#101a30)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#303236,#101a30)" }} />
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-center px-[15px] md:px-[70px]">
@@ -66,12 +66,12 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
           <div className="pt-6">
             <div className="flex items-center justify-between border-y border-gray-200 py-3">
               <span className="text-[12px] text-gray-500">
-                MATE 이야기 · 총 <span className="font-semibold text-[#1A2B4A]">{total}</span>편 중{" "}
+                MATE 이야기 · 총 <span className="font-semibold text-[#303236]">{total}</span>편 중{" "}
                 <span className="font-semibold text-[#ff550c]">{current + 1}</span>편째
               </span>
               <button
                 onClick={() => setListOpen((v) => !v)}
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] transition-colors min-h-[44px] px-2"
+                className="flex items-center gap-1.5 text-[12px] font-semibold text-[#303236] hover:text-[#ff550c] transition-colors min-h-[44px] px-2"
                 aria-expanded={listOpen}
                 aria-controls="mate-list"
               >
@@ -97,7 +97,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                         </span>
                         <span className="flex-1">
                           <span className="block text-[12px] text-[#ff550c] font-semibold mb-0.5">{p.job}</span>
-                          <span className="block text-[14px] text-[#1A2B4A] font-medium leading-snug">
+                          <span className="block text-[14px] text-[#303236] font-medium leading-snug">
                             {p.quote.split("\n")[0]}
                           </span>
                         </span>
@@ -115,7 +115,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
           <div className="py-12 md:py-16 border-b border-gray-200">
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
               <div>
-                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">WORK MOMENTS</h3>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">WORK MOMENTS</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed">현장의 순간들을<br />기록합니다.</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -130,7 +130,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                     <video src={person.workMoments.video} muted loop autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                        <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-[#1A2B4A] ml-0.5" />
+                        <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-[#303236] ml-0.5" />
                       </div>
                     </div>
                   </div>
@@ -145,7 +145,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
           <div className="py-12 md:py-16 border-b border-gray-200">
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10">
               <div>
-                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INTERVIEW</h3>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">INTERVIEW</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed">그들이 들려주는<br />이야기</p>
               </div>
               <InterviewAccordion qna={person.qna} />
@@ -158,7 +158,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
           <div className="py-12 md:py-16 border-b border-gray-200">
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
               <div>
-                <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">WEAR THIS</h3>
+                <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">WEAR THIS</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed">실제 현장에서<br />착용한 제품</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -170,7 +170,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
                       ) : null}
                     </div>
-                    <p className="text-[14px] font-semibold text-[#1A2B4A] mb-1">{product.name}</p>
+                    <p className="text-[14px] font-semibold text-[#303236] mb-1">{product.name}</p>
                     <span className="text-[12px] text-gray-500 group-hover:text-[#ff550c] transition-colors">자세히 보기 →</span>
                   </Link>
                 ))}
@@ -186,8 +186,8 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
               // 위젯 임베드가 있으면 실시간 피드 표시(왼쪽 계정 정보 / 오른쪽 피드)
               <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
                 <div>
-                  <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">INSTAGRAM</h3>
-                  <p className="text-[14px] font-semibold text-[#1A2B4A] mb-2">{ig.handle}</p>
+                  <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">INSTAGRAM</h3>
+                  <p className="text-[14px] font-semibold text-[#303236] mb-2">{ig.handle}</p>
                   <p className="text-[13px] text-gray-500 leading-relaxed">
                     {ig.description.split("\n").map((line, i) => (
                       <span key={i}>{line}{i < ig.description.split("\n").length - 1 && <br />}</span>
@@ -211,11 +211,11 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                   </div>
                 )}
                 <div className="flex-1 px-5 py-5 sm:py-0 min-w-0">
-                  <p className="text-[11px] font-bold tracking-wider text-[#1A2B4A] mb-1">INSTAGRAM</p>
-                  <p className="text-[17px] font-semibold text-[#1A2B4A] mb-1 truncate">{ig.handle}</p>
+                  <p className="text-[11px] font-bold tracking-wider text-[#303236] mb-1">INSTAGRAM</p>
+                  <p className="text-[17px] font-semibold text-[#303236] mb-1 truncate">{ig.handle}</p>
                   <p className="text-[13px] text-gray-500 truncate">{ig.description.replace(/\n/g, " ")}</p>
                 </div>
-                <span className="px-5 pb-5 sm:pb-0 sm:pr-6 text-[13px] font-semibold text-[#1A2B4A] group-hover:text-[#ff550c] transition-colors whitespace-nowrap">
+                <span className="px-5 pb-5 sm:pb-0 sm:pr-6 text-[13px] font-semibold text-[#303236] group-hover:text-[#ff550c] transition-colors whitespace-nowrap">
                   인스타그램 바로가기 →
                 </span>
               </a>
@@ -232,7 +232,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 className="flex-1 flex flex-col items-start border border-gray-200 bg-white px-5 py-4 text-left hover:border-[#ff550c] transition-colors min-h-[44px]"
               >
                 <span className="text-[11px] text-gray-400 mb-1">← 이전 이야기</span>
-                <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
+                <span className="text-[13px] font-medium text-[#303236] line-clamp-1">
                   {people[current - 1].job}
                 </span>
               </button>
@@ -243,7 +243,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 className="flex-1 flex flex-col items-end border border-gray-200 bg-white px-5 py-4 text-right hover:border-[#ff550c] transition-colors min-h-[44px]"
               >
                 <span className="text-[11px] text-gray-400 mb-1">다음 이야기 →</span>
-                <span className="text-[13px] font-medium text-[#1A2B4A] line-clamp-1">
+                <span className="text-[13px] font-medium text-[#303236] line-clamp-1">
                   {people[current + 1].job}
                 </span>
               </button>
@@ -262,7 +262,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
       {/* 데스크톱 우하단 고정 CTA — 글을 읽는 내내 매장 방문 유도(모바일은 전역 하단바 '매장' 탭이 담당) */}
       <Link
         href="/store"
-        className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#ff550c] text-white text-[14px] font-semibold px-6 py-3.5 rounded-full shadow-[0_4px_20px_rgba(255,85,12,0.35)] hover:bg-[#1A2B4A] transition-colors"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#ff550c] text-white text-[14px] font-semibold px-6 py-3.5 rounded-full shadow-[0_4px_20px_rgba(255,85,12,0.35)] hover:bg-[#303236] transition-colors"
       >
         가까운 매장 찾기 →
       </Link>
@@ -384,7 +384,7 @@ function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
               className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
               aria-expanded={isOpen}
             >
-              <span className="text-[15px] md:text-[17px] font-bold text-[#1A2B4A]">
+              <span className="text-[15px] md:text-[17px] font-bold text-[#303236]">
                 <span className="text-[#ff550c] mr-2">Q{i + 1}.</span>
                 {item.q}
               </span>

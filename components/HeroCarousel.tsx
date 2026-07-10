@@ -120,7 +120,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <section
-      className="relative bg-[#1A2B4A] overflow-hidden aspect-[750/695] md:aspect-[1920/680]"
+      className="relative bg-[#303236] overflow-hidden aspect-[750/695] md:aspect-[1920/680]"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -271,7 +271,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                       <a
                         href={slide.btn2_link}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-block border border-white text-white text-sm tracking-widest px-8 py-3 hover:bg-white hover:text-[#1A2B4A] transition-colors"
+                        className="inline-block border border-white text-white text-sm tracking-widest px-8 py-3 hover:bg-white hover:text-[#303236] transition-colors"
                       >
                         {slide.btn2_text}
                       </a>

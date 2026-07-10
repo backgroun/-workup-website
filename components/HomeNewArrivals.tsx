@@ -130,7 +130,7 @@ export default function HomeNewArrivals() {
   return (
     <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
-        <h2 className="text-xl md:text-2xl font-bold text-[#1A2B4A] mb-5">{cfg.title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-5">{cfg.title}</h2>
 
         {/* 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만 */}
         {availableTabs.length > 0 && (
@@ -144,8 +144,8 @@ export default function HomeNewArrivals() {
                 onClick={() => setActiveTab(tab)}
                 className={`flex-shrink-0 text-[13px] pb-2.5 px-3 mr-1 whitespace-nowrap transition-colors ${
                   activeTab === tab
-                    ? "text-[#1A2B4A] font-bold border-b-2 border-[#1A2B4A] -mb-px"
-                    : "text-gray-400 hover:text-[#1A2B4A]"
+                    ? "text-[#303236] font-bold border-b-2 border-[#303236] -mb-px"
+                    : "text-gray-400 hover:text-[#303236]"
                 }`}
               >
                 {tab}
@@ -162,7 +162,7 @@ export default function HomeNewArrivals() {
               aria-label="이전"
               className="absolute left-4 top-[140px] -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white/70 backdrop-blur-sm shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:bg-white/90"
             >
-              <svg className="w-3.5 h-3.5 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -172,7 +172,7 @@ export default function HomeNewArrivals() {
             aria-label="다음"
             className="absolute right-4 top-[140px] -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white/70 backdrop-blur-sm shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:bg-white/90"
           >
-            <svg className="w-3.5 h-3.5 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -193,7 +193,7 @@ export default function HomeNewArrivals() {
                     <img src={p.imageUrl} alt={p.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <span className="text-[#1A2B4A]/10 text-6xl font-black select-none">WU</span>
+                    <span className="text-[#303236]/10 text-6xl font-black select-none">WU</span>
                   )}
                   <button
                     onClick={(e) => { e.preventDefault(); toggleFav(p); }}
@@ -213,11 +213,11 @@ export default function HomeNewArrivals() {
                   {p.isNew && (
                     <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1.5">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#1A2B4A] font-medium leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-2">
+                  <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-2">
                     {productDisplayName(p)}
                   </p>
                   <p className="text-[11px] text-gray-400 line-clamp-1 mb-2">{p.tagline}</p>
-                  <p className="text-[14px] font-bold text-[#1A2B4A]">{p.price}</p>
+                  <p className="text-[14px] font-bold text-[#303236]">{p.price}</p>
                 </div>
               </Link>
             ))}
@@ -239,7 +239,7 @@ export default function HomeNewArrivals() {
                   {p.imageUrl ? (
                     <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[#1A2B4A]/10 text-5xl font-black select-none">WU</span>
+                    <span className="text-[#303236]/10 text-5xl font-black select-none">WU</span>
                   )}
                   <button
                     onClick={(e) => { e.preventDefault(); toggleFav(p); }}
@@ -259,9 +259,9 @@ export default function HomeNewArrivals() {
                   {p.isNew && (
                     <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#1A2B4A] font-medium leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
+                  <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
                   <p className="text-[11px] text-gray-400 line-clamp-1 mb-1.5">{p.tagline}</p>
-                  <p className="text-[13px] font-bold text-[#1A2B4A]">{p.price}</p>
+                  <p className="text-[13px] font-bold text-[#303236]">{p.price}</p>
                 </div>
               </Link>
             ))}
