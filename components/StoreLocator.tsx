@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { type Store } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 import { trackStoreEvent } from "@/lib/track";
@@ -616,6 +617,32 @@ export default function StoreLocator({
                         </div>
                       </div>
 
+                      {/* 판매제품 */}
+                      {store.products && store.products.length > 0 && (
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 취급 제품</p>
+                          <div className="flex gap-2">
+                            {store.products.map((p) => (
+                              <Link key={p.id} href={`/products/${p.id}`} className="flex-1 min-w-0 group">
+                                <div className="aspect-square bg-gray-50 border border-gray-100 overflow-hidden">
+                                  {p.image_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                      src={p.image_url}
+                                      alt={p.name}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">이미지 없음</div>
+                                  )}
+                                </div>
+                                <p className="mt-1 text-[11px] text-gray-700 truncate">{p.name}</p>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* 액션 버튼 — 모바일 한 줄, 데스크탑 자연 너비 */}
                       <div className="flex gap-2">
 
@@ -636,6 +663,15 @@ export default function StoreLocator({
 
                         {/* 네이버맵 길찾기 */}
                         <NaverDirBtn store={store} userCoords={userCoords} />
+
+                        {/* 스토어 상세 페이지 */}
+                        <Link
+                          href={`/store/${store.id}`}
+                          onClick={() => trackStoreEvent("list_click", { id: store.id, name: store.name })}
+                          className="flex flex-1 md:flex-none items-center justify-center gap-1.5 border border-[#1A2B4A] text-[#1A2B4A] text-xs px-3 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                        >
+                          스토어 페이지
+                        </Link>
                       </div>
                     </div>
                   )}
