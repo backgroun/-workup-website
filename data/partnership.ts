@@ -106,7 +106,7 @@ const FRANCHISE_FORM: FormConfig = {
   submit_text: "가맹 문의 접수하기 →",
   fields: [
     { key: "name", label: "이름", placeholder: "홍길동", type: "text", required: true, full: false },
-    { key: "phone", label: "연락처", placeholder: "010-0000-0000", type: "tel", required: true, full: false },
+    { key: "phone", label: "연락처", placeholder: "01012345678", type: "tel", required: true, full: false },
     { key: "region", label: "창업 희망 지역", placeholder: "예) 서울 강남, 경기 수원 등", type: "text", required: false, full: true },
     { key: "title", label: "문의 제목", placeholder: "문의 제목을 입력해주세요. (10자 이상)", type: "text", required: true, full: true },
     { key: "message", label: "문의 내용", placeholder: "창업 예산, 희망 규모, 궁금한 점을 자유롭게 적어주세요. (10자 이상)", type: "textarea", required: true, full: true },
@@ -119,7 +119,7 @@ const WHOLESALE_FORM: FormConfig = {
   fields: [
     { key: "brand", label: "브랜드명", placeholder: "브랜드 이름", type: "text", required: true, full: false },
     { key: "manager", label: "담당자명", placeholder: "홍길동", type: "text", required: true, full: false },
-    { key: "phone", label: "연락처", placeholder: "010-0000-0000", type: "tel", required: true, full: false },
+    { key: "phone", label: "연락처", placeholder: "01012345678", type: "tel", required: true, full: false },
     { key: "category", label: "취급 품목", placeholder: "예) 작업복, 안전용품, 잡화 등", type: "text", required: false, full: false },
     { key: "link", label: "브랜드 소개 링크", placeholder: "홈페이지, 인스타그램, 카탈로그 URL 등", type: "url", required: false, full: true },
     { key: "title", label: "문의 제목", placeholder: "문의 제목을 입력해주세요. (10자 이상)", type: "text", required: true, full: true },
