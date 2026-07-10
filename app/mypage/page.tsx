@@ -104,7 +104,7 @@ export default function MyPage() {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
-          <Link href="/" className="text-2xl font-black tracking-[0.15em] text-[#1A2B4A]">WORKUP</Link>
+          <h1 className="text-2xl font-black tracking-[0.15em] text-[#1A2B4A]">MY PAGE</h1>
           <button
             onClick={handleLogout} disabled={loggingOut}
             className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
@@ -276,7 +276,6 @@ export default function MyPage() {
           {[
             { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
             { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },
-            { label: "카카오톡 상담", href: "https://pf.kakao.com", desc: "빠른 제품 문의" },
           ].map((item, i, arr) => (
             <Link key={item.href} href={item.href}
               className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${i < arr.length - 1 ? "border-b border-gray-100" : ""}`}>
