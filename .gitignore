@@ -28,3 +28,6 @@ products-inbox/
 
 # Claude 임시 dev 로그
 scratchpad_dev.log
+
+# Cloudinary 정리 스크립트 리포트 (로컬 스캔 결과물)
+scripts/.cloudinary-unused.json
