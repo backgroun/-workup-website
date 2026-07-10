@@ -178,6 +178,8 @@ export default function StoreLocator({
         setShowAll(false);
         setSearch("");
         setExpanded(null);
+        setSelectedSido("");
+        setSelectedSigungu("");
         setMapCenter({ lat, lng, level: 7 });
 
         // 2단계: 실제 이동거리로 업데이트 (50km 이내 최대 20개)
@@ -289,6 +291,10 @@ export default function StoreLocator({
   const displayList = applyRegionFilter(
     isSearching
       ? baseList.filter((s) => s.name.includes(search.trim()) || s.address.includes(search.trim()))
+      : selectedSido
+      // 지역을 선택하면 "가장 가까운 5개"로 좁혀진 목록이 아니라 전체 목록에서 필터링해야
+      // 내 위치와 먼 지역을 선택했을 때도 결과가 정상적으로 보인다.
+      ? (hasLocated ? allSorted : baseList)
       : showNearby
       ? nearbyStores
       : hasLocated && !isSearching
@@ -494,7 +500,18 @@ export default function StoreLocator({
             </div>
             {nearbyStores.length > 0 && (
               <button
-                onClick={() => { setShowAll(!showAll); setExpanded(null); }}
+                onClick={() => {
+                  const next = !showAll;
+                  setShowAll(next);
+                  setExpanded(null);
+                  setSelectedStore(null);
+                  if (next) {
+                    // 전국 매장이 한눈에 보이도록 지도를 축소
+                    setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
+                  } else if (userCoords) {
+                    setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
+                  }
+                }}
                 className="flex-shrink-0 text-xs border px-3 py-1.5 border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
               >
                 {showAll ? "근처 매장 찾아보기" : "전체 매장 보기"}
@@ -660,7 +677,7 @@ export default function StoreLocator({
 
                         {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 bg-[#ebebeb] rounded-lg px-3 py-3">
+                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 bg-[#ebebeb] rounded-lg px-3 py-3">
                             <p className="text-xs font-semibold text-gray-500 mb-2">스토어 베스트 상품</p>
                             <ul className="space-y-1.5">
                               {store.products.map((p, i) => (
