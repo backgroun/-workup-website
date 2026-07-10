@@ -160,8 +160,8 @@ export default function MemberAccessPage() {
                 <tr><td colSpan={8} className="py-20 text-center text-[15px] text-gray-400">회원이 없습니다.</td></tr>
               ) : filtered.map(m => (
                 <tr key={m.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
-                  <td className="px-5 py-4 text-[15px] text-gray-600">{m.email}</td>
+                  <td className="px-5 py-4 text-[15px] font-bold text-gray-900 whitespace-nowrap">{m.name}</td>
+                  <td className="px-5 py-4 text-[15px] text-gray-600 whitespace-nowrap">{m.email}</td>
                   <td className="px-5 py-4">
                     <span className="inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
                   </td>

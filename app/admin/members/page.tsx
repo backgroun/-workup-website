@@ -109,11 +109,12 @@ export default function MemberDashboardPage() {
             전체 조회 →
           </Link>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               {["가입일시", "이메일", "이름", "연락처", "등급", "상태"].map(h => (
-                <th key={h} className="px-6 py-3.5 text-left text-[13px] font-bold text-gray-500 uppercase tracking-wide">{h}</th>
+                <th key={h} className="px-6 py-3.5 text-left text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -127,9 +128,9 @@ export default function MemberDashboardPage() {
             ) : recent.map(m => (
               <tr key={m.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 text-[14px] text-gray-400 whitespace-nowrap">{fmtDateTime(m.created_at)}</td>
-                <td className="px-6 py-4 text-[15px] text-gray-700">{m.email}</td>
-                <td className="px-6 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
-                <td className="px-6 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
+                <td className="px-6 py-4 text-[15px] text-gray-700 whitespace-nowrap">{m.email}</td>
+                <td className="px-6 py-4 text-[15px] font-bold text-gray-900 whitespace-nowrap">{m.name}</td>
+                <td className="px-6 py-4 text-[14px] text-gray-500 whitespace-nowrap">{m.phone ?? "-"}</td>
                 <td className="px-6 py-4">
                   <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
                     {m.grade}
@@ -148,6 +149,7 @@ export default function MemberDashboardPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 빠른 메뉴 */}

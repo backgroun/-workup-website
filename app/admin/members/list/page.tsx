@@ -384,9 +384,9 @@ export default function MemberListPage() {
                         className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
                     </td>
                     <td className="px-5 py-4 text-[13px] text-gray-400 whitespace-nowrap">{fmtDate(m.created_at)}</td>
-                    <td className="px-5 py-4 text-[15px] text-gray-700">{m.email}</td>
-                    <td className="px-5 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
-                    <td className="px-5 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
+                    <td className="px-5 py-4 text-[15px] text-gray-700 whitespace-nowrap">{m.email}</td>
+                    <td className="px-5 py-4 text-[15px] font-bold text-gray-900 whitespace-nowrap">{m.name}</td>
+                    <td className="px-5 py-4 text-[14px] text-gray-500 whitespace-nowrap">{m.phone ?? "-"}</td>
                     <td className="px-5 py-4 text-[13px] text-gray-400 max-w-[120px] truncate" title={m.memo ?? ""}>{m.memo ?? "-"}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
