@@ -26,6 +26,7 @@ type Store = {
   store_type: string;
   kakao_channel_url: string;
   store_url: string;
+  product_ids: string[] | null;
   store_jobs: Array<{
     id: number;
     title: string;
@@ -34,6 +35,14 @@ type Store = {
     deadline: string | null;
     is_active: boolean;
   }>;
+};
+
+type StoreProduct = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  tagline: string | null;
+  category: string | null;
 };
 
 async function getStore(id: string): Promise<Store | null> {
@@ -46,6 +55,20 @@ async function getStore(id: string): Promise<Store | null> {
     .single();
   if (error || !data) return null;
   return data as Store;
+}
+
+async function getStoreProducts(ids: string[]): Promise<StoreProduct[]> {
+  if (!ids.length) return [];
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name, image_url, tagline, category")
+    .in("id", ids);
+  if (error || !data) return [];
+  // 매장에서 지정한 순서(product_ids)를 그대로 유지
+  return ids
+    .map((id) => data.find((p) => p.id === id))
+    .filter((p): p is StoreProduct => Boolean(p));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -85,6 +108,7 @@ export default async function StoreDetailPage({ params }: Props) {
   const { id } = await params;
   const store = await getStore(id);
   if (!store) notFound();
+  const storeProducts = await getStoreProducts(store.product_ids ?? []);
 
   // 카카오는 좌표 순서가 (위도, 경도) — lat, lng
   const kakaoMapUrl = store.lat && store.lng
@@ -202,6 +226,38 @@ export default async function StoreDetailPage({ params }: Props) {
                 <span key={i} className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">{b}</span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* 이 매장 취급 제품 */}
+        {storeProducts.length > 0 && (
+          <div className="px-5 py-5 border-b border-gray-100">
+            <p className="text-sm font-bold text-gray-900 mb-3">이 매장 취급 제품</p>
+            <div className="grid grid-cols-3 gap-3">
+              {storeProducts.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/products/${p.id}`}
+                  className="group block"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100">
+                    {p.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.image_url}
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">이미지 없음</div>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-xs font-semibold text-gray-900 truncate">{p.name}</p>
+                  {p.tagline && <p className="text-[11px] text-gray-400 truncate">{p.tagline}</p>}
+                </Link>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-gray-400">매장 방문 시 실물을 직접 확인하고 착용해보세요.</p>
           </div>
         )}
 
