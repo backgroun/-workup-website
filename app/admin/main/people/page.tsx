@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { DEFAULT_PEOPLE, normalizePeople, MATE_INTERVIEW_QUESTIONS, type Person, type PersonQnA } from "@/data/people";
 import AdminImageField from "@/components/admin/AdminImageField";
+import AdminVideoField from "@/components/admin/AdminVideoField";
 import MateZoneAdmin from "@/components/admin/MateZoneAdmin";
 
 type PageData = { items?: Person[] };
@@ -324,29 +325,15 @@ export default function AdminMainPeoplePage() {
                     </button>
                   </div>
 
-                  {/* 현장 영상 — 노출과 동일한 3:4 카드 미리보기 */}
+                  {/* 현장 영상 — 파일 업로드 또는 URL 입력, 노출과 동일한 3:4 미리보기 */}
                   <div className="pt-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">현장 영상 <span className="font-normal text-gray-400">(선택 · 영상 URL)</span></label>
-                    <div className="flex items-start gap-3">
-                      <div className="w-24 aspect-[3/4] rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 bg-black">
-                        {editing.workMoments.video ? (
-                          <video src={editing.workMoments.video} muted loop autoPlay playsInline className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 bg-slate-50">영상 없음</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <input type="url" value={editing.workMoments.video ?? ""} onChange={e => setWorkVideo(e.target.value)}
-                          placeholder="https://res.cloudinary.com/.../video.mp4"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
-                        <p className="text-[10px] text-slate-400 leading-relaxed">
-                          영상 파일은 “릴스 (MATE ZONE)” 탭에서 업로드한 뒤 그 URL을 붙여넣으세요.
-                        </p>
-                        {editing.workMoments.video && (
-                          <button type="button" onClick={() => setWorkVideo("")} className="text-[11px] text-red-400 hover:text-red-600">영상 제거</button>
-                        )}
-                      </div>
-                    </div>
+                    <AdminVideoField
+                      value={editing.workMoments.video}
+                      onChange={setWorkVideo}
+                      label="현장 영상 (선택)"
+                      aspectClass="aspect-[3/4]"
+                      hint="9:16 세로 · MP4 권장 · 100MB 이하. 업로드 후 “저장”을 눌러야 반영됩니다."
+                    />
                   </div>
                 </div>
 
