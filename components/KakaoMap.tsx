@@ -245,11 +245,11 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
       onMouseLeave={handleMouseLeave}
     >
 
-      {/* 지도 타일 — mix-blend-mode:luminosity 로 흑백화 */}
+      {/* 지도 타일 — 완전 흑백 대신 채도를 낮춰 은은한 컬러감을 남김 */}
       <div
         ref={containerRef}
         className="absolute inset-0"
-        style={{ zIndex: 1, mixBlendMode: "luminosity", touchAction: "none" }}
+        style={{ zIndex: 1, filter: "grayscale(0.8)", touchAction: "none" }}
       />
 
       {/* 컬러 마커 레이어 — 흑백 효과 밖에 위치 */}

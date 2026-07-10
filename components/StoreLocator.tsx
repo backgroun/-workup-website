@@ -242,6 +242,40 @@ export default function StoreLocator({
     ? Array.from(new Set(stores.filter((s) => s.address.split(" ")[0] === selectedSido).map((s) => s.address.split(" ")[1]))).sort()
     : [];
 
+  // 지역(시/도, 시/군/구) 선택 시 하단 지도를 해당 지역 매장들의 평균 좌표로 이동
+  const moveToRegion = (sido: string, sigungu: string) => {
+    if (!sido) return;
+    const matches = stores.filter((s) => {
+      const parts = s.address.split(" ");
+      if (parts[0] !== sido) return false;
+      if (sigungu && parts[1] !== sigungu) return false;
+      return true;
+    });
+    if (matches.length === 0) return;
+    const lat = matches.reduce((sum, s) => sum + s.lat, 0) / matches.length;
+    const lng = matches.reduce((sum, s) => sum + s.lng, 0) / matches.length;
+    setMapCenter({ lat, lng, level: sigungu ? 7 : 9 });
+    setSelectedStore(null);
+  };
+
+  // 검색어 입력 시 지도도 결과 위치로 이동 — 결과가 1개면 그 매장으로, 여러 개면 평균 위치로
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    const q = value.trim();
+    if (!q) return;
+    const matches = baseList.filter((s) => s.name.includes(q) || s.address.includes(q));
+    if (matches.length === 0) return;
+    if (matches.length === 1) {
+      setMapCenter({ lat: matches[0].lat, lng: matches[0].lng, level: 3 });
+      setSelectedStore(matches[0]);
+    } else {
+      const lat = matches.reduce((sum, s) => sum + s.lat, 0) / matches.length;
+      const lng = matches.reduce((sum, s) => sum + s.lng, 0) / matches.length;
+      setMapCenter({ lat, lng, level: 9 });
+      setSelectedStore(null);
+    }
+  };
+
   const applyRegionFilter = (list: StoreWithDistance[]) => {
     if (!selectedSido) return list;
     return list.filter((s) => {
@@ -320,7 +354,7 @@ export default function StoreLocator({
 
           <select
             value={selectedSido}
-            onChange={(e) => { setSelectedSido(e.target.value); setSelectedSigungu(""); }}
+            onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
             className="border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] flex-shrink-0"
             style={{ minWidth: "120px" }}
           >
@@ -332,7 +366,7 @@ export default function StoreLocator({
 
           <select
             value={selectedSigungu}
-            onChange={(e) => setSelectedSigungu(e.target.value)}
+            onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
             disabled={!selectedSido}
             className="border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] flex-shrink-0 disabled:opacity-40"
             style={{ minWidth: "130px" }}
@@ -350,7 +384,7 @@ export default function StoreLocator({
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
               className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#1A2B4A] placeholder-gray-400 focus:outline-none focus:border-[#1A2B4A]"
             />
@@ -389,7 +423,7 @@ export default function StoreLocator({
           <div className="flex gap-3">
             <select
               value={selectedSido}
-              onChange={(e) => { setSelectedSido(e.target.value); setSelectedSigungu(""); }}
+              onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
               className="flex-1 border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A]"
             >
               <option value="">시/도 선택</option>
@@ -399,7 +433,7 @@ export default function StoreLocator({
             </select>
             <select
               value={selectedSigungu}
-              onChange={(e) => setSelectedSigungu(e.target.value)}
+              onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
               disabled={!selectedSido}
               className="flex-1 border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] disabled:opacity-40"
             >
@@ -418,7 +452,7 @@ export default function StoreLocator({
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
               className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#1A2B4A] placeholder-gray-400 focus:outline-none focus:border-[#1A2B4A]"
             />
@@ -511,7 +545,6 @@ export default function StoreLocator({
               <div className="min-w-0">
                 <p className="text-white font-bold text-sm truncate">{selectedStore.name}</p>
                 <p className="text-gray-300 text-xs mt-0.5 truncate">{selectedStore.address}</p>
-                <p className="text-[#ff550c] text-xs mt-0.5">{selectedStore.hours}</p>
               </div>
               <button
                 onClick={() => setSelectedStore(null)}
@@ -548,12 +581,15 @@ export default function StoreLocator({
             displayList.map((store, index) => {
               const isOpen = expanded === store.id;
               const hasStorePage = store.pageActive !== false;
+              const isSelected = selectedStore?.id === store.id;
               return (
                 <div key={store.id} className="bg-white border border-gray-200 overflow-hidden">
 
                   {/* 헤더 */}
                   <button
-                    className="w-full text-left px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className={`w-full text-left px-4 py-4 flex items-center justify-between transition-colors ${
+                      isSelected ? "bg-[#1A2B4A]" : "hover:bg-gray-50"
+                    }`}
                     onClick={() => {
                       const next = isOpen ? null : store.id;
                       setExpanded(next);
@@ -573,7 +609,7 @@ export default function StoreLocator({
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-[#1A2B4A] text-sm">{store.name}</span>
+                          <span className={`font-bold text-sm ${isSelected ? "text-white" : "text-[#1A2B4A]"}`}>{store.name}</span>
                           {store.distance >= 0 && (
                             <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
                               index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600"
@@ -582,11 +618,11 @@ export default function StoreLocator({
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-400 mt-0.5 truncate pr-2">{store.address}</p>
+                        <p className={`text-xs mt-0.5 truncate pr-2 ${isSelected ? "text-gray-300" : "text-gray-400"}`}>{store.address}</p>
                       </div>
                     </div>
                     <svg
-                      className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isSelected ? "text-gray-300" : "text-gray-400"}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -654,7 +690,7 @@ export default function StoreLocator({
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
-                          전화
+                          전화하기
                         </a>
 
                         {/* 카카오맵 길찾기 */}
