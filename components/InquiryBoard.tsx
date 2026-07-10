@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { type FeedItem } from "@/data/inquiryDummy";
 
 // 가맹/제휴 페이지 우측 '문의 현황' 보드.
@@ -35,6 +36,11 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [post, setPost] = useState<ViewedPost | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -59,19 +65,18 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
     finally { setLoading(false); }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pt-6 sm:p-6 bg-black/50" onClick={onClose} role="dialog" aria-modal="true">
       <div className="relative bg-white w-full sm:max-w-md max-h-[88dvh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-sm font-bold text-[#1A2B4A] truncate pr-3">{post?.title || item.content}</h2>
-          <button type="button" onClick={onClose} aria-label="닫기" className="w-8 h-8 -mr-2 flex-shrink-0 flex items-center justify-center text-gray-400 hover:text-[#1A2B4A]">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
+        <button type="button" onClick={onClose} aria-label="닫기" className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#1A2B4A]">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
 
         <div className="min-h-0 overflow-y-auto overscroll-contain flex-1">
           {!post ? (
-            <form id="post-view-form" onSubmit={submit} className="px-5 py-6 space-y-4">
+            <form id="post-view-form" onSubmit={submit} className="px-5 pt-10 pb-6 space-y-4">
               <div className="flex flex-col items-center text-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -86,7 +91,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
               {error && <p className="text-xs text-red-500 text-center">{error}</p>}
             </form>
           ) : (
-            <div className="px-5 py-5 space-y-4 text-sm">
+            <div className="px-5 pt-10 pb-5 space-y-4 text-sm">
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <span>{post.name}</span><span>·</span><span>{fmtDate(post.created_at)}</span>
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-500">{STATUS_LABEL[post.status] ?? post.status}</span>
@@ -115,7 +120,8 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
