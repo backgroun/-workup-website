@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import FranchiseGuide from "./FranchiseGuide";
 import type { FranchiseGuideConfig } from "@/data/franchise-guide";
 
@@ -10,6 +11,11 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
   storeCount?: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +40,7 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
         <span aria-hidden>→</span>
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <div className="fixed inset-0 z-[60] bg-black/70 overflow-y-auto" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="워크업 창업안내">
           <div className="min-h-full flex items-start justify-center p-0 sm:p-6">
             <div className="relative bg-[#0d0d0d] w-full max-w-3xl sm:rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -54,7 +60,8 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
               <FranchiseGuide embedded config={config} storeCount={storeCount} />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
