@@ -58,6 +58,7 @@ export async function PUT(req: Request, { params }: Params) {
       brands: body.brands ?? [],
       parking: body.parking ?? false,
       is_active: body.is_active ?? true,
+      page_active: body.page_active ?? true,
       store_type: body.store_type ?? "직영점",
       kakao_channel_url: body.kakao_channel_url ?? "",
       store_url: body.store_url ?? "",

@@ -9,6 +9,7 @@ export type Store = {
   hours: string;
   phone: string;
   products?: StoreProduct[];
+  pageActive?: boolean;
 };
 
 export const stores: Store[] = [
