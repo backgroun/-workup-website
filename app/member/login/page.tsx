@@ -3,6 +3,7 @@ import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import PasswordInput from "@/components/PasswordInput";
 
 function LoginContent() {
   const [form, setForm]     = useState({ email: "", password: "" });
@@ -100,9 +101,9 @@ function LoginContent() {
             <label htmlFor="login-password" className="block text-xs font-semibold text-gray-600 mb-1.5">
               비밀번호 <span className="text-red-500">*</span>
             </label>
-            <input
+            <PasswordInput
               id="login-password"
-              type="password" value={form.password} onChange={e => set("password", e.target.value)}
+              value={form.password} onChange={e => set("password", e.target.value)}
               placeholder="비밀번호 입력"
               autoComplete="current-password"
               className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"

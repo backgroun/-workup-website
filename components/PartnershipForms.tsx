@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { DEFAULT_PARTNERSHIP, type FormConfig } from "@/data/partnership";
 import type { FranchiseGuideConfig } from "@/data/franchise-guide";
 import FranchiseGuide from "./FranchiseGuide";
+import PasswordInput from "./PasswordInput";
 
 type FormState = Record<string, string>;
 
@@ -372,8 +373,8 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
         <label className="block mb-1.5" style={labelStyle}>
           비밀번호 <span className="text-gray-400">(문의글 확인용)</span>
         </label>
-        <input
-          type="text"
+        <PasswordInput
+          mode="mask"
           inputMode="numeric"
           pattern="\d*"
           maxLength={4}
@@ -385,7 +386,7 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
           autoCapitalize="off"
           spellCheck={false}
           style={inputStyle}
-          className="pw-mask w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
+          className="w-full border border-gray-200 px-4 py-2.5 placeholder-gray-300 focus:outline-none focus:border-[#1A2B4A] transition-colors bg-white"
         />
       </div>
       {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}

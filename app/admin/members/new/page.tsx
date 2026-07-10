@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import PasswordInput from "@/components/PasswordInput";
 
 const GRADES = ["일반회원", "VIP", "VVIP", "도매회원", "거래처", "관리자"] as const;
 
@@ -88,8 +89,8 @@ export default function AdminMemberNewPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">비밀번호 <span className="text-red-500">*</span></label>
-          <input
-            type="password" value={form.password} onChange={e => set("password", e.target.value)}
+          <PasswordInput
+            value={form.password} onChange={e => set("password", e.target.value)}
             placeholder="8자 이상"
             className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
           />
