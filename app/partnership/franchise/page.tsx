@@ -26,7 +26,14 @@ export default async function FranchisePage() {
     <PartnershipLayout
       info={info}
       boardType="franchise"
-      guideButton={<FranchiseGuideModal label="워크업 창업안내 한눈에 보기" config={guide} storeCount={storeCount} />}
+      guideButton={
+        <>
+          <FranchiseGuideModal label="워크업 창업안내 한눈에 보기" config={guide} storeCount={storeCount} />
+          <p className="px-8 py-3 text-xs text-gray-500 bg-[#F5F2ED] border-b border-gray-200">
+            가맹 창업 문의하기 폼에 작성하시고, &apos;가맹 문의 접수하기&apos; 버튼을 누르시면 문의가 접수됩니다.
+          </p>
+        </>
+      }
     >
       <FranchiseForm config={info.form} />
     </PartnershipLayout>
