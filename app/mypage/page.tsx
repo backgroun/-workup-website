@@ -100,7 +100,7 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f8f6] px-4 py-12">
-      <div className="max-w-md mx-auto space-y-4">
+      <div className="max-w-md lg:max-w-5xl mx-auto">
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
@@ -113,8 +113,11 @@ export default function MyPage() {
           </button>
         </div>
 
+        {/* PC(lg~)에서는 2×2 배치, 모바일은 1열 유지 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
+
         {/* 회원 정보 카드 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-7">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-7 lg:p-8">
           <div className="flex items-center gap-4 mb-6">
             {/* 아바타 */}
             <div className="w-14 h-14 rounded-full bg-[#1A2B4A] flex items-center justify-center flex-shrink-0">
@@ -287,10 +290,12 @@ export default function MyPage() {
           ))}
         </div>
 
+        </div>{/* /2×2 그리드 */}
+
         {/* 로그아웃 */}
         <button
           onClick={handleLogout} disabled={loggingOut}
-          className="w-full py-3.5 border border-gray-200 text-sm font-medium text-gray-500 rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
+          className="w-full mt-4 lg:mt-6 py-3.5 border border-gray-200 text-sm font-medium text-gray-500 rounded-xl hover:bg-gray-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
         >
           {loggingOut ? "로그아웃 중..." : "로그아웃"}
         </button>
