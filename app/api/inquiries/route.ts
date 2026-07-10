@@ -1,4 +1,5 @@
 import { NextResponse, after } from "next/server";
+import { cookies } from "next/headers";
 import { createHash, randomBytes } from "crypto";
 import { createAdminClient } from "@/lib/supabase-server";
 import { getSiteSection } from "@/lib/site-settings";
@@ -118,9 +119,13 @@ export async function POST(req: Request) {
     p._pwHash = createHash("sha256").update(salt + rawPw).digest("hex");
   }
 
+  // 로그인 상태라면 작성자(회원)를 연결해 마이페이지에서 조회할 수 있게 한다.
+  // 비로그인 접수도 그대로 허용하므로 없으면 null 로 저장한다.
+  const memberId = (await cookies()).get("wu-member")?.value ?? null;
+
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new" });
+    const { error } = await supabase.from("inquiries").insert({ type, payload, status: "new", member_id: memberId });
     if (error) {
       // DB 오류 원인은 서버 로그로만 남기고, 고객에게는 일반 안내 문구만 노출(내부 정보 비노출).
       console.error("[inquiries] insert 실패:", error.message);

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCart, FITTING_LIST_KEY } from "@/contexts/CartContext";
 
 type MemberInfo = {
   id: string | number;
@@ -9,6 +10,31 @@ type MemberInfo = {
   email: string;
   grade: string;
 };
+
+type MyInquiry = {
+  id: number;
+  type: string;
+  typeLabel: string;
+  status: "new" | "processing" | "done" | string;
+  createdAt: string;
+  title: string;
+  content: string;
+  reply: string;
+  repliedAt: string;
+};
+
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  new:        { label: "접수",     cls: "bg-gray-100 text-gray-600" },
+  processing: { label: "처리중",   cls: "bg-amber-100 text-amber-700" },
+  done:       { label: "답변완료", cls: "bg-green-100 text-green-700" },
+};
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
+}
 
 const GRADE_COLOR: Record<string, string> = {
   일반회원: "bg-gray-100 text-gray-600",
@@ -23,6 +49,10 @@ export default function MyPage() {
   const [member, setMember] = useState<MemberInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [inquiries, setInquiries] = useState<MyInquiry[]>([]);
+  const [inquiriesLoading, setInquiriesLoading] = useState(true);
+  const [openId, setOpenId] = useState<number | null>(null);
+  const { items: wishlist } = useCart();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,9 +69,21 @@ export default function MyPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // 내가 남긴 문의 내역 (로그인 상태에서 작성한 문의만 연결됨)
+  useEffect(() => {
+    if (!member) return;
+    fetch("/api/member/inquiries")
+      .then(r => (r.ok ? r.json() : []))
+      .then(data => setInquiries(Array.isArray(data) ? data : []))
+      .catch(() => setInquiries([]))
+      .finally(() => setInquiriesLoading(false));
+  }, [member]);
+
   const handleLogout = async () => {
     setLoggingOut(true);
     await fetch("/api/member/logout", { method: "POST" });
+    // 찜은 계정에 저장되므로, 이 기기의 캐시는 지워 다음 사용자에게 노출되지 않게 한다.
+    try { localStorage.removeItem(FITTING_LIST_KEY); } catch {}
     router.push("/");
     router.refresh();
   };
@@ -105,6 +147,124 @@ export default function MyPage() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* 찜한 제품 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <p className="text-sm font-bold text-gray-800">찜한 제품</p>
+            {wishlist.length > 0 && (
+              <Link href="/cart" className="text-xs text-gray-400 hover:text-[#1A2B4A] transition-colors">
+                전체 보기 ({wishlist.length})
+              </Link>
+            )}
+          </div>
+
+          {wishlist.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <p className="text-sm text-gray-400">찜한 제품이 없습니다.</p>
+              <Link href="/products" className="inline-block mt-3 text-sm font-semibold text-[#1A2B4A] hover:underline">
+                제품 보러 가기
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 grid grid-cols-4 gap-3">
+                {wishlist.slice(0, 4).map(item => (
+                  <Link key={item.cartId} href={`/products/${item.productId}`} className="group">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      {item.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-gray-600 line-clamp-1">{item.name}</p>
+                  </Link>
+                ))}
+              </div>
+              <p className="px-5 pb-4 text-xs text-gray-400">
+                매장을 방문하시면 찜한 제품을 직접 입어보실 수 있습니다.
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* 내 문의 내역 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <p className="text-sm font-bold text-gray-800">내 문의 내역</p>
+            {inquiries.length > 0 && (
+              <span className="text-xs text-gray-400">{inquiries.length}건</span>
+            )}
+          </div>
+
+          {inquiriesLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <span className="w-5 h-5 border-2 border-[#1A2B4A] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : inquiries.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <p className="text-sm text-gray-400">아직 남기신 문의가 없습니다.</p>
+              <Link href="/support" className="inline-block mt-3 text-sm font-semibold text-[#1A2B4A] hover:underline">
+                1:1 문의하기
+              </Link>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {inquiries.map(inq => {
+                const meta = STATUS_META[inq.status] ?? STATUS_META.new;
+                const isOpen = openId === inq.id;
+                const heading = inq.title || inq.content || inq.typeLabel;
+                return (
+                  <li key={inq.id}>
+                    <button
+                      onClick={() => setOpenId(isOpen ? null : inq.id)}
+                      className="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.cls}`}>
+                          {meta.label}
+                        </span>
+                        <span className="text-xs text-gray-400">{inq.typeLabel}</span>
+                        <span className="text-xs text-gray-300 ml-auto">{fmtDate(inq.createdAt)}</span>
+                      </div>
+                      <p className="text-sm text-gray-800 line-clamp-1">{heading}</p>
+                    </button>
+
+                    {isOpen && (
+                      <div className="px-5 pb-4 space-y-3">
+                        {inq.content && (
+                          <div className="bg-gray-50 rounded-lg px-4 py-3">
+                            <p className="text-xs font-semibold text-gray-400 mb-1">문의 내용</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{inq.content}</p>
+                          </div>
+                        )}
+                        {inq.reply ? (
+                          <div className="bg-[#1A2B4A]/5 border border-[#1A2B4A]/10 rounded-lg px-4 py-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-xs font-semibold text-[#1A2B4A]">담당자 답변</p>
+                              {inq.repliedAt && (
+                                <span className="text-xs text-gray-400">{fmtDate(inq.repliedAt)}</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{inq.reply}</p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 px-1">
+                            담당자가 확인 중입니다. 빠른 상담은 매장으로 전화 주세요.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
         {/* 빠른 메뉴 */}
