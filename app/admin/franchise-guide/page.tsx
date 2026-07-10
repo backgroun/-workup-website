@@ -142,19 +142,9 @@ export default function FranchiseGuideEditPage() {
 
           <Card title="상단 헤더">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">워드마크</label>
-              <input value={cfg.wordmark} onChange={(e) => setC({ wordmark: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.wordmark} onChange={(p) => setStyle("wordmark", p)} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능)</span></label>
+              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능, 중앙정렬 한 줄로 표시)</span></label>
               <textarea value={cfg.title} onChange={(e) => setC({ title: e.target.value })} rows={2} className={inputCls + " resize-none"} />
               <StyleControls value={cfg.styles.title} onChange={(p) => setStyle("title", p)} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">부제목</label>
-              <input value={cfg.subtitle} onChange={(e) => setC({ subtitle: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.subtitle} onChange={(p) => setStyle("subtitle", p)} />
             </div>
           </Card>
 

@@ -51,7 +51,7 @@ export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
     { title: "필요조건", items: ["매장 70평 이상", "초기 투자 최소화", "사업자 등록"] },
     { title: "매출액", items: ["연매출 15억 + @", "마진율 31.5% ~ 35%"] },
     { title: "가맹비", items: ["가맹보증금 · 교육비 無", "월 가맹비 50만원"] },
-    { title: "지역별 지점관리", items: ["지정 제한 5km", "(이동상거리 기준)"] },
+    { title: "지역별 지점관리", items: ["가맹보증금·교육비 없음", "월 가맹비 50만원", "합리적인 운영계약"] },
   ],
   points: [
     { title: "국내 최초\n워크웨어 아울렛", desc: "워크웨어 시장을 선도하는\n독보적 비즈니스 모델" },
@@ -72,7 +72,7 @@ export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
   colors: { page_bg: "#0d0d0d", header_bg: "#f5f2ed", card_bg: "#171717", cta_bg: "#1a1a1a", accent: "#ff550c" },
   styles: {
     wordmark: ts(16, "#111111", -0.01, 1.1),
-    title: ts(24, "#111111", -0.01, 1.2),
+    title: ts(20, "#111111", -0.01, 1.2),
     subtitle: ts(13, "#6b7280", 0, 1.5),
     eyebrow: ts(11, "#ff550c", 0.25, 1.4),
     section_title: ts(28, "#ffffff", -0.01, 1.2),

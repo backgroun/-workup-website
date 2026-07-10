@@ -76,11 +76,9 @@ export default function FranchiseGuide({
   return (
     <div className="text-white" style={{ backgroundColor: col.page_bg }}>
       {/* 1. 헤더 (컴팩트, 이미지 생략) */}
-      <section className="px-6 sm:px-10 py-6 md:py-8" style={{ backgroundColor: col.header_bg }}>
-        <div className="max-w-6xl mx-auto flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <p className="font-black" style={styleCss(s.wordmark)}>{config.wordmark}</p>
-          <h1 className="font-black whitespace-pre-line inline" style={styleCss(s.title)}>{config.title.replace(/\n/g, " ")}</h1>
-          <p style={styleCss(s.subtitle)}>{config.subtitle}</p>
+      <section className="px-6 sm:px-10 py-5 md:py-6" style={{ backgroundColor: col.header_bg }}>
+        <div className="max-w-6xl mx-auto text-center">
+          <h1 className="font-black whitespace-pre-line" style={styleCss(s.title)}>{config.title.replace(/\n/g, " ")}</h1>
         </div>
       </section>
 
