@@ -1,6 +1,6 @@
 // 창업안내(/franchise) 페이지 편집 콘텐츠 + 디자인(크기·자간·행간·색상·배경·이미지).
 // 관리자가 site_settings("franchise_guide")에서 수정. 계약 가맹수는 실제 매장 수로 실시간 반영.
-// 아이콘/그래픽(5km·無/0원)과 3/3/4 구조는 고정 — 텍스트/스타일/색/이미지만 편집.
+// 아이콘/그래픽(5km·無/0원)과 4/3/4 구조는 고정 — 텍스트/스타일/색/이미지만 편집.
 import type { CSSProperties } from "react";
 
 export type TextStyle = { size: number; color: string; tracking: number; leading: number };
@@ -50,7 +50,8 @@ export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
   requirements: [
     { title: "필요조건", items: ["매장 70평 이상", "초기 투자 최소화", "사업자 등록"] },
     { title: "매출액", items: ["연매출 15억 + @", "마진율 31.5% ~ 35%"] },
-    { title: "지역별 지점관리", items: ["지정 제한 5km", "(이동상거리 기준)"] },
+    { title: "가맹비", items: ["가맹보증금 · 교육비 無", "월 가맹비 50만원"] },
+    { title: "지역별 지점관리", items: ["가맹보증금·교육비 없음", "월 가맹비 50만원", "합리적인 운영계약"] },
   ],
   points: [
     { title: "국내 최초\n워크웨어 아울렛", desc: "워크웨어 시장을 선도하는\n독보적 비즈니스 모델" },
@@ -70,18 +71,18 @@ export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
   team_img: "/images/franchise/team.jpg",
   colors: { page_bg: "#0d0d0d", header_bg: "#f5f2ed", card_bg: "#171717", cta_bg: "#1a1a1a", accent: "#ff550c" },
   styles: {
-    wordmark: ts(24, "#111111", -0.01, 1.1),
-    title: ts(56, "#111111", -0.01, 1.08),
-    subtitle: ts(14, "#6b7280", 0, 1.5),
+    wordmark: ts(16, "#111111", -0.01, 1.1),
+    title: ts(20, "#111111", -0.01, 1.2),
+    subtitle: ts(13, "#6b7280", 0, 1.5),
     eyebrow: ts(11, "#ff550c", 0.25, 1.4),
-    section_title: ts(28, "#ffffff", -0.01, 1.2),
+    section_title: ts(28, "#111111", -0.01, 1.2),
     req_title: ts(18, "#ffffff", 0, 1.3),
     req_item: ts(14, "#d1d5db", 0, 1.6),
     point_no: ts(34, "#ff550c", 0, 1),
     point_title: ts(20, "#ffffff", 0, 1.3),
     point_desc: ts(13, "#9ca3af", 0, 1.6),
     benefit: ts(13, "#d1d5db", 0, 1.5),
-    cta_label: ts(26, "#ffffff", 0, 1.2),
+    cta_label: ts(26, "#111111", 0, 1.2),
     cta_number: ts(52, "#ff550c", 0, 1),
   },
 };

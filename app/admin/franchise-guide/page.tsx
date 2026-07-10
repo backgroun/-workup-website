@@ -130,36 +130,24 @@ export default function FranchiseGuideEditPage() {
               <ColorField label="페이지 배경" value={cfg.colors.page_bg} onChange={(v) => setColor("page_bg", v)} />
               <ColorField label="헤더 배경" value={cfg.colors.header_bg} onChange={(v) => setColor("header_bg", v)} />
               <ColorField label="카드 배경" value={cfg.colors.card_bg} onChange={(v) => setColor("card_bg", v)} />
-              <ColorField label="가맹수 배경" value={cfg.colors.cta_bg} onChange={(v) => setColor("cta_bg", v)} />
             </div>
           </Card>
 
           <Card title="사진">
             <div className="grid sm:grid-cols-2 gap-5">
-              <AdminImageField label="상단 히어로 사진" value={cfg.hero_img} onChange={(url) => setC({ hero_img: url })} promptType="person" promptSeed="워크업 워크웨어 착용 창업 안내 히어로" recommendedSize="900x1120" />
               <AdminImageField label="창업 포인트 01 사진" value={cfg.team_img} onChange={(url) => setC({ team_img: url })} promptType="person" promptSeed="워크업 매장 작업자 팀" recommendedSize="800x520" />
             </div>
           </Card>
 
           <Card title="상단 헤더">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">워드마크</label>
-              <input value={cfg.wordmark} onChange={(e) => setC({ wordmark: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.wordmark} onChange={(p) => setStyle("wordmark", p)} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능)</span></label>
+              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능, 중앙정렬 한 줄로 표시)</span></label>
               <textarea value={cfg.title} onChange={(e) => setC({ title: e.target.value })} rows={2} className={inputCls + " resize-none"} />
               <StyleControls value={cfg.styles.title} onChange={(p) => setStyle("title", p)} />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">부제목</label>
-              <input value={cfg.subtitle} onChange={(e) => setC({ subtitle: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.subtitle} onChange={(p) => setStyle("subtitle", p)} />
-            </div>
           </Card>
 
-          <Card title="필요조건 / 매출액 / 지역 (3단)">
+          <Card title="필요조건 / 매출액 / 가맹비 / 지역 (2x2)">
             <div className="space-y-2">
               <p className="text-[11px] text-gray-500 font-medium">제목 스타일(공통)</p>
               <StyleControls value={cfg.styles.req_title} onChange={(p) => setStyle("req_title", p)} />
