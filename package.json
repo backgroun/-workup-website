@@ -13,6 +13,7 @@
     "@imagekit/nodejs": "^7.9.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "cloudinary": "^2.10.0",
     "exceljs": "^4.4.0",
     "next": "16.2.7",
     "pdf-lib": "^1.17.1",
