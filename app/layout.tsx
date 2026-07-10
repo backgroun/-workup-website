@@ -20,9 +20,11 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { siteUrl } from "@/lib/site";
 
-// 본문 기본 서체 — next/font가 폴백 폰트에 실제 폰트와 동일한 자간·행간 지표(size-adjust 등)를
-// 자동 적용해, 웹폰트 교체 시점의 리플로우(레이아웃이 갑자기 커지는 현상)를 방지한다.
-const notoSansKR = Noto_Sans_KR({ weight: ["400", "700", "900"], display: "swap" });
+// 본문 기본 서체 — display:"optional"은 폰트가 즉시(수십 ms 내) 준비되지 않으면 그 페이지 조회에서는
+// 웹폰트로 교체하지 않고 폴백 폰트를 계속 사용한다. 한글은 폴백/실제 글꼴의 글자 폭이 완전히 같지
+// 않아 자간 지표를 맞춰도(swap) 교체 시점에 줄바꿈이 달라져 박스가 커지는 현상이 남았기 때문—
+// optional로 교체 자체를 없애 리플로우를 원천 차단한다(재방문 시엔 캐시되어 처음부터 정상 표시).
+const notoSansKR = Noto_Sans_KR({ weight: ["400", "700", "900"], display: "optional" });
 
 export const viewport: Viewport = {
   width: "device-width",
