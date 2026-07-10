@@ -329,8 +329,18 @@ function InstagramEmbed({ html }: { html: string }) {
     }
     script.addEventListener("load", process, { once: true });
   }, [html]);
-  // iframe/위젯이 컨테이너를 넘지 않도록 가로 스크롤 처리
-  return <div ref={ref} className="w-full overflow-x-auto [&_iframe]:max-w-full" />;
+  // 인스타 임베드는 블록 요소라 기본적으로 세로로 쌓인다.
+  // 폭이 되는 만큼 가로로 나란히 배치하고(모바일은 1열), 임베드에 박힌 인라인 스타일
+  // (margin / min-width:326px / max-width:540px)은 !important로 눌러 셀에 맞춘다.
+  return (
+    <div
+      ref={ref}
+      className="grid items-start gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]
+                 [&_iframe]:!m-0 [&_iframe]:!w-full [&_iframe]:!min-w-0 [&_iframe]:!max-w-[540px]
+                 [&_blockquote]:!m-0 [&_blockquote]:!w-full [&_blockquote]:!min-w-0
+                 [&_.instagram-media-registered]:!hidden"
+    />
+  );
 }
 
 function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
