@@ -306,6 +306,12 @@ function InstagramEmbed({ html }: { html: string }) {
       old.replaceWith(s);
     });
 
+    // 캡션(본문 글)까지 포함된 임베드는 카드가 너무 길어진다.
+    // data-instgrm-captioned 를 떼면 인스타 공식 동작으로 캡션 없이 사진 위주로 로딩된다.
+    el.querySelectorAll("[data-instgrm-captioned]").forEach((bq) => {
+      bq.removeAttribute("data-instgrm-captioned");
+    });
+
     // 스크립트를 안 붙이고 blockquote만 넣은 경우도 처리
     if (!hasInstagram && !el.querySelector(".instagram-media")) return;
 
