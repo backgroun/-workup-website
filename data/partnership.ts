@@ -96,7 +96,7 @@ const FORM_BASE = {
   footer_style: s(12, "#9ca3af"),
   success_title: "문의가 접수되었습니다",
   success_desc: "영업일 기준 2일 이내에 담당자가 연락드립니다.",
-  footer_text: "영업일 기준 2일 이내 연락드립니다.",
+  footer_text: "담당자가 확인 후 빠르게 답변드립니다.",
   consent_text: "개인정보 수집·이용에 동의합니다.",
   consent_note: "이름·연락처는 문의 접수 및 상담 안내 목적으로만 사용됩니다.",
 };
