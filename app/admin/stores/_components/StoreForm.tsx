@@ -45,6 +45,76 @@ function buildHours(weekday: string, weekend: string, same: boolean): string {
 
 const STORE_TYPES = ["직영점", "대리점", "아울렛", "복합쇼핑몰", "기타"];
 
+// 상품명 검색으로 제품을 선택하는 입력 — 선택되면 칩 형태로 표시, 드롭다운 없이 타이핑한 만큼만 후보 노출
+function ProductSearchSlot({
+  label,
+  value,
+  products,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  products: ProductOption[];
+  onChange: (id: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const selected = products.find((p) => p.id === value);
+  const suggestions = query.trim()
+    ? products.filter((p) => p.name.includes(query.trim())).slice(0, 8)
+    : [];
+
+  return (
+    <div>
+      <p className="text-xs text-gray-500 mb-1.5 font-medium">{label}</p>
+      {selected ? (
+        <div className="flex items-center justify-between px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50">
+          <span className="text-sm text-gray-900 truncate">{selected.name}</span>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="text-gray-400 hover:text-red-500 text-xs ml-2 flex-shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
+            placeholder="상품명 검색"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          />
+          {open && query.trim() && (
+            <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto">
+              {suggestions.length > 0 ? (
+                suggestions.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { onChange(p.id); setQuery(""); setOpen(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      {p.name}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="px-4 py-2 text-sm text-gray-400">검색 결과가 없습니다.</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type InitialData = Partial<{
   name: string; region: string; address: string; hours: string; phone: string;
   store_type: string; description: string; brands: string[] | string;
@@ -378,17 +448,13 @@ export default function StoreForm({
           </h2>
           <div className="grid grid-cols-3 gap-4">
             {[0, 1, 2].map((slot) => (
-              <select
+              <ProductSearchSlot
                 key={slot}
+                label={`판매제품 ${slot + 1}`}
                 value={form.product_ids[slot] ?? ""}
-                onChange={(e) => setProductSlot(slot, e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
-              >
-                <option value="">판매제품 {slot + 1} 선택 안 함</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+                products={products}
+                onChange={(id) => setProductSlot(slot, id)}
+              />
             ))}
           </div>
         </section>

@@ -595,53 +595,51 @@ export default function StoreLocator({
                   {/* 상세 정보 */}
                   {isOpen && (
                     <div className="border-t border-gray-100 px-4 py-4">
-                      {/* 주소 + 운영시간 */}
-                      <div className="space-y-1.5 mb-4">
-                        <div className="flex items-start gap-2 text-xs text-gray-600">
-                          <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          </svg>
-                          <span>{store.address}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>{store.hours}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span>{store.phone}</span>
-                        </div>
-                      </div>
-
-                      {/* 판매제품 */}
-                      {store.products && store.products.length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 취급 제품</p>
-                          <div className="flex gap-2">
-                            {store.products.map((p) => (
-                              <Link key={p.id} href={`/products/${p.id}`} className="flex-1 min-w-0 group">
-                                <div className="aspect-square bg-gray-50 border border-gray-100 overflow-hidden">
-                                  {p.image_url ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                      src={p.image_url}
-                                      alt={p.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">이미지 없음</div>
-                                  )}
-                                </div>
-                                <p className="mt-1 text-[11px] text-gray-700 truncate">{p.name}</p>
-                              </Link>
-                            ))}
+                      {/* 주소 + 운영시간 + 판매제품 */}
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-start gap-2 text-xs text-gray-600">
+                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                            <span>{store.address}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{store.hours}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>{store.phone}</span>
                           </div>
                         </div>
-                      )}
+
+                        {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
+                        {store.products && store.products.length > 0 && (
+                          <div className="md:w-56 md:flex-shrink-0 md:border-l md:border-gray-100 md:pl-4">
+                            <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 취급 제품</p>
+                            <ul className="space-y-1.5">
+                              {store.products.map((p, i) => (
+                                <li key={p.id}>
+                                  <Link
+                                    href={`/products/${p.id}`}
+                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors"
+                                  >
+                                    <span className="w-4 h-4 flex items-center justify-center bg-gray-100 text-gray-500 text-[10px] font-bold flex-shrink-0">
+                                      {i + 1}
+                                    </span>
+                                    <span className="truncate">{p.name}</span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
 
                       {/* 액션 버튼 — 모바일 한 줄, 데스크탑 자연 너비 */}
                       <div className="flex gap-2">

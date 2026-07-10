@@ -26,8 +26,6 @@ type StoreRow = {
   created_at: string;
 };
 
-type ProductOption = { id: string; name: string };
-
 const TYPE_COLOR: Record<string, string> = {
   직영점: "bg-blue-100 text-blue-700",
   대리점: "bg-green-100 text-green-700",
@@ -44,7 +42,6 @@ export default function AdminStoresPage() {
   const [activeFilter, setActiveFilter] = useState<"전체" | "활성" | "비활성">("전체");
   const [deleting, setDeleting] = useState<number | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [products, setProducts] = useState<ProductOption[]>([]);
   const [bulkSaving, setBulkSaving] = useState(false);
 
   const load = async () => {
@@ -54,15 +51,7 @@ export default function AdminStoresPage() {
     setLoading(false);
   };
 
-  const loadProducts = async () => {
-    const res = await fetch("/api/admin/products");
-    if (res.ok) {
-      const data = await res.json();
-      setProducts(data.map((p: ProductOption) => ({ id: p.id, name: p.name })));
-    }
-  };
-
-  useEffect(() => { load(); loadProducts(); }, []);
+  useEffect(() => { load(); }, []);
 
   const regions = useMemo(() => {
     const set = new Set(stores.map((s) => s.region).filter(Boolean));
@@ -153,12 +142,6 @@ export default function AdminStoresPage() {
   };
 
   const toggleActive = (store: StoreRow) => updateStore(store, { is_active: !store.is_active });
-
-  const setProductSlot = (store: StoreRow, slot: number, productId: string) => {
-    const ids = [...(store.product_ids ?? [])];
-    ids[slot] = productId;
-    updateStore(store, { product_ids: ids.filter(Boolean).slice(0, 3) });
-  };
 
   const toggleOne = (id: number) => {
     setSelected((prev) => {
@@ -333,7 +316,6 @@ export default function AdminStoresPage() {
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">전화</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상태</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">판매제품 (공개시)</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상세보기</th>
                 <th className="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">관리</th>
               </tr>
@@ -341,7 +323,7 @@ export default function AdminStoresPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={9} className="px-5 py-16 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
                       불러오는 중...
@@ -350,7 +332,7 @@ export default function AdminStoresPage() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={9} className="px-5 py-16 text-center text-gray-400">
                     {stores.length === 0
                       ? <div>
                           <p className="text-base font-medium mb-2">등록된 매장이 없습니다.</p>
@@ -389,27 +371,6 @@ export default function AdminStoresPage() {
                       >
                         {store.is_active ? "활성" : "비활성"}
                       </button>
-                    </td>
-                    <td className="px-5 py-4">
-                      {store.is_active ? (
-                        <div className="flex flex-col gap-1 min-w-[160px]">
-                          {[0, 1, 2].map((slot) => (
-                            <select
-                              key={slot}
-                              value={store.product_ids?.[slot] ?? ""}
-                              onChange={(e) => setProductSlot(store, slot, e.target.value)}
-                              className="px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:border-[#1A2B4A]"
-                            >
-                              <option value="">판매제품 {slot + 1} 선택 안 함</option>
-                              {products.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
-                            </select>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-300">비활성 매장</span>
-                      )}
                     </td>
                     <td className="px-5 py-4">
                       <Link
