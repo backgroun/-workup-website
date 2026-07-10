@@ -231,10 +231,10 @@ export default async function StoreDetailPage({ params }: Props) {
           </div>
         )}
 
-        {/* 이 매장 베스트 상품 */}
+        {/* 스토어 베스트 상품 */}
         {storeProducts.length > 0 && (
           <div className="px-5 py-5 border-b border-gray-100">
-            <p className="text-sm font-bold text-gray-900 mb-3">이 매장 베스트 상품</p>
+            <p className="text-sm font-bold text-gray-900 mb-3">스토어 베스트 상품</p>
             <div className="grid grid-cols-3 gap-3">
               {storeProducts.map((p) => (
                 <Link
