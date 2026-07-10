@@ -194,10 +194,10 @@ export default function DormantMembersPage() {
                       <td className="px-5 py-4 text-[15px] text-gray-600">{m.email}</td>
                       <td className="px-5 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
                       <td className="px-5 py-4">
-                        <span className="px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
+                        <span className="inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${m.status === "dormant" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
+                        <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${m.status === "dormant" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
                           {m.status === "dormant" ? "휴면" : "미접속"}
                         </span>
                       </td>

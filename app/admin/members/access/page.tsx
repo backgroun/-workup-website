@@ -163,10 +163,10 @@ export default function MemberAccessPage() {
                   <td className="px-5 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
                   <td className="px-5 py-4 text-[15px] text-gray-600">{m.email}</td>
                   <td className="px-5 py-4">
-                    <span className="px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
+                    <span className="inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full bg-gray-100 text-gray-600">{m.grade}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${STATUS_COLOR[m.status]}`}>
+                    <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${STATUS_COLOR[m.status]}`}>
                       {STATUS_LABEL[m.status]}
                     </span>
                   </td>

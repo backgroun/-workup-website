@@ -114,6 +114,7 @@ export default function MemberListPage() {
   const [tableError, setTableError] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [editTarget, setEditTarget] = useState<Member | null>(null);
+  const [resettingId, setResettingId] = useState<number | null>(null);
   const [msg, setMsg]           = useState("");
 
   // 검색 필터
@@ -214,6 +215,19 @@ export default function MemberListPage() {
     });
     showMsg(res.ok ? "저장됐습니다." : "저장에 실패했습니다.");
     setEditTarget(null); load();
+  };
+
+  const resetPassword = async (m: Member) => {
+    if (!confirm(`"${m.name}"(${m.email})의 비밀번호를 리셋하고 임시 비밀번호를 이메일로 발송하시겠습니까?`)) return;
+    setResettingId(m.id);
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}/reset-password`, { method: "POST" });
+      const d = await res.json();
+      showMsg(res.ok ? `"${m.name}"님에게 임시 비밀번호를 발송했습니다.` : (d.error || "비밀번호 리셋에 실패했습니다."));
+    } catch {
+      showMsg("비밀번호 리셋에 실패했습니다.");
+    }
+    setResettingId(null);
   };
 
   const isFiltered = applied.query || gradeFilter !== "전체" || statusFilter !== "전체" || dateStart || dateEnd;
@@ -375,12 +389,12 @@ export default function MemberListPage() {
                     <td className="px-5 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
                     <td className="px-5 py-4 text-[13px] text-gray-400 max-w-[120px] truncate" title={m.memo ?? ""}>{m.memo ?? "-"}</td>
                     <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
+                      <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
                         {m.grade}
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${STATUS_COLOR[m.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${STATUS_COLOR[m.status] ?? "bg-gray-100 text-gray-600"}`}>
                         {STATUS_LABEL[m.status] ?? m.status}
                       </span>
                     </td>
@@ -390,6 +404,10 @@ export default function MemberListPage() {
                         <button onClick={() => setEditTarget(m)}
                           className="text-[14px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] px-3.5 py-1.5 hover:bg-[#1A2B4A] hover:text-white rounded whitespace-nowrap">
                           수정
+                        </button>
+                        <button onClick={() => resetPassword(m)} disabled={resettingId === m.id}
+                          className="text-[14px] font-semibold text-amber-600 border border-amber-200 px-3.5 py-1.5 hover:bg-amber-50 disabled:opacity-50 rounded whitespace-nowrap">
+                          {resettingId === m.id ? "발송 중..." : "비밀번호 리셋"}
                         </button>
                         <button onClick={async () => {
                           if (!confirm(`"${m.name}"을 삭제하시겠습니까?`)) return;

@@ -131,12 +131,12 @@ export default function MemberDashboardPage() {
                 <td className="px-6 py-4 text-[15px] font-bold text-gray-900">{m.name}</td>
                 <td className="px-6 py-4 text-[14px] text-gray-500">{m.phone ?? "-"}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${GRADE_COLOR[m.grade] ?? "bg-gray-100 text-gray-600"}`}>
                     {m.grade}
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2.5 py-1 text-[12px] font-bold rounded-full ${
+                  <span className={`inline-block whitespace-nowrap px-2.5 py-1 text-[12px] font-bold rounded-full ${
                     m.status === "active"   ? "bg-emerald-100 text-emerald-700" :
                     m.status === "dormant"  ? "bg-amber-100 text-amber-600"    :
                                               "bg-red-100 text-red-600"
