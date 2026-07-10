@@ -68,17 +68,20 @@ function Field({
         {label}{required && <span className="text-[#ff550c] ml-0.5">*</span>}
       </label>
       {type === "textarea" ? (
-        <textarea
-          id={`pf-${name}`}
-          name={name}
-          rows={3}
-          required={required}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          style={inputStyle}
-          className={cls + " resize-none"}
-        />
+        <>
+          <textarea
+            id={`pf-${name}`}
+            name={name}
+            rows={3}
+            required={required}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            style={inputStyle}
+            className={cls + " resize-none"}
+          />
+          <p className="mt-1 text-right text-[11px] text-gray-400">{value.length}자</p>
+        </>
       ) : (
         <input
           id={`pf-${name}`}
@@ -269,13 +272,13 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
     setForm((prev) => ({ ...prev, [name]: nextValue }));
   };
 
-  // 폼 검증 — 필수 항목·제목/문의내용 글자수·동의·비밀번호 형식을 확인하고,
+  // 폼 검증 — 필수 항목·문의내용 글자수·동의·비밀번호 형식을 확인하고,
   // 문제가 있으면 안내 문구를 반환한다(없으면 null).
   const validate = (): string | null => {
     for (const fld of config.fields) {
       const val = (form[fld.key] ?? "").trim();
       if (fld.required && !val) return `${fld.label}을(를) 입력해 주세요.`;
-      if ((fld.key === "title" || fld.key === "message") && val && val.length < 10) {
+      if (fld.key === "message" && val && val.length < 10) {
         return `${fld.label}은(는) 10자 이상 입력해 주세요.`;
       }
     }
