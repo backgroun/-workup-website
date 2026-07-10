@@ -172,6 +172,15 @@ export default function AdminStoresPage() {
     setSelected(new Set());
   };
 
+  const bulkSetPageActive = async (pageActive: boolean) => {
+    if (!selected.size) return;
+    setBulkSaving(true);
+    const targets = stores.filter((s) => selected.has(s.id));
+    await Promise.all(targets.map((s) => updateStore(s, { page_active: pageActive })));
+    setBulkSaving(false);
+    setSelected(new Set());
+  };
+
   return (
     <div>
       {/* 헤더 */}
@@ -287,6 +296,21 @@ export default function AdminStoresPage() {
               className="px-4 py-1.5 text-xs font-semibold bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
               선택 비활성화
+            </button>
+            <span className="w-px h-4 bg-white/20" />
+            <button
+              onClick={() => bulkSetPageActive(true)}
+              disabled={bulkSaving}
+              className="px-4 py-1.5 text-xs font-semibold bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              선택 페이지 노출
+            </button>
+            <button
+              onClick={() => bulkSetPageActive(false)}
+              disabled={bulkSaving}
+              className="px-4 py-1.5 text-xs font-semibold bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+            >
+              선택 페이지 비노출
             </button>
             <button
               onClick={() => setSelected(new Set())}
