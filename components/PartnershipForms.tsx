@@ -363,6 +363,15 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
           <div className="min-h-0 overflow-y-auto overscroll-contain">
             <FranchiseGuide embedded config={franchiseGuide.config} storeCount={franchiseGuide.storeCount} onClose={() => setGuideOpen(false)} />
           </div>
+          <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
+            <button
+              type="button"
+              onClick={() => setGuideOpen(false)}
+              className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
+            >
+              확인했어요, 문의 이어서 작성하기
+            </button>
+          </div>
         </div>
       </div>,
       document.body
