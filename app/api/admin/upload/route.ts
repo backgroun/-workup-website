@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
 import { isAdmin } from "@/lib/admin-auth";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { getImagekit } from "@/lib/imagekit-server";
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
@@ -21,20 +15,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "파일 크기는 10MB 이하여야 합니다." }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
   try {
-    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream({ folder: "workup", resource_type: "image" }, (err, res) => {
-          if (err) return reject(err);
-          if (!res) return reject(new Error("no response from cloudinary"));
-          resolve(res as { secure_url: string });
-        })
-        .end(buffer);
+    const result = await getImagekit().files.upload({
+      file,
+      fileName: file.name || "upload.jpg",
+      folder: "/workup",
+      useUniqueFileName: true,
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({ url: result.url });
   } catch (e: unknown) {
     const msg =
       e instanceof Error
@@ -42,7 +31,7 @@ export async function POST(req: Request) {
         : e != null && typeof e === "object" && "message" in e
         ? String((e as { message: unknown }).message)
         : JSON.stringify(e);
-    console.error("[upload] cloudinary error:", e);
+    console.error("[upload] imagekit error:", e);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

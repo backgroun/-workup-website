@@ -3,7 +3,7 @@
 
 export type Reel = {
   id: string;
-  video_url: string;    // Cloudinary 등 업로드된 영상 URL (mp4)
+  video_url: string;    // ImageKit 등 업로드된 영상 URL (mp4)
   caption?: string;     // 영상 설명(선택)
   link?: string;        // 인스타그램 등 원본 링크(선택)
 };

@@ -14,7 +14,7 @@ export const DEFAULT_LOGO: LogoConfig = {
 };
 
 // safeHref 는 "/", "#", http(s):, tel:, mailto: 만 통과시킨다.
-// 로고는 내부 경로(/) 또는 업로드된 https 이미지(cloudinary)만 유효하므로 그대로 재사용한다.
+// 로고는 내부 경로(/) 또는 업로드된 https 이미지(ImageKit)만 유효하므로 그대로 재사용한다.
 export function normalizeLogo(raw: Partial<LogoConfig> | null | undefined): LogoConfig {
   const c = raw ?? {};
   const src = typeof c.src === "string" ? safeHref(c.src) : "";

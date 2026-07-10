@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { PDFDocument } from "pdf-lib";
 import { EMPTY_BRAND_CATALOG, brandCoverUrl, type BrandCatalog } from "@/data/brandCatalogs";
 
 export default function AdminBrandCatalogsPage() {
@@ -55,28 +56,35 @@ export default function AdminBrandCatalogsPage() {
   const set = (key: keyof BrandCatalog, value: string | number | boolean) =>
     setEditing((prev) => (prev ? { ...prev, [key]: value } : prev));
 
-  // 대용량 우회: 브라우저 → Cloudinary 직접 업로드(서명).
+  // 대용량 우회: 브라우저 → ImageKit 직접 업로드(서명). 페이지 수는 ImageKit이 알려주지 않아 브라우저에서 직접 센다.
   const uploadPdf = async (file: File) => {
     setUploading(true);
     try {
-      const sig = await fetch("/api/admin/cloudinary-sign", { method: "POST" }).then((r) => r.json());
+      const [sig, pageCount] = await Promise.all([
+        fetch("/api/admin/imagekit-auth", { method: "POST" }).then((r) => r.json()),
+        PDFDocument.load(await file.arrayBuffer()).then((doc) => doc.getPageCount()).catch(() => 1),
+      ]);
       if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)", "err"); return; }
       const form = new FormData();
       form.append("file", file);
-      form.append("api_key", sig.apiKey);
-      form.append("timestamp", String(sig.timestamp));
-      form.append("folder", sig.folder);
+      form.append("fileName", file.name);
+      form.append("publicKey", sig.publicKey);
       form.append("signature", sig.signature);
-      const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, { method: "POST", body: form }).then((r) => r.json());
-      if (up.error) { flash("업로드 실패: " + (up.error.message ?? ""), "err"); return; }
+      form.append("expire", String(sig.expire));
+      form.append("token", sig.token);
+      form.append("folder", sig.folder);
+      form.append("useUniqueFileName", "true");
+      const up = await fetch("https://upload.imagekit.io/api/v2/files/upload", { method: "POST", body: form }).then((r) => r.json());
+      if (!up?.filePath) { flash("업로드 실패: " + (up?.message ?? ""), "err"); return; }
       setEditing((prev) => prev ? {
         ...prev,
-        pdf_public_id: up.public_id,
-        pdf_url: up.secure_url,
-        page_count: up.pages ?? 1,
-        thumbnail_url: brandCoverUrl(sig.cloudName, up.public_id),
+        pdf_public_id: up.filePath,
+        pdf_file_id: up.fileId,
+        pdf_url: up.url,
+        page_count: pageCount,
+        thumbnail_url: brandCoverUrl(sig.urlEndpoint, up.filePath),
       } : prev);
-      flash(`업로드 완료 · ${up.pages ?? 1}페이지`);
+      flash(`업로드 완료 · ${pageCount}페이지`);
     } catch {
       flash("업로드 실패 (네트워크/용량 확인)", "err");
     } finally {
@@ -139,8 +147,7 @@ export default function AdminBrandCatalogsPage() {
       </div>
 
       <div className="mb-6 p-4 bg-blue-50/60 border border-blue-100 rounded-xl text-sm text-slate-600 leading-relaxed">
-        브랜드명 + PDF를 업로드하면 <span className="font-semibold text-slate-800">/brands</span> 뷰어에 책장 넘김(플립북)으로 노출됩니다. PDF는 브라우저에서 Cloudinary로 직접 업로드돼 대용량도 가능합니다.
-        <span className="block mt-1 text-xs text-[#ff550c] font-medium">⚠ Cloudinary에서 ‘PDF and ZIP files delivery’가 켜져 있어야 페이지가 보입니다. 타사 PDF는 배포 권한 확인 후 등록하세요.</span>
+        브랜드명 + PDF를 업로드하면 <span className="font-semibold text-slate-800">/brands</span> 뷰어에 책장 넘김(플립북)으로 노출됩니다. PDF는 브라우저에서 ImageKit으로 직접 업로드돼 대용량도 가능합니다.
       </div>
 
       {msg.text && <div className={`mb-5 px-4 py-3 text-sm rounded-lg font-medium ${msg.type === "err" ? "bg-red-50 border border-red-200 text-red-700" : "bg-green-50 border border-green-200 text-green-700"}`}>{msg.text}</div>}
@@ -149,10 +156,10 @@ export default function AdminBrandCatalogsPage() {
         <div className="mb-6 p-5 bg-amber-50 border border-amber-200 rounded-xl">
           <p className="text-sm font-semibold text-amber-800 mb-2">⚠ brand_catalogs 테이블을 읽지 못했습니다.</p>
           {fetchErrMsg && <div className="mb-3 px-3 py-2 bg-white border border-red-200 rounded text-xs text-red-600 font-mono break-all">실제 에러: {fetchErrMsg}</div>}
-          <p className="text-xs text-amber-700 mb-3">위 “연결된 프로젝트”에 아래 SQL을 1회 실행하세요. (파일: supabase/migrate_add_brand_catalogs.sql)</p>
+          <p className="text-xs text-amber-700 mb-3">위 “연결된 프로젝트”에 아래 SQL을 1회 실행하세요. (파일: supabase/migrate_add_brand_catalogs.sql, supabase/migrate_imagekit_brand_catalogs.sql)</p>
           <pre className="text-xs bg-white p-3 border border-amber-200 rounded overflow-x-auto text-gray-700 whitespace-pre-wrap">{`CREATE TABLE IF NOT EXISTS brand_catalogs (
   id TEXT PRIMARY KEY, brand_name TEXT NOT NULL DEFAULT '',
-  pdf_public_id TEXT, pdf_url TEXT, page_count INTEGER NOT NULL DEFAULT 0,
+  pdf_public_id TEXT, pdf_file_id TEXT, pdf_url TEXT, page_count INTEGER NOT NULL DEFAULT 0,
   thumbnail_url TEXT, sort_order INTEGER NOT NULL DEFAULT 0,
   is_visible BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -233,7 +240,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                   <Field label="브랜드명">
                     <input type="text" value={editing.brand_name} onChange={(e) => set("brand_name", e.target.value)} placeholder="예: 무지 / 칼하트 / ○○ 워크웨어" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
                   </Field>
-                  <Field label="PDF 파일" hint="브라우저에서 Cloudinary로 직접 업로드 — 대용량 가능">
+                  <Field label="PDF 파일" hint="브라우저에서 ImageKit으로 직접 업로드 — 대용량 가능">
                     <div className="space-y-2">
                       <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
                         className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 rounded-lg">
@@ -256,7 +263,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs text-center px-2">PDF 업로드 시<br />표지가 표시됩니다</div>}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">표지가 안 보이면 Cloudinary ‘PDF 전송 허용’ 설정을 확인하세요.</p>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">표지가 안 보이면 ImageKit 대시보드에서 URL 기반 변환이 켜져 있는지 확인하세요.</p>
                 </div>
               </div>
             </div>

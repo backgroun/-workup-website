@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 
-// 이미지 업로드(Cloudinary) + AI 이미지 프롬프트 생성(템플릿, 무료)을 합친 관리용 필드.
+// 이미지 업로드(ImageKit) + AI 이미지 프롬프트 생성(템플릿, 무료)을 합친 관리용 필드.
 // promptType: "person"(인물 사진) | "product"(제품/테스트 사진)
 
 function buildImagePrompt(type: "person" | "product", seed: string, size?: string): string {

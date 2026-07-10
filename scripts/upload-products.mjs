@@ -20,12 +20,11 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
-import cloudinaryPkg from "cloudinary";
+import ImageKit, { toFile } from "@imagekit/nodejs";
 import sharp from "sharp";
 import * as XLSXns from "xlsx";
 
 const XLSX = XLSXns.default && XLSXns.default.utils ? XLSXns.default : XLSXns;
-const cloudinary = cloudinaryPkg.v2;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const INBOX = path.join(ROOT, "products-inbox");
 
@@ -37,14 +36,10 @@ try {
     if (m) env[m[1]] = m[2];
   }
 } catch {
-  console.log("❌ .env.local 을 찾을 수 없습니다. (Cloudinary·Supabase 키 필요)");
+  console.log("❌ .env.local 을 찾을 수 없습니다. (ImageKit·Supabase 키 필요)");
   process.exit(1);
 }
-cloudinary.config({
-  cloud_name: env.CLOUDINARY_CLOUD_NAME,
-  api_key: env.CLOUDINARY_API_KEY,
-  api_secret: env.CLOUDINARY_API_SECRET,
-});
+const imagekit = new ImageKit({ privateKey: env.IMAGEKIT_PRIVATE_KEY });
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
 // ── 유틸 ──
@@ -110,10 +105,10 @@ async function uploadImage(filePath, publicId, isThumb) {
       ? await sharp(buf).resize({ width: 1080 }).jpeg({ quality: 85 }).toBuffer()
       : await sharp(buf).jpeg({ quality: 88 }).toBuffer();
   }
-  const r = await cloudinary.uploader.upload(`data:image/jpeg;base64,${buf.toString("base64")}`, {
-    folder: "workup", public_id: publicId, overwrite: true,
+  const r = await imagekit.files.upload({
+    file: await toFile(buf, `${publicId}.jpg`), fileName: `${publicId}.jpg`, folder: "/workup", useUniqueFileName: false,
   });
-  return r.secure_url;
+  return r.url;
 }
 
 // ── 상품 1건 등록 (info=get 함수, 이미지=imageDir) ──
