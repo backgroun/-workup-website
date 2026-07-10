@@ -547,6 +547,7 @@ export default function StoreLocator({
           ) : (
             displayList.map((store, index) => {
               const isOpen = expanded === store.id;
+              const hasStorePage = store.pageActive !== false;
               return (
                 <div key={store.id} className="bg-white border border-gray-200 overflow-hidden">
 
@@ -620,8 +621,8 @@ export default function StoreLocator({
 
                         {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 md:border-l md:border-gray-100 md:pl-4">
-                            <p className="text-xs font-semibold text-gray-500 mb-2">이 매장 베스트 상품</p>
+                          <div className="md:w-56 md:flex-shrink-0 bg-[#ebebeb] rounded-lg px-3 py-3">
+                            <p className="text-xs font-semibold text-gray-500 mb-2">스토어 베스트 상품</p>
                             <ul className="space-y-1.5">
                               {store.products.map((p, i) => (
                                 <li key={p.id}>
@@ -641,8 +642,8 @@ export default function StoreLocator({
                         )}
                       </div>
 
-                      {/* 액션 버튼 — 모바일 2x2 그리드, 데스크탑 한 줄 */}
-                      <div className="grid grid-cols-2 gap-2 md:flex">
+                      {/* 액션 버튼 — 모바일 그리드(매장소개 유무에 따라 2x2 또는 1열 3개), 데스크탑 한 줄 */}
+                      <div className={`grid ${hasStorePage ? "grid-cols-2" : "grid-cols-3"} gap-2 md:flex`}>
 
                         {/* 전화하기 */}
                         <a
@@ -663,7 +664,7 @@ export default function StoreLocator({
                         <NaverDirBtn store={store} userCoords={userCoords} />
 
                         {/* 매장 소개 페이지 */}
-                        {store.pageActive !== false && (
+                        {hasStorePage && (
                           <Link
                             href={`/store/${store.id}`}
                             onClick={() => trackStoreEvent("list_click", { id: store.id, name: store.name })}
