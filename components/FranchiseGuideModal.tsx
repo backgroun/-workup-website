@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
 import FranchiseGuide from "./FranchiseGuide";
 import type { FranchiseGuideConfig } from "@/data/franchise-guide";
 
@@ -26,6 +25,16 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
   }, [open]);
+
+  // 팝업을 닫고 문의 폼의 '이름' 입력란으로 스크롤·포커스 이동
+  const goToNameField = () => {
+    setOpen(false);
+    setTimeout(() => {
+      const nameInput = document.getElementById("pf-name");
+      nameInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+      nameInput?.focus();
+    }, 200);
+  };
 
   return (
     <>
@@ -59,12 +68,13 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
 
             {/* 하단 고정 CTA (PC·모바일 공통) */}
             <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
-              <Link
-                href="/partnership/franchise"
+              <button
+                type="button"
+                onClick={goToNameField}
                 className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
               >
                 창업 상담 신청하기
-              </Link>
+              </button>
             </div>
           </div>
         </div>,

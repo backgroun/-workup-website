@@ -258,9 +258,17 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
+  // 가맹 문의는 접수 전 창업안내를 먼저 한 번 보여준다 — 폼 유효성 검사(required)나 동의 체크로
+  // 제출 이벤트 자체가 막히지 않도록, 버튼 클릭 시점에 폼 검증 전에 가로챈다.
+  const handleGuideIntercept = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!franchiseGuide || guideSeen) return;
+    e.preventDefault();
+    setGuideSeen(true);
+    setGuideOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 가맹 문의는 접수 전 창업안내를 먼저 한 번 보여준다 — 실제 접수는 안내를 닫은 뒤 버튼을 다시 누르면 진행된다.
     if (franchiseGuide && !guideSeen) { setGuideSeen(true); setGuideOpen(true); return; }
     if (consent && !agreed) { setError("개인정보 수집·이용에 동의해주세요."); return; }
     setSubmitting(true); setError("");
@@ -329,8 +337,9 @@ function InquiryForm({ type, config, consent, franchiseGuide }: {
       {consent && <PrivacyConsent checked={agreed} onChange={setAgreed} text={config.consent_text} note={config.consent_note} />}
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
-        type="submit"
-        disabled={submitting || (consent && !agreed)}
+        type={franchiseGuide && !guideSeen ? "button" : "submit"}
+        onClick={handleGuideIntercept}
+        disabled={submitting || ((!franchiseGuide || guideSeen) && consent && !agreed)}
         style={{ backgroundColor: config.button_bg, color: config.button_color }}
         className="w-full text-xs font-semibold tracking-widest py-3 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
