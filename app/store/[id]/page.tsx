@@ -52,9 +52,10 @@ async function getStore(id: string): Promise<Store | null> {
     .select("*, store_jobs(id, title, employment_type, salary_info, deadline, is_active)")
     .eq("id", id)
     .eq("is_active", true)
-    .eq("page_active", true)
     .single();
   if (error || !data) return null;
+  // page_active 컬럼 마이그레이션 전에는 undefined이므로, 명시적으로 false인 경우만 차단한다.
+  if (data.page_active === false) return null;
   return data as Store;
 }
 
