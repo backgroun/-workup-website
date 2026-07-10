@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import FranchiseGuide from "@/components/FranchiseGuide";
-import AdminImageField from "@/components/admin/AdminImageField";
 import {
   DEFAULT_FRANCHISE_GUIDE,
   normalizeFranchiseGuide,
@@ -9,12 +8,11 @@ import {
   type GuideStyleKey,
   type GuideColors,
   type TextStyle,
-  type ReqGroup,
-  type GuidePoint,
-  type GuideBenefit,
+  type StatItem,
+  type BenefitCard,
+  type ConditionRow,
 } from "@/data/franchise-guide";
 
-const POINT_MEDIA_LABEL = ["사진", "5km 그래픽", "無·0원 카드"];
 const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400";
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -82,16 +80,12 @@ export default function FranchiseGuideEditPage() {
     setCfg((p) => ({ ...p, styles: { ...p.styles, [k]: { ...p.styles[k], ...patch } } }));
   const setColor = (k: keyof GuideColors, v: string) =>
     setCfg((p) => ({ ...p, colors: { ...p.colors, [k]: v } }));
-  const setReq = (i: number, patch: Partial<ReqGroup>) =>
-    setCfg((p) => ({ ...p, requirements: p.requirements.map((r, idx) => (idx === i ? { ...r, ...patch } : r)) }));
-  const setReqItem = (i: number, j: number, v: string) =>
-    setReq(i, { items: cfg.requirements[i].items.map((it, idx) => (idx === j ? v : it)) });
-  const addReqItem = (i: number) => setReq(i, { items: [...cfg.requirements[i].items, ""] });
-  const removeReqItem = (i: number, j: number) => setReq(i, { items: cfg.requirements[i].items.filter((_, idx) => idx !== j) });
-  const setPoint = (i: number, patch: Partial<GuidePoint>) =>
-    setCfg((p) => ({ ...p, points: p.points.map((pt, idx) => (idx === i ? { ...pt, ...patch } : pt)) }));
-  const setBenefit = (i: number, patch: Partial<GuideBenefit>) =>
+  const setStat = (i: number, patch: Partial<StatItem>) =>
+    setCfg((p) => ({ ...p, stats: p.stats.map((st, idx) => (idx === i ? { ...st, ...patch } : st)) }));
+  const setBenefit = (i: number, patch: Partial<BenefitCard>) =>
     setCfg((p) => ({ ...p, benefits: p.benefits.map((b, idx) => (idx === i ? { ...b, ...patch } : b)) }));
+  const setCondition = (i: number, patch: Partial<ConditionRow>) =>
+    setCfg((p) => ({ ...p, conditions: p.conditions.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) }));
 
   const save = async () => {
     setSaving(true);
@@ -112,7 +106,7 @@ export default function FranchiseGuideEditPage() {
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">창업안내 페이지 편집</h1>
-          <p className="mt-1 text-sm text-gray-500">텍스트·크기·자간·행간·색상·배경·사진을 모두 편집합니다. 오른쪽 미리보기에 즉시 반영됩니다.</p>
+          <p className="mt-1 text-sm text-gray-500">텍스트·크기·자간·행간·색상·배경을 모두 편집합니다. 오른쪽 미리보기에 즉시 반영됩니다.</p>
         </div>
         <div className="flex items-center gap-3">
           {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
@@ -127,107 +121,172 @@ export default function FranchiseGuideEditPage() {
           <Card title="색상 · 배경">
             <div className="grid sm:grid-cols-2 gap-3">
               <ColorField label="강조색(오렌지)" value={cfg.colors.accent} onChange={(v) => setColor("accent", v)} />
-              <ColorField label="페이지 배경" value={cfg.colors.page_bg} onChange={(v) => setColor("page_bg", v)} />
-              <ColorField label="헤더 배경" value={cfg.colors.header_bg} onChange={(v) => setColor("header_bg", v)} />
+              <ColorField label="페이지 배경(어두운 영역)" value={cfg.colors.page_bg} onChange={(v) => setColor("page_bg", v)} />
+              <ColorField label="상단 브랜드바 배경" value={cfg.colors.header_bg} onChange={(v) => setColor("header_bg", v)} />
               <ColorField label="카드 배경" value={cfg.colors.card_bg} onChange={(v) => setColor("card_bg", v)} />
             </div>
           </Card>
 
-          <Card title="사진">
-            <div className="grid sm:grid-cols-2 gap-5">
-              <AdminImageField label="창업 포인트 01 사진" value={cfg.team_img} onChange={(url) => setC({ team_img: url })} promptType="person" promptSeed="워크업 매장 작업자 팀" recommendedSize="800x520" />
-            </div>
-          </Card>
-
-          <Card title="상단 헤더">
+          <Card title="상단 브랜드바">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능, 중앙정렬 한 줄로 표시)</span></label>
-              <textarea value={cfg.title} onChange={(e) => setC({ title: e.target.value })} rows={2} className={inputCls + " resize-none"} />
+              <label className="text-sm font-medium text-gray-700">워드마크</label>
+              <input value={cfg.wordmark} onChange={(e) => setC({ wordmark: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.wordmark} onChange={(p) => setStyle("wordmark", p)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">제목</label>
+              <input value={cfg.title} onChange={(e) => setC({ title: e.target.value })} className={inputCls} />
               <StyleControls value={cfg.styles.title} onChange={(p) => setStyle("title", p)} />
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">부제목 <span className="text-gray-400 font-normal">(PC에서만 노출)</span></label>
+              <input value={cfg.subtitle} onChange={(e) => setC({ subtitle: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.subtitle} onChange={(p) => setStyle("subtitle", p)} />
+            </div>
           </Card>
 
-          <Card title="필요조건 / 매출액 / 가맹비 / 지역 (2x2)">
-            <div className="space-y-2">
-              <p className="text-[11px] text-gray-500 font-medium">제목 스타일(공통)</p>
-              <StyleControls value={cfg.styles.req_title} onChange={(p) => setStyle("req_title", p)} />
-              <p className="text-[11px] text-gray-500 font-medium mt-2">항목 스타일(공통)</p>
-              <StyleControls value={cfg.styles.req_item} onChange={(p) => setStyle("req_item", p)} />
+          <Card title="히어로">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">소제목 (eyebrow)</label>
+              <input value={cfg.hero_eyebrow} onChange={(e) => setC({ hero_eyebrow: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.hero_eyebrow} onChange={(p) => setStyle("hero_eyebrow", p)} />
             </div>
-            <div className="space-y-4 border-t border-slate-100 pt-4">
-              {cfg.requirements.map((r, i) => (
-                <div key={i} className="border border-slate-100 rounded-lg p-3.5 space-y-2.5 bg-slate-50/40">
-                  <span className="text-[10px] text-slate-400">{i + 1}번 아이콘 고정</span>
-                  <input value={r.title} onChange={(e) => setReq(i, { title: e.target.value })} placeholder="제목" className={inputCls + " bg-white font-medium"} />
-                  <div className="space-y-1.5">
-                    {r.items.map((it, j) => (
-                      <div key={j} className="flex gap-2">
-                        <input value={it} onChange={(e) => setReqItem(i, j, e.target.value)} className="flex-1 border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
-                        <button onClick={() => removeReqItem(i, j)} className="w-8 flex items-center justify-center rounded border border-red-200 text-red-400 hover:bg-red-50">✕</button>
-                      </div>
-                    ))}
-                    <button onClick={() => addReqItem(i)} className="text-xs font-semibold text-blue-600 hover:text-blue-800">+ 항목 추가</button>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">큰 제목 <span className="text-gray-400 font-normal">(줄바꿈 가능)</span></label>
+              <textarea value={cfg.hero_title} onChange={(e) => setC({ hero_title: e.target.value })} rows={2} className={inputCls + " resize-none"} />
+              <StyleControls value={cfg.styles.hero_title} onChange={(p) => setStyle("hero_title", p)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">설명 <span className="text-gray-400 font-normal">({"{count}"}는 실제 매장 수로 자동 치환)</span></label>
+              <textarea value={cfg.hero_desc} onChange={(e) => setC({ hero_desc: e.target.value })} rows={3} className={inputCls + " resize-none"} />
+              <StyleControls value={cfg.styles.hero_desc} onChange={(p) => setStyle("hero_desc", p)} />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">기본 버튼 문구</label>
+                <input value={cfg.hero_primary_label} onChange={(e) => setC({ hero_primary_label: e.target.value })} className={inputCls} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">보조 버튼 문구</label>
+                <input value={cfg.hero_secondary_label} onChange={(e) => setC({ hero_secondary_label: e.target.value })} className={inputCls} />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">비주얼 소캡션 <span className="text-gray-400 font-normal">(PC만 노출)</span></label>
+                <input value={cfg.hero_visual_label} onChange={(e) => setC({ hero_visual_label: e.target.value })} className={inputCls} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">비주얼 문구</label>
+                <input value={cfg.hero_visual_text} onChange={(e) => setC({ hero_visual_text: e.target.value })} className={inputCls} />
+              </div>
+            </div>
+          </Card>
+
+          <Card title="핵심 수치 (3분할)">
+            <div className="space-y-2">
+              <p className="text-[11px] text-gray-500 font-medium">숫자 스타일(공통)</p>
+              <StyleControls value={cfg.styles.stat_value} onChange={(p) => setStyle("stat_value", p)} />
+              <p className="text-[11px] text-gray-500 font-medium mt-2">라벨 스타일(공통)</p>
+              <StyleControls value={cfg.styles.stat_label} onChange={(p) => setStyle("stat_label", p)} />
+            </div>
+            <div className="space-y-3 border-t border-slate-100 pt-4">
+              {cfg.stats.map((st, i) => (
+                <div key={i} className="border border-slate-100 rounded-lg p-3.5 space-y-2 bg-slate-50/40">
+                  <span className="text-[10px] text-slate-400">{i + 1}번</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input value={st.value} onChange={(e) => setStat(i, { value: e.target.value })} placeholder="숫자/값" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                    <input value={st.label} onChange={(e) => setStat(i, { label: e.target.value })} placeholder="라벨" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
                   </div>
                 </div>
               ))}
+              <div className="border border-slate-100 rounded-lg p-3.5 space-y-2 bg-slate-50/40">
+                <span className="text-[10px] text-slate-400">3번 — 값은 실제 매장 수로 자동 계산</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={cfg.store_stat_label} onChange={(e) => setC({ store_stat_label: e.target.value })} placeholder="라벨" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                  <input value={cfg.store_stat_unit} onChange={(e) => setC({ store_stat_unit: e.target.value })} placeholder="단위(개)" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                </div>
+              </div>
             </div>
           </Card>
 
-          <Card title="창업 포인트">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">소제목 (eyebrow)</label>
-              <input value={cfg.eyebrow} onChange={(e) => setC({ eyebrow: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.eyebrow} onChange={(p) => setStyle("eyebrow", p)} />
-            </div>
+          <Card title="워크업 창업이 다른 이유">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">섹션 제목</label>
               <input value={cfg.section_title} onChange={(e) => setC({ section_title: e.target.value })} className={inputCls} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">섹션 설명</label>
+              <input value={cfg.section_desc} onChange={(e) => setC({ section_desc: e.target.value })} className={inputCls} />
+            </div>
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+              <p className="text-[11px] text-gray-500 font-medium">제목·설명 스타일(혜택 조건 섹션 공통)</p>
               <StyleControls value={cfg.styles.section_title} onChange={(p) => setStyle("section_title", p)} />
+              <StyleControls value={cfg.styles.section_desc} onChange={(p) => setStyle("section_desc", p)} />
+              <p className="text-[11px] text-gray-500 font-medium mt-2">번호 / 카드 제목 / 카드 설명 스타일</p>
+              <StyleControls value={cfg.styles.benefit_num} onChange={(p) => setStyle("benefit_num", p)} />
+              <StyleControls value={cfg.styles.benefit_title} onChange={(p) => setStyle("benefit_title", p)} />
+              <StyleControls value={cfg.styles.benefit_desc} onChange={(p) => setStyle("benefit_desc", p)} />
             </div>
-            <div className="border-t border-slate-100 pt-4 space-y-2">
-              <p className="text-[11px] text-gray-500 font-medium">번호 스타일 / 제목 스타일 / 설명 스타일 (공통)</p>
-              <StyleControls value={cfg.styles.point_no} onChange={(p) => setStyle("point_no", p)} />
-              <StyleControls value={cfg.styles.point_title} onChange={(p) => setStyle("point_title", p)} />
-              <StyleControls value={cfg.styles.point_desc} onChange={(p) => setStyle("point_desc", p)} />
-            </div>
-            <div className="space-y-4">
-              {cfg.points.map((p, i) => (
-                <div key={i} className="border border-slate-100 rounded-lg p-3.5 space-y-2.5 bg-slate-50/40">
-                  <span className="text-[10px] text-slate-400">{String(i + 1).padStart(2, "0")} · {POINT_MEDIA_LABEL[i]} 고정</span>
-                  <textarea value={p.title} onChange={(e) => setPoint(i, { title: e.target.value })} rows={2} placeholder="제목(줄바꿈 가능)" className={inputCls + " bg-white resize-none"} />
-                  <textarea value={p.desc} onChange={(e) => setPoint(i, { desc: e.target.value })} rows={2} placeholder="설명(줄바꿈 가능)" className={inputCls + " bg-white resize-none"} />
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card title="하단 혜택 (4개)">
-            <StyleControls value={cfg.styles.benefit} onChange={(p) => setStyle("benefit", p)} />
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {cfg.benefits.map((b, i) => (
-                <div key={i} className="border border-slate-100 rounded-lg p-3 space-y-2 bg-slate-50/40">
-                  <span className="text-[10px] text-slate-400">{i + 1}번</span>
-                  <input value={b.line1} onChange={(e) => setBenefit(i, { line1: e.target.value })} placeholder="1행" className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
-                  <input value={b.line2} onChange={(e) => setBenefit(i, { line2: e.target.value })} placeholder="2행" className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                <div key={i} className="border border-slate-100 rounded-lg p-3.5 space-y-2 bg-slate-50/40">
+                  <span className="text-[10px] text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+                  <input value={b.title} onChange={(e) => setBenefit(i, { title: e.target.value })} placeholder="카드 제목" className={inputCls + " bg-white font-medium"} />
+                  <textarea value={b.desc} onChange={(e) => setBenefit(i, { desc: e.target.value })} rows={2} placeholder="카드 설명" className={inputCls + " bg-white resize-none"} />
                 </div>
               ))}
             </div>
           </Card>
 
-          <Card title="계약 가맹수">
-            <p className="text-[11px] text-gray-400 leading-relaxed">가운데 숫자는 <b>실제 활성 매장 수로 자동 반영</b>됩니다. 앞뒤 문구·스타일과, 매장 수가 0일 때 표시할 기본값만 설정하세요.</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-gray-500">앞 문구</label>
-                <input value={cfg.cta_prefix} onChange={(e) => setC({ cta_prefix: e.target.value })} className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-gray-500">뒤 문구</label>
-                <input value={cfg.cta_suffix} onChange={(e) => setC({ cta_suffix: e.target.value })} className={inputCls} />
-              </div>
+          <Card title="창업 기본 조건">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">섹션 제목</label>
+              <input value={cfg.conditions_title} onChange={(e) => setC({ conditions_title: e.target.value })} className={inputCls} />
             </div>
-            <div className="space-y-1"><p className="text-[11px] text-gray-500">문구 스타일</p><StyleControls value={cfg.styles.cta_label} onChange={(p) => setStyle("cta_label", p)} /></div>
-            <div className="space-y-1"><p className="text-[11px] text-gray-500">숫자 스타일</p><StyleControls value={cfg.styles.cta_number} onChange={(p) => setStyle("cta_number", p)} /></div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">섹션 설명</label>
+              <input value={cfg.conditions_desc} onChange={(e) => setC({ conditions_desc: e.target.value })} className={inputCls} />
+            </div>
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+              <p className="text-[11px] text-gray-500 font-medium">라벨 / 값 스타일(공통)</p>
+              <StyleControls value={cfg.styles.condition_label} onChange={(p) => setStyle("condition_label", p)} />
+              <StyleControls value={cfg.styles.condition_value} onChange={(p) => setStyle("condition_value", p)} />
+            </div>
+            <div className="space-y-2">
+              {cfg.conditions.map((row, i) => (
+                <div key={i} className="grid grid-cols-2 gap-2">
+                  <input value={row.label} onChange={(e) => setCondition(i, { label: e.target.value })} placeholder="항목" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                  <input value={row.value} onChange={(e) => setCondition(i, { value: e.target.value })} placeholder="값" className="border border-gray-200 rounded px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-1.5 border-t border-slate-100 pt-4">
+              <label className="text-sm font-medium text-gray-700">유의문구</label>
+              <input value={cfg.notice} onChange={(e) => setC({ notice: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.notice} onChange={(p) => setStyle("notice", p)} />
+            </div>
+          </Card>
+
+          <Card title="하단 상담 CTA">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">제목</label>
+              <input value={cfg.cta_title} onChange={(e) => setC({ cta_title: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.cta_title} onChange={(p) => setStyle("cta_title", p)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">설명</label>
+              <input value={cfg.cta_desc} onChange={(e) => setC({ cta_desc: e.target.value })} className={inputCls} />
+              <StyleControls value={cfg.styles.cta_desc} onChange={(p) => setStyle("cta_desc", p)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">버튼 문구</label>
+              <input value={cfg.cta_button_label} onChange={(e) => setC({ cta_button_label: e.target.value })} className={inputCls} />
+            </div>
+          </Card>
+
+          <Card title="기타">
+            <p className="text-[11px] text-gray-400 leading-relaxed">핵심 수치·계약 매장 수는 <b>실제 활성 매장 수로 자동 반영</b>됩니다. 매장 수가 0일 때 표시할 기본값만 설정하세요.</p>
             <div className="w-40">
               <label className="text-[11px] text-gray-500 block mb-1">기본값 (매장 수 0일 때)</label>
               <input type="number" min={0} value={cfg.count_fallback} onChange={(e) => setC({ count_fallback: Math.max(0, Number(e.target.value) || 0) })} className={inputCls} />
