@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
+import TempPasswordModal from "@/components/admin/TempPasswordModal";
 
 interface Member {
   id: number;
@@ -40,6 +41,8 @@ export default function MemberAccessPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch]   = useState("");
   const [msg, setMsg]         = useState("");
+  const [resettingId, setResettingId] = useState<number | null>(null);
+  const [tempPasswordResult, setTempPasswordResult] = useState<{ member: Member; tempPassword: string } | null>(null);
 
   const showMsg = (t: string) => { setMsg(t); setTimeout(() => setMsg(""), 3000); };
 
@@ -92,6 +95,20 @@ export default function MemberAccessPage() {
     });
     showMsg(`"${m.name}" 휴면 처리됐습니다.`);
     load();
+  };
+
+  const resetPassword = async (m: Member) => {
+    if (!confirm(`"${m.name}"(${m.email})의 비밀번호를 변경하시겠습니까?\n변경된 임시 비밀번호는 직접 전달해주셔야 합니다.`)) return;
+    setResettingId(m.id);
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}/reset-password`, { method: "POST" });
+      const d = await res.json();
+      if (res.ok) setTempPasswordResult({ member: m, tempPassword: d.tempPassword });
+      else showMsg(d.error || "비밀번호 변경에 실패했습니다.");
+    } catch {
+      showMsg("비밀번호 변경에 실패했습니다.");
+    }
+    setResettingId(null);
   };
 
   return (
@@ -193,6 +210,10 @@ export default function MemberAccessPage() {
                           복원
                         </button>
                       )}
+                      <button onClick={() => resetPassword(m)} disabled={resettingId === m.id}
+                        className="text-[14px] font-semibold text-amber-600 border border-amber-200 px-3.5 py-1.5 hover:bg-amber-50 disabled:opacity-50 rounded whitespace-nowrap">
+                        {resettingId === m.id ? "변경 중..." : "비밀번호 변경"}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -201,6 +222,13 @@ export default function MemberAccessPage() {
           </table>
         </div>
       </div>
+      {tempPasswordResult && (
+        <TempPasswordModal
+          member={tempPasswordResult.member}
+          tempPassword={tempPasswordResult.tempPassword}
+          onClose={() => setTempPasswordResult(null)}
+        />
+      )}
     </div>
   );
 }
