@@ -42,6 +42,10 @@ body {
 html {
   scroll-behavior: smooth;
   min-height: 100dvh;
+  /* 안드로이드 Chrome의 "텍스트 자동 확대(font boosting)" 비활성화 —
+     레이아웃 계산 이후 글자를 자동으로 키워 박스가 뒤늦게 커지는 현상을 막는다. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 @keyframes marquee {
