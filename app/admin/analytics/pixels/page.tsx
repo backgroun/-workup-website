@@ -149,7 +149,7 @@ export default function PixelSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/analytics" className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 분석 대시보드</Link>
+            <Link href="/admin/analytics" className="text-[15px] text-gray-400 hover:text-[#303236]">← 분석 대시보드</Link>
             <span className="text-gray-200">/</span>
             <h1 className="text-3xl font-bold text-gray-900">픽셀 / 광고 설정</h1>
           </div>
@@ -172,10 +172,10 @@ export default function PixelSettingsPage() {
       )}
 
       {/* 설정 안내 */}
-      <div className="bg-[#1A2B4A]/5 border border-[#1A2B4A]/20 rounded-xl p-5 flex items-start gap-4">
+      <div className="bg-[#303236]/5 border border-[#303236]/20 rounded-xl p-5 flex items-start gap-4">
         <span className="text-2xl">📌</span>
         <div>
-          <p className="text-base font-bold text-[#1A2B4A] mb-1">권장 설정 순서</p>
+          <p className="text-base font-bold text-[#303236] mb-1">권장 설정 순서</p>
           <ol className="text-[14px] text-gray-600 space-y-0.5 list-decimal list-inside">
             <li><span className="font-semibold">GTM</span> 설정 → GTM 안에서 나머지 픽셀을 관리하는 방법 (가장 권장)</li>
             <li>또는 각 픽셀 ID를 직접 입력 → 사이트 레이아웃에 자동 삽입</li>
@@ -220,7 +220,7 @@ export default function PixelSettingsPage() {
                           value={pixelId}
                           onChange={e => setLocalIds(p => ({ ...p, [key]: e.target.value }))}
                           placeholder={cfg.idPlaceholder}
-                          className="w-full border border-gray-200 px-4 py-2.5 text-[15px] font-mono rounded focus:outline-none focus:border-[#1A2B4A]"
+                          className="w-full border border-gray-200 px-4 py-2.5 text-[15px] font-mono rounded focus:outline-none focus:border-[#303236]"
                         />
                       </div>
 
@@ -240,7 +240,7 @@ export default function PixelSettingsPage() {
                       {/* 저장 버튼 */}
                       <div className="pt-5">
                         <button onClick={() => save(key)} disabled={isSaving}
-                          className="px-6 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-bold hover:bg-[#243d5e] disabled:opacity-50 rounded">
+                          className="px-6 py-2.5 bg-[#303236] text-white text-[15px] font-bold hover:bg-[#243d5e] disabled:opacity-50 rounded">
                           {isSaving ? "저장 중..." : "저장"}
                         </button>
                       </div>

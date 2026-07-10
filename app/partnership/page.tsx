@@ -12,7 +12,7 @@ const CHOICES = [
     eyebrow: "Franchise",
     title: "가맹·창업 문의",
     desc: "WORKUP 브랜드로 독립 매장을 창업하고 싶으신 분을 위한 안내입니다.",
-    bg: "#1A2B4A",
+    bg: "#303236",
   },
   {
     href: "/partnership/wholesale",
@@ -27,7 +27,7 @@ export default function PartnershipPage() {
   return (
     <main>
       {/* 히어로 */}
-      <div className="bg-[#1A2B4A] py-20">
+      <div className="bg-[#303236] py-20">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">PARTNERSHIP</p>
           <h1 className="text-4xl font-bold text-white mb-4">WORKUP과 함께</h1>
@@ -62,7 +62,7 @@ export default function PartnershipPage() {
           </div>
 
           <div className="text-center mt-10">
-            <Link href="/products" className="text-xs text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">
+            <Link href="/products" className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors">
               제품 라인업 먼저 둘러보기 →
             </Link>
           </div>

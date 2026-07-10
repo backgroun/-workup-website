@@ -73,7 +73,7 @@ export const editorials: Editorial[] = [
     tags: [
       { x: 32, y: 22, name: "쿨링 반팔 티셔츠", price: "19,000원", productId: "cooling-short-sleeve", bg: "bg-[#2d4f72]" },
       { x: 58, y: 45, name: "흡한속건 긴팔 티셔츠", price: "25,000원", productId: "quick-dry-long-sleeve", bg: "bg-[#243d5e]" },
-      { x: 42, y: 68, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#1A2B4A]" },
+      { x: 42, y: 68, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#303236]" },
     ],
     sections: [
       {
@@ -87,11 +87,11 @@ export const editorials: Editorial[] = [
         ],
       },
       {
-        sectionBg: "bg-[#1A2B4A]",
+        sectionBg: "bg-[#303236]",
         title: "현장을 버티는 하의",
         desc: "움직임이 많은 현장 환경에서도 불편함 없이 착용 가능한 스트레치 소재 하의 라인업입니다.",
         items: [
-          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#303236]" },
           { productId: "work-chino-pants", name: "워크 치노 팬츠", price: "45,000원", bg: "bg-[#3D3D3D]" },
           { productId: "multi-pocket-vest", name: "멀티포켓 조끼", price: "35,000원", bg: "bg-[#5a5a5a]" },
         ],
@@ -111,7 +111,7 @@ export const editorials: Editorial[] = [
         title: "여성 UV 케어 라인",
         desc: "여성 작업자를 위한 UV 차단 전용 라인. 슬림 핏으로 작업 효율과 스타일을 동시에 잡았습니다.",
         items: [
-          { productId: "stretch-cargo-pants", name: "여성 UV 슬림 팬츠", price: "42,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "여성 UV 슬림 팬츠", price: "42,000원", bg: "bg-[#303236]" },
           { productId: "cooling-short-sleeve", name: "여성 쿨링 상의", price: "22,000원", bg: "bg-[#2d4f72]" },
           { productId: "multi-pocket-vest", name: "여성 기능 조끼", price: "33,000원", bg: "bg-[#3a5a6a]" },
         ],
@@ -130,7 +130,7 @@ export const editorials: Editorial[] = [
     tags: [
       { x: 35, y: 25, name: "경량 방풍 자켓", price: "59,000원", productId: "lightweight-windproof-jacket", bg: "bg-[#243d5e]" },
       { x: 55, y: 50, name: "방풍 후드 집업", price: "65,000원", productId: "windproof-hoodie-zip", bg: "bg-[#3D3D3D]" },
-      { x: 40, y: 72, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#1A2B4A]" },
+      { x: 40, y: 72, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#303236]" },
     ],
     sections: [
       {
@@ -148,7 +148,7 @@ export const editorials: Editorial[] = [
         title: "아웃도어를 완성하는 하의",
         desc: "험한 지형에서도 자유로운 움직임을 보장하는 스트레치 하의. 다용도 포켓으로 편의성을 높였습니다.",
         items: [
-          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#303236]" },
           { productId: "work-chino-pants", name: "워크 치노 팬츠", price: "45,000원", bg: "bg-[#3D3D3D]" },
           { productId: "quick-dry-long-sleeve", name: "흡한속건 긴팔 티셔츠", price: "25,000원", bg: "bg-[#243d5e]" },
         ],
@@ -181,12 +181,12 @@ export const editorials: Editorial[] = [
     title: "건설현장 필수템",
     subtitle: "내구성과 안전을 동시에",
     desc: "15년 경력자도 인정한 현장 최강 라인업.",
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
     textAccent: "#5B9BD5",
     heroSubtitle: "현장 작업자가 직접 선택한",
     tags: [
-      { x: 30, y: 28, name: "반사띠 안전 자켓", price: "79,000원", productId: "reflective-safety-jacket", bg: "bg-[#1A2B4A]" },
-      { x: 52, y: 48, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#1A2B4A]" },
+      { x: 30, y: 28, name: "반사띠 안전 자켓", price: "79,000원", productId: "reflective-safety-jacket", bg: "bg-[#303236]" },
+      { x: 52, y: 48, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#303236]" },
       { x: 38, y: 70, name: "쿨링 반팔 티셔츠", price: "19,000원", productId: "cooling-short-sleeve", bg: "bg-[#2d4f72]" },
     ],
     sections: [
@@ -195,7 +195,7 @@ export const editorials: Editorial[] = [
         title: "내구성 검증 작업복",
         desc: "1,000회 내구성 테스트를 통과한 소재. 현장의 거친 환경에서도 형태를 유지하는 워크업 SITE 라인입니다.",
         items: [
-          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#303236]" },
           { productId: "cooling-short-sleeve", name: "쿨링 반팔 티셔츠", price: "19,000원", bg: "bg-[#2d4f72]" },
           { productId: "multi-pocket-vest", name: "멀티포켓 조끼", price: "35,000원", bg: "bg-[#5a5a5a]" },
         ],
@@ -205,7 +205,7 @@ export const editorials: Editorial[] = [
         title: "안전 인증 보호구",
         desc: "KC 인증을 받은 반사 소재와 형광 원단으로 어두운 현장에서도 내 존재를 알립니다.",
         items: [
-          { productId: "reflective-safety-jacket", name: "반사띠 안전 자켓", price: "79,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "reflective-safety-jacket", name: "반사띠 안전 자켓", price: "79,000원", bg: "bg-[#303236]" },
           { productId: "lightweight-windproof-jacket", name: "경량 방풍 자켓", price: "59,000원", bg: "bg-[#243d5e]" },
           { productId: "quick-dry-long-sleeve", name: "흡한속건 긴팔 티셔츠", price: "25,000원", bg: "bg-[#243d5e]" },
         ],
@@ -216,7 +216,7 @@ export const editorials: Editorial[] = [
         desc: "장갑, 안전모, 안전화까지. 전신을 지키는 워크업 안전 보호구 풀 라인업입니다.",
         items: [
           { productId: "reflective-safety-jacket", name: "고시인성 안전 조끼", price: "45,000원", bg: "bg-[#2d4a2a]" },
-          { productId: "stretch-cargo-pants", name: "방호 카고 팬츠", price: "55,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "방호 카고 팬츠", price: "55,000원", bg: "bg-[#303236]" },
           { productId: "multi-pocket-vest", name: "안전 멀티포켓 조끼", price: "39,000원", bg: "bg-[#3a3a5a]" },
         ],
       },
@@ -263,7 +263,7 @@ export const editorials: Editorial[] = [
         desc: "오전엔 공장, 오후엔 바이어 미팅. 스트레치 소재와 세련된 실루엣으로 어느 자리에서도 어색함이 없습니다.",
         items: [
           { productId: "work-chino-pants", name: "워크 치노 팬츠", price: "45,000원", bg: "bg-[#3D3D3D]" },
-          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#303236]" },
           { productId: "multi-pocket-vest", name: "멀티포켓 조끼", price: "35,000원", bg: "bg-[#5a5a5a]" },
         ],
       },
@@ -301,18 +301,18 @@ export const editorials: Editorial[] = [
     heroSubtitle: "2026 SS · 신규 라인업",
     tags: [
       { x: 33, y: 32, name: "쿨링 반팔 티셔츠", price: "19,000원", productId: "cooling-short-sleeve", bg: "bg-[#243d5e]" },
-      { x: 44, y: 81, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#1A2B4A]" },
+      { x: 44, y: 81, name: "스트레치 카고 팬츠", price: "39,000원", productId: "stretch-cargo-pants", bg: "bg-[#303236]" },
       { x: 76, y: 72, name: "경량 방풍 자켓", price: "59,000원", productId: "lightweight-windproof-jacket", bg: "bg-[#243d5e]" },
     ],
     sections: [
       {
-        sectionBg: "bg-[#1A2B4A]",
+        sectionBg: "bg-[#303236]",
         title: "SITE 라인 신상품",
         desc: "현장의 목소리를 담아 새롭게 설계한 2026 SS SITE 라인. 기능성은 높이고 착용감은 더 가볍게.",
         items: [
           { productId: "lightweight-windproof-jacket", name: "경량 방풍 자켓", price: "59,000원", bg: "bg-[#243d5e]" },
           { productId: "cooling-short-sleeve", name: "쿨링 반팔 티셔츠", price: "19,000원", bg: "bg-[#2d4f72]" },
-          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "stretch-cargo-pants", name: "스트레치 카고 팬츠", price: "39,000원", bg: "bg-[#303236]" },
         ],
       },
       {
@@ -330,7 +330,7 @@ export const editorials: Editorial[] = [
         title: "안전 & 기능성 라인 신상품",
         desc: "KC 인증 반사 소재와 강화된 기능성. 2026 SS 안전 라인이 현장의 기준을 새롭게 정의합니다.",
         items: [
-          { productId: "reflective-safety-jacket", name: "반사띠 안전 자켓 NEW", price: "79,000원", bg: "bg-[#1A2B4A]" },
+          { productId: "reflective-safety-jacket", name: "반사띠 안전 자켓 NEW", price: "79,000원", bg: "bg-[#303236]" },
           { productId: "multi-pocket-vest", name: "기능성 멀티포켓 조끼", price: "39,000원", bg: "bg-[#3a3a2a]" },
           { productId: "quick-dry-long-sleeve", name: "흡한속건 긴팔 NEW", price: "27,000원", bg: "bg-[#243d5e]" },
         ],

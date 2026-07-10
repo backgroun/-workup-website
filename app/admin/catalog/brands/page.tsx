@@ -234,11 +234,11 @@ NOTIFY pgrst, 'reload schema';`}</pre>
               <div className="p-6 flex gap-6">
                 <div className="flex-1 min-w-0 space-y-5">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={editing.is_visible} onChange={(e) => set("is_visible", e.target.checked)} className="w-4 h-4 accent-[#1A2B4A]" />
+                    <input type="checkbox" checked={editing.is_visible} onChange={(e) => set("is_visible", e.target.checked)} className="w-4 h-4 accent-[#303236]" />
                     <span className="text-sm text-gray-700">뷰어에 노출</span>
                   </label>
                   <Field label="브랜드명">
-                    <input type="text" value={editing.brand_name} onChange={(e) => set("brand_name", e.target.value)} placeholder="예: 무지 / 칼하트 / ○○ 워크웨어" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                    <input type="text" value={editing.brand_name} onChange={(e) => set("brand_name", e.target.value)} placeholder="예: 무지 / 칼하트 / ○○ 워크웨어" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                   </Field>
                   <Field label="PDF 파일" hint="브라우저에서 ImageKit으로 직접 업로드 — 대용량 가능">
                     <div className="space-y-2">

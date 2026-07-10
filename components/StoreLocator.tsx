@@ -302,7 +302,7 @@ export default function StoreLocator({
       {/* ── 페이지 타이틀 ── */}
       <div className="bg-white py-16 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#1A2B4A] leading-tight mb-4">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
             {header.title}
           </h1>
           {header.description && (
@@ -333,7 +333,7 @@ export default function StoreLocator({
           <button
             onClick={handleLocate}
             disabled={locStatus === "loading"}
-            className="inline-flex items-center justify-center gap-2 bg-[#1A2B4A] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap flex-shrink-0"
+            className="inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap flex-shrink-0"
           >
             {locStatus === "loading" ? (
               <>
@@ -355,7 +355,7 @@ export default function StoreLocator({
           <select
             value={selectedSido}
             onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-            className="border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] flex-shrink-0"
+            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0"
             style={{ minWidth: "120px" }}
           >
             <option value="">시/도 선택</option>
@@ -368,7 +368,7 @@ export default function StoreLocator({
             value={selectedSigungu}
             onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
             disabled={!selectedSido}
-            className="border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] flex-shrink-0 disabled:opacity-40"
+            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0 disabled:opacity-40"
             style={{ minWidth: "130px" }}
           >
             <option value="">시/군/구 선택</option>
@@ -386,7 +386,7 @@ export default function StoreLocator({
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#1A2B4A] placeholder-gray-400 focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
@@ -400,7 +400,7 @@ export default function StoreLocator({
           <button
             onClick={handleLocate}
             disabled={locStatus === "loading"}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#1A2B4A] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60"
           >
             {locStatus === "loading" ? (
               <>
@@ -424,7 +424,7 @@ export default function StoreLocator({
             <select
               value={selectedSido}
               onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A]"
+              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236]"
             >
               <option value="">시/도 선택</option>
               {SIDO_LIST.map((sido) => (
@@ -435,7 +435,7 @@ export default function StoreLocator({
               value={selectedSigungu}
               onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
               disabled={!selectedSido}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#1A2B4A] px-3 py-3 focus:outline-none focus:border-[#1A2B4A] disabled:opacity-40"
+              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] disabled:opacity-40"
             >
               <option value="">시/군/구 선택</option>
               {sigunguList.map((sigungu) => (
@@ -454,7 +454,7 @@ export default function StoreLocator({
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#1A2B4A] placeholder-gray-400 focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
@@ -477,7 +477,7 @@ export default function StoreLocator({
             <div>
               {nearbyStores.length > 0 ? (
                 <>
-                  <p className="text-sm font-bold text-[#1A2B4A]">
+                  <p className="text-sm font-bold text-[#303236]">
                     {showAll ? `전국 ${allSorted.length}개 매장 — 거리순` : `가장 가까운 ${NEARBY_COUNT}개 매장`}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
@@ -495,7 +495,7 @@ export default function StoreLocator({
             {nearbyStores.length > 0 && (
               <button
                 onClick={() => { setShowAll(!showAll); setExpanded(null); }}
-                className="flex-shrink-0 text-xs border px-3 py-1.5 border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors whitespace-nowrap"
+                className="flex-shrink-0 text-xs border px-3 py-1.5 border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
               >
                 {showAll ? "근처 매장 찾아보기" : "전체 매장 보기"}
               </button>
@@ -530,7 +530,7 @@ export default function StoreLocator({
                 }
                 setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
               }}
-              className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-white text-[#1A2B4A] text-xs font-semibold px-3 py-2 shadow-md hover:bg-[#1A2B4A] hover:text-white transition-colors"
+              className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-white text-[#303236] text-xs font-semibold px-3 py-2 shadow-md hover:bg-[#303236] hover:text-white transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -541,7 +541,7 @@ export default function StoreLocator({
 
           {/* 선택된 매장 오버레이 */}
           {selectedStore && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#1A2B4A] px-4 py-3 flex items-center justify-between gap-4">
+            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#303236] px-4 py-3 flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-white font-bold text-sm truncate">{selectedStore.name}</p>
                 <p className="text-gray-300 text-xs mt-0.5 truncate">{selectedStore.address}</p>
@@ -588,7 +588,7 @@ export default function StoreLocator({
                   {/* 헤더 */}
                   <button
                     className={`w-full text-left px-4 py-4 flex items-center justify-between transition-colors ${
-                      isSelected ? "bg-[#1A2B4A]" : "hover:bg-gray-50"
+                      isSelected ? "bg-[#303236]" : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
                       const next = isOpen ? null : store.id;
@@ -609,7 +609,7 @@ export default function StoreLocator({
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`font-bold text-sm ${isSelected ? "text-white" : "text-[#1A2B4A]"}`}>{store.name}</span>
+                          <span className={`font-bold text-sm ${isSelected ? "text-white" : "text-[#303236]"}`}>{store.name}</span>
                           {store.distance >= 0 && (
                             <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
                               index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600"
@@ -666,7 +666,7 @@ export default function StoreLocator({
                                     href={`/products/${p.id}`}
                                     className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors"
                                   >
-                                    <span className="w-4 h-4 flex items-center justify-center bg-[#1A2B4A] text-white text-[10px] font-bold flex-shrink-0">
+                                    <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
                                       {i + 1}
                                     </span>
                                     <span className="truncate">{p.name}</span>
@@ -685,7 +685,7 @@ export default function StoreLocator({
                         <a
                           href={`tel:${store.phone.replace(/-/g, "")}`}
                           onClick={() => trackStoreEvent("call", { id: store.id, name: store.name })}
-                          className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#1A2B4A] text-white text-xs px-3 py-2 hover:bg-[#243d5e] transition-colors"
+                          className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#303236] text-white text-xs px-3 py-2 hover:bg-[#243d5e] transition-colors"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -704,7 +704,7 @@ export default function StoreLocator({
                           <Link
                             href={`/store/${store.id}`}
                             onClick={() => trackStoreEvent("list_click", { id: store.id, name: store.name })}
-                            className="flex w-full md:w-auto items-center justify-center gap-1.5 border border-[#1A2B4A] text-[#1A2B4A] text-xs px-3 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                            className="flex w-full md:w-auto items-center justify-center gap-1.5 border border-[#303236] text-[#303236] text-xs px-3 py-2 hover:bg-[#303236] hover:text-white transition-colors"
                           >
                             매장소개
                           </Link>

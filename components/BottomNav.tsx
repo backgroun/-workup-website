@@ -46,7 +46,7 @@ export default function BottomNav({
           <div className="w-9 h-1 bg-gray-300 rounded-full" />
         </div>
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
-          <span className="text-[11px] font-bold text-[#1A2B4A] tracking-[0.2em]">MENU</span>
+          <span className="text-[11px] font-bold text-[#303236] tracking-[0.2em]">MENU</span>
           <button
             onClick={() => setMenuOpen(false)}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -97,7 +97,7 @@ export default function BottomNav({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className="flex items-center justify-between py-4 text-[#1A2B4A] hover:text-[#ff550c] active:text-[#ff550c] transition-[color,transform] active:scale-[0.97]"
+                className="flex items-center justify-between py-4 text-[#303236] hover:text-[#ff550c] active:text-[#ff550c] transition-[color,transform] active:scale-[0.97]"
                 onClick={() => setMenuOpen(false)}
               >
                 <span className="flex items-baseline gap-3">

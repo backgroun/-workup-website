@@ -123,9 +123,9 @@ export default function AdminLogsPage() {
           <input value={q} onChange={e => setQ(e.target.value)}
             onKeyDown={e => e.key === "Enter" && applySearch()}
             placeholder="담당자 이름 또는 내용으로 검색 후 Enter"
-            className="flex-1 border border-gray-200 px-4 py-2 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+            className="flex-1 border border-gray-200 px-4 py-2 text-[15px] rounded focus:outline-none focus:border-[#303236]" />
           <button onClick={applySearch}
-            className="px-6 py-2 bg-[#1A2B4A] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
+            className="px-6 py-2 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
           {isFiltered && (
             <button onClick={reset}
               className="px-4 py-2 border border-gray-200 text-[15px] text-gray-500 hover:border-gray-400 rounded">초기화</button>
@@ -136,7 +136,7 @@ export default function AdminLogsPage() {
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-gray-600">작업</span>
             <select value={action} onChange={e => { setAction(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               <option value="all">전체</option>
               <option value="create">등록</option>
               <option value="update">수정</option>
@@ -146,17 +146,17 @@ export default function AdminLogsPage() {
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-gray-600">분류</span>
             <select value={resource} onChange={e => { setResource(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               {RESOURCES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <span className="text-[15px] font-semibold text-gray-600">기간</span>
             <input type="date" value={dateStart} onChange={e => { setDateStart(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
             <span className="text-gray-400">~</span>
             <input type="date" value={dateEnd} onChange={e => { setDateEnd(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
           </div>
         </div>
       </div>

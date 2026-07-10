@@ -14,9 +14,9 @@ export default function HomeFeatured() {
         <div className="flex items-end justify-between mb-10">
           <div>
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">Featured</p>
-            <h2 className="text-2xl font-bold text-[#1A2B4A]">이번 시즌 주목 제품</h2>
+            <h2 className="text-2xl font-bold text-[#303236]">이번 시즌 주목 제품</h2>
           </div>
-          <Link href="/products" className="text-xs text-gray-400 hover:text-[#1A2B4A] tracking-wide transition-colors hidden sm:block">
+          <Link href="/products" className="text-xs text-gray-400 hover:text-[#303236] tracking-wide transition-colors hidden sm:block">
             전체 제품 보기 →
           </Link>
         </div>
@@ -36,7 +36,7 @@ export default function HomeFeatured() {
               <p className="text-[10px] text-[#ff550c] tracking-widest uppercase mb-2">
                 {main.category} · {main.subCategory}
               </p>
-              <h3 className="text-xl font-bold text-[#1A2B4A] mb-2 group-hover:underline underline-offset-2">
+              <h3 className="text-xl font-bold text-[#303236] mb-2 group-hover:underline underline-offset-2">
                 {main.name}
               </h3>
               <p className="text-sm text-gray-500 italic mb-4">"{main.tagline}"</p>
@@ -54,8 +54,8 @@ export default function HomeFeatured() {
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-xl font-bold text-[#1A2B4A]">{main.price}</span>
-                <span className="text-xs text-[#1A2B4A] border border-[#1A2B4A] px-4 py-2 group-hover:bg-[#1A2B4A] group-hover:text-white transition-colors">
+                <span className="text-xl font-bold text-[#303236]">{main.price}</span>
+                <span className="text-xs text-[#303236] border border-[#303236] px-4 py-2 group-hover:bg-[#303236] group-hover:text-white transition-colors">
                   자세히 보기 →
                 </span>
               </div>
@@ -78,13 +78,13 @@ export default function HomeFeatured() {
                   <p className="text-[10px] text-[#ff550c] tracking-widest uppercase mb-1">
                     {p.category} · {p.subCategory}
                   </p>
-                  <h3 className="text-sm font-bold text-[#1A2B4A] mb-1 group-hover:underline underline-offset-2">
+                  <h3 className="text-sm font-bold text-[#303236] mb-1 group-hover:underline underline-offset-2">
                     {productDisplayName(p)}
                   </h3>
                   <p className="text-xs text-gray-400 italic mb-3 line-clamp-1">"{p.tagline}"</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-bold text-[#1A2B4A]">{p.price}</span>
-                    <span className="text-[10px] text-gray-400 group-hover:text-[#1A2B4A] transition-colors">
+                    <span className="text-base font-bold text-[#303236]">{p.price}</span>
+                    <span className="text-[10px] text-gray-400 group-hover:text-[#303236] transition-colors">
                       보기 →
                     </span>
                   </div>

@@ -67,13 +67,13 @@ export default async function HomeInstagramFeed() {
         <div className="flex items-end justify-between mb-8">
           <div>
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">Instagram</p>
-            <h2 className="text-2xl font-bold text-[#1A2B4A]">@workup_official_kr</h2>
+            <h2 className="text-2xl font-bold text-[#303236]">@workup_official_kr</h2>
           </div>
           <a
             href={IG_PROFILE}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-gray-400 hover:text-[#1A2B4A] tracking-wide transition-colors hidden sm:flex items-center gap-1"
+            className="text-xs text-gray-400 hover:text-[#303236] tracking-wide transition-colors hidden sm:flex items-center gap-1"
           >
             <InstagramGlyph className="w-3.5 h-3.5" />
             인스타그램 바로가기 →
@@ -104,7 +104,7 @@ export default async function HomeInstagramFeed() {
                   WU
                 </span>
               )}
-              <span className="absolute inset-0 flex items-center justify-center bg-[#1A2B4A]/0 opacity-0 transition-all duration-300 group-hover:bg-[#1A2B4A]/35 group-hover:opacity-100">
+              <span className="absolute inset-0 flex items-center justify-center bg-[#303236]/0 opacity-0 transition-all duration-300 group-hover:bg-[#303236]/35 group-hover:opacity-100">
                 <InstagramGlyph className="w-7 h-7 text-white" />
               </span>
             </a>
@@ -117,7 +117,7 @@ export default async function HomeInstagramFeed() {
             href={IG_PROFILE}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-[#1A2B4A] text-[#1A2B4A] text-xs tracking-widest px-8 py-3"
+            className="inline-flex items-center gap-2 border border-[#303236] text-[#303236] text-xs tracking-widest px-8 py-3"
           >
             <InstagramGlyph className="w-4 h-4" />
             인스타그램 팔로우 →

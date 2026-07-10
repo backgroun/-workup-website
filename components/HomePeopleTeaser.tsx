@@ -13,9 +13,9 @@ export default function HomePeopleTeaser() {
         <div className="flex items-end justify-between mb-10">
           <div>
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">MATE</p>
-            <h2 className="text-2xl font-bold text-[#1A2B4A]">일하는 사람들의 이야기</h2>
+            <h2 className="text-2xl font-bold text-[#303236]">일하는 사람들의 이야기</h2>
           </div>
-          <Link href="/people" className="text-xs text-gray-400 hover:text-[#1A2B4A] tracking-wide transition-colors hidden sm:block">
+          <Link href="/people" className="text-xs text-gray-400 hover:text-[#303236] tracking-wide transition-colors hidden sm:block">
             더 많은 이야기 →
           </Link>
         </div>
@@ -28,7 +28,7 @@ export default function HomePeopleTeaser() {
               </p>
               <div>
                 <div className="w-6 h-0.5 bg-[#ff550c] mb-3" />
-                <p className="text-xs font-bold text-[#1A2B4A]">{s.job}</p>
+                <p className="text-xs font-bold text-[#303236]">{s.job}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{s.years}</p>
               </div>
             </div>
@@ -38,7 +38,7 @@ export default function HomePeopleTeaser() {
         <div className="mt-8 text-center">
           <Link
             href="/people"
-            className="inline-block border border-[#1A2B4A] text-[#1A2B4A] text-xs tracking-widest px-8 py-3 hover:bg-[#1A2B4A] hover:text-white transition-colors"
+            className="inline-block border border-[#303236] text-[#303236] text-xs tracking-widest px-8 py-3 hover:bg-[#303236] hover:text-white transition-colors"
           >
             MATE 바로가기 →
           </Link>

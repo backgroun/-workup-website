@@ -114,7 +114,7 @@ export default function Header({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
+                className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#303236]"}`}
                 style={{ fontWeight: 650 }}
               >
                 {/* 기본은 영문, 마우스 오버 시 한글로 크로스페이드.
@@ -156,7 +156,7 @@ export default function Header({
             {search.enabled && (
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-                className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
+                className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
                 aria-label="검색"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,7 +169,7 @@ export default function Header({
             {/* 찜 목록 — 비로그인 시 로그인 유도 */}
             <button
               onClick={() => { memberSession ? router.push("/cart") : router.push("/member/login?from=cart"); }}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
+              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label="찜 목록"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +186,7 @@ export default function Header({
             {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 로그인 */}
             <Link
               href={memberSession ? "/mypage" : "/member/login"}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#1A2B4A]"}`}
+              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label={memberSession ? "마이페이지" : "로그인"}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,7 +213,7 @@ export default function Header({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={search.placeholder}
                 autoFocus
-                className="flex-1 text-[14px] text-[#1A2B4A] placeholder-gray-400 bg-transparent outline-none"
+                className="flex-1 text-[14px] text-[#303236] placeholder-gray-400 bg-transparent outline-none"
                 style={{ fontSize: "16px" }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSearch(searchQuery);
@@ -228,7 +228,7 @@ export default function Header({
               )}
               <button
                 onClick={() => handleSearch(searchQuery)}
-                className="text-[#1A2B4A] hover:text-[#ff550c] transition-colors flex-shrink-0"
+                className="text-[#303236] hover:text-[#ff550c] transition-colors flex-shrink-0"
                 aria-label="검색 실행"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

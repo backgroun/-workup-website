@@ -68,7 +68,7 @@ export default function MemberDashboardPage() {
           <p className="text-base text-gray-400 mt-1">전체 회원 현황 및 최근 가입 회원</p>
         </div>
         <Link href="/admin/members/list"
-          className="px-6 py-2.5 text-base bg-[#1A2B4A] text-white hover:bg-[#243d5e] rounded font-bold">
+          className="px-6 py-2.5 text-base bg-[#303236] text-white hover:bg-[#243d5e] rounded font-bold">
           전체 회원 조회 →
         </Link>
       </div>
@@ -84,13 +84,13 @@ export default function MemberDashboardPage() {
       <div className="grid grid-cols-5 gap-4">
         {[
           { label: "이번달 신규", value: stats.newThisMonth, color: "text-[#ff550c]",    href: "/admin/members/list" },
-          { label: "전체 회원",   value: stats.total,        color: "text-[#1A2B4A]",    href: "/admin/members/list" },
+          { label: "전체 회원",   value: stats.total,        color: "text-[#303236]",    href: "/admin/members/list" },
           { label: "활성 회원",   value: stats.active,       color: "text-emerald-600",  href: "/admin/members/list" },
           { label: "휴면 회원",   value: stats.dormant,      color: "text-amber-500",    href: "/admin/members/dormant" },
           { label: "탈퇴 회원",   value: stats.withdrawn,    color: "text-red-500",      href: "/admin/members/withdrawn" },
         ].map(s => (
           <Link key={s.label} href={s.href}
-            className="bg-white border border-gray-200 rounded-xl p-6 hover:border-[#1A2B4A] hover:shadow-sm transition-all text-center block">
+            className="bg-white border border-gray-200 rounded-xl p-6 hover:border-[#303236] hover:shadow-sm transition-all text-center block">
             <p className="text-[15px] text-gray-500 font-medium mb-2">{s.label}</p>
             {loading
               ? <p className="text-3xl font-black text-gray-200 animate-pulse">---</p>
@@ -105,7 +105,7 @@ export default function MemberDashboardPage() {
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-800">최근 가입 회원</h2>
-          <Link href="/admin/members/list" className="text-[15px] text-[#1A2B4A] hover:underline font-semibold">
+          <Link href="/admin/members/list" className="text-[15px] text-[#303236] hover:underline font-semibold">
             전체 조회 →
           </Link>
         </div>
@@ -155,7 +155,7 @@ export default function MemberDashboardPage() {
       {/* 빠른 메뉴 */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "회원 조회",     desc: "전체 회원 검색·필터·관리",  href: "/admin/members/list",       icon: "🔍", border: "border-[#1A2B4A]/30" },
+          { label: "회원 조회",     desc: "전체 회원 검색·필터·관리",  href: "/admin/members/list",       icon: "🔍", border: "border-[#303236]/30" },
           { label: "휴면회원 관리", desc: "장기 미활동 회원 관리",      href: "/admin/members/dormant",    icon: "💤", border: "border-amber-300" },
           { label: "접속 관리",     desc: "최근 접속 현황 확인",        href: "/admin/members/access",     icon: "📶", border: "border-blue-300" },
           { label: "탈퇴 관리",     desc: "탈퇴 회원 이력 및 관리",    href: "/admin/members/withdrawn",  icon: "👋", border: "border-red-200" },

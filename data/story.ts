@@ -135,7 +135,7 @@ export type StorySection =
 
 export type StoryHero = {
   image_url?: string;     // 설정 시 배경 이미지, 없으면 네이비 + WU 워터마크
-  bg: string;             // 기본 "#1A2B4A"
+  bg: string;             // 기본 "#303236"
   showWatermark: boolean; // 기본 true
   heading: string;        // 줄바꿈 \n
   sub: string;
@@ -265,7 +265,7 @@ export function emptySection(type: StorySectionType): StorySection {
 export const DEFAULT_STORY: StoryConfig = {
   hero: {
     image_url: "/images/story-hero.jpg",
-    bg: "#1A2B4A",
+    bg: "#303236",
     showWatermark: false,
     heading: "일하는 사람 편에서\n만든 브랜드",
     sub: "워크업은 현장에서 시작해 일상까지 이어지는 Work Life Wear 브랜드입니다.",

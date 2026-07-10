@@ -69,11 +69,11 @@ export default function ProductInquiryModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
       <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 md:p-8">
-          <h2 className="text-xl font-bold text-[#1A2B4A] mb-6">상품 문의</h2>
+          <h2 className="text-xl font-bold text-[#303236] mb-6">상품 문의</h2>
 
           {/* 문의 상품 */}
           <div className="mb-5">
-            <p className="text-sm font-bold text-[#1A2B4A] mb-2">문의 상품</p>
+            <p className="text-sm font-bold text-[#303236] mb-2">문의 상품</p>
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-[#f4f4f4] rounded overflow-hidden flex-shrink-0">
                 {product.imageUrl && (
@@ -81,37 +81,37 @@ export default function ProductInquiryModal({
                   <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                 )}
               </div>
-              <p className="text-sm text-[#1A2B4A]">{product.name}</p>
+              <p className="text-sm text-[#303236]">{product.name}</p>
             </div>
           </div>
 
           {/* 문의유형 */}
           <div className="mb-5">
-            <label className="block text-sm font-bold text-[#1A2B4A] mb-2">문의유형</label>
+            <label className="block text-sm font-bold text-[#303236] mb-2">문의유형</label>
             <select value={inquiryType} onChange={(e) => setInquiryType(e.target.value)}
-              className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] bg-transparent">
+              className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#303236] bg-transparent">
               {INQUIRY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
           {/* 문의글 제목 */}
           <div className="mb-3">
-            <label className="block text-sm font-bold text-[#1A2B4A] mb-2">문의글 제목 <span className="text-[#ff550c]">*</span></label>
+            <label className="block text-sm font-bold text-[#303236] mb-2">문의글 제목 <span className="text-[#ff550c]">*</span></label>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목은 필수로 입력해 주세요."
-              className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] placeholder:text-gray-300" />
+              className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#303236] placeholder:text-gray-300" />
           </div>
 
           {/* 비밀글 */}
           <label className="flex items-center gap-2 mb-5 cursor-pointer w-fit">
-            <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} className="accent-[#1A2B4A] w-4 h-4" />
-            <span className="text-sm text-[#1A2B4A]">비밀글</span>
+            <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} className="accent-[#303236] w-4 h-4" />
+            <span className="text-sm text-[#303236]">비밀글</span>
           </label>
 
           {/* 내용 */}
           <div className="mb-5">
-            <label className="block text-sm font-bold text-[#1A2B4A] mb-2">내용 <span className="text-[#ff550c]">*</span></label>
+            <label className="block text-sm font-bold text-[#303236] mb-2">내용 <span className="text-[#ff550c]">*</span></label>
             <textarea required value={content} onChange={(e) => setContent(e.target.value)} rows={5} placeholder="문의 내용은 필수로 입력해 주세요."
-              className="w-full border border-gray-300 rounded p-3 text-sm focus:outline-none focus:border-[#1A2B4A] placeholder:text-gray-300 resize-y" />
+              className="w-full border border-gray-300 rounded p-3 text-sm focus:outline-none focus:border-[#303236] placeholder:text-gray-300 resize-y" />
           </div>
 
           {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
@@ -119,11 +119,11 @@ export default function ProductInquiryModal({
           {/* 버튼 */}
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3.5 border border-gray-300 text-[#1A2B4A] text-sm font-semibold rounded hover:bg-gray-50 transition-colors">
+              className="flex-1 py-3.5 border border-gray-300 text-[#303236] text-sm font-semibold rounded hover:bg-gray-50 transition-colors">
               문의 취소
             </button>
             <button type="button" onClick={submit} disabled={!canSubmit}
-              className="flex-1 py-3.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d5e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              className="flex-1 py-3.5 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
               {submitting ? "접수 중…" : "저장"}
             </button>
           </div>

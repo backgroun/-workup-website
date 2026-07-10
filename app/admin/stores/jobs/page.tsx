@@ -183,7 +183,7 @@ export default function AdminStoreJobsPage() {
           <button
             onClick={openNew}
             disabled={stores.length === 0}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243a63] transition-colors rounded disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#303236] text-white text-sm font-semibold hover:bg-[#243a63] transition-colors rounded disabled:opacity-50"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -204,7 +204,7 @@ export default function AdminStoreJobsPage() {
         <select
           value={storeFilter}
           onChange={(e) => setStoreFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         >
           <option value="전체">지점 전체</option>
           {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -214,7 +214,7 @@ export default function AdminStoreJobsPage() {
             <button
               key={opt}
               onClick={() => setActiveFilter(opt)}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${activeFilter === opt ? "bg-[#1A2B4A] text-white" : "text-gray-500 hover:text-gray-900"}`}
+              className={`px-3 py-2 text-sm font-medium transition-colors ${activeFilter === opt ? "bg-[#303236] text-white" : "text-gray-500 hover:text-gray-900"}`}
             >
               {opt}
             </button>
@@ -228,7 +228,7 @@ export default function AdminStoreJobsPage() {
         {loading ? (
           <div className="bg-white border border-gray-200 rounded-xl py-16 text-center text-gray-400">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
               불러오는 중...
             </div>
           </div>
@@ -276,7 +276,7 @@ export default function AdminStoreJobsPage() {
                   </button>
                   <button
                     onClick={() => openEdit(job)}
-                    className="px-3 py-1.5 text-xs font-semibold text-[#1A2B4A] border border-[#1A2B4A] rounded hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                    className="px-3 py-1.5 text-xs font-semibold text-[#303236] border border-[#303236] rounded hover:bg-[#303236] hover:text-white transition-colors"
                   >
                     수정
                   </button>
@@ -315,7 +315,7 @@ export default function AdminStoreJobsPage() {
                 <select
                   value={draft.store_id}
                   onChange={(e) => set("store_id", Number(e.target.value))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
                 >
                   <option value={0}>지점 선택</option>
                   {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -328,7 +328,7 @@ export default function AdminStoreJobsPage() {
                   value={draft.title}
                   onChange={(e) => set("title", e.target.value)}
                   placeholder="매장 파트타임 직원 모집"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -337,7 +337,7 @@ export default function AdminStoreJobsPage() {
                   <select
                     value={draft.employment_type}
                     onChange={(e) => set("employment_type", e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
                   >
                     {EMPLOYMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -348,7 +348,7 @@ export default function AdminStoreJobsPage() {
                     type="date"
                     value={draft.deadline}
                     onChange={(e) => set("deadline", e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
                   />
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function AdminStoreJobsPage() {
                   value={draft.salary_info}
                   onChange={(e) => set("salary_info", e.target.value)}
                   placeholder="시급 12,000원 / 월급 협의"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
                 />
               </div>
               <div>
@@ -369,7 +369,7 @@ export default function AdminStoreJobsPage() {
                   value={draft.description}
                   onChange={(e) => set("description", e.target.value)}
                   placeholder="업무 내용, 근무 환경 등을 입력하세요."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A] resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236] resize-none"
                 />
               </div>
               <div>
@@ -379,7 +379,7 @@ export default function AdminStoreJobsPage() {
                   value={draft.requirements}
                   onChange={(e) => set("requirements", e.target.value)}
                   placeholder="우대사항, 경력, 자격요건 등을 입력하세요."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A] resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236] resize-none"
                 />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -387,7 +387,7 @@ export default function AdminStoreJobsPage() {
                   type="checkbox"
                   checked={draft.is_active}
                   onChange={(e) => set("is_active", e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                  className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
                 />
                 <span className="text-sm font-medium text-gray-700">공개 게시 (체크 해제 시 비공개)</span>
               </label>

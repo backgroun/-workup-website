@@ -95,7 +95,7 @@ function Section({
       <div className="px-6 py-5 border-b border-gray-100 bg-gray-50">
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          <span className="text-[15px] font-bold text-[#1A2B4A]">{items.length}개</span>
+          <span className="text-[15px] font-bold text-[#303236]">{items.length}개</span>
         </div>
         <p className="text-[14px] text-gray-400 mt-0.5">{desc}</p>
       </div>
@@ -109,12 +109,12 @@ function Section({
             value={newName}
             onChange={e => setNewName(e.target.value)}
             placeholder={addPlaceholder}
-            className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A]"
+            className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236]"
           />
           <button
             type="submit"
             disabled={saving || !newName.trim()}
-            className="px-5 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-semibold hover:bg-[#243d5e] disabled:opacity-50 rounded"
+            className="px-5 py-2.5 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] disabled:opacity-50 rounded"
           >
             {saving ? "추가 중..." : "추가"}
           </button>

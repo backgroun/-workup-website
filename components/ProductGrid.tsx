@@ -14,7 +14,7 @@ const products: Product[] = [
     name: "스트레치 카고 팬츠",
     description: "하루 종일 쪼그려 앉아도 안 당깁니다. 11개 포켓 / 무릎 이중 보강 / 스트레치 원단",
     price: "39,000원",
-    color: "bg-[#1A2B4A]",
+    color: "bg-[#303236]",
   },
   {
     id: 2,
@@ -74,7 +74,7 @@ export default function ProductGrid({ id, title, subtitle, filter }: Props) {
     <section id={id} className="py-20 border-t border-gray-200">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-[#1A2B4A] tracking-wide mb-2">
+          <h2 className="text-2xl font-bold text-[#303236] tracking-wide mb-2">
             {title}
           </h2>
           {subtitle && (
@@ -95,13 +95,13 @@ export default function ProductGrid({ id, title, subtitle, filter }: Props) {
               <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-1">
                 WORKUP {product.line}
               </p>
-              <h3 className="text-base font-semibold text-[#1A2B4A] mb-2 group-hover:underline underline-offset-2 transition-all">
+              <h3 className="text-base font-semibold text-[#303236] mb-2 group-hover:underline underline-offset-2 transition-all">
                 {product.name}
               </h3>
               <p className="text-sm text-gray-500 leading-relaxed mb-2">
                 {product.description}
               </p>
-              <p className="text-sm font-bold text-[#1A2B4A]">
+              <p className="text-sm font-bold text-[#303236]">
                 {product.price}
               </p>
             </div>

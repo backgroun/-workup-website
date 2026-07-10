@@ -128,7 +128,7 @@ export default function StorePageSettings() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">미리보기</p>
           <div className="border border-gray-100 rounded-xl bg-white px-6 py-8">
-            <h2 className="text-[26px] font-bold text-[#1A2B4A] leading-tight mb-3">{cfg.title || "(제목 없음)"}</h2>
+            <h2 className="text-[26px] font-bold text-[#303236] leading-tight mb-3">{cfg.title || "(제목 없음)"}</h2>
             {cfg.description && (
               <p className="text-[13px] text-gray-500 leading-relaxed mb-6 whitespace-pre-line">
                 {cfg.description.replace(/\{count\}/g, "153")}

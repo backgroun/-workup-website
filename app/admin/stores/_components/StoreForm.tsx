@@ -88,7 +88,7 @@ function ProductSearchSlot({
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
             placeholder="상품명 검색"
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
           />
           {open && query.trim() && (
             <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto">
@@ -271,7 +271,7 @@ export default function StoreForm({
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
               placeholder="워크업 포천직영점"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -281,7 +281,7 @@ export default function StoreForm({
               value={form.region}
               onChange={(e) => set("region", e.target.value)}
               placeholder="경기 / 서울 / 부산 등"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -289,7 +289,7 @@ export default function StoreForm({
             <select
               value={form.store_type}
               onChange={(e) => set("store_type", e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             >
               {STORE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -303,7 +303,7 @@ export default function StoreForm({
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
               placeholder="경기도 포천시 호국로 90 워크업 포천 본점"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -313,7 +313,7 @@ export default function StoreForm({
               value={form.phone}
               onChange={(e) => set("phone", e.target.value)}
               placeholder="031-000-0000"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
         </div>
@@ -327,7 +327,7 @@ export default function StoreForm({
                 type="checkbox"
                 checked={hoursSame}
                 onChange={(e) => handleSameChange(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
               />
               <span className="text-sm text-gray-600">평일 · 주말 동일</span>
             </label>
@@ -340,7 +340,7 @@ export default function StoreForm({
                 value={form.hoursWeekday}
                 onChange={(e) => handleWeekdayChange(e.target.value)}
                 placeholder="10:00 - 20:00"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
               />
             </div>
             <div>
@@ -351,7 +351,7 @@ export default function StoreForm({
                 onChange={(e) => set("hoursWeekend", e.target.value)}
                 placeholder="10:00 - 19:00"
                 disabled={hoursSame}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A] disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236] disabled:bg-gray-50 disabled:text-gray-400"
               />
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function StoreForm({
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="매장 소개 및 특징을 입력하세요."
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A] resize-none"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236] resize-none"
           />
         </div>
       </section>
@@ -387,7 +387,7 @@ export default function StoreForm({
               value={form.brands}
               onChange={(e) => set("brands", e.target.value)}
               placeholder="WORKUP;나이키;아디다스"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -397,7 +397,7 @@ export default function StoreForm({
               value={form.kakao_channel_url}
               onChange={(e) => set("kakao_channel_url", e.target.value)}
               placeholder="https://pf.kakao.com/..."
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -407,7 +407,7 @@ export default function StoreForm({
               value={form.store_url}
               onChange={(e) => set("store_url", e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>
@@ -416,7 +416,7 @@ export default function StoreForm({
               type="number"
               value={form.sort_order}
               onChange={(e) => set("sort_order", e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div className="flex items-center gap-6 pt-2">
@@ -425,7 +425,7 @@ export default function StoreForm({
                 type="checkbox"
                 checked={form.parking}
                 onChange={(e) => set("parking", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
               />
               <span className="text-sm font-medium text-gray-700">주차 가능</span>
             </label>
@@ -434,7 +434,7 @@ export default function StoreForm({
                 type="checkbox"
                 checked={form.is_active}
                 onChange={(e) => set("is_active", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
               />
               <span className="text-sm font-medium text-gray-700">활성 (공개)</span>
             </label>
@@ -443,7 +443,7 @@ export default function StoreForm({
                 type="checkbox"
                 checked={form.page_active}
                 onChange={(e) => set("page_active", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
               />
               <span className="text-sm font-medium text-gray-700">스토어 페이지 노출</span>
             </label>
@@ -502,10 +502,10 @@ export default function StoreForm({
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors"
+            className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors"
           >
             {uploading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
             ) : (
               <>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">

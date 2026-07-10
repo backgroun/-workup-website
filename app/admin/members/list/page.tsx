@@ -69,21 +69,21 @@ function EditModal({ member, onSave, onClose }: {
             <div key={key}>
               <label className="block text-[14px] font-semibold text-gray-600 mb-1.5">{lbl}</label>
               <input type={type} value={(form[key] as string) ?? ""} onChange={e => set(key, e.target.value)}
-                className="w-full border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+                className="w-full border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236]" />
             </div>
           ))}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[14px] font-semibold text-gray-600 mb-1.5">등급</label>
               <select value={form.grade} onChange={e => set("grade", e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+                className="w-full border border-gray-200 px-3 py-2.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
                 {GRADES.slice(1).map(g => <option key={g}>{g}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-[14px] font-semibold text-gray-600 mb-1.5">상태</label>
               <select value={form.status} onChange={e => set("status", e.target.value as Member["status"])}
-                className="w-full border border-gray-200 px-3 py-2.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+                className="w-full border border-gray-200 px-3 py-2.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
                 <option value="active">활성</option>
                 <option value="dormant">휴면</option>
                 <option value="withdrawn">탈퇴</option>
@@ -93,14 +93,14 @@ function EditModal({ member, onSave, onClose }: {
           <div>
             <label className="block text-[14px] font-semibold text-gray-600 mb-1.5">메모</label>
             <textarea value={form.memo ?? ""} onChange={e => set("memo", e.target.value)} rows={3}
-              className="w-full border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A] resize-none" />
+              className="w-full border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236] resize-none" />
           </div>
         </div>
         <div className="px-7 py-5 border-t border-gray-200 flex gap-3 justify-end">
           <button onClick={onClose}
             className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-6 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-bold hover:bg-[#243d5e] disabled:opacity-50 rounded">
+            className="px-6 py-2.5 bg-[#303236] text-white text-[15px] font-bold hover:bg-[#243d5e] disabled:opacity-50 rounded">
             {saving ? "저장 중..." : "저장"}
           </button>
         </div>
@@ -240,7 +240,7 @@ export default function MemberListPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 회원 현황</Link>
+            <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#303236]">← 회원 현황</Link>
             <span className="text-gray-200">/</span>
             <h1 className="text-3xl font-bold text-gray-900">회원 조회</h1>
           </div>
@@ -260,7 +260,7 @@ export default function MemberListPage() {
         <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
           <span className="text-[15px] font-semibold text-gray-600 w-20 shrink-0">검색</span>
           <select value={searchType} onChange={e => setSearchType(e.target.value)}
-            className="border border-gray-200 px-3 py-2 text-[15px] bg-white rounded w-28 focus:outline-none focus:border-[#1A2B4A]">
+            className="border border-gray-200 px-3 py-2 text-[15px] bg-white rounded w-28 focus:outline-none focus:border-[#303236]">
             <option value="name">이름</option>
             <option value="email">이메일</option>
             <option value="phone">연락처</option>
@@ -268,9 +268,9 @@ export default function MemberListPage() {
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && (setApplied({ type: searchType, query: searchQuery }), setPage(1))}
             placeholder="검색어 입력 후 Enter"
-            className="flex-1 border border-gray-200 px-4 py-2 text-[15px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+            className="flex-1 border border-gray-200 px-4 py-2 text-[15px] rounded focus:outline-none focus:border-[#303236]" />
           <button onClick={() => { setApplied({ type: searchType, query: searchQuery }); setPage(1); }}
-            className="px-6 py-2 bg-[#1A2B4A] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
+            className="px-6 py-2 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
           {isFiltered && (
             <button onClick={() => {
               setSearchQuery(""); setApplied({ type: "name", query: "" });
@@ -284,7 +284,7 @@ export default function MemberListPage() {
           <div className="flex items-center gap-3">
             <span className="text-[15px] font-semibold text-gray-600">등급</span>
             <select value={gradeFilter} onChange={e => { setGradeFilter(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               {GRADES.map(g => <option key={g}>{g}</option>)}
             </select>
           </div>
@@ -294,7 +294,7 @@ export default function MemberListPage() {
               <label key={s} className="flex items-center gap-1.5 cursor-pointer">
                 <input type="radio" name="sts" checked={statusFilter === s}
                   onChange={() => { setStatusFilter(s); setPage(1); }}
-                  className="accent-[#1A2B4A] w-4 h-4" />
+                  className="accent-[#303236] w-4 h-4" />
                 <span className="text-[15px] text-gray-700">{s === "전체" ? "전체" : STATUS_LABEL[s]}</span>
               </label>
             ))}
@@ -302,10 +302,10 @@ export default function MemberListPage() {
           <div className="flex items-center gap-2 ml-auto">
             <span className="text-[15px] font-semibold text-gray-600">가입일</span>
             <input type="date" value={dateStart} onChange={e => { setDateStart(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
             <span className="text-gray-400">~</span>
             <input type="date" value={dateEnd} onChange={e => { setDateEnd(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#1A2B4A]" />
+              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
           </div>
         </div>
       </div>
@@ -313,7 +313,7 @@ export default function MemberListPage() {
       {/* 결과 요약 */}
       <div className="flex items-center justify-between">
         <span className="text-[15px] text-gray-600">
-          검색결과 <span className="font-bold text-[#1A2B4A] text-lg">{filtered.length}</span>명
+          검색결과 <span className="font-bold text-[#303236] text-lg">{filtered.length}</span>명
         </span>
         <select value={perPage} onChange={e => { setPerPage(+e.target.value); setPage(1); }}
           className="border border-gray-200 px-3 py-1.5 text-[14px] bg-white rounded focus:outline-none">
@@ -333,7 +333,7 @@ export default function MemberListPage() {
           {/* 일괄 작업 바 */}
           <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-200 bg-gray-50 flex-wrap">
             {selected.size > 0 && (
-              <span className="text-[15px] font-bold text-[#1A2B4A] mr-1">{selected.size}명 선택</span>
+              <span className="text-[15px] font-bold text-[#303236] mr-1">{selected.size}명 선택</span>
             )}
             <div className="flex items-center gap-2">
               <span className="text-[14px] text-gray-500">등급</span>
@@ -368,7 +368,7 @@ export default function MemberListPage() {
                 <tr>
                   <th className="px-4 py-4 w-10">
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
-                      className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                      className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
                   {["가입일시", "이메일", "이름", "연락처", "메모", "등급", "상태", "최근 접속", "관리"].map(h => (
                     <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
@@ -384,7 +384,7 @@ export default function MemberListPage() {
                   <tr key={m.id} className={selected.has(m.id) ? "bg-blue-50/60" : "hover:bg-gray-50 transition-colors"}>
                     <td className="px-4 py-4">
                       <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleOne(m.id)}
-                        className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                        className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                     </td>
                     <td className="px-5 py-4 text-[13px] text-gray-400 whitespace-nowrap">{fmtDate(m.created_at)}</td>
                     <td className="px-5 py-4 text-[15px] text-gray-700 whitespace-nowrap">{m.email}</td>
@@ -405,7 +405,7 @@ export default function MemberListPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2 justify-end">
                         <button onClick={() => setEditTarget(m)}
-                          className="text-[14px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] px-3.5 py-1.5 hover:bg-[#1A2B4A] hover:text-white rounded whitespace-nowrap">
+                          className="text-[14px] font-semibold text-[#303236] border border-[#303236] px-3.5 py-1.5 hover:bg-[#303236] hover:text-white rounded whitespace-nowrap">
                           수정
                         </button>
                         <button onClick={() => resetPassword(m)} disabled={resettingId === m.id}
@@ -438,7 +438,7 @@ export default function MemberListPage() {
                 const n = Math.max(1, Math.min(page - 3, totalPages - 6)) + i;
                 return n <= totalPages ? (
                   <button key={n} onClick={() => setPage(n)}
-                    className={`px-3 py-1.5 text-[14px] border rounded ${page === n ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>
+                    className={`px-3 py-1.5 text-[14px] border rounded ${page === n ? "bg-[#303236] text-white border-[#303236]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>
                     {n}
                   </button>
                 ) : null;

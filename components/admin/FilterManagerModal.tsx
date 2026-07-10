@@ -57,14 +57,14 @@ export default function FilterManagerModal({ open, onClose }: { open: boolean; o
     }
   };
 
-  const inputCls = "border border-gray-200 px-2.5 py-1.5 text-sm rounded focus:outline-none focus:border-[#1A2B4A]";
+  const inputCls = "border border-gray-200 px-2.5 py-1.5 text-sm rounded focus:outline-none focus:border-[#303236]";
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-[#1A2B4A]">필터 관리</h2>
+            <h2 className="text-lg font-bold text-[#303236]">필터 관리</h2>
             <p className="text-xs text-gray-400 mt-0.5">전체상품 페이지 상단 필터(사이즈·가격)를 조정합니다.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export default function FilterManagerModal({ open, onClose }: { open: boolean; o
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSize(); } }}
                     placeholder="사이즈 추가 (예: 4XL)" className={`w-44 ${inputCls}`} />
                   <button type="button" onClick={addSize} disabled={!sizeInput.trim()}
-                    className="px-3 py-1.5 text-sm border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors disabled:opacity-40">+ 추가</button>
+                    className="px-3 py-1.5 text-sm border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors disabled:opacity-40">+ 추가</button>
                 </div>
               </div>
 
@@ -110,7 +110,7 @@ export default function FilterManagerModal({ open, onClose }: { open: boolean; o
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">가격 구간</p>
                   <button type="button" onClick={addRange}
-                    className="text-xs font-semibold text-[#1A2B4A] border border-[#1A2B4A] rounded px-2.5 py-1 hover:bg-[#1A2B4A] hover:text-white transition-colors">+ 구간 추가</button>
+                    className="text-xs font-semibold text-[#303236] border border-[#303236] rounded px-2.5 py-1 hover:bg-[#303236] hover:text-white transition-colors">+ 구간 추가</button>
                 </div>
                 <p className="text-[11px] text-gray-400 mb-3">최소·최대 금액(원). <b>최대를 비우면 &quot;이상&quot;</b>으로 처리됩니다. (예: 최소 80000, 최대 비움 → 8만원 이상)</p>
                 {cfg.priceRanges.length === 0 ? (

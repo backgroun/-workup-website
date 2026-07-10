@@ -82,7 +82,7 @@ const BASE_STYLES: PartnerStyles = {
   phone_label: s(12, "#9ca3af"),
   phone: s(14, "#ffffff"),
   hours: s(12, "#6b7280"),
-  form_title: s(16, "#1A2B4A"),
+  form_title: s(16, "#303236"),
   form_desc: s(12, "#9ca3af"),
 };
 
@@ -90,8 +90,8 @@ const BASE_STYLES: PartnerStyles = {
 const FORM_BASE = {
   label_style: s(12, "#6b7280"),
   input_size: 14,
-  input_color: "#1A2B4A",
-  button_bg: "#1A2B4A",
+  input_color: "#303236",
+  button_bg: "#303236",
   button_color: "#ffffff",
   footer_style: s(12, "#9ca3af"),
   success_title: "문의가 접수되었습니다",
@@ -144,7 +144,7 @@ export const DEFAULT_PARTNERSHIP: PartnershipConfig = {
     hours: "평일 09:00 – 18:00",
     form_title: "가맹 창업 문의하기",
     form_desc: "",
-    panel_bg: "#1A2B4A",
+    panel_bg: "#303236",
     seo_title: "가맹·창업 문의 | WORKUP",
     seo_desc: "WORKUP 브랜드로 독립 매장을 창업하고 싶으신 분을 위한 가맹·창업 문의 안내.",
     styles: BASE_STYLES,

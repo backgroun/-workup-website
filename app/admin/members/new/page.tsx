@@ -118,7 +118,7 @@ export default function AdminMemberNewPage() {
         <div className="pt-2 flex gap-3">
           <button
             type="submit" disabled={saving}
-            className="flex-1 py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors"
+            className="flex-1 py-3 bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors"
           >
             {saving ? "등록 중..." : "회원 등록"}
           </button>

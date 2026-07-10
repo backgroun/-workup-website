@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 
 const slides = [
-  { id: 1, bg: "#1A2B4A", accent: "#ff550c", tag: "2026 Summer", title: "땀 흘려도\n쾌적한 여름 작업복", desc: "흡한속건 · 항균 · UPF50+ 자외선 차단", cta: "여름 컬렉션 보기", href: "/products" },
+  { id: 1, bg: "#303236", accent: "#ff550c", tag: "2026 Summer", title: "땀 흘려도\n쾌적한 여름 작업복", desc: "흡한속건 · 항균 · UPF50+ 자외선 차단", cta: "여름 컬렉션 보기", href: "/products" },
   { id: 2, bg: "#2d2d2d", accent: "#ff550c", tag: "SAFETY GEAR", title: "현장을 지키는\n안전용품", desc: "안전화 · 안전모 · 보호구 · 안전조끼", cta: "안전용품 보러가기", href: "/products" },
   { id: 3, bg: "#3d2b1a", accent: "#ff550c", tag: "SET-UP", title: "현장부터 퇴근 후까지\n셋업 컬렉션", desc: "상하의 세트로 스타일과 기능을 동시에", cta: "셋업 보러가기", href: "/products" },
   { id: 4, bg: "#1a3a2b", accent: "#ff550c", tag: "DAILY WEAR", title: "일상에서도\n워크업답게", desc: "작업복의 기능성을 일상복 스타일로", cta: "데일리 보러가기", href: "/products" },

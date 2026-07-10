@@ -76,7 +76,7 @@ export default function RegisterPage() {
           <p className="text-gray-500 text-sm mb-8">워크업 회원이 되신 것을 환영합니다.<br />매장을 방문하시면 더 많은 혜택을 누리실 수 있습니다.</p>
           <div className="flex gap-3">
             <Link href="/mypage"
-              className="flex-1 py-3 text-center bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
+              className="flex-1 py-3 text-center bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
               마이페이지
             </Link>
             <Link href="/products"
@@ -95,7 +95,7 @@ export default function RegisterPage() {
         {/* 로고 */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <p className="text-2xl font-black tracking-[0.15em] text-[#1A2B4A]">WORKUP</p>
+            <p className="text-2xl font-black tracking-[0.15em] text-[#303236]">WORKUP</p>
           </Link>
           <h1 className="text-xl font-bold text-gray-900 mt-4">회원가입</h1>
           <p className="text-sm text-gray-400 mt-1">워크업 회원이 되시면 다양한 혜택을 누리실 수 있습니다</p>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                 type="text" value={form.name} onChange={e => set("name", e.target.value)}
                 placeholder="홍길동"
                 autoComplete="name"
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
               />
             </div>
             <div>
@@ -130,7 +130,7 @@ export default function RegisterPage() {
                 placeholder="010-0000-0000"
                 inputMode="numeric"
                 autoComplete="tel"
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function RegisterPage() {
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
             />
           </div>
 
@@ -160,7 +160,7 @@ export default function RegisterPage() {
               id="reg-password"
               value={form.password} onChange={e => set("password", e.target.value)}
               placeholder="8자 이상"
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
             />
           </div>
 
@@ -175,7 +175,7 @@ export default function RegisterPage() {
               className={`w-full border px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                 form.passwordConfirm && form.password !== form.passwordConfirm
                   ? "border-red-300 focus:border-red-400 focus:ring-red-500/10"
-                  : "border-gray-200 focus:border-[#1A2B4A] focus:ring-[#1A2B4A]/10"
+                  : "border-gray-200 focus:border-[#303236] focus:ring-[#303236]/10"
               }`}
             />
             {form.passwordConfirm && form.password !== form.passwordConfirm && (
@@ -189,29 +189,29 @@ export default function RegisterPage() {
               <div className="mt-0.5 flex-shrink-0">
                 <input
                   type="checkbox" checked={form.agreeTerms} onChange={e => set("agreeTerms", e.target.checked)}
-                  className="w-4 h-4 accent-[#1A2B4A]"
+                  className="w-4 h-4 accent-[#303236]"
                 />
               </div>
               <span className="text-sm text-gray-700">
-                <span className="font-semibold text-[#1A2B4A]">[필수]</span> 이용약관에 동의합니다
+                <span className="font-semibold text-[#303236]">[필수]</span> 이용약관에 동의합니다
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
               <div className="mt-0.5 flex-shrink-0">
                 <input
                   type="checkbox" checked={form.agreePrivacy} onChange={e => set("agreePrivacy", e.target.checked)}
-                  className="w-4 h-4 accent-[#1A2B4A]"
+                  className="w-4 h-4 accent-[#303236]"
                 />
               </div>
               <span className="text-sm text-gray-700">
-                <span className="font-semibold text-[#1A2B4A]">[필수]</span> 개인정보 처리방침에 동의합니다
+                <span className="font-semibold text-[#303236]">[필수]</span> 개인정보 처리방침에 동의합니다
               </span>
             </label>
           </div>
 
           <button
             type="submit" disabled={saving}
-            className="w-full py-3.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors mt-2"
+            className="w-full py-3.5 bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors mt-2"
           >
             {saving ? "가입 중..." : "회원가입"}
           </button>
@@ -219,7 +219,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-400 mt-6">
           이미 회원이신가요?{" "}
-          <Link href="/member/login" className="text-[#1A2B4A] font-semibold hover:underline">
+          <Link href="/member/login" className="text-[#303236] font-semibold hover:underline">
             로그인
           </Link>
         </p>

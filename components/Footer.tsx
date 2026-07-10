@@ -99,7 +99,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
         <div className="px-[15px] md:px-[70px] py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#1A2B4A] transition-colors tracking-widest self-end md:order-last flex-shrink-0"
+            className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#303236] transition-colors tracking-widest self-end md:order-last flex-shrink-0"
             aria-label="맨 위로"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -108,16 +108,16 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
             TOP
           </button>
           <div className="flex items-center gap-x-4 md:gap-x-7">
-            <Link href="/story" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#1A2B4A] transition-colors whitespace-nowrap">
+            <Link href="/story" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#303236] transition-colors whitespace-nowrap">
               About WORKUP
             </Link>
-            <Link href="/store" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#1A2B4A] transition-colors whitespace-nowrap">
+            <Link href="/store" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#303236] transition-colors whitespace-nowrap">
               매장안내
             </Link>
-            <Link href="/terms" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#1A2B4A] transition-colors whitespace-nowrap">
+            <Link href="/terms" className="text-[11px] md:text-[12px] text-gray-600 hover:text-[#303236] transition-colors whitespace-nowrap">
               이용약관
             </Link>
-            <Link href="/privacy" className="text-[11px] md:text-[12px] font-bold text-gray-800 hover:text-[#1A2B4A] transition-colors whitespace-nowrap">
+            <Link href="/privacy" className="text-[11px] md:text-[12px] font-bold text-gray-800 hover:text-[#303236] transition-colors whitespace-nowrap">
               개인정보처리방침
             </Link>
           </div>
@@ -136,7 +136,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
             <nav className="flex flex-col gap-[18px]">
               {c.navLinks.map((item) => (
                 <Link key={item.id} href={item.href}
-                  className="text-[15px] text-[#1A2B4A] hover:opacity-50 transition-opacity leading-none">
+                  className="text-[15px] text-[#303236] hover:opacity-50 transition-opacity leading-none">
                   {item.label}
                 </Link>
               ))}
@@ -147,14 +147,14 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
           <div className="flex flex-col">
             <div className="text-[12px] text-gray-500 leading-[1.9]">{bizInfo}</div>
             <Link href="/admin"
-              className="mt-3 text-[11px] text-gray-400 hover:text-[#1A2B4A] transition-colors inline-block">
+              className="mt-3 text-[11px] text-gray-400 hover:text-[#303236] transition-colors inline-block">
               임직원 인증
             </Link>
             {socials.length > 0 && (
               <div className="flex items-center gap-5 mt-7">
                 {socials.map((s) => (
                   <a key={s.id} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label || s.platform}
-                    className="text-gray-500 hover:text-[#1A2B4A] transition-colors">
+                    className="text-gray-500 hover:text-[#303236] transition-colors">
                     <SocialIcon social={s} />
                   </a>
                 ))}
@@ -165,7 +165,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
           {/* 열 3: 고객센터 */}
           <div>
             <p className="text-[12px] text-gray-500 mb-1">고객센터</p>
-            <p className="text-[22px] font-bold text-[#1A2B4A] mb-3">{c.cs_phone}</p>
+            <p className="text-[22px] font-bold text-[#303236] mb-3">{c.cs_phone}</p>
             <div className="text-[12px] text-gray-500 leading-[1.9]">
               <p>{c.cs_hours_weekday}</p>
               <p>{c.cs_hours_weekend}</p>
@@ -186,7 +186,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
 
         <nav className="flex flex-col gap-4 mb-6">
           {c.navLinks.map((item) => (
-            <Link key={item.id} href={item.href} className="text-[14px] text-[#1A2B4A]">
+            <Link key={item.id} href={item.href} className="text-[14px] text-[#303236]">
               {item.label}
             </Link>
           ))}
@@ -210,7 +210,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
             <div className="pb-6">
               <div className="text-[12px] text-gray-500 leading-[2] mb-3">{bizInfo}</div>
               <Link href="/admin"
-                className="block text-[12px] text-gray-400 hover:text-[#1A2B4A] transition-colors mb-5">
+                className="block text-[12px] text-gray-400 hover:text-[#303236] transition-colors mb-5">
                 임직원 인증
               </Link>
 
@@ -225,7 +225,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
               )}
 
               <div className="text-[12px] text-gray-500 leading-[1.9]">
-                <p className="font-semibold text-[#1A2B4A] text-[13px] mb-1">
+                <p className="font-semibold text-[#303236] text-[13px] mb-1">
                   고객센터 <span className="font-bold">{c.cs_phone}</span>
                 </p>
                 <p>{c.cs_hours_weekday}</p>

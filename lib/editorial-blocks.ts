@@ -64,7 +64,7 @@ function makeSection(banner: Banner | undefined, detailHref?: string): Editorial
     .filter((t) => t.product_id)
     .map((t) => ({ x: t.x, y: t.y, name: t.name || "", price: t.price || "", productId: t.product_id, imageUrl: t.image_url || undefined }));
   return {
-    sectionBg: banner?.section_bg || "#1A2B4A",
+    sectionBg: banner?.section_bg || "#303236",
     title: banner?.title || "",
     desc: banner?.desc || "",
     imageUrl: banner?.image_url || undefined,
@@ -90,7 +90,7 @@ export function blockToEditorial(block: DBBlock): Editorial {
     title: block.hero?.title || "",
     subtitle: block.hero?.subtitle || "",
     desc: block.hero?.desc || "",
-    bg: block.hero?.bg_color || "#1A2B4A",
+    bg: block.hero?.bg_color || "#303236",
     heroImageUrl: block.hero?.image_url || undefined,
     heroImagePosition: block.hero?.image_position || undefined,
     textAccent: "#ff550c",
@@ -98,7 +98,7 @@ export function blockToEditorial(block: DBBlock): Editorial {
     tags: (block.hero?.tags ?? []).map((t) => ({
       x: t.x, y: t.y, pcX: t.pc_x, pcY: t.pc_y,
       name: t.name, price: t.price, productId: t.product_id,
-      bg: t.bg || "#1A2B4A", imageUrl: t.image_url || undefined,
+      bg: t.bg || "#303236", imageUrl: t.image_url || undefined,
     })),
     sections: [s1, s2, s3, s4],
   };
@@ -205,7 +205,7 @@ export async function getBannerDetail(blockId: string, bannerIndex: number): Pro
     title: banner.title || "",
     desc: banner.desc || "",
     imageUrl: banner.image_url || undefined,
-    bg: banner.section_bg || "#1A2B4A",
+    bg: banner.section_bg || "#303236",
     products,
   };
 }

@@ -59,7 +59,7 @@ const SIZE_TEMPLATES: { label: string; sizes: string[] }[] = [
 const COLOR_PRESETS = [
   { name: "블랙",   hex: "#1C1C1C" },
   { name: "화이트", hex: "#F0F0F0" },
-  { name: "네이비", hex: "#1A2B4A" },
+  { name: "네이비", hex: "#303236" },
   { name: "그레이", hex: "#7A7A7A" },
   { name: "베이지", hex: "#C9B99A" },
   { name: "카키",   hex: "#4A5240" },
@@ -187,7 +187,7 @@ function toForm(p?: Product): FormData {
     detailInfo: p?.detailInfo ?? [],
     customSizeInput: "",
     colorName: "",
-    colorHex: "#1A2B4A",
+    colorHex: "#303236",
     colors: p?.colors ?? [],
     relatedIds: p?.relatedIds ?? [],
     metaTitle: p?.metaTitle ?? "",
@@ -200,7 +200,7 @@ function toForm(p?: Product): FormData {
 // ─── UI 헬퍼 ──────────────────────────────────────────────────────────────────
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest border-b border-gray-100 pb-3 mb-5">
+    <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest border-b border-gray-100 pb-3 mb-5">
       {children}
     </h2>
   );
@@ -220,7 +220,7 @@ function Field({ label, required, hint, children }: {
   );
 }
 
-const INPUT_CLS = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded";
+const INPUT_CLS = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded";
 const SELECT_CLS = `${INPUT_CLS} bg-white`;
 
 function SaveBar({ saving, isEdit, onCancel, onPreview, status, onStatusChange }: {
@@ -231,11 +231,11 @@ function SaveBar({ saving, isEdit, onCancel, onPreview, status, onStatusChange }
     <div className="flex items-center gap-3">
       <select value={status} onChange={(e) => onStatusChange(e.target.value)}
         title="판매 상태"
-        className="border border-gray-200 px-3 py-2.5 text-sm bg-white rounded focus:outline-none focus:border-[#1A2B4A]">
+        className="border border-gray-200 px-3 py-2.5 text-sm bg-white rounded focus:outline-none focus:border-[#303236]">
         {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
       <button type="button" onClick={onPreview}
-        className="px-5 py-2.5 border border-[#1A2B4A] text-[#1A2B4A] text-sm font-semibold hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+        className="px-5 py-2.5 border border-[#303236] text-[#303236] text-sm font-semibold hover:bg-[#303236] hover:text-white transition-colors rounded">
         미리보기
       </button>
       <button type="submit" disabled={saving}
@@ -1038,7 +1038,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     if (form.colors.some((c) => c.name === form.colorName.trim())) return;
     set("colors", [...form.colors, { name: form.colorName.trim(), hex: form.colorHex }]);
     set("colorName", "");
-    set("colorHex", "#1A2B4A");
+    set("colorHex", "#303236");
   };
 
   // ── 연관 상품 ──────────────────────────────────────────────────────────────
@@ -1116,7 +1116,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       mainExpose: form.mainExpose as MainExpose[],
       isNew: form.mainExpose.includes("신상품"),
       fieldTest: form.fieldTest || undefined,
-      bg: "bg-[#1A2B4A]",
+      bg: "bg-[#303236]",
       colors: form.colors,
       sizes: form.sizes,
       sizePrices: form.sizePrices.filter((sp) => form.sizes.includes(sp.size) && sp.price.trim()),
@@ -1218,10 +1218,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <label className="text-xs font-medium text-gray-500">브랜드</label>
                     <button type="button"
                       onClick={() => { setNewBrandName(""); setBrandError(""); setBrandModalOpen(true); }}
-                      className="text-[10px] font-semibold text-[#1A2B4A] border border-[#1A2B4A] rounded px-1.5 py-0.5 leading-none hover:bg-[#1A2B4A] hover:text-white transition-colors">
+                      className="text-[10px] font-semibold text-[#303236] border border-[#303236] rounded px-1.5 py-0.5 leading-none hover:bg-[#303236] hover:text-white transition-colors">
                       + 추가
                     </button>
-                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-[10px] text-gray-400 hover:text-[#1A2B4A]">관리 ↗</a>
+                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-[10px] text-gray-400 hover:text-[#303236]">관리 ↗</a>
                   </div>
                   <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={SELECT_CLS}>
                     <option value="">선택 안 함</option>
@@ -1231,8 +1231,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <label className="flex items-center gap-1.5 mt-2 cursor-pointer w-fit">
                     <input type="checkbox" checked={!form.hideBrandPrefix}
                       onChange={(e) => set("hideBrandPrefix", !e.target.checked)}
-                      className="accent-[#1A2B4A] w-3.5 h-3.5" />
-                    <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#1A2B4A]">[브랜드]</b> 표시</span>
+                      className="accent-[#303236] w-3.5 h-3.5" />
+                    <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#303236]">[브랜드]</b> 표시</span>
                   </label>
                 </div>
                 <Field label="제조사">
@@ -1242,7 +1242,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       {manufacturers.map((m) => <option key={m} value={m}>{m}</option>)}
                       {form.manufacturer && !manufacturers.includes(form.manufacturer) && <option value={form.manufacturer}>{form.manufacturer}</option>}
                     </select>
-                    <a href="/admin/manufacturers" target="_blank" rel="noopener" className="text-xs text-[#1A2B4A] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
+                    <a href="/admin/manufacturers" target="_blank" rel="noopener" className="text-xs text-[#303236] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
                   </div>
                 </Field>
                 <Field label="원산지">
@@ -1277,13 +1277,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               {sizeGuides.map((g, i) => (
                 <button key={i} type="button" onClick={() => sgSwitchGuide(i)}
                   className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
-                    i === gIdx ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"
+                    i === gIdx ? "bg-[#303236] text-white border-[#303236]" : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
                   }`}>
                   {g.label?.trim() || `가이드 ${i + 1}`}
                 </button>
               ))}
               <button type="button" onClick={sgAddGuide}
-                className="px-3 py-1.5 text-xs rounded-lg border border-dashed border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                className="px-3 py-1.5 text-xs rounded-lg border border-dashed border-gray-300 text-gray-500 hover:border-[#303236] hover:text-[#303236] transition-colors">
                 + 가이드 추가
               </button>
               <span className="text-[11px] text-gray-400 ml-1">상하세트는 상의·하의를 따로 추가하세요</span>
@@ -1291,16 +1291,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">사이즈 가이드</h2>
+                <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">사이즈 가이드</h2>
                 <input value={sg.label ?? ""} onChange={(e) => sgSetLabel(e.target.value)}
                   placeholder="라벨 (예: 상의 / 하의)"
-                  className="w-32 border border-gray-200 px-2 py-1 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
+                  className="w-32 border border-gray-200 px-2 py-1 text-xs rounded focus:outline-none focus:border-[#303236]" />
               </div>
               <div className="flex items-center gap-2">
                 <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
                   {(["image", "table"] as const).map((m) => (
                     <button key={m} type="button" onClick={() => setSG({ mode: m })}
-                      className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#1A2B4A] text-white" : "bg-white text-gray-500 hover:text-[#1A2B4A]"}`}>
+                      className={`px-3 py-1.5 transition-colors ${sg.mode === m ? "bg-[#303236] text-white" : "bg-white text-gray-500 hover:text-[#303236]"}`}>
                       {m === "image" ? "이미지" : "행·열 표"}
                     </button>
                   ))}
@@ -1326,13 +1326,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   {sgLines.length > 0 && <SizeGuideLinesOverlay lines={sgLines} />}
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors flex-shrink-0 text-center px-2">
+                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors flex-shrink-0 text-center px-2">
                   <input type="file" accept="image/*" className="hidden" onChange={handleSizeDiagramFile} />
                   <span className="text-xs leading-snug">{uploadingSizeDiagram ? "업로드 중…" : "＋ 측정 위치 안내 이미지"}</span>
                 </label>
               )}
               <div className="flex-1">
-                <p className="text-xs font-semibold text-[#1A2B4A] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
+                <p className="text-xs font-semibold text-[#303236] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
                 <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
                 {sg.guideImage && sgDiagramDim && (
                   <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgDiagramDim.w} × {sgDiagramDim.h}px</b>{sgDiagramResized && <span className="text-[#ff550c]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
@@ -1345,11 +1345,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             {sg.guideImage && (
               <div className="mb-5 pb-5 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                  <p className="text-xs font-semibold text-[#1A2B4A]">가이드선 <span className="text-gray-400 font-normal">(선택 — 추가 안 하면 표시 안 됨)</span></p>
+                  <p className="text-xs font-semibold text-[#303236]">가이드선 <span className="text-gray-400 font-normal">(선택 — 추가 안 하면 표시 안 됨)</span></p>
                   <div className="flex flex-wrap gap-1.5">
                     {SIZE_GUIDE_LINE_PRESETS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => sgAddLine(preset)}
-                        className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                        className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#303236] hover:text-[#303236] transition-colors">
                         + {preset.label}
                       </button>
                     ))}
@@ -1406,7 +1406,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       className="absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full text-xs leading-none">×</button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-44 h-44 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                  <label className="flex flex-col items-center justify-center w-44 h-44 border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors">
                     <input type="file" accept="image/*" className="hidden" onChange={handleSizeGuideFile} />
                     <span className="text-xs">{uploadingSizeGuide ? "업로드 중…" : "＋ 이미지 등록"}</span>
                   </label>
@@ -1423,7 +1423,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <div>
                 {/* 무료 OCR — 표 구조는 직접 만들고, 수치 칸만 자동으로 채움 (브라우저 내 실행, 키 불필요) */}
                 <div className="mb-3 p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <label className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${ocrBusy ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
+                  <label className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${ocrBusy ? "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none" : "bg-[#303236] text-white hover:bg-[#243d5e]"}`}>
                     <input type="file" accept="image/*" className="hidden" onChange={handleSizeOcr} disabled={ocrBusy} />
                     {ocrBusy ? (
                       <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />인식 중… {ocrProgress}%</>
@@ -1438,34 +1438,34 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
                   {SIZE_GUIDE_ROW_TEMPLATES.map((t) => (
                     <button key={t.label} type="button" onClick={() => sgApplyTemplate(t)}
-                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#303236] hover:text-[#303236] transition-colors">
                       {t.label}
                     </button>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3 items-center">
                   <button type="button" onClick={sgAddColumn}
-                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 열 추가</button>
+                    className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 열 추가</button>
                   <button type="button" onClick={sgAddRow} disabled={sgCols.length === 0}
-                    className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">+ 행 추가</button>
+                    className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">+ 행 추가</button>
                   <span className="w-px h-5 bg-gray-200 mx-1" />
                   <input value={bulkColInput} onChange={(e) => setBulkColInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddColumns(); } }}
                     placeholder="XL, 2XL, 3XL (쉼표·공백 구분)"
-                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A]" />
+                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#303236]" />
                   <button type="button" onClick={sgBulkAddColumns} disabled={!bulkColInput.trim()}
-                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
+                    className="px-3 py-1.5 text-xs bg-[#303236] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">열 일괄 추가</button>
                   <span className="w-px h-5 bg-gray-200 mx-1" />
                   <input value={bulkRowInput} onChange={(e) => setBulkRowInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sgBulkAddRows(); } }}
                     placeholder="총장, 가슴, 어깨 (쉼표 구분)" disabled={sgCols.length === 0}
-                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#1A2B4A] disabled:bg-gray-50 disabled:cursor-not-allowed" />
+                    className="w-48 border border-gray-200 px-2 py-1.5 text-xs rounded focus:outline-none focus:border-[#303236] disabled:bg-gray-50 disabled:cursor-not-allowed" />
                   <button type="button" onClick={sgBulkAddRows} disabled={!bulkRowInput.trim() || sgCols.length === 0}
-                    className="px-3 py-1.5 text-xs bg-[#1A2B4A] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">행 일괄 추가</button>
+                    className="px-3 py-1.5 text-xs bg-[#303236] text-white rounded hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">행 일괄 추가</button>
                   <span className="w-px h-5 bg-gray-200 mx-1" />
                   <button type="button" onClick={sgTranspose} disabled={sgCols.length === 0}
                     title="표의 행과 열을 서로 바꿉니다"
-                    className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">⇄ 행/열 전환</button>
+                    className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 hover:border-[#303236] hover:text-[#303236] rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">⇄ 행/열 전환</button>
                 </div>
                 {sgCols.length === 0 ? (
                   <p className="text-xs text-gray-400">＋ 열 추가로 헤더(항목·S·M·L…)를 먼저 만들고, ＋ 행 추가로 값을 입력하세요.</p>
@@ -1479,7 +1479,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                             <th key={ci} className="p-1.5 border-b border-r border-gray-100">
                               <div className="flex items-center gap-1">
                                 <input value={c} onChange={(e) => sgSetColumn(ci, e.target.value)} placeholder={ci === 0 ? "항목" : "S"}
-                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A] font-semibold" />
+                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#303236] font-semibold" />
                                 <button type="button" onClick={() => sgRemoveColumn(ci)} className="text-gray-300 hover:text-red-500">×</button>
                               </div>
                             </th>
@@ -1496,7 +1496,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                               <td key={ci} className="p-1.5 border-r border-b border-gray-100">
                                 <input value={r.cells[ci] ?? ""} onChange={(e) => sgSetCell(ri, ci, e.target.value)}
                                   onBlur={(e) => sgCellBlur(ri, ci, e.target.value)} placeholder={ci === 0 ? "총장" : "69cm"}
-                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#1A2B4A]" />
+                                  className="w-20 border border-gray-200 px-1.5 py-1 rounded focus:outline-none focus:border-[#303236]" />
                               </td>
                             ))}
                           </tr>
@@ -1508,7 +1508,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div className="mt-3">
                   <label className="block text-xs font-medium text-gray-500 mb-1">안내 문구 <span className="text-red-400">*</span> <span className="text-gray-400 font-normal">비우면 기본 문구로 저장됩니다</span></label>
                   <input value={sg.note ?? ""} onChange={(e) => setSG({ note: e.target.value })} placeholder={SIZE_NOTE_DEFAULT}
-                    className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A]" />
+                    className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
                 </div>
               </div>
             )}
@@ -1520,7 +1520,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <label className="block text-xs font-medium text-gray-500 mb-2">
                   카테고리 <span className="text-red-400">*</span>
                   <span className="text-gray-400 font-normal ml-1.5">— 여러 카테고리에 동시 등록 가능, 첫 번째 = 대표</span>
-                  <a href="/admin/main/categories" target="_blank" rel="noopener" className="ml-2 text-[#1A2B4A] hover:underline">관리 ↗</a>
+                  <a href="/admin/main/categories" target="_blank" rel="noopener" className="ml-2 text-[#303236] hover:underline">관리 ↗</a>
                 </label>
 
                 {/* 선택된 카테고리 칩 */}
@@ -1530,7 +1530,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       <span key={idx}
                         className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded font-medium ${
                           idx === 0
-                            ? "bg-[#1A2B4A] text-white"
+                            ? "bg-[#303236] text-white"
                             : "bg-gray-100 text-gray-700 border border-gray-200"
                         }`}>
                         {idx === 0 && (
@@ -1550,10 +1550,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center gap-1">
                     {pickerMain ? (
                       <>
-                        <span className="font-medium text-[#1A2B4A]">{pickerMain}</span>
+                        <span className="font-medium text-[#303236]">{pickerMain}</span>
                         <span className="text-gray-300">&gt;</span>
                         {pickerSub
-                          ? <span className="font-medium text-[#1A2B4A]">{pickerSub}</span>
+                          ? <span className="font-medium text-[#303236]">{pickerSub}</span>
                           : <span className="text-gray-400">소분류 선택</span>
                         }
                       </>
@@ -1571,7 +1571,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                           onClick={() => { setPickerMain(cat); setPickerSub(""); }}
                           className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors border-b border-gray-50 last:border-0 ${
                             pickerMain === cat
-                              ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                              ? "bg-blue-50 text-[#303236] font-semibold"
                               : "hover:bg-gray-50 text-gray-700"
                           }`}>
                           <span>{cat}</span>
@@ -1591,12 +1591,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                               onClick={() => setPickerSub(sub)}
                               className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors border-b border-gray-50 last:border-0 ${
                                 pickerSub === sub
-                                  ? "bg-blue-50 text-[#1A2B4A] font-semibold"
+                                  ? "bg-blue-50 text-[#303236] font-semibold"
                                   : "hover:bg-gray-50 text-gray-700"
                               }`}>
                               <span>{sub}</span>
                               {pickerSub === sub && (
-                                <svg className="w-4 h-4 text-[#1A2B4A]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                               )}
@@ -1623,7 +1623,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     </p>
                     <button type="button" onClick={addCategory}
                       disabled={!pickerMain || !pickerSub}
-                      className="px-5 py-1.5 text-xs font-semibold bg-[#1A2B4A] text-white hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded">
+                      className="px-5 py-1.5 text-xs font-semibold bg-[#303236] text-white hover:bg-[#243d5e] disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded">
                       + 적용
                     </button>
                   </div>
@@ -1638,9 +1638,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 5. 연관 상품 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">연관 상품</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">연관 상품</h2>
               <button type="button" onClick={() => setRelatedModalOpen(true)}
-                className="px-3 py-1.5 text-xs font-semibold border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">
+                className="px-3 py-1.5 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">
                 + 연관 상품 추가
               </button>
             </div>
@@ -1649,7 +1649,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 {form.relatedIds.map((id) => {
                   const p = allProducts.find((ap) => ap.id === id);
                   return (
-                    <span key={id} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-[#1A2B4A] text-white rounded">
+                    <span key={id} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-[#303236] text-white rounded">
                       <span className="w-5 h-5 bg-white/20 rounded overflow-hidden flex-shrink-0">
                         {p?.imageUrl && (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -1700,16 +1700,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       onChange={(e) => setRelatedSearch(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
                       placeholder="상품명 검색..."
-                      className="w-full border border-gray-200 pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                      className="w-full border border-gray-200 pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <button type="button" onClick={() => setRelatedCatFilter("")}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === "" ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"}`}>
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === "" ? "bg-[#303236] text-white border-[#303236]" : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"}`}>
                       전체
                     </button>
                     {dynMainCats.map((c) => (
                       <button key={c} type="button" onClick={() => setRelatedCatFilter(c)}
-                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === c ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A]"}`}>
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${relatedCatFilter === c ? "bg-[#303236] text-white border-[#303236]" : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"}`}>
                         {c}
                       </button>
                     ))}
@@ -1726,7 +1726,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     filteredRelatedProducts.map((p) => (
                       <label key={p.id} className="flex items-center gap-3 px-6 py-2.5 hover:bg-gray-50 cursor-pointer">
                         <input type="checkbox" checked={form.relatedIds.includes(p.id)} onChange={() => toggleRelated(p.id)}
-                          className="w-4 h-4 accent-[#1A2B4A]" />
+                          className="w-4 h-4 accent-[#303236]" />
                         <span className="w-9 h-9 bg-[#f4f4f4] rounded overflow-hidden flex-shrink-0">
                           {p.imageUrl && (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -1743,7 +1743,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 {/* 푸터 */}
                 <div className="px-6 py-3 border-t border-gray-200 flex justify-end flex-shrink-0">
                   <button type="button" onClick={() => setRelatedModalOpen(false)}
-                    className="px-6 py-2 bg-[#1A2B4A] text-white text-sm font-semibold rounded hover:bg-[#243d5e] transition-colors">
+                    className="px-6 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] transition-colors">
                     완료 ({form.relatedIds.length})
                   </button>
                 </div>
@@ -1754,9 +1754,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 6. SEO ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">SEO</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">SEO</h2>
               <button type="button" onClick={autoGenSeo}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors rounded">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
@@ -1775,7 +1775,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </Field>
               <Field label="메타 설명" hint="권장 80~160자.">
                 <textarea value={form.metaDesc} onChange={(e) => set("metaDesc", e.target.value)}
-                  rows={3} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] resize-none rounded"
+                  rows={3} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] resize-none rounded"
                   placeholder="예: 현장 작업자를 위한 스트레치 카고 팬츠. 11개 포켓, 무릎 이중 보강..." />
                 <div className="flex justify-end">
                   <span className={`text-xs ${form.metaDesc.length > 160 ? "text-red-400" : form.metaDesc.length < 80 && form.metaDesc.length > 0 ? "text-amber-400" : "text-gray-400"}`}>
@@ -1828,13 +1828,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <input ref={mainInputRef} type="file" accept="image/*" onChange={handleMainFile} className="hidden" id="main-img-r" />
                   <label htmlFor="main-img-r"
                     className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
-                      uploadingMain ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white"
+                      uploadingMain ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
                     }`}>
-                    {uploadingMain ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />업로드 중...</> : "이미지 업로드"}
+                    {uploadingMain ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</> : "이미지 업로드"}
                   </label>
                   <input type="url" value={form.imageUrl} onChange={(e) => set("imageUrl", e.target.value)}
                     placeholder="또는 URL 직접 입력 (https://...)"
-                    className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-[#1A2B4A] rounded" />
+                    className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-[#303236] rounded" />
                 </div>
               </div>
             </div>
@@ -1862,10 +1862,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs transition-colors rounded cursor-pointer ${
                     uploadingMulti || form.subImages.filter(Boolean).length >= 9
                       ? "border-gray-200 text-gray-400 cursor-not-allowed pointer-events-none"
-                      : "border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white"
+                      : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
                   }`}>
                   {uploadingMulti ? (
-                    <><span className="w-3 h-3 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />업로드 중...</>
+                    <><span className="w-3 h-3 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</>
                   ) : (
                     <>
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -1916,7 +1916,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                           </>
                         ) : isUploading ? (
                           <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                            <span className="w-4 h-4 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
                           </div>
                         ) : (
                           <label htmlFor={`sub-img-r-${idx}`}
@@ -1948,8 +1948,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
               <input type="url" value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)}
                 placeholder="예: https://youtu.be/abc123 또는 https://….mp4"
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
-              <p className="text-[11px] text-gray-400 mt-1.5">등록하면 상세 갤러리 썸네일 맨 뒤에 <b className="text-[#1A2B4A]">▶ 영상</b>이 추가됩니다. (YouTube·Vimeo는 자동 임베드, mp4 등 직접 링크는 플레이어로 재생)</p>
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
+              <p className="text-[11px] text-gray-400 mt-1.5">등록하면 상세 갤러리 썸네일 맨 뒤에 <b className="text-[#303236]">▶ 영상</b>이 추가됩니다. (YouTube·Vimeo는 자동 임베드, mp4 등 직접 링크는 플레이어로 재생)</p>
             </div>
 
             {/* ── AI 이미지 생성 프롬프트 ── */}
@@ -2171,7 +2171,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 옵션 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-5">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">옵션</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">옵션</h2>
               <button type="button" onClick={() => { set("sizes", []); set("colors", []); }}
                 disabled={form.sizes.length === 0 && form.colors.length === 0}
                 className="px-3 py-1 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors">
@@ -2186,7 +2186,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     return (
                       <button key={size} type="button" onClick={() => toggleArr("sizes", size)}
                         className={`min-w-[48px] px-3 py-1.5 text-sm border font-semibold transition-colors rounded ${
-                          active ? "bg-[#1A2B4A] text-white border-[#1A2B4A]" : "bg-white text-gray-300 border-gray-200 line-through"
+                          active ? "bg-[#303236] text-white border-[#303236]" : "bg-white text-gray-300 border-gray-200 line-through"
                         }`}>
                         {size}
                       </button>
@@ -2201,7 +2201,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
                   {SIZE_TEMPLATES.map((t) => (
                     <button key={t.label} type="button" onClick={() => set("sizes", [...t.sizes])}
-                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#303236] hover:text-[#303236] transition-colors">
                       {t.label}
                     </button>
                   ))}
@@ -2210,9 +2210,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <input value={form.customSizeInput} onChange={(e) => set("customSizeInput", e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
                     placeholder="사이즈 입력 후 Enter 또는 추가"
-                    className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                    className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                   <button type="button" onClick={addCustomSize}
-                    className="px-3 py-2 bg-[#1A2B4A] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
+                    className="px-3 py-2 bg-[#303236] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
                 </div>
                 {customSizes.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -2237,8 +2237,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <label className="flex items-center gap-2 cursor-pointer w-fit">
                   <input type="checkbox" checked={useSizePrices}
                     onChange={(e) => { setUseSizePrices(e.target.checked); if (!e.target.checked) set("sizePrices", []); }}
-                    className="accent-[#1A2B4A] w-4 h-4" />
-                  <span className="text-xs font-medium text-[#1A2B4A]">사이즈별 가격 사용 <span className="text-gray-400 font-normal">(사이즈마다 다른 가격)</span></span>
+                    className="accent-[#303236] w-4 h-4" />
+                  <span className="text-xs font-medium text-[#303236]">사이즈별 가격 사용 <span className="text-gray-400 font-normal">(사이즈마다 다른 가격)</span></span>
                 </label>
                 {useSizePrices && (
                   <div className="mt-2 pl-6">
@@ -2246,11 +2246,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <div className="flex flex-wrap gap-2">
                       {form.sizes.map((size) => (
                         <div key={size} className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-1">
-                          <span className="text-xs font-semibold text-[#1A2B4A] min-w-[36px] text-center">{size}</span>
+                          <span className="text-xs font-semibold text-[#303236] min-w-[36px] text-center">{size}</span>
                           <input type="text" inputMode="numeric" value={sizePriceOf(size)}
                             onChange={(e) => setSizePrice(size, e.target.value)}
                             placeholder={form.price || "기본가"}
-                            className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#1A2B4A]" />
+                            className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#303236]" />
                           <span className="text-xs text-gray-400">원</span>
                         </div>
                       ))}
@@ -2281,11 +2281,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <input value={form.colorName} onChange={(e) => set("colorName", e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomColor(); } }}
                   placeholder="커스텀 색상명 (예: 형광그린)"
-                  className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                  className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                 <input type="color" value={form.colorHex} onChange={(e) => set("colorHex", e.target.value)}
                   className="w-10 h-9 border border-gray-200 cursor-pointer rounded p-0.5" />
                 <button type="button" onClick={addCustomColor}
-                  className="px-3 py-2 bg-[#1A2B4A] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
+                  className="px-3 py-2 bg-[#303236] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
               </div>
               {customColors.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -2308,22 +2308,22 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 상세 설명 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 설명</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">상세 설명</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 {/* 여러 장 업로드 — 선택한 이미지들이 각각 블록으로 추가 (이미지 중심 에디터) */}
-                <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${uploadingBlocksMulti ? "bg-gray-200 text-gray-400 pointer-events-none" : "bg-[#1A2B4A] text-white hover:bg-[#243d5e]"}`}>
+                <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${uploadingBlocksMulti ? "bg-gray-200 text-gray-400 pointer-events-none" : "bg-[#303236] text-white hover:bg-[#243d5e]"}`}>
                   <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
                   {uploadingBlocksMulti ? <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />업로드 중…</> : "+ 여러 장 업로드"}
                 </label>
                 {/* 착용컷 — 등록된 썸네일(대표·추가 이미지) 일괄 추가 */}
                 <button type="button" onClick={addWornCutsFromThumbnails}
                   title="등록된 썸네일(대표·추가 이미지)을 착용컷으로 일괄 추가합니다"
-                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors rounded">
+                  className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors rounded">
                   + 착용컷 (썸네일 일괄)
                 </button>
               </div>
             </div>
-            <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#1A2B4A]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>
+            <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#303236]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {form.detailBlocks.map((block, idx) => (
                 <div key={block.id} draggable
@@ -2339,11 +2339,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <Image src={block.imageUrl} alt={`상세 ${idx + 1}`} fill className="object-cover pointer-events-none" sizes="160px" />
                   ) : uploadingBlockIdx === idx ? (
                     <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                      <span className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+                      <span className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
                     </div>
                   ) : (
                     <label htmlFor={`block-img-r-${idx}`}
-                      className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-gray-50 text-gray-300 hover:text-[#1A2B4A]">
+                      className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-gray-50 text-gray-300 hover:text-[#303236]">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
                       <span className="text-[10px] mt-1">이미지 업로드</span>
                     </label>
@@ -2356,7 +2356,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </div>
               ))}
               {/* 이미지 추가 카드 (여러 장 선택) */}
-              <label className="aspect-[3/4] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-[#1A2B4A] hover:border-[#1A2B4A] transition-colors">
+              <label className="aspect-[3/4] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-[#303236] hover:border-[#303236] transition-colors">
                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
                 <span className="text-[10px] mt-1">이미지 추가</span>
@@ -2367,14 +2367,14 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 상세 정보 (텍스트) ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">상세 정보</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">상세 정보</h2>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={diLoadDefaults}
-                  className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#1A2B4A] hover:text-[#1A2B4A] rounded transition-colors">기본 항목 불러오기</button>
+                  className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#303236] hover:text-[#303236] rounded transition-colors">기본 항목 불러오기</button>
                 <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
                   className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
                 <button type="button" onClick={diAdd}
-                  className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
+                  className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
               </div>
             </div>
             {form.detailInfo.length === 0 ? (
@@ -2384,9 +2384,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 {form.detailInfo.map((it, i) => (
                   <div key={i} className="flex gap-2 items-start">
                     <input value={it.label} onChange={(e) => diSet(i, "label", e.target.value)} placeholder="항목명 (예: 소재)"
-                      className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] font-medium" />
+                      className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] font-medium" />
                     <textarea value={it.value} onChange={(e) => diSet(i, "value", e.target.value)} rows={1} placeholder="내용"
-                      className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#1A2B4A] resize-y" />
+                      className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] resize-y" />
                     <button type="button" onClick={() => diRemove(i)}
                       className="flex-shrink-0 w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
                   </div>
@@ -2398,12 +2398,12 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 인스타 피드 (이 상품 관련 이미지/영상) ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#1A2B4A] uppercase tracking-widest">인스타 피드</h2>
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">인스타 피드</h2>
               <button type="button" onClick={igAdd}
-                className="px-3 py-1.5 text-xs border border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white rounded transition-colors">+ 항목 추가</button>
+                className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
             </div>
             <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
-              이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#1A2B4A] underline">인스타 피드 설정 ↗</a>에서.
+              이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#303236] underline">인스타 피드 설정 ↗</a>에서.
             </p>
 
             {form.instagramPosts.length === 0 ? (
@@ -2417,10 +2417,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     <div key={i} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
                       <div className="flex flex-col items-center gap-1 pt-1">
                         <button type="button" onClick={() => igMove(i, -1)} disabled={i === 0}
-                          className="text-gray-300 hover:text-[#1A2B4A] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▲</button>
+                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▲</button>
                         <span className="text-[11px] text-gray-400 font-mono">{i + 1}</span>
                         <button type="button" onClick={() => igMove(i, 1)} disabled={i === form.instagramPosts.length - 1}
-                          className="text-gray-300 hover:text-[#1A2B4A] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
+                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
                       </div>
 
                       {/* 이미지 업로드/미리보기 (9:16 세로 — 실제 노출 비율) */}
@@ -2434,7 +2434,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                               className="absolute bottom-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-[11px] leading-none">×</button>
                           </div>
                         ) : (
-                          <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors text-center">
+                          <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors text-center">
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIgImage(e, i)} disabled={uploadingIgIdx === i} />
                             <span className="text-[11px] leading-tight px-1">{uploadingIgIdx === i ? "업로드 중…" : "＋ 이미지"}</span>
                           </label>
@@ -2447,7 +2447,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                         <input value={item.url ?? ""} onChange={(e) => igSetUrl(i, e.target.value)}
                           placeholder="https://www.instagram.com/p/XXXXXXXX/"
                           className={`w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none ${
-                            (item.url ?? "").trim() === "" ? "border-gray-200 focus:border-[#1A2B4A]"
+                            (item.url ?? "").trim() === "" ? "border-gray-200 focus:border-[#303236]"
                               : parsed ? "border-green-300 focus:border-green-500 bg-green-50/40"
                               : "border-red-300 focus:border-red-500 bg-red-50/40"
                           }`} />
@@ -2475,19 +2475,19 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
           onClick={() => setBrandModalOpen(false)}>
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-[#1A2B4A] mb-1">새 브랜드 추가</h3>
+            <h3 className="text-lg font-bold text-[#303236] mb-1">새 브랜드 추가</h3>
             <p className="text-xs text-gray-400 mb-4">등록하면 이 상품에 바로 선택됩니다.</p>
             <input autoFocus value={newBrandName}
               onChange={(e) => { setNewBrandName(e.target.value); setBrandError(""); }}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createBrand(); } }}
               placeholder="브랜드명 (예: 워크업)"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A]" />
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#303236]" />
             {brandError && <p className="text-xs text-red-500 mt-2">{brandError}</p>}
             <div className="flex justify-end gap-2 mt-5">
               <button type="button" onClick={() => setBrandModalOpen(false)}
                 className="px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">취소</button>
               <button type="button" onClick={createBrand} disabled={brandSaving || !newBrandName.trim()}
-                className="px-4 py-2 text-sm bg-[#1A2B4A] text-white rounded-lg hover:bg-[#243d5e] transition-colors disabled:opacity-50">
+                className="px-4 py-2 text-sm bg-[#303236] text-white rounded-lg hover:bg-[#243d5e] transition-colors disabled:opacity-50">
                 {brandSaving ? "등록 중..." : "등록"}
               </button>
             </div>

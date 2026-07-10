@@ -9,7 +9,7 @@ export default function StoryHeroView({ hero, edit }: { hero: StoryHero; edit?: 
   return (
     <div
       className="relative w-full overflow-hidden"
-      style={{ height: `${hero.height}px`, backgroundColor: hero.bg || "#1A2B4A" }}
+      style={{ height: `${hero.height}px`, backgroundColor: hero.bg || "#303236" }}
     >
       {hero.image_url && (
         // eslint-disable-next-line @next/next/no-img-element

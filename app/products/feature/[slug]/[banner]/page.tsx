@@ -39,7 +39,7 @@ export default async function BannerDetailPage({ params }: Props) {
                 {detail.label}
               </p>
             )}
-            <h1 className="text-2xl md:text-4xl font-bold text-[#1A2B4A] leading-snug mb-5 whitespace-pre-line">
+            <h1 className="text-2xl md:text-4xl font-bold text-[#303236] leading-snug mb-5 whitespace-pre-line">
               {detail.title}
             </h1>
             {detail.desc && (
@@ -70,7 +70,7 @@ export default async function BannerDetailPage({ params }: Props) {
       {products.length > 0 && (
         <section className="max-w-screen-xl mx-auto px-6 md:px-10 pb-16 md:pb-24">
           <div className="flex items-baseline justify-between mb-6 md:mb-8 border-t border-gray-100 pt-10">
-            <h2 className="text-lg md:text-xl font-bold text-[#1A2B4A]">이 기획전의 제품</h2>
+            <h2 className="text-lg md:text-xl font-bold text-[#303236]">이 기획전의 제품</h2>
             <span className="text-xs text-gray-400">{products.length}개 제품</span>
           </div>
 
@@ -89,8 +89,8 @@ export default async function BannerDetailPage({ params }: Props) {
                     <span className="text-gray-300 text-sm font-black">WU</span>
                   )}
                 </div>
-                <p className="text-[13px] md:text-sm text-[#1A2B4A] leading-snug mb-1 line-clamp-2">{p.displayName}</p>
-                {p.price && <p className="text-sm md:text-[15px] font-bold text-[#1A2B4A]">{p.price}</p>}
+                <p className="text-[13px] md:text-sm text-[#303236] leading-snug mb-1 line-clamp-2">{p.displayName}</p>
+                {p.price && <p className="text-sm md:text-[15px] font-bold text-[#303236]">{p.price}</p>}
               </Link>
             ))}
           </div>
@@ -98,7 +98,7 @@ export default async function BannerDetailPage({ params }: Props) {
       )}
 
       {/* ── 최종 CTA: 매장 방문 유도 ──────────────────────────── */}
-      <section className="bg-[#1A2B4A] py-14 md:py-20">
+      <section className="bg-[#303236] py-14 md:py-20">
         <div className="max-w-screen-xl mx-auto px-6 md:px-12 text-center">
           <p className="text-[11px] tracking-[0.3em] text-[#ff550c] uppercase mb-5">VISIT US</p>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">

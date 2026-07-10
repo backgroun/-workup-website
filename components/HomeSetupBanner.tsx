@@ -20,7 +20,7 @@ export default function HomeSetupBanner() {
           <div className="flex flex-col gap-3 flex-shrink-0">
             <Link
               href="/products"
-              className="inline-block bg-[#ff550c] text-white text-xs font-semibold tracking-widest px-8 py-3 hover:bg-white hover:text-[#1A2B4A] transition-colors text-center"
+              className="inline-block bg-[#ff550c] text-white text-xs font-semibold tracking-widest px-8 py-3 hover:bg-white hover:text-[#303236] transition-colors text-center"
             >
               현재 제품 보기 →
             </Link>

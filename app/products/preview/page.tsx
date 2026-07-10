@@ -26,7 +26,7 @@ export default function ProductPreviewPage() {
     return (
       <main className="min-h-screen flex items-center justify-center text-center px-6">
         <div>
-          <p className="text-lg font-bold text-[#1A2B4A] mb-2">미리보기 데이터가 없습니다.</p>
+          <p className="text-lg font-bold text-[#303236] mb-2">미리보기 데이터가 없습니다.</p>
           <p className="text-sm text-gray-500">제품 등록/수정 화면에서 <b>미리보기</b> 버튼을 눌러 열어주세요.</p>
         </div>
       </main>
@@ -38,7 +38,7 @@ export default function ProductPreviewPage() {
 
   return (
     <main className="bg-white min-h-screen">
-      <div className="bg-[#1A2B4A] text-white text-center text-[13px] py-2">
+      <div className="bg-[#303236] text-white text-center text-[13px] py-2">
         미리보기 모드 — 저장되지 않은 화면입니다. 실제 반영은 저장 후 적용됩니다.
       </div>
       <div className="md:flex md:items-start max-w-screen-2xl mx-auto">

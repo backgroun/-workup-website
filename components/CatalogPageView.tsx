@@ -12,7 +12,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   // ── 표지 ──
   if (type === "cover") {
     return (
-      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
+      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#303236" }}>
         {page.image_url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -46,7 +46,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
           {items.map((item, i) => (
             <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[#1A2B4A]">{item.name}</span>
+                <span className="text-sm font-semibold text-[#303236]">{item.name}</span>
                 {item.count && <span className="text-[8px] text-gray-400">{item.count}</span>}
               </div>
               {item.page && <span className="text-[8px] text-gray-400">{item.page}</span>}
@@ -65,7 +65,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   // ── 카테고리 구분 ──
   if (type === "divider") {
     return (
-      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#1A2B4A" }}>
+      <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#303236" }}>
         {page.image_url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}

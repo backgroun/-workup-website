@@ -160,7 +160,7 @@ export default function ProductDetailClient({
         <div className="py-4">
           <p className="text-sm text-red-500 mb-3">{locError}</p>
           <button onClick={() => { setLocStatus("idle"); setShowStorePanel(false); setTimeout(() => setShowStorePanel(true), 50); }}
-            className="text-xs text-[#1A2B4A] border border-[#1A2B4A] px-4 py-2 hover:bg-[#1A2B4A] hover:text-white transition-colors">
+            className="text-xs text-[#303236] border border-[#303236] px-4 py-2 hover:bg-[#303236] hover:text-white transition-colors">
             다시 시도
           </button>
         </div>
@@ -172,13 +172,13 @@ export default function ProductDetailClient({
               <div className="flex items-start gap-3">
                 <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${i === 0 ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"}`}>{i + 1}</span>
                 <div>
-                  <p className="text-sm font-bold text-[#1A2B4A]">{s.name}</p>
+                  <p className="text-sm font-bold text-[#303236]">{s.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{s.address}</p>
                 </div>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#ff550c]" : "text-gray-500"}`}>{formatDist(s.distance)}</p>
-                <button onClick={() => openKakao(s)} className="text-xs text-[#1A2B4A] underline hover:text-[#ff550c] transition-colors">길찾기</button>
+                <button onClick={() => openKakao(s)} className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors">길찾기</button>
               </div>
             </div>
           ))}
@@ -205,8 +205,8 @@ export default function ProductDetailClient({
             )}
           </div>
         )}
-        <h1 className="text-xl md:text-[28px] font-bold text-[#1A2B4A] leading-tight mb-2">{productDisplayName(product)}</h1>
-        <p className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">{displayPrice}</p>
+        <h1 className="text-xl md:text-[28px] font-bold text-[#303236] leading-tight mb-2">{productDisplayName(product)}</h1>
+        <p className="text-2xl md:text-3xl font-bold text-[#303236]">{displayPrice}</p>
         {hasSizePrices && (
           <p className="text-xs text-gray-400 mt-1">사이즈에 따라 가격이 다릅니다{selectedSize ? "" : " — 사이즈를 선택하면 해당 가격이 표시됩니다"}.</p>
         )}
@@ -231,7 +231,7 @@ export default function ProductDetailClient({
         <>
           <ul className="space-y-3">
             {product.coreValues.map((v) => (
-              <li key={v} className="flex items-start gap-3 text-sm text-[#1A2B4A] font-medium leading-relaxed">
+              <li key={v} className="flex items-start gap-3 text-sm text-[#303236] font-medium leading-relaxed">
                 <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
                 {v}
               </li>
@@ -271,8 +271,8 @@ export default function ProductDetailClient({
             <button key={s} onClick={() => setSelectedSize(s)}
               className={`min-w-[48px] h-10 px-3 text-sm border transition-colors ${
                 selectedSize === s
-                  ? "bg-[#1A2B4A] text-white border-[#1A2B4A]"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-[#1A2B4A] hover:text-[#1A2B4A]"
+                  ? "bg-[#303236] text-white border-[#303236]"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-[#303236] hover:text-[#303236]"
               }`}>
               {s}
             </button>
@@ -283,7 +283,7 @@ export default function ProductDetailClient({
       {/* 연관 상품 */}
       {relatedProducts.length > 0 && (
         <div>
-          <p className="text-[15px] font-bold text-[#1A2B4A] mb-3">연관 상품</p>
+          <p className="text-[15px] font-bold text-[#303236] mb-3">연관 상품</p>
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
             {relatedProducts.map((rp) => (
               <Link key={rp.id} href={`/products/${rp.id}`} className="flex-shrink-0 w-[88px] group">
@@ -294,7 +294,7 @@ export default function ProductDetailClient({
                   }
                 </div>
                 <p className="text-[11px] text-gray-600 leading-tight truncate">{productDisplayName(rp)}</p>
-                <p className="text-xs font-semibold text-[#1A2B4A] mt-0.5">{rp.price}</p>
+                <p className="text-xs font-semibold text-[#303236] mt-0.5">{rp.price}</p>
               </Link>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function ProductDetailClient({
 
           {/* 공유 */}
           <button onClick={handleShare} aria-label="공유하기" title="공유하기"
-            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#1A2B4A] hover:text-[#1A2B4A] transition-colors">
+            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 text-gray-600 hover:border-[#303236] hover:text-[#303236] transition-colors">
             {shareCopied ? (
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -346,7 +346,7 @@ export default function ProductDetailClient({
 
         {/* 피팅 리스트 안내 — 버튼 바로 아래 */}
         <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
-          <p className="text-xs font-semibold text-[#1A2B4A] mb-1">피팅 리스트란?</p>
+          <p className="text-xs font-semibold text-[#303236] mb-1">피팅 리스트란?</p>
           <p className="text-xs text-gray-500 leading-relaxed">원하는 제품을 담아두고 매장 방문 시 직원에게 보여주세요.</p>
           <Link href="/cart" className="text-xs text-[#ff550c] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
         </div>
@@ -374,7 +374,7 @@ export default function ProductDetailClient({
       {/* 데스크탑 인라인 매장 패널 */}
       {showStorePanel && (
         <div className="hidden md:block border border-gray-200 bg-white overflow-hidden">
-          <div className="bg-[#1A2B4A] px-5 py-4 flex items-center justify-between">
+          <div className="bg-[#303236] px-5 py-4 flex items-center justify-between">
             <div>
               <p className="text-xs tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
               <p className="text-sm font-bold text-white mt-0.5">가까운 매장 5곳</p>
@@ -387,7 +387,7 @@ export default function ProductDetailClient({
           <div className="p-5">
             <StoreList />
             {locStatus === "success" && (
-              <Link href="/store" className="block text-center text-xs text-gray-400 hover:text-[#1A2B4A] transition-colors pt-3">전체 매장 보기 →</Link>
+              <Link href="/store" className="block text-center text-xs text-gray-400 hover:text-[#303236] transition-colors pt-3">전체 매장 보기 →</Link>
             )}
           </div>
         </div>
@@ -406,7 +406,7 @@ export default function ProductDetailClient({
           <div className="px-5 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
               <p className="text-[11px] tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
-              <p className="text-base font-bold text-[#1A2B4A]">가까운 매장 찾기</p>
+              <p className="text-base font-bold text-[#303236]">가까운 매장 찾기</p>
             </div>
             <button onClick={() => setShowStorePanel(false)} className="text-gray-400 hover:text-gray-700 p-1">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,7 +418,7 @@ export default function ProductDetailClient({
             <StoreList />
           </div>
           <div className="p-4 border-t border-gray-100 flex-shrink-0" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-            <Link href="/store" className="block w-full bg-[#1A2B4A] text-white text-center py-4 font-bold text-sm tracking-widest">
+            <Link href="/store" className="block w-full bg-[#303236] text-white text-center py-4 font-bold text-sm tracking-widest">
               전체 매장 바로가기 →
             </Link>
           </div>

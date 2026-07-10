@@ -211,7 +211,7 @@ export default function AdminStoresPage() {
           </button>
           <Link
             href="/admin/stores/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1A2B4A] text-white text-sm font-semibold hover:bg-[#243a63] transition-colors rounded"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#303236] text-white text-sm font-semibold hover:bg-[#243a63] transition-colors rounded"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -246,19 +246,19 @@ export default function AdminStoresPage() {
           placeholder="매장명 또는 주소 검색"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         />
         <select
           value={regionFilter}
           onChange={(e) => setRegionFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         >
           {regions.map((r) => <option key={r} value={r}>{r === "전체" ? "지역 전체" : r}</option>)}
         </select>
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
         >
           {types.map((t) => <option key={t} value={t}>{t === "전체" ? "유형 전체" : t}</option>)}
         </select>
@@ -267,7 +267,7 @@ export default function AdminStoresPage() {
             <button
               key={opt}
               onClick={() => setActiveFilter(opt)}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${activeFilter === opt ? "bg-[#1A2B4A] text-white" : "text-gray-500 hover:text-gray-900"}`}
+              className={`px-3 py-2 text-sm font-medium transition-colors ${activeFilter === opt ? "bg-[#303236] text-white" : "text-gray-500 hover:text-gray-900"}`}
             >
               {opt}
             </button>
@@ -280,7 +280,7 @@ export default function AdminStoresPage() {
 
       {/* 다중 선택 일괄 처리 */}
       {selected.size > 0 && (
-        <div className="bg-[#1A2B4A] rounded-xl px-5 py-3 mb-4 flex items-center gap-4">
+        <div className="bg-[#303236] rounded-xl px-5 py-3 mb-4 flex items-center gap-4">
           <span className="text-sm font-semibold text-white">{selected.size}개 선택됨</span>
           <div className="flex items-center gap-2 ml-auto">
             <button
@@ -333,7 +333,7 @@ export default function AdminStoresPage() {
                     type="checkbox"
                     checked={allFilteredSelected}
                     onChange={toggleAll}
-                    className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                    className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
                   />
                 </th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">ID</th>
@@ -352,7 +352,7 @@ export default function AdminStoresPage() {
                 <tr>
                   <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
                       불러오는 중...
                     </div>
                   </td>
@@ -376,7 +376,7 @@ export default function AdminStoresPage() {
                         type="checkbox"
                         checked={selected.has(store.id)}
                         onChange={() => toggleOne(store.id)}
-                        className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                        className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
                       />
                     </td>
                     <td className="px-5 py-4 text-gray-400 text-xs font-mono">{store.id}</td>
@@ -424,7 +424,7 @@ export default function AdminStoresPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/admin/stores/${store.id}/edit`}
-                          className="px-3 py-1.5 text-xs font-semibold text-[#1A2B4A] border border-[#1A2B4A] rounded hover:bg-[#1A2B4A] hover:text-white transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold text-[#303236] border border-[#303236] rounded hover:bg-[#303236] hover:text-white transition-colors"
                         >
                           수정
                         </Link>

@@ -34,7 +34,7 @@ function Accordion({
     <div className="border-t border-gray-200">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-4 text-[14px] font-medium text-[#1A2B4A]"
+        className="w-full flex items-center justify-between py-4 text-[14px] font-medium text-[#303236]"
       >
         <span>{label}</span>
         <span className="text-[22px] font-thin text-gray-400 leading-none">{open ? "−" : "+"}</span>
@@ -55,7 +55,7 @@ function FilterDropdown({
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1.5 px-3 py-1.5 border text-[12px] transition-colors ${
-          activeCount > 0 ? "border-[#1A2B4A] bg-[#1A2B4A] text-white" : "border-gray-300 text-gray-600 hover:border-[#1A2B4A]"
+          activeCount > 0 ? "border-[#303236] bg-[#303236] text-white" : "border-gray-300 text-gray-600 hover:border-[#303236]"
         }`}
       >
         {label}
@@ -71,7 +71,7 @@ function FilterDropdown({
             {options.map((opt) => (
               <label key={opt} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
                 <input type="checkbox" checked={selected.includes(opt)} onChange={() => { onToggle(opt); }}
-                  className="w-3.5 h-3.5 accent-[#1A2B4A]" />
+                  className="w-3.5 h-3.5 accent-[#303236]" />
                 <span className="text-[13px] text-gray-700 whitespace-nowrap">{opt}</span>
               </label>
             ))}
@@ -230,7 +230,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       <div className="flex items-center justify-end mb-2">
         <button
           onClick={resetAll}
-          className="text-[11px] text-gray-400 hover:text-[#1A2B4A] transition-colors whitespace-nowrap"
+          className="text-[11px] text-gray-400 hover:text-[#303236] transition-colors whitespace-nowrap"
         >
           초기화
         </button>
@@ -241,7 +241,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           {filtersCfg.sizes.map((s) => (
             <button key={s} onClick={() => toggleSize(s)}
               className={`px-3 py-1.5 border text-[12px] transition-colors ${
-                selectedSizes.includes(s) ? "border-[#1A2B4A] bg-[#1A2B4A] text-white" : "border-gray-200 text-gray-600 hover:border-[#1A2B4A]"
+                selectedSizes.includes(s) ? "border-[#303236] bg-[#303236] text-white" : "border-gray-200 text-gray-600 hover:border-[#303236]"
               }`}
             >{s}</button>
           ))}
@@ -253,7 +253,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           {filtersCfg.priceRanges.map((pr) => (
             <label key={pr.label} className="flex items-center gap-2.5 cursor-pointer">
               <input type="checkbox" checked={selectedPrices.includes(pr.label)} onChange={() => togglePrice(pr.label)}
-                className="w-[14px] h-[14px] accent-[#1A2B4A] flex-shrink-0" />
+                className="w-[14px] h-[14px] accent-[#303236] flex-shrink-0" />
               <span className="text-[13px] text-gray-700">{pr.label}</span>
             </label>
           ))}
@@ -263,14 +263,14 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       {/* Bottom buttons */}
       <div className="flex gap-2 border-t border-gray-200 pt-4 mt-2">
         <button onClick={resetFilters}
-          className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 py-3 text-[12px] text-gray-700 hover:border-[#1A2B4A] transition-colors">
+          className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 py-3 text-[12px] text-gray-700 hover:border-[#303236] transition-colors">
           검색 초기화
           <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
-        <button className="flex-1 bg-[#1A2B4A] text-white py-3 text-[12px] font-semibold hover:bg-[#243d5e] transition-colors">
+        <button className="flex-1 bg-[#303236] text-white py-3 text-[12px] font-semibold hover:bg-[#243d5e] transition-colors">
           {filtered.length} 상품보기
         </button>
       </div>
@@ -341,13 +341,13 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             ))}
           </div>
         )}
-        <h3 className={`font-medium text-[#1A2B4A] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
+        <h3 className={`font-medium text-[#303236] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
           <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">{productDisplayName(product)}</Link>
         </h3>
         {product.sku && (
           <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{product.sku}</p>
         )}
-        <p className={`font-bold text-[#1A2B4A] ${mobile ? "text-[13px]" : "text-[14px]"}`}>{product.price}</p>
+        <p className={`font-bold text-[#303236] ${mobile ? "text-[13px]" : "text-[14px]"}`}>{product.price}</p>
       </div>
     </div>
   );
@@ -374,7 +374,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 router.back();
               }
             }}
-            className="p-1 text-[#1A2B4A]"
+            className="p-1 text-[#303236]"
             aria-label="뒤로"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,9 +382,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             </svg>
           </button>
 
-          <h1 className="text-[16px] font-bold text-[#1A2B4A] tracking-tight">{currentTitle}</h1>
+          <h1 className="text-[16px] font-bold text-[#303236] tracking-tight">{currentTitle}</h1>
 
-          <Link href="/cart" className="relative p-1 text-[#1A2B4A]" aria-label="찜 목록">
+          <Link href="/cart" className="relative p-1 text-[#303236]" aria-label="찜 목록">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                 d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" />
@@ -410,7 +410,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 onClick={() => handleCategoryChange(cat)}
                 className={`flex-shrink-0 px-4 py-3 text-[13px] whitespace-nowrap transition-colors border-b-2 ${
                   isActive
-                    ? "border-[#1A2B4A] text-[#1A2B4A] font-bold"
+                    ? "border-[#303236] text-[#303236] font-bold"
                     : "border-transparent text-gray-500"
                 }`}
               >
@@ -432,7 +432,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 onClick={() => setActiveSubCategory(sub)}
                 className={`flex-shrink-0 text-[13px] whitespace-nowrap transition-colors pb-0.5 ${
                   activeSubCategory === sub
-                    ? "font-bold text-[#1A2B4A] border-b-2 border-[#1A2B4A]"
+                    ? "font-bold text-[#303236] border-b-2 border-[#303236]"
                     : "text-gray-400"
                 }`}
               >
@@ -445,7 +445,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         {/* Search banner */}
         {searchQuery && (
           <div className="mx-[15px] mt-3 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#ff550c] px-4 py-2.5">
-            <p className="text-[12px] text-[#1A2B4A]">
+            <p className="text-[12px] text-[#303236]">
               <span className="font-bold">"{searchQuery}"</span>
               <span className="text-gray-400 ml-1">{filtered.length}개</span>
             </p>
@@ -504,10 +504,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                   onClick={() => { setSortBy(opt); setSortSheetOpen(false); }}
                   className="w-full flex items-center gap-3 py-3.5 border-b border-gray-100 last:border-0"
                 >
-                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${sortBy === opt ? "border-[#1A2B4A]" : "border-gray-300"}`}>
-                    {sortBy === opt && <span className="w-2.5 h-2.5 rounded-full bg-[#1A2B4A]" />}
+                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${sortBy === opt ? "border-[#303236]" : "border-gray-300"}`}>
+                    {sortBy === opt && <span className="w-2.5 h-2.5 rounded-full bg-[#303236]" />}
                   </span>
-                  <span className={`text-[14px] ${sortBy === opt ? "font-semibold text-[#1A2B4A]" : "text-gray-600"}`}>{opt}</span>
+                  <span className={`text-[14px] ${sortBy === opt ? "font-semibold text-[#303236]" : "text-gray-600"}`}>{opt}</span>
                 </button>
               ))}
             </div>
@@ -533,8 +533,8 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             <div className="flex-1 bg-black/40" onClick={() => setMobileFilterOpen(false)} />
             <div className="w-[85vw] max-w-[340px] bg-white h-full overflow-y-auto flex flex-col">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
-                <h2 className="text-[16px] font-bold text-[#1A2B4A]">필터</h2>
-                <button onClick={() => setMobileFilterOpen(false)} className="text-gray-400 hover:text-[#1A2B4A] p-1">
+                <h2 className="text-[16px] font-bold text-[#303236]">필터</h2>
+                <button onClick={() => setMobileFilterOpen(false)} className="text-gray-400 hover:text-[#303236] p-1">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -553,7 +553,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
         {/* 카테고리 타이틀 */}
         <div className="px-[70px] pt-8 pb-2 bg-white border-b border-gray-200">
-          <h2 className="text-[26px] font-bold text-[#1A2B4A] leading-tight pb-4">{currentTitle}</h2>
+          <h2 className="text-[26px] font-bold text-[#303236] leading-tight pb-4">{currentTitle}</h2>
         </div>
 
         {/* 사이드바 + 제품 */}
@@ -562,11 +562,11 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
             {searchQuery && (
               <div className="mb-6 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#ff550c] px-4 py-3">
-                <p className="text-[13px] text-[#1A2B4A]">
+                <p className="text-[13px] text-[#303236]">
                   <span className="font-bold">"{searchQuery}"</span> 검색 결과
                   <span className="text-gray-400 ml-2">{filtered.length}개</span>
                 </p>
-                <button onClick={() => router.push("/products")} className="text-xs text-gray-400 hover:text-[#1A2B4A] transition-colors">
+                <button onClick={() => router.push("/products")} className="text-xs text-gray-400 hover:text-[#303236] transition-colors">
                   검색 초기화 ✕
                 </button>
               </div>
@@ -579,7 +579,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 return (
                   <button key={cat} onClick={() => handleCategoryChange(cat)}
                     className={`flex-shrink-0 py-3 text-[15px] whitespace-nowrap transition-colors border-b-2 -mb-px ${
-                      isActive ? "border-[#1A2B4A] text-[#1A2B4A] font-bold" : "border-transparent text-gray-500 hover:text-[#1A2B4A]"
+                      isActive ? "border-[#303236] text-[#303236] font-bold" : "border-transparent text-gray-500 hover:text-[#303236]"
                     }`}>
                     {cat}
                   </button>
@@ -593,7 +593,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 {["전체", ...subCats].map((sub) => (
                   <button key={sub} onClick={() => setActiveSubCategory(sub)}
                     className={`text-[14px] whitespace-nowrap transition-colors pb-0.5 ${
-                      activeSubCategory === sub ? "font-bold text-[#1A2B4A] border-b-2 border-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
+                      activeSubCategory === sub ? "font-bold text-[#303236] border-b-2 border-[#303236]" : "text-gray-400 hover:text-[#303236]"
                     }`}>
                     {sub}
                   </button>
@@ -611,7 +611,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                     {SORT_OPTIONS.map((opt) => (
                       <button key={opt} onClick={() => setSortBy(opt)}
                         className={`text-[13px] whitespace-nowrap transition-colors ${
-                          sortBy === opt ? "font-bold text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
+                          sortBy === opt ? "font-bold text-[#303236]" : "text-gray-400 hover:text-[#303236]"
                         }`}
                       >{opt}</button>
                     ))}
@@ -628,7 +628,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                       </button>
                     )}
                     <span className="text-[12px] text-gray-500 ml-2 whitespace-nowrap">
-                      <span className="font-semibold text-[#1A2B4A]">{filtered.length}</span>개 상품
+                      <span className="font-semibold text-[#303236]">{filtered.length}</span>개 상품
                     </span>
                   </div>
                 </div>

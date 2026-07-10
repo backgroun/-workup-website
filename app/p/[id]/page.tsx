@@ -86,7 +86,7 @@ export default async function PopupLandingPage({ params }: Props) {
   const products = await getProducts(page.product_ids ?? []);
   const pageBg       = page.page_bg       || "#F5F2ED";
   const labelColor   = page.label_color   || "#ff550c";
-  const ctaBg        = "#1A2B4A";
+  const ctaBg        = "#303236";
 
   return (
     <main style={{ background: pageBg }}>
@@ -102,7 +102,7 @@ export default async function PopupLandingPage({ params }: Props) {
                 {page.label}
               </p>
             )}
-            <h1 className="text-2xl md:text-4xl font-bold text-[#1A2B4A] leading-snug mb-5 whitespace-pre-line">
+            <h1 className="text-2xl md:text-4xl font-bold text-[#303236] leading-snug mb-5 whitespace-pre-line">
               {page.title}
             </h1>
             {page.description && (
@@ -137,7 +137,7 @@ export default async function PopupLandingPage({ params }: Props) {
       {products.length > 0 && (
         <section className="max-w-screen-xl mx-auto px-6 md:px-10 pb-16 md:pb-24">
           <div className="flex items-baseline justify-between mb-6 md:mb-8 border-t border-gray-100 pt-10">
-            <h2 className="text-lg md:text-xl font-bold text-[#1A2B4A]">
+            <h2 className="text-lg md:text-xl font-bold text-[#303236]">
               {page.product_section_title || "이 기획전의 제품"}
             </h2>
             <span className="text-xs text-gray-400">{products.length}개 제품</span>
@@ -158,9 +158,9 @@ export default async function PopupLandingPage({ params }: Props) {
                     <span className="text-gray-300 text-sm font-black">WU</span>
                   )}
                 </div>
-                <p className="text-[13px] md:text-sm text-[#1A2B4A] leading-snug mb-1 line-clamp-2">{p.name}</p>
+                <p className="text-[13px] md:text-sm text-[#303236] leading-snug mb-1 line-clamp-2">{p.name}</p>
                 {p.price && (
-                  <p className="text-sm md:text-[15px] font-bold text-[#1A2B4A]">
+                  <p className="text-sm md:text-[15px] font-bold text-[#303236]">
                     {p.price.toLocaleString()}원
                   </p>
                 )}

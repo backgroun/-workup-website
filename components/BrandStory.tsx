@@ -1,6 +1,6 @@
 ﻿export default function BrandStory() {
   return (
-    <section id="story" className="py-24 bg-[#1A2B4A] border-t border-[#243d5e]">
+    <section id="story" className="py-24 bg-[#303236] border-t border-[#243d5e]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>

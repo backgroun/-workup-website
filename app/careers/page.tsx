@@ -47,7 +47,7 @@ export default async function CareersPage() {
   return (
     <main className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <div className="bg-[#1A2B4A] text-white">
+      <div className="bg-[#303236] text-white">
         <div className="max-w-4xl mx-auto px-5 py-12">
           <p className="text-sm font-semibold text-blue-300 mb-2">WORKUP CAREERS</p>
           <h1 className="text-3xl font-bold mb-3">함께 일할 팀원을 찾습니다</h1>
@@ -69,7 +69,7 @@ export default async function CareersPage() {
             <p className="text-sm text-gray-400">새로운 공고가 올라오면 이 페이지에서 확인하세요.</p>
             <Link
               href="/store"
-              className="inline-block mt-6 px-6 py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-xl hover:bg-[#243a63] transition-colors"
+              className="inline-block mt-6 px-6 py-3 bg-[#303236] text-white text-sm font-semibold rounded-xl hover:bg-[#243a63] transition-colors"
             >
               전국 매장 찾기
             </Link>

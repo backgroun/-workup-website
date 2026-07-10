@@ -131,7 +131,7 @@ export default function DormantMembersPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#1A2B4A]">← 회원 현황</Link>
+            <Link href="/admin/members" className="text-[15px] text-gray-400 hover:text-[#303236]">← 회원 현황</Link>
             <span className="text-gray-200">/</span>
             <h1 className="text-3xl font-bold text-gray-900">휴면회원 관리</h1>
           </div>
@@ -170,7 +170,7 @@ export default function DormantMembersPage() {
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
           {/* 일괄 작업 */}
           <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-200 bg-gray-50">
-            {selected.size > 0 && <span className="text-[15px] font-bold text-[#1A2B4A] mr-1">{selected.size}명 선택</span>}
+            {selected.size > 0 && <span className="text-[15px] font-bold text-[#303236] mr-1">{selected.size}명 선택</span>}
             <button onClick={bulkRestore} disabled={!selected.size}
               className="px-4 py-1.5 text-[14px] border border-emerald-300 bg-white text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 rounded">
               활성 복원
@@ -187,7 +187,7 @@ export default function DormantMembersPage() {
                 <tr>
                   <th className="px-4 py-4 w-10">
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
-                      className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                      className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
                   {["이름", "이메일", "연락처", "등급", "상태", "마지막 접속", "가입일", "휴면 기간", "관리"].map(h => (
                     <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
@@ -205,7 +205,7 @@ export default function DormantMembersPage() {
                     <tr key={m.id} className={selected.has(m.id) ? "bg-amber-50/60" : "hover:bg-gray-50 transition-colors"}>
                       <td className="px-4 py-4">
                         <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleOne(m.id)}
-                          className="w-[18px] h-[18px] accent-[#1A2B4A] cursor-pointer" />
+                          className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                       </td>
                       <td className="px-5 py-4 text-[15px] font-bold text-gray-900 whitespace-nowrap">{m.name}</td>
                       <td className="px-5 py-4 text-[15px] text-gray-600 whitespace-nowrap">{m.email}</td>

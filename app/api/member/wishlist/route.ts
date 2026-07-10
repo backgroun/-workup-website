@@ -68,7 +68,7 @@ export async function GET() {
         size: r.size,
         color: r.color,
         colorHex: r.color_hex,
-        bg: p.bg ?? "bg-[#1A2B4A]",
+        bg: p.bg ?? "bg-[#303236]",
         imageUrl: p.imageUrl,
         allSizes: p.sizes ?? [],
         allColors: p.colors ?? [],

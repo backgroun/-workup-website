@@ -84,7 +84,7 @@ export default function AdminProductBannersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {cfg.banners.map((b, idx) => (
           <div key={idx} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-            <p className="text-sm font-bold text-[#1A2B4A]">배너 {idx + 1}</p>
+            <p className="text-sm font-bold text-[#303236]">배너 {idx + 1}</p>
             <AdminImageField
               label="배너 이미지"
               value={b.imageUrl}
@@ -98,7 +98,7 @@ export default function AdminProductBannersPage() {
               <label className="block text-xs font-medium text-gray-500 mb-1.5">연결 링크 (선택)</label>
               <input value={b.link} onChange={(e) => setBanner(idx, "link", e.target.value)}
                 placeholder="예: /story 또는 https://..."
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#1A2B4A] rounded" />
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
             </div>
           </div>
         ))}

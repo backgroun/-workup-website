@@ -193,7 +193,7 @@ export default function InstagramFeedAdminPage() {
                     <div className="w-9 h-11 rounded flex-shrink-0 bg-gray-100" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1A2B4A] truncate">{e.productName}</p>
+                    <p className="text-sm font-semibold text-[#303236] truncate">{e.productName}</p>
                     <p className="text-[11px] text-gray-400 font-mono truncate" title={e.url}>{e.url}</p>
                   </div>
                   <a href={e.url} target="_blank" rel="noopener noreferrer"
@@ -213,7 +213,7 @@ export default function InstagramFeedAdminPage() {
 
       <div className="flex items-center gap-3 mt-5">
         <a href="/admin/products" target="_blank" rel="noopener"
-          className="text-sm text-gray-400 hover:text-[#1A2B4A] transition-colors">상품에서 게시물 등록하기 ↗</a>
+          className="text-sm text-gray-400 hover:text-[#303236] transition-colors">상품에서 게시물 등록하기 ↗</a>
       </div>
     </div>
   );

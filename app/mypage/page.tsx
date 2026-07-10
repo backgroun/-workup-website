@@ -99,7 +99,7 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
           <div className="px-6 py-8 text-center">
             <p className="text-sm text-gray-700">비밀번호가 변경됐습니다.</p>
             <button onClick={onClose}
-              className="mt-5 w-full py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
+              className="mt-5 w-full py-3 bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] transition-colors">
               확인
             </button>
           </div>
@@ -113,7 +113,7 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
               <PasswordInput
                 value={form.currentPassword} onChange={e => set("currentPassword", e.target.value)}
                 autoComplete="current-password"
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
               />
             </div>
             <div>
@@ -121,7 +121,7 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
               <PasswordInput
                 value={form.newPassword} onChange={e => set("newPassword", e.target.value)}
                 placeholder="8자 이상" autoComplete="new-password"
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
               />
             </div>
             <div>
@@ -129,7 +129,7 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
               <PasswordInput
                 value={form.newPasswordConfirm} onChange={e => set("newPasswordConfirm", e.target.value)}
                 placeholder="새 비밀번호 재입력" autoComplete="new-password"
-                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+                className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
               />
             </div>
             <div className="pt-1 flex gap-2.5">
@@ -138,7 +138,7 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
                 취소
               </button>
               <button type="submit" disabled={saving}
-                className="flex-1 py-3 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors">
+                className="flex-1 py-3 bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors">
                 {saving ? "변경 중..." : "변경하기"}
               </button>
             </div>
@@ -196,7 +196,7 @@ export default function MyPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f8f6] flex items-center justify-center">
-        <span className="w-7 h-7 border-2 border-[#1A2B4A] border-t-transparent rounded-full animate-spin" />
+        <span className="w-7 h-7 border-2 border-[#303236] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -209,7 +209,7 @@ export default function MyPage() {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black tracking-[0.15em] text-[#1A2B4A]">MY PAGE</h1>
+          <h1 className="text-2xl font-black tracking-[0.15em] text-[#303236]">MY PAGE</h1>
           <button
             onClick={handleLogout} disabled={loggingOut}
             className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
@@ -227,7 +227,7 @@ export default function MyPage() {
         <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-7 lg:p-8 ${ROW_TOP_MIN_H}`}>
           <div className="flex items-center gap-4 mb-6">
             {/* 아바타 */}
-            <div className="w-14 h-14 rounded-full bg-[#1A2B4A] flex items-center justify-center flex-shrink-0">
+            <div className="w-14 h-14 rounded-full bg-[#303236] flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xl font-bold">{member.name.charAt(0)}</span>
             </div>
             <div>
@@ -268,7 +268,7 @@ export default function MyPage() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <p className="text-sm font-bold text-gray-800">찜한 제품</p>
             {wishlist.length > 0 && (
-              <Link href="/cart" className="text-xs text-gray-400 hover:text-[#1A2B4A] transition-colors">
+              <Link href="/cart" className="text-xs text-gray-400 hover:text-[#303236] transition-colors">
                 전체 보기 ({wishlist.length})
               </Link>
             )}
@@ -277,7 +277,7 @@ export default function MyPage() {
           {wishlist.length === 0 ? (
             <div className="px-5 py-10 text-center">
               <p className="text-sm text-gray-400">찜한 제품이 없습니다.</p>
-              <Link href="/products" className="inline-block mt-3 text-sm font-semibold text-[#1A2B4A] hover:underline">
+              <Link href="/products" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 제품 보러 가기
               </Link>
             </div>
@@ -319,12 +319,12 @@ export default function MyPage() {
 
           {inquiriesLoading ? (
             <div className="flex items-center justify-center py-10">
-              <span className="w-5 h-5 border-2 border-[#1A2B4A] border-t-transparent rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-[#303236] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : inquiries.length === 0 ? (
             <div className="px-5 py-10 text-center">
               <p className="text-sm text-gray-400">아직 남기신 문의가 없습니다.</p>
-              <Link href="/support" className="inline-block mt-3 text-sm font-semibold text-[#1A2B4A] hover:underline">
+              <Link href="/support" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 1:1 문의하기
               </Link>
             </div>
@@ -359,9 +359,9 @@ export default function MyPage() {
                           </div>
                         )}
                         {inq.reply ? (
-                          <div className="bg-[#1A2B4A]/5 border border-[#1A2B4A]/10 rounded-lg px-4 py-3">
+                          <div className="bg-[#303236]/5 border border-[#303236]/10 rounded-lg px-4 py-3">
                             <div className="flex items-center justify-between mb-1">
-                              <p className="text-xs font-semibold text-[#1A2B4A]">담당자 답변</p>
+                              <p className="text-xs font-semibold text-[#303236]">담당자 답변</p>
                               {inq.repliedAt && (
                                 <span className="text-xs text-gray-400">{fmtDate(inq.repliedAt)}</span>
                               )}

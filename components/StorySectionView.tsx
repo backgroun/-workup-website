@@ -53,7 +53,7 @@ function StoryImagePanel({ src, alt }: { src?: string; alt: string }) {
     );
   }
   return (
-    <div className="relative w-full overflow-hidden bg-[#1A2B4A]" style={{ aspectRatio: IMG_RATIO }}>
+    <div className="relative w-full overflow-hidden bg-[#303236]" style={{ aspectRatio: IMG_RATIO }}>
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] select-none pointer-events-none">
         <span className="text-white font-black leading-none text-[220px]">WU</span>
       </div>
@@ -67,7 +67,7 @@ function MaskedIconImage({ src, alt }: { src: string; alt: string }) {
     <span
       role="img"
       aria-label={alt}
-      className="block w-full h-full bg-[#1A2B4A]"
+      className="block w-full h-full bg-[#303236]"
       style={{
         WebkitMask: `url("${src}") center / contain no-repeat`,
         mask: `url("${src}") center / contain no-repeat`,
@@ -100,11 +100,11 @@ function DelBadge({ onClick }: { onClick: () => void }) {
 function IconPickerButton({ icon, onPick, size = "w-14 h-14", bare = false }: { icon?: IconKey; onPick?: (icon: IconKey) => void; size?: string; bare?: boolean }) {
   const [open, setOpen] = useState(false);
   const circle = bare ? (
-    <div className={`${size} flex items-center justify-center text-[#1A2B4A]`}>
+    <div className={`${size} flex items-center justify-center text-[#303236]`}>
       <StoryIcon icon={icon} className="w-full h-full" />
     </div>
   ) : (
-    <div className={`${size} rounded-full bg-[#1A2B4A]/[0.06] flex items-center justify-center text-[#1A2B4A]`}>
+    <div className={`${size} rounded-full bg-[#303236]/[0.06] flex items-center justify-center text-[#303236]`}>
       <StoryIcon icon={icon} className="w-1/2 h-1/2" />
     </div>
   );
@@ -169,9 +169,9 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                           px-[15px] py-16 lg:px-0 lg:py-0 lg:pl-[5%] lg:pr-[4.21%]">
             {/* 텍스트 크기(1900px 기준): 제목 40px · 본문(리드+강조문) 20px 회색으로 통일. 강조문은 큰 네이비 → 일반 본문으로 구조 변경. */}
             <div className="w-full lg:w-[38.84%] lg:shrink-0 lg:pt-[120px] lg:pb-[120px]">
-              <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.2] mb-0 whitespace-pre-line block"
+              <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.2] mb-0 whitespace-pre-line block"
                 value={section.heading} {...ep("heading")} placeholder="제목" />
-              <div className="w-10 h-[3px] bg-[#1A2B4A] my-6 lg:my-[40px]" />
+              <div className="w-10 h-[3px] bg-[#303236] my-6 lg:my-[40px]" />
               <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-600 ${LH} mb-5 block`}
                 value={section.lead} {...ep("lead")} placeholder="리드 문장" />
               <p className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-600 ${LH} whitespace-pre-line`}>
@@ -179,7 +179,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 {(section.emphasisStrong || edit) && (
                   <>
                     {"\n"}
-                    <Editable as="span" className="font-bold text-[#1A2B4A]" value={section.emphasisStrong} {...ep("emphasisStrong")} placeholder="굵은 마무리(선택)" multiline={false} />
+                    <Editable as="span" className="font-bold text-[#303236]" value={section.emphasisStrong} {...ep("emphasisStrong")} placeholder="굵은 마무리(선택)" multiline={false} />
                   </>
                 )}
               </p>
@@ -193,7 +193,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                     <img src={section.image_url} alt={section.heading || "브랜드 선언"}
                       className="w-full aspect-[3/2] lg:aspect-auto lg:h-full object-cover object-top" />
                   ) : (
-                    <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:h-full overflow-hidden bg-[#1A2B4A]">
+                    <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:h-full overflow-hidden bg-[#303236]">
                       <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] select-none pointer-events-none">
                         <span className="text-white font-black leading-none text-[220px]">WU</span>
                       </div>
@@ -225,7 +225,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               </div>
               <div className="md:order-2 order-1">
                 <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Our Category" multiline={false} />
-                <Editable as="h2" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(52px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.05] mb-7 block"
+                <Editable as="h2" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(52px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.05] mb-7 block"
                   value={section.heading} {...ep("heading")} placeholder="Work Life Wear" multiline={false} />
                 <Editable as="p" className={`text-[calc(18px*var(--st-fs,1))] md:text-[calc(21px*var(--st-fs,1))] text-gray-600 ${LH} mb-10 block`}
                   value={section.lead} {...ep("lead")} placeholder="리드 문장" />
@@ -234,7 +234,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                     <div key={i} className="flex items-center gap-3">
                       <span className="group/item relative">
                         {edit && <DelBadge onClick={() => delTag(i)} />}
-                        <Editable as="span" className="inline-block text-[calc(13px*var(--st-fs,1))] md:text-[calc(15px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-wider border border-[#1A2B4A] px-5 py-2.5"
+                        <Editable as="span" className="inline-block text-[calc(13px*var(--st-fs,1))] md:text-[calc(15px*var(--st-fs,1))] font-bold text-[#303236] tracking-wider border border-[#303236] px-5 py-2.5"
                           value={word} multiline={false} {...epi(`tags.${i}`, (v) => setTag(i, v))} />
                       </span>
                       {i < arr.length - 1 && <span className="text-gray-400 text-xl font-light">+</span>}
@@ -270,7 +270,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
             <div className="px-[15px] md:px-[70px] text-center pt-16 pb-16 lg:pt-[60px] lg:pb-[66px]">
               <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] ${eyebrowColor} uppercase mb-3 lg:mb-[18px] block`}
                 value={section.eyebrow} {...ep("eyebrow")} placeholder="Core Values" multiline={false} />
-              <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
+              <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
                 value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
               <div className="mx-auto max-w-[1100px] grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
                 {items.map((v, i) => {
@@ -278,14 +278,14 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                   return (
                   <div key={i} className="group/item relative flex flex-col items-center text-center">
                     {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
+                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#303236]">
                       {iconImage ? (
                         <MaskedIconImage src={iconImage} alt={v.title} />
                       ) : (
                         <IconPickerButton icon={v.icon} size="w-[60px] h-[60px]" bare onPick={edit ? (ic) => setItem(i, { icon: ic }) : undefined} />
                       )}
                     </div>
-                    <h3 className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.02em]">
+                    <h3 className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#303236] tracking-[0.02em]">
                       <Editable as="span" value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
                     </h3>
                     <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
@@ -305,7 +305,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
           <div className="px-[15px] md:px-[70px]">
             <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Core Values" multiline={false} />
             <div className="flex items-center gap-3 mb-14">
-              <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] md:text-[calc(36px*var(--st-fs,1))] font-bold text-[#1A2B4A]"
+              <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] md:text-[calc(36px*var(--st-fs,1))] font-bold text-[#303236]"
                 value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
               {edit && <AddBtn onClick={addItem} label="항목" />}
             </div>
@@ -313,11 +313,11 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               {items.map((v, i) => (
                 <div key={i} className="group/item relative bg-white p-6 md:p-9">
                   {edit && items.length > 1 && <DelBadge onClick={() => delItem(i)} />}
-                  <Editable as="p" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(46px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-none mb-6 opacity-10 block"
+                  <Editable as="p" className="text-[calc(38px*var(--st-fs,1))] md:text-[calc(46px*var(--st-fs,1))] font-bold text-[#303236] leading-none mb-6 opacity-10 block"
                     value={v.num} multiline={false} {...epi(`items.${i}.num`, edit ? (x) => setItem(i, { num: x }) : undefined)} />
                   <Editable as="p" className="text-[calc(10px*var(--st-fs,1))] tracking-[0.18em] text-gray-400 uppercase mb-2 block"
                     value={v.en} placeholder="Function" multiline={false} {...epi(`items.${i}.en`, edit ? (x) => setItem(i, { en: x }) : undefined)} />
-                  <Editable as="h3" className="text-[calc(18px*var(--st-fs,1))] md:text-[calc(20px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-4 block"
+                  <Editable as="h3" className="text-[calc(18px*var(--st-fs,1))] md:text-[calc(20px*var(--st-fs,1))] font-bold text-[#303236] mb-4 block"
                     value={v.title} placeholder="제목" multiline={false} {...epi(`items.${i}.title`, edit ? (x) => setItem(i, { title: x }) : undefined)} />
                   <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                     value={v.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
@@ -342,7 +342,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
             <div className={`${GRID} md:grid-cols-2`}>
               <div className={imageLeft ? "md:order-2" : ""}>
                 <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Founding Story" multiline={false} />
-                <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] md:text-[calc(38px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-snug mb-9 whitespace-pre-line block"
+                <Editable as="h2" className="text-[calc(28px*var(--st-fs,1))] md:text-[calc(38px*var(--st-fs,1))] font-bold text-[#303236] leading-snug mb-9 whitespace-pre-line block"
                   value={section.heading} {...ep("heading")} placeholder="제목" />
                 <div className={`space-y-5 text-[calc(13px*var(--st-fs,1))] md:text-[calc(15px*var(--st-fs,1))] text-gray-600 ${LH}`}>
                   {paras.map((para, i) => (
@@ -352,14 +352,14 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                       {i === 0 && section.emphasis && !edit && null}
                       {/* 인용구는 첫 문단 바로 다음에 표시 */}
                       {i === 0 && (section.emphasis || edit) && (
-                        <Editable as="p" className="mt-5 text-[calc(15px*var(--st-fs,1))] font-semibold text-[#1A2B4A]"
+                        <Editable as="p" className="mt-5 text-[calc(15px*var(--st-fs,1))] font-semibold text-[#303236]"
                           value={section.emphasis} {...ep("emphasis")} placeholder="인용구" />
                       )}
                     </div>
                   ))}
                   {edit && <AddBtn onClick={addPara} label="문단" />}
                   {(section.closing || edit) && (
-                    <Editable as="p" className="font-medium text-[#1A2B4A] whitespace-pre-line" value={section.closing} {...ep("closing")} placeholder="마무리 문장" />
+                    <Editable as="p" className="font-medium text-[#303236] whitespace-pre-line" value={section.closing} {...ep("closing")} placeholder="마무리 문장" />
                   )}
                 </div>
               </div>
@@ -369,7 +369,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={section.image_url} alt={section.heading || "창업 스토리"} className="w-full h-full object-cover object-top" style={{ aspectRatio: IMG_RATIO }} />
                   ) : (
-                    <div className="bg-[#1A2B4A] flex flex-col items-center justify-center gap-3" style={{ aspectRatio: IMG_RATIO }}>
+                    <div className="bg-[#303236] flex flex-col items-center justify-center gap-3" style={{ aspectRatio: IMG_RATIO }}>
                       <svg className="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -388,7 +388,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
     // ── 매장 유도 CTA ──
     case "cta": {
       const ctaClass =
-        "inline-flex items-center gap-2 border border-[#1A2B4A] text-[#1A2B4A] text-[calc(12px*var(--st-fs,1))] tracking-widest font-medium px-8 py-3.5 hover:bg-[#1A2B4A] hover:text-white transition-colors";
+        "inline-flex items-center gap-2 border border-[#303236] text-[#303236] text-[calc(12px*var(--st-fs,1))] tracking-widest font-medium px-8 py-3.5 hover:bg-[#303236] hover:text-white transition-colors";
       const ctaBtn = section.ctaLabel && section.ctaHref
         ? (section.ctaHref.startsWith("/")
           ? <Link href={section.ctaHref} className={ctaClass}>{section.ctaLabel}</Link>
@@ -400,7 +400,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
               <div>
                 <Editable as="p" className={`${eyebrow} mb-6 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Experience WORKUP" multiline={false} />
-                <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] md:text-[calc(36px*var(--st-fs,1))] font-bold text-[#1A2B4A] mb-4 block"
+                <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] md:text-[calc(36px*var(--st-fs,1))] font-bold text-[#303236] mb-4 block"
                   value={section.heading} {...ep("heading")} placeholder="제목" multiline={false} />
                 <Editable as="p" className={`text-[calc(13px*var(--st-fs,1))] md:text-[calc(15px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                   value={section.body} {...ep("body")} placeholder="본문" />
@@ -428,7 +428,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
             <div className="grid grid-cols-1 md:grid-cols-12 gap-y-8 md:gap-x-16">
               <div className="md:col-span-5">
                 <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="Eyebrow" multiline={false} />
-                <Editable as="h2" className="text-[calc(32px*var(--st-fs,1))] md:text-[calc(44px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.15] whitespace-pre-line block"
+                <Editable as="h2" className="text-[calc(32px*var(--st-fs,1))] md:text-[calc(44px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.15] whitespace-pre-line block"
                   value={section.heading} {...ep("heading")} placeholder="제목" />
               </div>
               <div className="md:col-span-6 md:col-start-7 md:pt-2">
@@ -501,7 +501,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
               </div>
               <div className={imageLeft ? "md:order-2" : "md:order-1"}>
                 <Editable as="p" className={`${eyebrow} mb-7 block`} value={section.eyebrow} {...ep("eyebrow")} placeholder="THE PROBLEM" multiline={false} />
-                <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(42px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 whitespace-pre-line block"
+                <Editable as="h2" className="text-[calc(30px*var(--st-fs,1))] md:text-[calc(42px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.25] mb-8 whitespace-pre-line block"
                   value={section.heading} {...ep("heading")} placeholder="왜 작업복은 불편해도 참고 입어야 했을까요?" />
                 <Editable as="p" className={`text-[calc(15px*var(--st-fs,1))] md:text-[calc(17px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                   value={section.body} {...ep("body")} placeholder="짧은 문제 상황" />
@@ -527,7 +527,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
           <div className="px-[15px] md:px-[70px] text-center pt-16 pb-16 lg:pt-[60px] lg:pb-[66px]">
             <Editable as="p" className={`text-[calc(11px*var(--st-fs,1))] tracking-[0.2em] ${eyebrowColor} uppercase mb-3 lg:mb-[18px] block`}
               value={section.eyebrow} {...ep("eyebrow")} placeholder="WORK LIFE WEAR" multiline={false} />
-            <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#1A2B4A] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
+            <Editable as="h2" className="text-[calc(26px*var(--st-fs,1))] lg:text-[calc(40px*var(--st-fs,1))] font-bold text-[#303236] leading-[1.25] mb-8 lg:mb-[45px] whitespace-pre-line block"
               value={section.heading} {...ep("heading")} placeholder="일할 때는 작업복처럼. 일상에서는 평상복처럼." />
             <Editable as="p" className={`text-[calc(16px*var(--st-fs,1))] lg:text-[calc(20px*var(--st-fs,1))] text-gray-500 ${LH} mb-10 lg:mb-[45px] max-w-[760px] mx-auto whitespace-pre-line block`}
               value={section.lead} {...ep("lead")} placeholder="리드 문장" />
@@ -538,7 +538,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                   {/* 아이콘 60×60 (커스텀 이미지 우선, 없으면 프리셋). 편집 모드는 클릭해 이미지 교체 */}
                   {edit ? (
                     <button type="button" onClick={(e) => { e.stopPropagation(); pickIcon(i)?.(); }}
-                      className="group/ic relative w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
+                      className="group/ic relative w-[60px] h-[60px] flex items-center justify-center text-[#303236]">
                       {it.iconImage
                         ? <MaskedIconImage src={it.iconImage} alt={it.label} />
                         : <StoryIcon icon={it.icon} className="w-full h-full" />}
@@ -547,13 +547,13 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                       </span>
                     </button>
                   ) : (
-                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#1A2B4A]">
+                    <div className="w-[60px] h-[60px] flex items-center justify-center text-[#303236]">
                       {it.iconImage
                         ? <MaskedIconImage src={it.iconImage} alt={it.label} />
                         : <StoryIcon icon={it.icon} className="w-full h-full" />}
                     </div>
                   )}
-                  <Editable as="h3" className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#1A2B4A] tracking-[0.1em] block"
+                  <Editable as="h3" className="mt-6 lg:mt-[29px] text-[calc(20px*var(--st-fs,1))] lg:text-[calc(29px*var(--st-fs,1))] font-bold text-[#303236] tracking-[0.1em] block"
                     value={it.label} placeholder="WORK" multiline={false} {...epi(`items.${i}.label`, edit ? (x) => setItem(i, { label: x }) : undefined)} />
                   <Editable as="p" className={`mt-5 lg:mt-[25px] text-[calc(13px*var(--st-fs,1))] lg:text-[calc(14px*var(--st-fs,1))] text-gray-500 ${LH} whitespace-pre-line block`}
                     value={it.desc} placeholder="설명" {...epi(`items.${i}.desc`, edit ? (x) => setItem(i, { desc: x }) : undefined)} />
@@ -573,7 +573,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
       const addImg = () => edit?.patch({ images: [...images, { url: undefined, alt: "" } as PhotoItem] });
       const delImg = (i: number) => edit?.patch({ images: images.filter((_, idx) => idx !== i) });
       const ctaClass =
-        "inline-flex items-center gap-2 border border-white text-white text-[calc(12px*var(--st-fs,1))] tracking-widest font-medium px-8 py-3.5 hover:bg-white hover:text-[#1A2B4A] transition-colors";
+        "inline-flex items-center gap-2 border border-white text-white text-[calc(12px*var(--st-fs,1))] tracking-widest font-medium px-8 py-3.5 hover:bg-white hover:text-[#303236] transition-colors";
       const ctaBtn = section.ctaLabel && section.ctaHref
         ? (section.ctaHref.startsWith("/")
           ? <Link href={section.ctaHref} className={ctaClass}>{section.ctaLabel}</Link>
@@ -592,13 +592,13 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-[#1A2B4A]" />
+                      <div className="w-full h-full bg-[#303236]" />
                     )}
                   </ImgPick>
                 </div>
               ))
             ) : (
-              <div className="col-span-3 bg-[#1A2B4A]">
+              <div className="col-span-3 bg-[#303236]">
                 <ImgPick onPick={edit ? () => edit.pickImage((url) => edit.patch({ images: [{ url, alt: "" }] })) : undefined} has={false}>
                   <div className="w-full h-full min-h-[420px]" />
                 </ImgPick>

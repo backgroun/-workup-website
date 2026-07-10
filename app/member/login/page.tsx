@@ -69,7 +69,7 @@ function LoginContent() {
 
         {/* 찜 목록 접근 시 안내 */}
         {from === "cart" && (
-          <div className="mb-5 px-4 py-3 bg-[#1A2B4A]/5 border border-[#1A2B4A]/20 text-[#1A2B4A] text-sm rounded-lg flex items-start gap-2.5">
+          <div className="mb-5 px-4 py-3 bg-[#303236]/5 border border-[#303236]/20 text-[#303236] text-sm rounded-lg flex items-start gap-2.5">
             <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -93,7 +93,7 @@ function LoginContent() {
               type="email" value={form.email} onChange={e => set("email", e.target.value)}
               placeholder="example@email.com"
               inputMode="email" autoComplete="email" autoCapitalize="none"
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
             />
           </div>
 
@@ -106,13 +106,13 @@ function LoginContent() {
               value={form.password} onChange={e => set("password", e.target.value)}
               placeholder="비밀번호 입력"
               autoComplete="current-password"
-              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#1A2B4A] focus:ring-2 focus:ring-[#1A2B4A]/10 transition-colors"
+              className="w-full border border-gray-200 px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:border-[#303236] focus:ring-2 focus:ring-[#303236]/10 transition-colors"
             />
           </div>
 
           <button
             type="submit" disabled={saving}
-            className="w-full py-3.5 bg-[#1A2B4A] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors mt-2"
+            className="w-full py-3.5 bg-[#303236] text-white text-sm font-semibold rounded-lg hover:bg-[#243d5e] disabled:opacity-50 transition-colors mt-2"
           >
             {saving ? "로그인 중..." : "로그인"}
           </button>
@@ -121,7 +121,7 @@ function LoginContent() {
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-400">
             아직 회원이 아니신가요?{" "}
-            <Link href="/register" className="text-[#1A2B4A] font-semibold hover:underline">
+            <Link href="/register" className="text-[#303236] font-semibold hover:underline">
               회원가입
             </Link>
           </p>

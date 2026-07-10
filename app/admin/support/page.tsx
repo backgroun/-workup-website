@@ -169,7 +169,7 @@ export default function SupportEditPage() {
           <div className="border border-gray-200 bg-[#F5F2ED] overflow-hidden rounded-lg shadow-sm">
             <div className="px-6 pt-8 pb-2">
               {cfg.hero_eyebrow && <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">{cfg.hero_eyebrow}</p>}
-              {cfg.hero_title && <h2 className="text-2xl font-bold text-[#1A2B4A] leading-tight mb-2">{cfg.hero_title}</h2>}
+              {cfg.hero_title && <h2 className="text-2xl font-bold text-[#303236] leading-tight mb-2">{cfg.hero_title}</h2>}
               {cfg.hero_desc && <p className="text-sm text-gray-500 leading-relaxed whitespace-pre-line">{cfg.hero_desc}</p>}
             </div>
             <div className="p-6">
@@ -178,7 +178,7 @@ export default function SupportEditPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={cfg.guide_image_url} alt="" className="w-full object-cover" />
                 ) : (
-                  <div className="bg-[#1A2B4A] px-6 py-8">
+                  <div className="bg-[#303236] px-6 py-8">
                     <h3 className="text-lg font-bold text-white mb-2 whitespace-pre-line">{cfg.intro_title}</h3>
                     <p className="text-gray-300 text-xs leading-relaxed whitespace-pre-line">{cfg.intro_desc}</p>
                   </div>

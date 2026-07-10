@@ -13,7 +13,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 const TYPE_LABEL: Record<string, string> = { franchise: "가맹·창업", wholesale: "입점·제휴", support: "1:1 문의", product: "상품 문의" };
-const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#1A2B4A] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white", product: "bg-emerald-600 text-white" };
+const TYPE_BADGE: Record<string, string> = { franchise: "bg-[#303236] text-white", wholesale: "bg-[#2d4f72] text-white", support: "bg-[#ff550c] text-white", product: "bg-emerald-600 text-white" };
 
 const STATUS_STYLE: Record<InquiryStatus, string> = {
   new: "bg-green-100 text-green-700",

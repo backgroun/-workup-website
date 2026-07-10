@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function SitePage() {
   return (
     <main>
-      <div className="bg-[#1A2B4A] py-16">
+      <div className="bg-[#303236] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">WORKUP SITE</p>
           <h1 className="text-4xl font-bold text-white mb-4">현장을 위한 라인</h1>

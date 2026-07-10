@@ -20,13 +20,13 @@ function uid() {
 function DesktopPreview({ items }: { items: NavMenuItem[] }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg px-5 py-3 flex items-center gap-6 overflow-x-auto">
-      <span className="text-[15px] font-black tracking-tight text-[#1A2B4A] flex-shrink-0">WORKUP</span>
+      <span className="text-[15px] font-black tracking-tight text-[#303236] flex-shrink-0">WORKUP</span>
       <div className="flex items-center gap-5">
         {items.length === 0 ? (
           <span className="text-xs text-gray-300">메뉴 없음</span>
         ) : (
           items.filter((it) => it.isVisible !== false).map((it) => (
-            <span key={it.id} className={`${oxanium.className} text-[14px] text-[#1A2B4A] whitespace-nowrap`} style={{ fontWeight: 650 }}>
+            <span key={it.id} className={`${oxanium.className} text-[14px] text-[#303236] whitespace-nowrap`} style={{ fontWeight: 650 }}>
               {it.label || "(빈 메뉴)"}
             </span>
           ))
@@ -42,14 +42,14 @@ function MobilePreview({ items }: { items: NavMenuItem[] }) {
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden" style={{ maxWidth: 300 }}>
       <div className="flex justify-center pt-3 pb-1.5"><div className="w-9 h-1 bg-gray-300 rounded-full" /></div>
       <div className="px-5 py-2 border-b border-gray-100">
-        <span className="text-[11px] font-bold text-[#1A2B4A] tracking-[0.2em]">MENU</span>
+        <span className="text-[11px] font-bold text-[#303236] tracking-[0.2em]">MENU</span>
       </div>
       <div className="px-5 pb-3">
         {items.length === 0 ? (
           <div className="py-6 text-center text-xs text-gray-300">메뉴 없음</div>
         ) : (
           items.filter((it) => it.isVisible !== false).map((it) => (
-            <div key={it.id} className="flex items-center justify-between py-3 text-[13px] font-semibold text-[#1A2B4A] tracking-[0.15em] border-b border-gray-100 last:border-0">
+            <div key={it.id} className="flex items-center justify-between py-3 text-[13px] font-semibold text-[#303236] tracking-[0.15em] border-b border-gray-100 last:border-0">
               {it.label || "(빈 메뉴)"}
               <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
@@ -178,7 +178,7 @@ export default function HeaderMenuManagePage() {
                   <div className="flex items-center gap-1">
                     <button onClick={() => updateItem(it.id, { isVisible: it.isVisible === false })}
                       title={it.isVisible !== false ? "숨기기" : "노출하기"}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors mr-1 ${it.isVisible !== false ? "bg-[#1A2B4A]" : "bg-gray-300"}`}>
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors mr-1 ${it.isVisible !== false ? "bg-[#303236]" : "bg-gray-300"}`}>
                       <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${it.isVisible !== false ? "translate-x-6" : "translate-x-1"}`} />
                     </button>
                     <button onClick={() => moveItem(it.id, -1)} disabled={i === 0} title="위로"

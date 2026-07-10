@@ -76,7 +76,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
       aria-modal="true"
     >
       <div className="relative bg-white w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <button type="button" onClick={onClose} aria-label="닫기" className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#1A2B4A]">
+        <button type="button" onClick={onClose} aria-label="닫기" className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#303236]">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
 
@@ -93,7 +93,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
                 value={pw} onChange={(e) => setPw(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 autoFocus placeholder="숫자 4자리"
                 autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                className="w-full border border-gray-200 px-4 py-2.5 text-sm text-center tracking-[0.3em] focus:outline-none focus:border-[#1A2B4A] bg-white" />
+                className="w-full border border-gray-200 px-4 py-2.5 text-sm text-center tracking-[0.3em] focus:outline-none focus:border-[#303236] bg-white" />
               {error && <p className="text-xs text-red-500 text-center">{error}</p>}
             </form>
           ) : (
@@ -102,11 +102,11 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
                 <span>{post.name}</span><span>·</span><span>{fmtDate(post.created_at)}</span>
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-500">{STATUS_LABEL[post.status] ?? post.status}</span>
               </div>
-              <div className="text-[#1A2B4A] whitespace-pre-line break-words leading-relaxed border border-gray-100 rounded-lg p-3.5 bg-gray-50/40">{post.content || "(내용 없음)"}</div>
+              <div className="text-[#303236] whitespace-pre-line break-words leading-relaxed border border-gray-100 rounded-lg p-3.5 bg-gray-50/40">{post.content || "(내용 없음)"}</div>
               {post.reply ? (
                 <div className="border border-[#ffd9c4] bg-[#fff7f1] rounded-lg p-3.5">
                   <p className="text-xs font-bold text-[#ff550c] mb-1.5">답변{post.repliedAt ? ` · ${fmtDate(post.repliedAt)}` : ""}</p>
-                  <p className="text-[#1A2B4A] whitespace-pre-line break-words leading-relaxed">{post.reply}</p>
+                  <p className="text-[#303236] whitespace-pre-line break-words leading-relaxed">{post.reply}</p>
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 text-center py-2">아직 답변이 등록되지 않았습니다.</p>
@@ -118,7 +118,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
         {/* 하단 고정 액션 버튼 — 스크롤·키보드와 무관하게 항상 보이도록 분리 */}
         <div className="flex-shrink-0 p-4 border-t border-gray-100 bg-white">
           {!post ? (
-            <button type="submit" form="post-view-form" disabled={loading} className="w-full bg-[#1A2B4A] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50">
+            <button type="submit" form="post-view-form" disabled={loading} className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50">
               {loading ? "확인 중..." : "확인"}
             </button>
           ) : (
@@ -178,17 +178,17 @@ export default function InquiryBoard({ type }: { type?: string }) {
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0" style={{ background: "linear-gradient(180deg,#fafbfc,#fff)" }}>
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="w-1 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
-          <h3 className="text-[15px] font-bold text-[#1A2B4A] truncate">{title}</h3>
+          <h3 className="text-[15px] font-bold text-[#303236] truncate">{title}</h3>
           <span className="flex items-center gap-1 text-[10px] text-green-600 flex-shrink-0">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />LIVE
           </span>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
-            누적 <b className="text-[#1A2B4A]">{total.toLocaleString()}</b>건
+            누적 <b className="text-[#303236]">{total.toLocaleString()}</b>건
           </span>
           <button type="button" onClick={load} disabled={refreshing} title="새로고침" aria-label="새로고침"
-            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-[#1A2B4A] hover:border-gray-300 transition-colors disabled:opacity-50">
+            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-[#303236] hover:border-gray-300 transition-colors disabled:opacity-50">
             <svg className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -214,7 +214,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
                 onClick={it.locked ? () => setViewItem(it) : undefined}
                 className={`grid grid-cols-[1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 border-l-2 transition-colors hover:bg-slate-50/70 ${it.locked ? "cursor-pointer" : ""} ${today ? "bg-[#fff7f1] border-l-[#ff550c]" : "border-l-transparent"}`}
               >
-                <span className="text-[#1A2B4A] truncate flex items-center gap-1.5 min-w-0">
+                <span className="text-[#303236] truncate flex items-center gap-1.5 min-w-0">
                   {today && <span className="flex-shrink-0 text-[9px] font-bold text-white bg-[#ff550c] rounded px-1 leading-tight py-0.5">NEW</span>}
                   {it.locked && (
                     <svg className="w-3 h-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-label="비밀글">

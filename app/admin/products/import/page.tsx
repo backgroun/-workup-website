@@ -28,13 +28,13 @@ const COLUMNS = [
 
 // 색상명 → hex (제품 폼 프리셋과 동일). 미지정 색은 기본 네이비.
 const COLOR_HEX: Record<string, string> = {
-  "블랙": "#1C1C1C", "화이트": "#F0F0F0", "네이비": "#1A2B4A",
+  "블랙": "#1C1C1C", "화이트": "#F0F0F0", "네이비": "#303236",
   "그레이": "#7A7A7A", "베이지": "#C9B99A", "카키": "#4A5240",
 };
 const COLOR_PRESET_NAMES = Object.keys(COLOR_HEX);
 function parseColors(val: unknown): { name: string; hex: string }[] {
   return String(val ?? "").split(";").map((s) => s.trim()).filter(Boolean)
-    .map((name) => ({ name, hex: COLOR_HEX[name] ?? "#1A2B4A" }));
+    .map((name) => ({ name, hex: COLOR_HEX[name] ?? "#303236" }));
 }
 
 function slugify(name: string) {
@@ -116,7 +116,7 @@ function parseRow(
     colors,
     line: "SITE",
     jobTypes: [],
-    bg: "bg-[#1A2B4A]",
+    bg: "bg-[#303236]",
   };
 }
 
@@ -194,7 +194,7 @@ async function downloadTemplate(fallbackCats: CatItem[]) {
     const ci = i + 1;
     ws.getColumn(ci).width = i === 0 ? 24 : 14;
     const h = ws.getCell(HEADER_ROW, ci);
-    h.font = { bold: true, color: { argb: "FF1A2B4A" } };
+    h.font = { bold: true, color: { argb: "FF303236" } };
     h.alignment = { vertical: "middle", horizontal: "center" };
     h.fill = { type: "pattern", pattern: "solid", fgColor: { argb: col.required ? "FFFFD666" : "FFEDF0F3" } };
     h.border = cellBorder;
@@ -302,9 +302,9 @@ export default function ProductImportPage() {
   // 필수 입력칸 색상 — 비면 빨강, 채워지면 연노랑
   const reqCls = (val: string | undefined) =>
     `w-full border rounded px-2 py-1 text-xs focus:outline-none ${
-      (val ?? "").trim() ? "border-amber-200 bg-amber-50 focus:border-[#1A2B4A]" : "border-red-300 bg-red-50 focus:border-red-400"
+      (val ?? "").trim() ? "border-amber-200 bg-amber-50 focus:border-[#303236]" : "border-red-300 bg-red-50 focus:border-red-400"
     }`;
-  const optCls = "w-full border border-gray-200 rounded px-2 py-1 text-xs bg-white focus:outline-none focus:border-[#1A2B4A]";
+  const optCls = "w-full border border-gray-200 rounded px-2 py-1 text-xs bg-white focus:outline-none focus:border-[#303236]";
 
   // 사이즈별 가격 — 체크 시 행 펼침. 끄면 입력값 초기화.
   const [sizePriceOpen, setSizePriceOpen] = useState<Set<number>>(new Set());
@@ -385,7 +385,7 @@ export default function ProductImportPage() {
 
       {/* 파일 업로드 영역 */}
       <div
-        className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-14 text-center cursor-pointer hover:border-[#1A2B4A] transition-colors mb-8"
+        className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-14 text-center cursor-pointer hover:border-[#303236] transition-colors mb-8"
         onClick={() => fileRef.current?.click()}
       >
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="hidden" />
@@ -515,7 +515,7 @@ export default function ProductImportPage() {
                       <td className="px-3 py-2 text-center">
                         <input type="checkbox" checked={sizePriceOpen.has(row._row)}
                           onChange={(e) => toggleSizePrice(row._row, e.target.checked)}
-                          className="w-4 h-4 accent-[#1A2B4A] cursor-pointer" title="사이즈별 가격 입력" />
+                          className="w-4 h-4 accent-[#303236] cursor-pointer" title="사이즈별 가격 입력" />
                       </td>
                       <td className="px-3 py-2 text-[11px] text-red-500 min-w-[140px]">{row._error || ""}</td>
                     </tr>
@@ -523,18 +523,18 @@ export default function ProductImportPage() {
                       <tr className="bg-amber-50/50">
                         <td colSpan={14} className="px-4 py-3">
                           <div className="flex flex-wrap gap-3 items-center">
-                            <span className="text-xs font-semibold text-[#1A2B4A]">사이즈별 가격</span>
+                            <span className="text-xs font-semibold text-[#303236]">사이즈별 가격</span>
                             {(row.sizes ?? []).length === 0 ? (
                               <span className="text-xs text-gray-400">먼저 사이즈를 입력하세요.</span>
                             ) : (
                               (row.sizes ?? []).map((sz) => (
                                 <label key={sz} className="flex items-center gap-1 text-xs">
-                                  <span className="font-semibold text-[#1A2B4A] min-w-[34px] text-center">{sz}</span>
+                                  <span className="font-semibold text-[#303236] min-w-[34px] text-center">{sz}</span>
                                   <input inputMode="numeric"
                                     value={row.sizePrices?.find((sp) => sp.size === sz)?.price ?? ""}
                                     onChange={(e) => setRowSizePrice(row._row, sz, e.target.value)}
                                     placeholder={row.price || "기본가"}
-                                    className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#1A2B4A]" />
+                                    className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#303236]" />
                                 </label>
                               ))
                             )}
@@ -607,7 +607,7 @@ export default function ProductImportPage() {
                 { label: "사이즈별 가격",   desc: "엑셀엔 없음 — 업로드 후 미리보기에서 '사이즈별가' 체크 시 사이즈마다 입력", req: false, ex: "체크 후 입력" },
               ].map((col) => (
                 <tr key={col.label} className="hover:bg-gray-50">
-                  <td className="px-5 py-3.5 font-mono text-sm text-[#1A2B4A] font-semibold">{col.label}</td>
+                  <td className="px-5 py-3.5 font-mono text-sm text-[#303236] font-semibold">{col.label}</td>
                   <td className="px-5 py-3.5 text-gray-600">{col.desc}</td>
                   <td className="px-5 py-3.5">
                     {col.req

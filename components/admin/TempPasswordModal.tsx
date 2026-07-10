@@ -26,7 +26,7 @@ export default function TempPasswordModal({ member, tempPassword, onClose }: {
         <div className="px-7 py-6">
           <p className="text-[14px] text-gray-600 mb-3">아래 임시 비밀번호를 회원에게 전화, 카카오톡 등으로 직접 전달해주세요.</p>
           <div className="flex items-center gap-2">
-            <p className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded text-xl font-bold tracking-wide text-center text-[#1A2B4A]">
+            <p className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded text-xl font-bold tracking-wide text-center text-[#303236]">
               {tempPassword}
             </p>
             <button onClick={copy}
@@ -37,7 +37,7 @@ export default function TempPasswordModal({ member, tempPassword, onClose }: {
         </div>
         <div className="px-7 py-5 border-t border-gray-200 flex justify-end">
           <button onClick={onClose}
-            className="px-6 py-2.5 bg-[#1A2B4A] text-white text-[15px] font-bold hover:bg-[#243d5e] rounded">닫기</button>
+            className="px-6 py-2.5 bg-[#303236] text-white text-[15px] font-bold hover:bg-[#243d5e] rounded">닫기</button>
         </div>
       </div>
     </div>

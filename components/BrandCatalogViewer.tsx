@@ -73,7 +73,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               style={{ minWidth: 64 }}
               className={`flex-shrink-0 md:w-full text-left rounded-lg overflow-hidden border transition-colors ${b.id === selectedId ? "border-[#ff550c]" : "border-white/10 hover:border-white/30"}`}
             >
-              <div className="w-16 md:w-full aspect-[5/7] bg-[#1A2B4A] overflow-hidden">
+              <div className="w-16 md:w-full aspect-[5/7] bg-[#303236] overflow-hidden">
                 {b.cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={b.cover} alt={b.brand_name} className="w-full h-full object-cover" loading="lazy" />
@@ -134,7 +134,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
                 <p className="text-white/60 text-sm">미리보기를 준비 중입니다.</p>
                 <div className="flex gap-3">
                   <Link href="/products" className="bg-[#ff550c] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</Link>
-                  <Link href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#1A2B4A] transition-colors">매장 찾기</Link>
+                  <Link href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#303236] transition-colors">매장 찾기</Link>
                 </div>
               </div>
             )
@@ -144,10 +144,10 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
         {total > 0 && (
           <div className="flex items-center justify-center gap-6 py-3 flex-shrink-0">
             <button onClick={() => bookRef.current?.pageFlip().flipPrev()} disabled={currentPage === 0}
-              className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
+              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
             <span className="text-gray-500 text-[10px] tracking-widest w-16 text-center">{currentPage + 1} / {total}</span>
             <button onClick={() => bookRef.current?.pageFlip().flipNext()} disabled={currentPage >= total - 1}
-              className="w-9 h-9 bg-[#1A2B4A] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
+              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
           </div>
         )}
       </div>

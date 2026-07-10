@@ -43,7 +43,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
               <thead>
                 <tr className="bg-[#f5f5f5] border-b border-gray-200">
                   {cols.map((h, i) => (
-                    <th key={i} className="px-3 py-4 text-center text-[13px] md:text-sm font-bold text-[#1A2B4A] whitespace-nowrap">{h}</th>
+                    <th key={i} className="px-3 py-4 text-center text-[13px] md:text-sm font-bold text-[#303236] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -51,7 +51,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
                 {rows.map((row, ri) => (
                   <tr key={ri} className="border-b border-gray-100">
                     {cols.map((_, ci) => (
-                      <td key={ci} className={`px-3 py-4 text-center text-[13px] md:text-sm whitespace-nowrap ${ci === 0 ? "font-bold text-[#1A2B4A]" : "text-slate-500"}`}>
+                      <td key={ci} className={`px-3 py-4 text-center text-[13px] md:text-sm whitespace-nowrap ${ci === 0 ? "font-bold text-[#303236]" : "text-slate-500"}`}>
                         {row.cells[ci] ?? ""}
                       </td>
                     ))}
@@ -130,7 +130,7 @@ export default function ProductTabs({ product }: { product: Product }) {
 
   const tabClass = (t: Tab) =>
     `flex-1 py-4 text-[15px] md:text-[17px] transition-colors relative ${
-      active === t ? "text-[#1A2B4A]" : "text-gray-400 hover:text-[#1A2B4A]"
+      active === t ? "text-[#303236]" : "text-gray-400 hover:text-[#303236]"
     }`;
   const sectionClass = "scroll-mt-[108px] md:scroll-mt-[150px] px-5 md:px-12 py-10 md:py-14";
 
@@ -142,7 +142,7 @@ export default function ProductTabs({ product }: { product: Product }) {
           {TABS.map((t) => (
             <button key={t} type="button" onClick={() => goTo(t)} className={tabClass(t)}>
               {t}
-              {active === t && <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1A2B4A]" />}
+              {active === t && <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#303236]" />}
             </button>
           ))}
         </div>
@@ -166,15 +166,15 @@ export default function ProductTabs({ product }: { product: Product }) {
           {product.wearerQuote && (
             <div className="bg-gray-50 px-5 md:px-8 py-6 md:py-8 mb-8">
               <p className="text-[10px] tracking-[0.2em] text-[#ff550c] uppercase mb-4">실제 착용자 이야기</p>
-              <blockquote className="text-base md:text-xl font-bold text-[#1A2B4A] leading-snug mb-4">
+              <blockquote className="text-base md:text-xl font-bold text-[#303236] leading-snug mb-4">
                 &ldquo;{product.wearerQuote.text}&rdquo;
               </blockquote>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[#1A2B4A] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                <div className="w-8 h-8 bg-[#303236] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                   {product.wearerQuote.job[0]}
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[#1A2B4A]">{product.wearerQuote.job}</p>
+                  <p className="text-xs font-semibold text-[#303236]">{product.wearerQuote.job}</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">{product.wearerQuote.years}</p>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function ProductTabs({ product }: { product: Product }) {
             <div className="space-y-5 max-w-3xl mx-auto">
               {detailInfo.map((it, i) => (
                 <div key={`${it.label}-${i}`}>
-                  <p className="text-sm font-bold text-[#1A2B4A] mb-1">{it.label}</p>
+                  <p className="text-sm font-bold text-[#303236] mb-1">{it.label}</p>
                   <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{it.value}</p>
                 </div>
               ))}
@@ -216,7 +216,7 @@ export default function ProductTabs({ product }: { product: Product }) {
 
         {/* ── 사이즈 및 소재 ── */}
         <div ref={sizeRef} data-tab="사이즈 및 소재" className={`${sectionClass} border-t border-gray-100`}>
-          <p className="text-base md:text-lg font-bold text-[#1A2B4A] mb-5">사이즈 가이드</p>
+          <p className="text-base md:text-lg font-bold text-[#303236] mb-5">사이즈 가이드</p>
 
           {sizeGuides.length > 0 ? (
             <div className="space-y-10">
@@ -224,7 +224,7 @@ export default function ProductTabs({ product }: { product: Product }) {
                 <div key={i}>
                   {/* 여러 개일 때만 라벨(상의/하의 등) 표시 */}
                   {sizeGuides.length > 1 && g.label?.trim() && (
-                    <p className="text-sm font-bold text-[#1A2B4A] mb-3 pb-2 border-b border-gray-200">{g.label}</p>
+                    <p className="text-sm font-bold text-[#303236] mb-3 pb-2 border-b border-gray-200">{g.label}</p>
                   )}
                   <SizeGuideView guide={g} productName={product.name} />
                 </div>
@@ -234,7 +234,7 @@ export default function ProductTabs({ product }: { product: Product }) {
             // 미등록 — 매장 문의 유도
             <div className="text-sm text-gray-500">
               {(product.sizes ?? []).length > 0 && (
-                <p className="mb-2"><span className="font-semibold text-[#1A2B4A]">사이즈</span> · {product.sizes!.join(", ")}</p>
+                <p className="mb-2"><span className="font-semibold text-[#303236]">사이즈</span> · {product.sizes!.join(", ")}</p>
               )}
               <p className="text-gray-400">정확한 치수는 매장에서 직접 확인하거나 문의해 주세요.</p>
             </div>
@@ -244,11 +244,11 @@ export default function ProductTabs({ product }: { product: Product }) {
         {/* ── 상품문의 ── */}
         <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100`}>
           <div className="flex items-center justify-between gap-4 pb-5 border-b border-gray-200">
-            <p className="text-[15px] md:text-base font-bold text-[#1A2B4A]">
+            <p className="text-[15px] md:text-base font-bold text-[#303236]">
               문의 <span className="text-[#ff550c]">{inquiries.length}</span>건
             </p>
             <button type="button" onClick={() => setInquiryOpen(true)}
-              className="text-sm text-[#1A2B4A] border border-gray-300 px-6 py-3 rounded hover:border-[#1A2B4A] transition-colors">
+              className="text-sm text-[#303236] border border-gray-300 px-6 py-3 rounded hover:border-[#303236] transition-colors">
               상품 문의하기
             </button>
           </div>
@@ -275,7 +275,7 @@ export default function ProductTabs({ product }: { product: Product }) {
                       </p>
                     ) : (
                       <>
-                        <p className="text-sm font-semibold text-[#1A2B4A]">{q.title || "(제목 없음)"}</p>
+                        <p className="text-sm font-semibold text-[#303236]">{q.title || "(제목 없음)"}</p>
                         {q.content && <p className="text-sm text-gray-500 mt-1 whitespace-pre-line line-clamp-4">{q.content}</p>}
                       </>
                     )}

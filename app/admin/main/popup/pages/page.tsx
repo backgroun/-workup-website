@@ -392,7 +392,7 @@ export default function PopupPagesAdmin() {
                             {editing.label && (
                               <p className="text-[9px] tracking-widest uppercase mb-2" style={{ color: editing.label_color }}>{editing.label}</p>
                             )}
-                            <p className="text-sm font-bold text-[#1A2B4A] leading-snug whitespace-pre-line">
+                            <p className="text-sm font-bold text-[#303236] leading-snug whitespace-pre-line">
                               {editing.title || "제목"}
                             </p>
                             {editing.description && (

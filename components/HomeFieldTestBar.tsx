@@ -7,7 +7,7 @@
   ];
 
   return (
-    <section className="bg-[#1A2B4A] border-t border-[#243d5e]">
+    <section className="bg-[#303236] border-t border-[#243d5e]">
       <div className="max-w-6xl mx-auto px-6 py-14">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* 카피 */}
