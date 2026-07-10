@@ -279,18 +279,55 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
 // 외부 인스타그램 위젯 임베드 코드를 삽입한다.
 // innerHTML로 넣은 <script>는 브라우저가 실행하지 않으므로, 스크립트를 새로 만들어 재실행한다.
 // (SnapWidget·LightWidget 같은 iframe 위젯과 Behold 같은 script 위젯 모두 지원)
+// 인스타 embed.js가 전역에 심는 객체
+declare global {
+  interface Window {
+    instgrm?: { Embeds: { process: () => void } };
+  }
+}
+
+const IG_EMBED_SRC = "https://www.instagram.com/embed.js";
+
 function InstagramEmbed({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.innerHTML = html;
+
+    // 게시물을 여러 개 붙여넣으면 embed.js도 여러 번 들어온다.
+    // 중복 로드하면 두 번째부터는 변환(process)이 실행되지 않으므로,
+    // 인스타 스크립트는 걷어내고 아래에서 한 번만 로드한 뒤 직접 process()를 호출한다.
+    let hasInstagram = false;
     el.querySelectorAll("script").forEach((old) => {
+      if ((old.getAttribute("src") ?? "").includes("instagram.com/embed.js")) {
+        hasInstagram = true;
+        old.remove();
+        return;
+      }
+      // 그 외 위젯(Behold 등) 스크립트는 innerHTML로는 실행되지 않으므로 새로 만들어 재실행
       const s = document.createElement("script");
       for (const attr of Array.from(old.attributes)) s.setAttribute(attr.name, attr.value);
       s.text = old.textContent ?? "";
       old.replaceWith(s);
     });
+
+    // 스크립트를 안 붙이고 blockquote만 넣은 경우도 처리
+    if (!hasInstagram && !el.querySelector(".instagram-media")) return;
+
+    const process = () => window.instgrm?.Embeds.process();
+
+    if (window.instgrm) { process(); return; }
+
+    let script = document.querySelector<HTMLScriptElement>(`script[data-ig-embed="1"]`);
+    if (!script) {
+      script = document.createElement("script");
+      script.src = IG_EMBED_SRC;
+      script.async = true;
+      script.dataset.igEmbed = "1";
+      document.body.appendChild(script);
+    }
+    script.addEventListener("load", process, { once: true });
   }, [html]);
   // iframe/위젯이 컨테이너를 넘지 않도록 가로 스크롤 처리
   return <div ref={ref} className="w-full overflow-x-auto [&_iframe]:max-w-full" />;
