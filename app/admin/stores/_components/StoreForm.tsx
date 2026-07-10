@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export type StoreFormData = {
@@ -18,7 +18,10 @@ export type StoreFormData = {
   is_active: boolean;
   sort_order: string;
   image_urls: string[];
+  product_ids: string[];
 };
+
+type ProductOption = { id: string; name: string };
 
 function parseHours(hours: string): { weekday: string; weekend: string; same: boolean } {
   if (!hours) return { weekday: "", weekend: "", same: true };
@@ -47,7 +50,7 @@ type InitialData = Partial<{
   store_type: string; description: string; brands: string[] | string;
   parking: boolean; kakao_channel_url: string; store_url: string;
   is_active: boolean; sort_order: number | string; image_urls: string[];
-  lat: unknown; lng: unknown;
+  product_ids: string[]; lat: unknown; lng: unknown;
 }>;
 
 export default function StoreForm({
@@ -79,6 +82,7 @@ export default function StoreForm({
         is_active: d?.is_active ?? true,
         sort_order: String(d?.sort_order ?? "0"),
         image_urls: Array.isArray(d?.image_urls) ? d.image_urls : [],
+        product_ids: Array.isArray(d?.product_ids) ? d.product_ids : [],
       },
       same: parsed.same,
     };
@@ -90,7 +94,23 @@ export default function StoreForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [products, setProducts] = useState<ProductOption[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/products")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: ProductOption[]) => setProducts(data.map((p) => ({ id: p.id, name: p.name }))))
+      .catch(() => {});
+  }, []);
+
+  const setProductSlot = (slot: number, productId: string) => {
+    setForm((prev) => {
+      const ids = [...prev.product_ids];
+      ids[slot] = productId;
+      return { ...prev, product_ids: ids.filter(Boolean).slice(0, 3) };
+    });
+  };
 
   const set = (k: keyof StoreFormData, v: string | boolean | string[]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -349,6 +369,30 @@ export default function StoreForm({
           </div>
         </div>
       </section>
+
+      {/* 판매제품 (공개 매장에서만 노출) */}
+      {form.is_active && (
+        <section className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+          <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
+            판매제품 <span className="text-xs font-normal text-gray-400">(최대 3개, 매장 상세 공개 페이지에 노출)</span>
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {[0, 1, 2].map((slot) => (
+              <select
+                key={slot}
+                value={form.product_ids[slot] ?? ""}
+                onChange={(e) => setProductSlot(slot, e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1A2B4A]"
+              >
+                <option value="">판매제품 {slot + 1} 선택 안 함</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 매장 이미지 */}
       <section className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">

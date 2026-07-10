@@ -58,11 +58,27 @@ export async function getPublicStores(region?: string): Promise<Store[]> {
     if (error) return staticStores; // DB 장애 시에만 폴백
     if (!data) return [];
 
+    // 매장별로 지정된 판매제품(product_ids)을 한 번에 조회해 매핑
+    const allProductIds = Array.from(
+      new Set(data.flatMap((s) => (Array.isArray(s.product_ids) ? s.product_ids : [])))
+    );
+    const productMap = new Map<string, { id: string; name: string; image_url: string | null }>();
+    if (allProductIds.length > 0) {
+      const { data: productRows } = await supabase
+        .from("products")
+        .select("id, name, image_url")
+        .in("id", allProductIds);
+      (productRows ?? []).forEach((p: { id: string; name: string; image_url: string | null }) => productMap.set(p.id, p));
+    }
+
     const byAddr = new Map(staticStores.map((s) => [normAddr(s.address), s]));
     const byCore = new Map(staticStores.map((s) => [coreAddr(s.address), s]));
     return data.map((s): Store => {
       // 1차 정확 매칭 → 2차 도로명 핵심 키 매칭
       const fb = byAddr.get(normAddr(s.address)) ?? byCore.get(coreAddr(s.address));
+      const products = (Array.isArray(s.product_ids) ? s.product_ids : [])
+        .map((id: string) => productMap.get(id))
+        .filter((p: { id: string; name: string; image_url: string | null } | undefined): p is { id: string; name: string; image_url: string | null } => Boolean(p));
       return {
         id: s.id,
         name: s.name,
@@ -71,6 +87,7 @@ export async function getPublicStores(region?: string): Promise<Store[]> {
         lng: s.lng ?? fb?.lng ?? 0,
         hours: s.hours ?? "",
         phone: s.phone ?? "",
+        ...(products.length > 0 ? { products } : {}),
       };
     });
   } catch {

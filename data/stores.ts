@@ -1,3 +1,5 @@
+export type StoreProduct = { id: string; name: string; image_url: string | null };
+
 export type Store = {
   id: number;
   name: string;
@@ -6,6 +8,7 @@ export type Store = {
   lng: number;
   hours: string;
   phone: string;
+  products?: StoreProduct[];
 };
 
 export const stores: Store[] = [
