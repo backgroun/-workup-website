@@ -30,9 +30,18 @@ export default function FranchiseGuide({
 
   return (
     <div style={{ backgroundColor: col.page_bg }}>
-      {/* 상단 슬림바 (모바일 39px / PC 60px) */}
-      <div className="flex items-center justify-between h-[39px] md:h-[60px] px-4 sm:px-6 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
-        <span className="font-bold whitespace-nowrap truncate text-left flex-1 min-w-0" style={styleCss(s.title)}>{config.title}</span>
+      {/* 상단 슬림바 (모바일 39px / PC 60px) — 스크롤 시 상단 고정 */}
+      <style>{`
+        .wu-fg-title{font-size:${s.title.size}px}
+        @media(min-width:768px){.wu-fg-title{font-size:${Math.round(s.title.size * 1.6)}px}}
+      `}</style>
+      <div className="sticky top-0 z-20 flex items-center justify-between h-[39px] md:h-[60px] px-4 sm:px-6 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
+        <span
+          className="wu-fg-title font-bold whitespace-nowrap truncate text-left flex-1 min-w-0"
+          style={{ color: s.title.color, letterSpacing: `${s.title.tracking}em`, lineHeight: s.title.leading }}
+        >
+          {config.title}
+        </span>
         {onClose && (
           <button
             type="button"
