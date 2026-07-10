@@ -57,8 +57,8 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
               <FranchiseGuide embedded config={config} storeCount={storeCount} onClose={() => setOpen(false)} />
             </div>
 
-            {/* 모바일 전용 하단 고정 CTA */}
-            <div className="sm:hidden flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
+            {/* 하단 고정 CTA (PC·모바일 공통) */}
+            <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
               <Link
                 href="/partnership/franchise"
                 className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
