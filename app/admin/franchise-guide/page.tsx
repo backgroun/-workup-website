@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import FranchiseGuide from "@/components/FranchiseGuide";
+import AdminImageField from "@/components/admin/AdminImageField";
 import {
   DEFAULT_FRANCHISE_GUIDE,
   normalizeFranchiseGuide,
@@ -127,25 +128,20 @@ export default function FranchiseGuideEditPage() {
             </div>
           </Card>
 
-          <Card title="상단 브랜드바">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">워드마크</label>
-              <input value={cfg.wordmark} onChange={(e) => setC({ wordmark: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.wordmark} onChange={(p) => setStyle("wordmark", p)} />
-            </div>
+          <Card title="상단 슬림바">
+            <p className="text-[11px] text-gray-400">높이 30px 고정, 좌측 정렬로 표시됩니다.</p>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">제목</label>
               <input value={cfg.title} onChange={(e) => setC({ title: e.target.value })} className={inputCls} />
               <StyleControls value={cfg.styles.title} onChange={(p) => setStyle("title", p)} />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">부제목 <span className="text-gray-400 font-normal">(PC에서만 노출)</span></label>
-              <input value={cfg.subtitle} onChange={(e) => setC({ subtitle: e.target.value })} className={inputCls} />
-              <StyleControls value={cfg.styles.subtitle} onChange={(p) => setStyle("subtitle", p)} />
-            </div>
           </Card>
 
           <Card title="히어로">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">배경 사진 <span className="text-gray-400 font-normal">(전체 배경으로 표시, 미등록 시 기본 그라디언트)</span></label>
+              <AdminImageField label="히어로 배경 사진" value={cfg.hero_bg_img} onChange={(url) => setC({ hero_bg_img: url })} promptType="person" promptSeed="워크업 매장 현장 워크웨어 착용 모습" recommendedSize="1600x900" />
+            </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">소제목 (eyebrow)</label>
               <input value={cfg.hero_eyebrow} onChange={(e) => setC({ hero_eyebrow: e.target.value })} className={inputCls} />
@@ -169,16 +165,6 @@ export default function FranchiseGuideEditPage() {
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-gray-700">보조 버튼 문구</label>
                 <input value={cfg.hero_secondary_label} onChange={(e) => setC({ hero_secondary_label: e.target.value })} className={inputCls} />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-3 border-t border-slate-100 pt-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">비주얼 소캡션 <span className="text-gray-400 font-normal">(PC만 노출)</span></label>
-                <input value={cfg.hero_visual_label} onChange={(e) => setC({ hero_visual_label: e.target.value })} className={inputCls} />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">비주얼 문구</label>
-                <input value={cfg.hero_visual_text} onChange={(e) => setC({ hero_visual_text: e.target.value })} className={inputCls} />
               </div>
             </div>
           </Card>

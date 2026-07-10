@@ -20,31 +20,34 @@ export default function FranchiseGuide({
 
   return (
     <div style={{ backgroundColor: col.page_bg }}>
-      {/* 브랜드바 */}
-      <div className="flex items-center justify-between gap-4 px-5 sm:px-8 py-4 sm:py-5 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
-        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-wrap">
-          <span className="font-black whitespace-nowrap" style={styleCss(s.wordmark)}>{config.wordmark}</span>
-          <span className="font-black whitespace-nowrap" style={styleCss(s.title)}>{config.title}</span>
-          <span className="hidden sm:inline whitespace-nowrap" style={styleCss(s.subtitle)}>{config.subtitle}</span>
-        </div>
+      {/* 상단 슬림바 (높이 30px 고정) */}
+      <div className="flex items-center justify-between h-[30px] px-4 sm:px-6 border-b border-black/10" style={{ backgroundColor: col.header_bg }}>
+        <span className="font-bold whitespace-nowrap truncate text-left" style={styleCss(s.title)}>{config.title}</span>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="창업안내 닫기"
-            className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#66635f] text-white flex items-center justify-center text-xl leading-none hover:bg-black hover:rotate-6 transition-all"
+            className="flex-shrink-0 w-5 h-5 rounded-full bg-[#66635f] text-white flex items-center justify-center text-xs leading-none hover:bg-black transition-colors"
           >
             ×
           </button>
         )}
       </div>
 
-      {/* 히어로 */}
-      <section className="grid md:grid-cols-[1.15fr_.85fr] gap-6 md:gap-7 items-stretch px-5 sm:px-8 md:px-10 py-8 md:py-10 border-b" style={{ borderColor: LINE }}>
-        <div className="flex flex-col justify-center">
+      {/* 히어로 — 전체 배경 이미지 */}
+      <section className="relative overflow-hidden border-b" style={{ borderColor: LINE }}>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ background: config.hero_bg_img ? `url(${config.hero_bg_img}) center / cover no-repeat` : "linear-gradient(135deg, #242424, #111 65%)" }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.82))" }} aria-hidden="true" />
+
+        <div className="relative z-10 px-5 sm:px-8 md:px-10 py-12 sm:py-16 md:py-24">
           <p className="font-black mb-3" style={styleCss(s.hero_eyebrow)}>{config.hero_eyebrow}</p>
-          <h1 className="font-black whitespace-pre-line" style={styleCss(s.hero_title)}>{config.hero_title}</h1>
-          <p className="mt-4 max-w-[36rem]" style={{ ...styleCss(s.hero_desc), wordBreak: "keep-all" }}>{heroDesc}</p>
+          <h1 className="font-medium whitespace-pre-line max-w-2xl" style={styleCss(s.hero_title)}>{config.hero_title}</h1>
+          <p className="mt-4 max-w-xl" style={{ ...styleCss(s.hero_desc), wordBreak: "keep-all" }}>{heroDesc}</p>
           <div className="flex flex-wrap gap-2.5 mt-6">
             <Link
               href="/partnership/franchise"
@@ -55,29 +58,10 @@ export default function FranchiseGuide({
             </Link>
             <a
               href="#conditions"
-              className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-xl border border-[#3b3b3b] text-white text-sm font-extrabold hover:border-[#666] hover:bg-white/5 hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-xl border border-white/30 text-white text-sm font-extrabold hover:border-white/60 hover:bg-white/10 hover:-translate-y-0.5 transition-all"
             >
               {config.hero_secondary_label}
             </a>
-          </div>
-        </div>
-
-        <div
-          className="hidden md:block relative min-h-[300px] rounded-2xl overflow-hidden border border-white/5"
-          style={{ background: `radial-gradient(circle at 70% 25%, ${col.accent}47 0%, transparent 22%), linear-gradient(135deg, #242424, #111 65%)` }}
-          aria-hidden="true"
-        >
-          <div
-            className="absolute rounded-2xl border border-white/10"
-            style={{ width: "58%", height: "68%", left: "10%", bottom: "10%", transform: "rotate(-4deg)", background: "linear-gradient(145deg, #262626, #171717)", boxShadow: "0 20px 40px rgba(0,0,0,.25)" }}
-          />
-          <div
-            className="absolute rounded-2xl"
-            style={{ width: "48%", height: "56%", right: "8%", top: "13%", transform: "rotate(7deg)", background: "linear-gradient(145deg, #262626, #171717)", border: `1px solid ${col.accent}59`, boxShadow: "0 20px 40px rgba(0,0,0,.25)" }}
-          />
-          <div className="absolute left-5 bottom-5 z-[2] text-white font-black">
-            <small className="block mb-1.5 font-bold" style={{ color: col.accent, fontSize: 11, letterSpacing: ".14em" }}>{config.hero_visual_label}</small>
-            {config.hero_visual_text}
           </div>
         </div>
       </section>
