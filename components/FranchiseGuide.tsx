@@ -26,7 +26,16 @@ function PinIcon({ color }: { color: string }) {
     </svg>
   );
 }
-const REQ_ICONS = [StoreIcon, ChartIcon, PinIcon];
+function CoinIcon({ color }: { color: string }) {
+  return (
+    <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke={color} strokeWidth={1.6} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75c-3.314 0-6 .84-6 1.875s2.686 1.875 6 1.875 6-.84 6-1.875-2.686-1.875-6-1.875z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 8.625v8.25c0 1.035 2.686 1.875 6 1.875s6-.84 6-1.875v-8.25" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12.75c0 1.035 2.686 1.875 6 1.875s6-.84 6-1.875" />
+    </svg>
+  );
+}
+const REQ_ICONS = [StoreIcon, ChartIcon, CoinIcon, PinIcon];
 
 const BENEFIT_PATHS = [
   "M9 12.75l2.25 2.25 4.5-4.5m3.75.375c0 5.592-3.824 10.29-9 11.622C6.824 22.29 3 17.592 3 12V6.75c0-.621.504-1.125 1.125-1.125h.375a9.06 9.06 0 007.5-3.086 9.06 9.06 0 007.5 3.086h.375c.621 0 1.125.504 1.125 1.125V12z",
@@ -66,36 +75,37 @@ export default function FranchiseGuide({
 
   return (
     <div className="text-white" style={{ backgroundColor: col.page_bg }}>
-      {/* 1. 헤더 */}
-      <section style={{ backgroundColor: col.header_bg }}>
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 items-stretch">
-          <div className="px-6 sm:px-10 py-8 md:py-12 flex flex-col justify-center order-2 md:order-1">
-            <p className="font-black mb-4" style={styleCss(s.wordmark)}>{config.wordmark}</p>
-            <h1 className="font-black mb-4 whitespace-pre-line" style={styleCss(s.title)}>{config.title}</h1>
-            <p style={styleCss(s.subtitle)}>{config.subtitle}</p>
-            <span className="mt-4 block w-12 h-1" style={{ backgroundColor: col.accent }} />
-          </div>
-          <div
-            className="order-1 md:order-2 min-h-[200px] sm:min-h-[260px] md:min-h-[380px] bg-cover bg-center"
-            style={{ backgroundColor: "#171717", backgroundImage: `url(${config.hero_img})` }}
-            role="img" aria-label="워크업 창업 안내 이미지"
-          />
+      {/* 1. 헤더 (컴팩트, 이미지 생략) */}
+      <section className="px-6 sm:px-10 py-6 md:py-8" style={{ backgroundColor: col.header_bg }}>
+        <div className="max-w-6xl mx-auto flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <p className="font-black" style={styleCss(s.wordmark)}>{config.wordmark}</p>
+          <h1 className="font-black whitespace-pre-line inline" style={styleCss(s.title)}>{config.title.replace(/\n/g, " ")}</h1>
+          <p style={styleCss(s.subtitle)}>{config.subtitle}</p>
         </div>
       </section>
 
-      {/* 2. 필요조건 / 매출액 / 지역 */}
-      <section className="px-4 sm:px-6 lg:px-10 py-10 md:py-14">
-        <div className="max-w-6xl mx-auto rounded-2xl border border-white/5 p-6 sm:p-8 md:p-10" style={{ backgroundColor: col.card_bg }}>
-          <div className="grid sm:grid-cols-3 gap-8">
+      {/* 2. 필요조건 / 매출액 / 가맹비 / 지역 (2x2) */}
+      <section className="px-4 sm:px-6 lg:px-10 py-6 md:py-8">
+        <div className="max-w-6xl mx-auto rounded-2xl border border-white/5 overflow-hidden" style={{ backgroundColor: col.card_bg }}>
+          <div className="grid sm:grid-cols-2">
             {config.requirements.map((r, i) => {
               const Icon = REQ_ICONS[i] ?? StoreIcon;
+              const isRightCol = i % 2 === 1;
+              const isBottomRow = i >= 2;
               return (
-                <div key={i} className={i > 0 ? "sm:pl-8 sm:border-l sm:border-white/10" : ""}>
-                  <div className="flex items-center gap-2.5 mb-4">
+                <div
+                  key={i}
+                  className={[
+                    "p-5 sm:p-6",
+                    isRightCol ? "sm:border-l sm:border-white/10" : "",
+                    isBottomRow ? "border-t border-white/10" : i === 1 ? "border-t sm:border-t-0 border-white/10" : "",
+                  ].join(" ")}
+                >
+                  <div className="flex items-center gap-2.5 mb-3">
                     <Icon color={col.accent} />
                     <h3 className="font-bold" style={styleCss(s.req_title)}>{r.title}</h3>
                   </div>
-                  <ul className="space-y-2.5">
+                  <ul className="space-y-1.5">
                     {r.items.map((it, j) => (
                       <li key={j} className="flex gap-2" style={styleCss(s.req_item)}>
                         <span className="mt-px" style={{ color: col.accent }}>•</span>
@@ -111,10 +121,10 @@ export default function FranchiseGuide({
       </section>
 
       {/* 3. 창업 포인트 */}
-      <section className="px-4 sm:px-6 lg:px-10 pb-8 md:pb-12">
+      <section className="px-4 sm:px-6 lg:px-10 pb-6 md:pb-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-9 md:mb-12">
-            <p className="font-bold mb-2.5" style={styleCss(s.eyebrow)}>{config.eyebrow}</p>
+          <div className="text-center mb-5 md:mb-6">
+            <p className="font-bold mb-1.5" style={styleCss(s.eyebrow)}>{config.eyebrow}</p>
             <div className="flex items-center justify-center gap-4">
               <span className="hidden sm:block h-px w-14 bg-white/20" />
               <h2 className="font-black" style={styleCss(s.section_title)}>{config.section_title}</h2>
@@ -122,13 +132,13 @@ export default function FranchiseGuide({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {config.points.map((p, i) => (
-              <div key={i} className="rounded-2xl border border-white/5 p-5 sm:p-6 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-5 md:gap-8 md:items-center" style={{ backgroundColor: col.card_bg }}>
+              <div key={i} className="rounded-2xl border border-white/5 p-4 sm:p-5 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 md:gap-6 md:items-center" style={{ backgroundColor: col.card_bg }}>
                 <div className="flex gap-4 sm:gap-5">
                   <span className="font-black flex-shrink-0" style={styleCss(s.point_no)}>{String(i + 1).padStart(2, "0")}</span>
                   <div className="border-l border-white/10 pl-4 sm:pl-5">
-                    <h3 className="font-bold whitespace-pre-line mb-2" style={styleCss(s.point_title)}>{p.title}</h3>
+                    <h3 className="font-bold whitespace-pre-line mb-1.5" style={styleCss(s.point_title)}>{p.title}</h3>
                     <p className="whitespace-pre-line" style={styleCss(s.point_desc)}>{p.desc}</p>
                   </div>
                 </div>
@@ -140,7 +150,7 @@ export default function FranchiseGuide({
       </section>
 
       {/* 4. 가맹수 (실시간) */}
-      <section className="py-8 md:py-10 border-y border-white/5" style={{ backgroundColor: col.cta_bg }}>
+      <section className="py-5 md:py-6 border-y border-white/5" style={{ backgroundColor: col.cta_bg }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 text-center">
           <span className="font-bold" style={styleCss(s.cta_label)}>{config.cta_prefix}</span>
           <span className="font-black" style={styleCss(s.cta_number)}>{count.toLocaleString()}</span>
@@ -149,10 +159,10 @@ export default function FranchiseGuide({
       </section>
 
       {/* 5. 하단 혜택 */}
-      <section className="px-6 py-10 md:py-12">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
+      <section className="px-6 py-6 md:py-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-6">
           {config.benefits.map((b, i) => (
-            <div key={i} className="flex flex-col items-center text-center gap-3">
+            <div key={i} className="flex flex-col items-center text-center gap-2.5">
               <svg className="w-9 h-9" fill="none" stroke={col.accent} strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d={BENEFIT_PATHS[i] ?? BENEFIT_PATHS[0]} />
               </svg>
@@ -164,8 +174,8 @@ export default function FranchiseGuide({
 
       {/* 6. 문의 CTA */}
       {!embedded && (
-        <section className="px-6 pb-16 md:pb-20 text-center">
-          <p className="text-sm text-gray-400 mb-5">워크업 창업, 지금 바로 상담받아 보세요.</p>
+        <section className="px-6 pb-10 md:pb-12 text-center">
+          <p className="text-sm text-gray-400 mb-4">워크업 창업, 지금 바로 상담받아 보세요.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/partnership/franchise"
               style={{ backgroundColor: col.accent }}

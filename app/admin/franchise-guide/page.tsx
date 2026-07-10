@@ -136,7 +136,6 @@ export default function FranchiseGuideEditPage() {
 
           <Card title="사진">
             <div className="grid sm:grid-cols-2 gap-5">
-              <AdminImageField label="상단 히어로 사진" value={cfg.hero_img} onChange={(url) => setC({ hero_img: url })} promptType="person" promptSeed="워크업 워크웨어 착용 창업 안내 히어로" recommendedSize="900x1120" />
               <AdminImageField label="창업 포인트 01 사진" value={cfg.team_img} onChange={(url) => setC({ team_img: url })} promptType="person" promptSeed="워크업 매장 작업자 팀" recommendedSize="800x520" />
             </div>
           </Card>
@@ -159,7 +158,7 @@ export default function FranchiseGuideEditPage() {
             </div>
           </Card>
 
-          <Card title="필요조건 / 매출액 / 지역 (3단)">
+          <Card title="필요조건 / 매출액 / 가맹비 / 지역 (2x2)">
             <div className="space-y-2">
               <p className="text-[11px] text-gray-500 font-medium">제목 스타일(공통)</p>
               <StyleControls value={cfg.styles.req_title} onChange={(p) => setStyle("req_title", p)} />
