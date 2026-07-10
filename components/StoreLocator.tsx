@@ -583,13 +583,16 @@ export default function StoreLocator({
               const hasStorePage = store.pageActive !== false;
               const isSelected = selectedStore?.id === store.id;
               return (
-                <div key={store.id} className="bg-white border border-gray-200 overflow-hidden">
+                <div
+                  key={store.id}
+                  className={`bg-white overflow-hidden transition-colors ${
+                    isSelected ? "border-2 border-[#303236]" : "border border-gray-200"
+                  }`}
+                >
 
                   {/* 헤더 */}
                   <button
-                    className={`w-full text-left px-4 py-4 flex items-center justify-between transition-colors ${
-                      isSelected ? "bg-[#303236]" : "hover:bg-gray-50"
-                    }`}
+                    className="w-full text-left px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                     onClick={() => {
                       const next = isOpen ? null : store.id;
                       setExpanded(next);
@@ -609,7 +612,7 @@ export default function StoreLocator({
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`font-bold text-sm ${isSelected ? "text-white" : "text-[#303236]"}`}>{store.name}</span>
+                          <span className="font-bold text-sm text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
                             <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
                               index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600"
@@ -618,11 +621,11 @@ export default function StoreLocator({
                             </span>
                           )}
                         </div>
-                        <p className={`text-xs mt-0.5 truncate pr-2 ${isSelected ? "text-gray-300" : "text-gray-400"}`}>{store.address}</p>
+                        <p className="text-xs mt-0.5 truncate pr-2 text-gray-400">{store.address}</p>
                       </div>
                     </div>
                     <svg
-                      className={`w-4 h-4 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isSelected ? "text-gray-300" : "text-gray-400"}`}
+                      className={`w-4 h-4 flex-shrink-0 transition-transform text-gray-400 ${isOpen ? "rotate-180" : ""}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
