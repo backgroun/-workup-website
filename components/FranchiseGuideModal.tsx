@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import FranchiseGuide from "./FranchiseGuide";
 import type { FranchiseGuideConfig } from "@/data/franchise-guide";
 
@@ -41,23 +42,29 @@ export default function FranchiseGuideModal({ label = "창업안내 보기", con
       </button>
 
       {open && mounted && createPortal(
-        <div className="fixed inset-0 z-[60] bg-black/70 overflow-y-auto" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="워크업 창업안내">
-          <div className="min-h-full flex items-start justify-center p-0 sm:p-6">
-            <div className="relative bg-[#0d0d0d] w-full max-w-3xl sm:rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              {/* 스크롤해도 항상 보이는 닫기 버튼 */}
-              <div className="sticky top-0 z-10 h-0">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="닫기"
-                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#ff550c] transition-colors backdrop-blur-sm"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <FranchiseGuide embedded config={config} storeCount={storeCount} />
+        <div
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/70 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="워크업 창업안내"
+        >
+          <div
+            className="relative w-full sm:w-[min(960px,calc(100vw-48px))] max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden rounded-t-[20px] sm:rounded-[22px] border border-white/10 shadow-2xl bg-[#0d0d0d]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="min-h-0 overflow-y-auto overscroll-contain">
+              <FranchiseGuide embedded config={config} storeCount={storeCount} onClose={() => setOpen(false)} />
+            </div>
+
+            {/* 모바일 전용 하단 고정 CTA */}
+            <div className="sm:hidden flex-shrink-0 p-3 border-t border-white/10 bg-[#0d0d0d]/95 backdrop-blur">
+              <Link
+                href="/partnership/franchise"
+                className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-[#ff4d00] text-white text-sm font-extrabold"
+              >
+                창업 상담 신청하기
+              </Link>
             </div>
           </div>
         </div>,

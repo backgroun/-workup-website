@@ -1,40 +1,55 @@
-// 창업안내(/franchise) 페이지 편집 콘텐츠 + 디자인(크기·자간·행간·색상·배경·이미지).
+// 창업안내(/franchise) 페이지 편집 콘텐츠 + 디자인(크기·자간·행간·색상·배경).
 // 관리자가 site_settings("franchise_guide")에서 수정. 계약 가맹수는 실제 매장 수로 실시간 반영.
-// 아이콘/그래픽(5km·無/0원)과 4/3/4 구조는 고정 — 텍스트/스타일/색/이미지만 편집.
+// 히어로/통계/혜택3개/조건4개/CTA 구조는 고정 — 텍스트/스타일/색만 편집.
 import type { CSSProperties } from "react";
 
 export type TextStyle = { size: number; color: string; tracking: number; leading: number };
 
-export type ReqGroup = { title: string; items: string[] };
-export type GuidePoint = { title: string; desc: string };
-export type GuideBenefit = { line1: string; line2: string };
+export type StatItem = { value: string; label: string };
+export type BenefitCard = { title: string; desc: string };
+export type ConditionRow = { label: string; value: string };
 
 export const STYLE_KEYS = [
-  "wordmark", "title", "subtitle", "eyebrow", "section_title",
-  "req_title", "req_item", "point_no", "point_title", "point_desc",
-  "benefit", "cta_label", "cta_number",
+  "wordmark", "title", "subtitle",
+  "hero_eyebrow", "hero_title", "hero_desc",
+  "stat_value", "stat_label",
+  "section_title", "section_desc",
+  "benefit_num", "benefit_title", "benefit_desc",
+  "condition_label", "condition_value",
+  "notice", "cta_title", "cta_desc",
 ] as const;
 export type GuideStyleKey = (typeof STYLE_KEYS)[number];
 export type GuideStyles = Record<GuideStyleKey, TextStyle>;
 
 export type GuideColors = {
-  page_bg: string; header_bg: string; card_bg: string; cta_bg: string; accent: string;
+  page_bg: string; header_bg: string; card_bg: string; accent: string;
 };
 
 export type FranchiseGuideConfig = {
   wordmark: string;
-  title: string;        // 여러 줄(\n)
+  title: string;
   subtitle: string;
-  eyebrow: string;      // "WORKUP'S STRENGTH POINT"
-  section_title: string;// "워크업 창업 포인트"
-  requirements: ReqGroup[];
-  points: GuidePoint[];
-  benefits: GuideBenefit[];
-  cta_prefix: string;
-  cta_suffix: string;
+  hero_eyebrow: string;
+  hero_title: string;              // 여러 줄(\n)
+  hero_desc: string;                // "{count}" → 실제 매장 수로 치환
+  hero_primary_label: string;
+  hero_secondary_label: string;
+  hero_visual_label: string;
+  hero_visual_text: string;
+  stats: StatItem[];                // 매출 · 마진율 (2개, 직접 편집)
+  store_stat_label: string;         // "계약 매장" — 값은 실제 매장 수로 자동 계산
+  store_stat_unit: string;          // "개"
+  section_title: string;            // "워크업 창업이 다른 이유"
+  section_desc: string;
+  benefits: BenefitCard[];          // 3개
+  conditions_title: string;         // "창업 기본 조건"
+  conditions_desc: string;
+  conditions: ConditionRow[];       // 4개
+  notice: string;
+  cta_title: string;
+  cta_desc: string;
+  cta_button_label: string;
   count_fallback: number;
-  hero_img: string;
-  team_img: string;
   colors: GuideColors;
   styles: GuideStyles;
 };
@@ -43,54 +58,67 @@ const ts = (size: number, color: string, tracking = 0, leading = 1.4): TextStyle
 
 export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
   wordmark: "WORKUP",
-  title: "워크업\n창업안내",
-  subtitle: "국내 최초 워크웨어 아울렛",
-  eyebrow: "WORKUP'S STRENGTH POINT",
-  section_title: "워크업 창업 포인트",
-  requirements: [
-    { title: "필요조건", items: ["매장 70평 이상", "초기 투자 최소화", "사업자 등록"] },
-    { title: "매출액", items: ["연매출 15억 + @", "마진율 31.5% ~ 35%"] },
-    { title: "가맹비", items: ["가맹보증금 · 교육비 無", "월 가맹비 50만원"] },
-    { title: "지역별 지점관리", items: ["가맹보증금·교육비 없음", "월 가맹비 50만원", "합리적인 운영계약"] },
+  title: "워크업 창업안내",
+  subtitle: "대한민국 Work Life Wear",
+  hero_eyebrow: "WORKUP FRANCHISE",
+  hero_title: "일하는 사람이 찾는 브랜드,\n이제 당신의 지역에서.",
+  hero_desc: "전국 {count}개 매장이 선택한 워크웨어 전문 비즈니스입니다. 상권 보호부터 상품 공급, 지역 마케팅까지 함께합니다.",
+  hero_primary_label: "창업 상담 신청",
+  hero_secondary_label: "필수 조건 보기",
+  hero_visual_label: "WORK LIFE WEAR",
+  hero_visual_text: "현장에서 검증된 비즈니스",
+  stats: [
+    { value: "1.5억+", label: "평균 월매출" },
+    { value: "31.5~35%", label: "판매 마진율" },
   ],
-  points: [
-    { title: "국내 최초\n워크웨어 아울렛", desc: "워크웨어 시장을 선도하는\n독보적 비즈니스 모델" },
-    { title: "안정적인 상권 보호", desc: "지점 간 균형을 통해\n지속 가능한 매출 환경 구축" },
-    { title: "초기 비용 부담 감소", desc: "교육비 및 보증금 無\n월 가맹비 50만원" },
-  ],
+  store_stat_label: "계약 매장",
+  store_stat_unit: "개",
+  section_title: "워크업 창업이 다른 이유",
+  section_desc: "복잡한 설명보다, 매장을 운영할 때 실제로 도움이 되는 조건만 담았습니다.",
   benefits: [
-    { line1: "검증된", line2: "비즈니스 모델" },
-    { line1: "체계적인", line2: "운영 지원" },
-    { line1: "다양한 상품과", line2: "안정적 공급" },
-    { line1: "전국 단위", line2: "마케팅 지원" },
+    { title: "안정적인 영업권", desc: "지점 간 5km 기준으로 불필요한 상권 경쟁을 줄이고, 매장이 오래 운영될 수 있는 기반을 만듭니다." },
+    { title: "낮은 초기 부담", desc: "교육비와 가맹비 없이 시작합니다. 보여주기 위한 비용보다 매장과 상품에 집중할 수 있습니다." },
+    { title: "현장 중심 운영 지원", desc: "상품 공급부터 매장 운영, 지역 마케팅까지 실제 매출과 연결되는 업무를 지원합니다." },
   ],
-  cta_prefix: "계약 가맹수",
-  cta_suffix: "호점 돌파!",
+  conditions_title: "창업 기본 조건",
+  conditions_desc: "상담 전에 꼭 확인해야 할 조건입니다.",
+  conditions: [
+    { label: "매장 규모", value: "70평 이상" },
+    { label: "초도 상품", value: "약 1억 5천만원" },
+    { label: "시설·인테리어", value: "약 3천만원" },
+    { label: "상권 기준", value: "기존 지점과 5km 이상" },
+  ],
+  notice: "※ 매출, 수익, 개설 비용은 매장 위치와 규모, 운영 방식에 따라 달라질 수 있습니다.",
+  cta_title: "내 지역에서 가능한지 먼저 확인하세요.",
+  cta_desc: "상담 접수 후 담당자가 순차적으로 연락드립니다.",
+  cta_button_label: "창업 상담 신청하기",
   count_fallback: 130,
-  hero_img: "/images/franchise/hero.jpg",
-  team_img: "/images/franchise/team.jpg",
-  colors: { page_bg: "#0d0d0d", header_bg: "#f5f2ed", card_bg: "#171717", cta_bg: "#1a1a1a", accent: "#ff550c" },
+  colors: { page_bg: "#0d0d0d", header_bg: "#f3f0ea", card_bg: "#151515", accent: "#ff4d00" },
   styles: {
-    wordmark: ts(16, "#111111", -0.01, 1.1),
-    title: ts(20, "#111111", -0.01, 1.2),
-    subtitle: ts(13, "#6b7280", 0, 1.5),
-    eyebrow: ts(11, "#ff550c", 0.25, 1.4),
-    section_title: ts(28, "#111111", -0.01, 1.2),
-    req_title: ts(18, "#ffffff", 0, 1.3),
-    req_item: ts(14, "#d1d5db", 0, 1.6),
-    point_no: ts(34, "#ff550c", 0, 1),
-    point_title: ts(20, "#ffffff", 0, 1.3),
-    point_desc: ts(13, "#9ca3af", 0, 1.6),
-    benefit: ts(13, "#d1d5db", 0, 1.5),
-    cta_label: ts(26, "#111111", 0, 1.2),
-    cta_number: ts(52, "#ff550c", 0, 1),
+    wordmark: ts(19, "#111111", -0.02, 1.1),
+    title: ts(28, "#111111", -0.03, 1.1),
+    subtitle: ts(13, "#6f7378", 0, 1.4),
+    hero_eyebrow: ts(12, "#ff4d00", 0.16, 1.4),
+    hero_title: ts(38, "#f5f5f3", -0.04, 1.15),
+    hero_desc: ts(15, "#a5a5a0", 0, 1.7),
+    stat_value: ts(30, "#ff4d00", -0.02, 1),
+    stat_label: ts(12, "#a5a5a0", 0, 1.4),
+    section_title: ts(26, "#f5f5f3", -0.02, 1.2),
+    section_desc: ts(13, "#a5a5a0", 0, 1.6),
+    benefit_num: ts(24, "#ff4d00", -0.02, 1),
+    benefit_title: ts(18, "#f5f5f3", -0.02, 1.3),
+    benefit_desc: ts(13, "#a5a5a0", 0, 1.65),
+    condition_label: ts(14, "#a5a5a0", 0, 1.5),
+    condition_value: ts(14, "#ffffff", 0, 1.5),
+    notice: ts(11, "#777777", 0, 1.6),
+    cta_title: ts(24, "#f5f5f3", -0.02, 1.25),
+    cta_desc: ts(13, "#a5a5a0", 0, 1.5),
   },
 };
 
 // ── 정규화 ──
 const str = (v: unknown, d: string): string => (typeof v === "string" ? v : d);
 const nz = (v: unknown, d: string): string => (typeof v === "string" && v.trim() ? v : d);
-const arrStr = (v: unknown, d: string[]): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : d);
 const num = (v: unknown, d: number): number => (typeof v === "number" && !Number.isNaN(v) ? v : d);
 
 function normStyle(raw: unknown, d: TextStyle): TextStyle {
@@ -106,9 +134,9 @@ function normStyle(raw: unknown, d: TextStyle): TextStyle {
 export function normalizeFranchiseGuide(raw: Partial<FranchiseGuideConfig> | null | undefined): FranchiseGuideConfig {
   const c = (raw ?? {}) as Record<string, unknown>;
   const d = DEFAULT_FRANCHISE_GUIDE;
-  const reqs = Array.isArray(c.requirements) ? (c.requirements as Record<string, unknown>[]) : [];
-  const pts = Array.isArray(c.points) ? (c.points as Record<string, unknown>[]) : [];
+  const stats = Array.isArray(c.stats) ? (c.stats as Record<string, unknown>[]) : [];
   const bens = Array.isArray(c.benefits) ? (c.benefits as Record<string, unknown>[]) : [];
+  const conds = Array.isArray(c.conditions) ? (c.conditions as Record<string, unknown>[]) : [];
   const rc = (c.colors ?? {}) as Record<string, unknown>;
   const rs = (c.styles ?? {}) as Record<string, unknown>;
   const styles = {} as GuideStyles;
@@ -117,30 +145,40 @@ export function normalizeFranchiseGuide(raw: Partial<FranchiseGuideConfig> | nul
     wordmark: str(c.wordmark, d.wordmark),
     title: str(c.title, d.title),
     subtitle: str(c.subtitle, d.subtitle),
-    eyebrow: str(c.eyebrow, d.eyebrow),
+    hero_eyebrow: str(c.hero_eyebrow, d.hero_eyebrow),
+    hero_title: str(c.hero_title, d.hero_title),
+    hero_desc: str(c.hero_desc, d.hero_desc),
+    hero_primary_label: str(c.hero_primary_label, d.hero_primary_label),
+    hero_secondary_label: str(c.hero_secondary_label, d.hero_secondary_label),
+    hero_visual_label: str(c.hero_visual_label, d.hero_visual_label),
+    hero_visual_text: str(c.hero_visual_text, d.hero_visual_text),
+    stats: d.stats.map((ds, i) => {
+      const st = stats[i] ?? {};
+      return { value: str(st.value, ds.value), label: str(st.label, ds.label) };
+    }),
+    store_stat_label: str(c.store_stat_label, d.store_stat_label),
+    store_stat_unit: str(c.store_stat_unit, d.store_stat_unit),
     section_title: str(c.section_title, d.section_title),
-    requirements: d.requirements.map((dr, i) => {
-      const r = reqs[i] ?? {};
-      return { title: str(r.title, dr.title), items: arrStr(r.items, dr.items) };
-    }),
-    points: d.points.map((dp, i) => {
-      const p = pts[i] ?? {};
-      return { title: str(p.title, dp.title), desc: str(p.desc, dp.desc) };
-    }),
+    section_desc: str(c.section_desc, d.section_desc),
     benefits: d.benefits.map((db, i) => {
       const b = bens[i] ?? {};
-      return { line1: str(b.line1, db.line1), line2: str(b.line2, db.line2) };
+      return { title: str(b.title, db.title), desc: str(b.desc, db.desc) };
     }),
-    cta_prefix: str(c.cta_prefix, d.cta_prefix),
-    cta_suffix: str(c.cta_suffix, d.cta_suffix),
+    conditions_title: str(c.conditions_title, d.conditions_title),
+    conditions_desc: str(c.conditions_desc, d.conditions_desc),
+    conditions: d.conditions.map((dc, i) => {
+      const row = conds[i] ?? {};
+      return { label: str(row.label, dc.label), value: str(row.value, dc.value) };
+    }),
+    notice: str(c.notice, d.notice),
+    cta_title: str(c.cta_title, d.cta_title),
+    cta_desc: str(c.cta_desc, d.cta_desc),
+    cta_button_label: str(c.cta_button_label, d.cta_button_label),
     count_fallback: typeof c.count_fallback === "number" && c.count_fallback >= 0 ? c.count_fallback : d.count_fallback,
-    hero_img: str(c.hero_img, d.hero_img),
-    team_img: str(c.team_img, d.team_img),
     colors: {
       page_bg: nz(rc.page_bg, d.colors.page_bg),
       header_bg: nz(rc.header_bg, d.colors.header_bg),
       card_bg: nz(rc.card_bg, d.colors.card_bg),
-      cta_bg: nz(rc.cta_bg, d.colors.cta_bg),
       accent: nz(rc.accent, d.colors.accent),
     },
     styles,
