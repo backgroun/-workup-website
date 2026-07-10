@@ -5,10 +5,11 @@ import { safeHref } from "./topbar";
 
 export type NavMenuItem = {
   id: string;
-  label: string;    // 메뉴 표시 텍스트(한글/영문 자유)
-  labelKo?: string; // 영문 레이블 아래 작게 표시될 한글 보조 텍스트
-  href: string;     // 이동 경로
-  newTab?: boolean; // 새 탭으로 열기
+  label: string;      // 메뉴 표시 텍스트(한글/영문 자유)
+  labelKo?: string;   // 영문 레이블 아래 작게 표시될 한글 보조 텍스트
+  href: string;       // 이동 경로
+  newTab?: boolean;   // 새 탭으로 열기
+  isVisible?: boolean; // 사이트 노출 여부(기본값 true)
 };
 
 export type HeaderNavConfig = {
@@ -47,6 +48,7 @@ export function normalizeHeaderNav(raw: Partial<HeaderNavConfig> | null | undefi
             labelKo,
             href: safeHref(it.href),
             newTab: !!it.newTab,
+            isVisible: it.isVisible !== false,
           };
         })
         .filter((it) => it.label !== "" && it.href !== "")
