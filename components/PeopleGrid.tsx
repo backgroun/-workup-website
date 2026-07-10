@@ -282,12 +282,31 @@ declare global {
 
 const IG_EMBED_SRC = "https://www.instagram.com/embed.js";
 
+// 임베드 하단에서 잘라낼 높이(px).
+// 인스타 임베드 하단은 "Instagram에서 더 보기" 링크 → 좋아요/댓글 아이콘 줄 → 좋아요 수 → 댓글 달기 순이다.
+// 링크까지는 남기고(인스타 유입 유도) 그 아래 영역만 잘라낸다.
+const IG_CROP_BOTTOM_PX = 115;
+
 function InstagramEmbed({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.innerHTML = html;
+
+    // 인스타는 로드 후 iframe의 height "속성"에 자연 높이를 써 넣는다.
+    // 그 값을 기준으로 style.height를 덮어써 하단을 잘라낸다(iframe은 넘치는 부분이 잘림).
+    // 속성이 아니라 style을 건드리므로 값이 계속 줄어드는 되먹임이 생기지 않는다.
+    const cropAll = () => {
+      el.querySelectorAll<HTMLIFrameElement>("iframe.instagram-media").forEach((f) => {
+        const natural = Number(f.getAttribute("height")) || 0;
+        if (natural > IG_CROP_BOTTOM_PX + 200) {
+          f.style.setProperty("height", `${natural - IG_CROP_BOTTOM_PX}px`, "important");
+        }
+      });
+    };
+    const cropObserver = new MutationObserver(cropAll);
+    cropObserver.observe(el, { subtree: true, childList: true, attributes: true, attributeFilter: ["height"] });
 
     // 게시물을 여러 개 붙여넣으면 embed.js도 여러 번 들어온다.
     // 중복 로드하면 두 번째부터는 변환(process)이 실행되지 않으므로,
@@ -313,11 +332,16 @@ function InstagramEmbed({ html }: { html: string }) {
     });
 
     // 스크립트를 안 붙이고 blockquote만 넣은 경우도 처리
-    if (!hasInstagram && !el.querySelector(".instagram-media")) return;
+    if (!hasInstagram && !el.querySelector(".instagram-media")) {
+      return () => cropObserver.disconnect();
+    }
 
-    const process = () => window.instgrm?.Embeds.process();
+    const process = () => { window.instgrm?.Embeds.process(); cropAll(); };
 
-    if (window.instgrm) { process(); return; }
+    if (window.instgrm) {
+      process();
+      return () => cropObserver.disconnect();
+    }
 
     let script = document.querySelector<HTMLScriptElement>(`script[data-ig-embed="1"]`);
     if (!script) {
@@ -328,6 +352,8 @@ function InstagramEmbed({ html }: { html: string }) {
       document.body.appendChild(script);
     }
     script.addEventListener("load", process, { once: true });
+
+    return () => cropObserver.disconnect();
   }, [html]);
   // 인스타 임베드는 블록 요소라 기본적으로 세로로 쌓인다.
   // 폭이 되는 만큼 가로로 나란히 배치하고(모바일은 1열), 임베드에 박힌 인라인 스타일
