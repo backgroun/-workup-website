@@ -116,12 +116,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
               <div>
                 <h3 className="text-[13px] font-bold tracking-wider text-[#1A2B4A] mb-3">WORK MOMENTS</h3>
-                <p className="text-[13px] text-gray-500 leading-relaxed mb-4">현장의 순간들을<br />기록합니다.</p>
-                {ig?.link && (
-                  <a href={ig.link} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-[#1A2B4A] hover:text-[#ff550c] transition-colors">
-                    더 많은 사진/영상 보기 →
-                  </a>
-                )}
+                <p className="text-[13px] text-gray-500 leading-relaxed">현장의 순간들을<br />기록합니다.</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {person.workMoments.photos.map((url, i) => (

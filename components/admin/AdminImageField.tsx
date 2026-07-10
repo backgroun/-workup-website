@@ -24,6 +24,7 @@ function buildImagePrompt(type: "person" | "product", seed: string, size?: strin
 
 export default function AdminImageField({
   value, onChange, promptType, promptSeed, label = "이미지", recommendedSize, showPrompt = true,
+  variant = "default", aspectClass = "aspect-square",
 }: {
   value?: string;
   onChange: (url: string) => void;
@@ -32,6 +33,10 @@ export default function AdminImageField({
   label?: string;
   recommendedSize?: string;
   showPrompt?: boolean;
+  /** "card": 실제 노출 비율 그대로 보여주는 카드형 미리보기 (그리드용) */
+  variant?: "default" | "card";
+  /** card 변형에서 사용할 비율 클래스 (예: "aspect-[3/4]") */
+  aspectClass?: string;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -48,6 +53,39 @@ export default function AdminImageField({
       else { const e = await res.json().catch(() => ({})); alert("이미지 업로드 실패: " + (e.error ?? res.status)); }
     } finally { setUploading(false); }
   };
+
+  // 카드형 — 실제 노출되는 비율/크롭(object-cover)으로 미리보기. 클릭하면 업로드/교체.
+  if (variant === "card") {
+    return (
+      <div>
+        {label && <label className="block text-xs font-semibold text-gray-500 mb-1.5">{label}</label>}
+        <input ref={fileRef} type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+        <div onClick={() => fileRef.current?.click()}
+          className={`relative w-full ${aspectClass} rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 cursor-pointer overflow-hidden bg-gray-50`}>
+          {value ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={value} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full gap-1 px-2">
+              <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-[11px] text-gray-400 text-center leading-tight">
+                {uploading ? "업로드 중..." : "클릭하여 업로드"}
+              </span>
+              {recommendedSize && !uploading && (
+                <span className="text-[10px] text-gray-300 font-mono leading-tight text-center">{recommendedSize}</span>
+              )}
+            </div>
+          )}
+          {uploading && value && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-[11px] text-white">업로드 중...</div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
