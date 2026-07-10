@@ -435,6 +435,23 @@ export default function AdminMainPeoplePage() {
               <button onClick={() => setProductModalOpen(false)} className="text-slate-400 hover:text-slate-700 text-lg leading-none">✕</button>
             </div>
             <div className="p-4 border-b border-slate-100 space-y-3">
+              {/* 선택된 제품 — 여기서 바로 해제 가능(구버전 데이터도 정리됨) */}
+              {editing.products.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {editing.products.map((pr, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full pl-2.5 pr-1 py-1 text-xs text-blue-800">
+                      {pr.name || "(이름 없음)"}
+                      <button type="button" onClick={() => removeProductAt(i)}
+                        className="w-4 h-4 rounded-full bg-blue-300 hover:bg-red-500 text-white text-[10px] leading-none flex items-center justify-center">✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {editing.products.length >= 3 && (
+                <p className="text-[11px] text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-2.5 py-1.5">
+                  최대 3개까지 선택할 수 있습니다. 다른 제품을 고르려면 위에서 하나를 ✕로 해제하세요.
+                </p>
+              )}
               <input value={productSearch} onChange={e => setProductSearch(e.target.value)} placeholder="상품명 검색..." autoFocus
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400" />
               {productCategories.length > 0 && (
