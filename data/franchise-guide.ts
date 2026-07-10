@@ -10,7 +10,7 @@ export type BenefitCard = { title: string; desc: string };
 export type ConditionRow = { label: string; value: string };
 
 export const STYLE_KEYS = [
-  "wordmark", "title", "subtitle",
+  "title",
   "hero_eyebrow", "hero_title", "hero_desc",
   "stat_value", "stat_label",
   "section_title", "section_desc",
@@ -26,16 +26,13 @@ export type GuideColors = {
 };
 
 export type FranchiseGuideConfig = {
-  wordmark: string;
-  title: string;
-  subtitle: string;
+  title: string;                    // 상단 슬림바 문구
   hero_eyebrow: string;
   hero_title: string;              // 여러 줄(\n)
   hero_desc: string;                // "{count}" → 실제 매장 수로 치환
   hero_primary_label: string;
   hero_secondary_label: string;
-  hero_visual_label: string;
-  hero_visual_text: string;
+  hero_bg_img: string;               // 히어로 전체 배경 이미지
   stats: StatItem[];                // 매출 · 마진율 (2개, 직접 편집)
   store_stat_label: string;         // "계약 매장" — 값은 실제 매장 수로 자동 계산
   store_stat_unit: string;          // "개"
@@ -57,16 +54,13 @@ export type FranchiseGuideConfig = {
 const ts = (size: number, color: string, tracking = 0, leading = 1.4): TextStyle => ({ size, color, tracking, leading });
 
 export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
-  wordmark: "WORKUP",
-  title: "워크업 창업안내",
-  subtitle: "대한민국 Work Life Wear",
+  title: "워크업창업안내 | WORKUP FRANCHISE INFORMATION",
   hero_eyebrow: "WORKUP FRANCHISE",
-  hero_title: "일하는 사람이 찾는 브랜드,\n이제 당신의 지역에서.",
+  hero_title: "일하는 사람들의 발걸음이,\n매출이 되는 브랜드.",
   hero_desc: "전국 {count}개 매장이 선택한 워크웨어 전문 비즈니스입니다. 상권 보호부터 상품 공급, 지역 마케팅까지 함께합니다.",
   hero_primary_label: "창업 상담 신청",
   hero_secondary_label: "필수 조건 보기",
-  hero_visual_label: "WORK LIFE WEAR",
-  hero_visual_text: "현장에서 검증된 비즈니스",
+  hero_bg_img: "",
   stats: [
     { value: "1.5억+", label: "평균 월매출" },
     { value: "31.5~35%", label: "판매 마진율" },
@@ -95,13 +89,11 @@ export const DEFAULT_FRANCHISE_GUIDE: FranchiseGuideConfig = {
   count_fallback: 130,
   colors: { page_bg: "#0d0d0d", header_bg: "#f3f0ea", card_bg: "#151515", accent: "#ff4d00" },
   styles: {
-    wordmark: ts(19, "#111111", -0.02, 1.1),
-    title: ts(28, "#111111", -0.03, 1.1),
-    subtitle: ts(13, "#6f7378", 0, 1.4),
+    title: ts(15, "#111111", -0.02, 1.1),
     hero_eyebrow: ts(12, "#ff4d00", 0.16, 1.4),
-    hero_title: ts(38, "#f5f5f3", -0.04, 1.15),
-    hero_desc: ts(15, "#a5a5a0", 0, 1.7),
-    stat_value: ts(30, "#ff4d00", -0.02, 1),
+    hero_title: ts(36, "#ffffff", -0.03, 1.2),
+    hero_desc: ts(15, "#d8d8d5", 0, 1.7),
+    stat_value: ts(30, "#ffffff", -0.02, 1),
     stat_label: ts(12, "#a5a5a0", 0, 1.4),
     section_title: ts(26, "#f5f5f3", -0.02, 1.2),
     section_desc: ts(13, "#a5a5a0", 0, 1.6),
@@ -142,16 +134,13 @@ export function normalizeFranchiseGuide(raw: Partial<FranchiseGuideConfig> | nul
   const styles = {} as GuideStyles;
   for (const k of STYLE_KEYS) styles[k] = normStyle(rs[k], d.styles[k]);
   return {
-    wordmark: str(c.wordmark, d.wordmark),
     title: str(c.title, d.title),
-    subtitle: str(c.subtitle, d.subtitle),
     hero_eyebrow: str(c.hero_eyebrow, d.hero_eyebrow),
     hero_title: str(c.hero_title, d.hero_title),
     hero_desc: str(c.hero_desc, d.hero_desc),
     hero_primary_label: str(c.hero_primary_label, d.hero_primary_label),
     hero_secondary_label: str(c.hero_secondary_label, d.hero_secondary_label),
-    hero_visual_label: str(c.hero_visual_label, d.hero_visual_label),
-    hero_visual_text: str(c.hero_visual_text, d.hero_visual_text),
+    hero_bg_img: str(c.hero_bg_img, d.hero_bg_img),
     stats: d.stats.map((ds, i) => {
       const st = stats[i] ?? {};
       return { value: str(st.value, ds.value), label: str(st.label, ds.label) };
