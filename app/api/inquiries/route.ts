@@ -90,6 +90,9 @@ export async function POST(req: Request) {
       if (field.required && !val) {
         return NextResponse.json({ error: `${field.label}을(를) 입력해 주세요.` }, { status: 400 });
       }
+      if ((field.key === "title" || field.key === "message") && val && val.length < 10) {
+        return NextResponse.json({ error: `${field.label}은(는) 10자 이상 입력해 주세요.` }, { status: 400 });
+      }
       if (val && field.type === "tel") {
         const digits = val.replace(/\D/g, "").length;
         if (digits < 8 || digits > 15) {
@@ -107,12 +110,22 @@ export async function POST(req: Request) {
     if (phoneDigits < 8 || phoneDigits > 15) {
       return NextResponse.json({ error: "연락처를 정확히 입력해주세요." }, { status: 400 });
     }
+  } else if (type === "product") {
+    // 상품 문의는 연락처를 받지 않지만 제목·내용은 필수(클라이언트 우회 방지).
+    if (!String(p.title ?? "").trim()) {
+      return NextResponse.json({ error: "문의 제목을 입력해 주세요." }, { status: 400 });
+    }
+    if (!String(p.content ?? "").trim()) {
+      return NextResponse.json({ error: "문의 내용을 입력해 주세요." }, { status: 400 });
+    }
   }
-  // 상품 문의(product)는 연락처를 받지 않으므로 별도 필수 검증 없음.
 
-  // 비밀번호 설정(선택) — 평문은 저장/전송하지 않고 솔트 SHA-256 해시만 보관한다.
+  // 비밀번호 설정(선택) — 숫자 4자리만 허용. 평문은 저장/전송하지 않고 솔트 SHA-256 해시만 보관한다.
   const rawPw = String(p.password ?? "");
   delete p.password;
+  if (rawPw && !/^\d{4}$/.test(rawPw)) {
+    return NextResponse.json({ error: "비밀번호는 숫자 4자리로 입력해주세요." }, { status: 400 });
+  }
   if (rawPw) {
     const salt = randomBytes(8).toString("hex");
     p._pwSalt = salt;

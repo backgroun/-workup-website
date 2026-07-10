@@ -62,6 +62,7 @@ export async function PUT(req: Request, { params }: Params) {
       kakao_channel_url: body.kakao_channel_url ?? "",
       store_url: body.store_url ?? "",
       sort_order: body.sort_order ?? 0,
+      product_ids: body.product_ids ?? [],
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

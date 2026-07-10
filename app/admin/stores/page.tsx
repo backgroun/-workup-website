@@ -22,8 +22,11 @@ type StoreRow = {
   store_url: string;
   is_active: boolean;
   sort_order: number;
+  product_ids: string[] | null;
   created_at: string;
 };
+
+type ProductOption = { id: string; name: string };
 
 const TYPE_COLOR: Record<string, string> = {
   직영점: "bg-blue-100 text-blue-700",
@@ -40,6 +43,9 @@ export default function AdminStoresPage() {
   const [typeFilter, setTypeFilter] = useState("전체");
   const [activeFilter, setActiveFilter] = useState<"전체" | "활성" | "비활성">("전체");
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -48,7 +54,15 @@ export default function AdminStoresPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  const loadProducts = async () => {
+    const res = await fetch("/api/admin/products");
+    if (res.ok) {
+      const data = await res.json();
+      setProducts(data.map((p: ProductOption) => ({ id: p.id, name: p.name })));
+    }
+  };
+
+  useEffect(() => { load(); loadProducts(); }, []);
 
   const regions = useMemo(() => {
     const set = new Set(stores.map((s) => s.region).filter(Boolean));
@@ -125,16 +139,52 @@ export default function AdminStoresPage() {
     setDeleting(null);
   };
 
-  const toggleActive = async (store: StoreRow) => {
+  const updateStore = async (store: StoreRow, patch: Partial<StoreRow>) => {
     const res = await fetch(`/api/admin/stores/${store.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...store, is_active: !store.is_active }),
+      body: JSON.stringify({ ...store, ...patch }),
     });
     if (res.ok) {
       const updated = await res.json();
       setStores((prev) => prev.map((s) => (s.id === store.id ? updated : s)));
     }
+    return res.ok;
+  };
+
+  const toggleActive = (store: StoreRow) => updateStore(store, { is_active: !store.is_active });
+
+  const setProductSlot = (store: StoreRow, slot: number, productId: string) => {
+    const ids = [...(store.product_ids ?? [])];
+    ids[slot] = productId;
+    updateStore(store, { product_ids: ids.filter(Boolean).slice(0, 3) });
+  };
+
+  const toggleOne = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every((s) => selected.has(s.id));
+  const toggleAll = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allFilteredSelected) filtered.forEach((s) => next.delete(s.id));
+      else filtered.forEach((s) => next.add(s.id));
+      return next;
+    });
+  };
+
+  const bulkSetActive = async (active: boolean) => {
+    if (!selected.size) return;
+    setBulkSaving(true);
+    const targets = stores.filter((s) => selected.has(s.id));
+    await Promise.all(targets.map((s) => updateStore(s, { is_active: active })));
+    setBulkSaving(false);
+    setSelected(new Set());
   };
 
   return (
@@ -234,18 +284,56 @@ export default function AdminStoresPage() {
         </p>
       </div>
 
+      {/* 다중 선택 일괄 처리 */}
+      {selected.size > 0 && (
+        <div className="bg-[#1A2B4A] rounded-xl px-5 py-3 mb-4 flex items-center gap-4">
+          <span className="text-sm font-semibold text-white">{selected.size}개 선택됨</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={() => bulkSetActive(true)}
+              disabled={bulkSaving}
+              className="px-4 py-1.5 text-xs font-semibold bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            >
+              선택 활성화
+            </button>
+            <button
+              onClick={() => bulkSetActive(false)}
+              disabled={bulkSaving}
+              className="px-4 py-1.5 text-xs font-semibold bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+            >
+              선택 비활성화
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="px-4 py-1.5 text-xs font-semibold text-white/70 hover:text-white transition-colors"
+            >
+              선택 해제
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 테이블 */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-5 py-3.5 text-left w-10">
+                  <input
+                    type="checkbox"
+                    checked={allFilteredSelected}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                  />
+                </th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">ID</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">매장명</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">지역</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">전화</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상태</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">판매제품 (공개시)</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상세보기</th>
                 <th className="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">관리</th>
               </tr>
@@ -253,7 +341,7 @@ export default function AdminStoresPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-gray-300 border-t-[#1A2B4A] rounded-full animate-spin" />
                       불러오는 중...
@@ -262,7 +350,7 @@ export default function AdminStoresPage() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
                     {stores.length === 0
                       ? <div>
                           <p className="text-base font-medium mb-2">등록된 매장이 없습니다.</p>
@@ -274,6 +362,14 @@ export default function AdminStoresPage() {
               ) : (
                 filtered.map((store) => (
                   <tr key={store.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(store.id)}
+                        onChange={() => toggleOne(store.id)}
+                        className="w-4 h-4 rounded border-gray-300 accent-[#1A2B4A]"
+                      />
+                    </td>
                     <td className="px-5 py-4 text-gray-400 text-xs font-mono">{store.id}</td>
                     <td className="px-5 py-4">
                       <span className="font-medium text-gray-900">{store.name}</span>
@@ -293,6 +389,27 @@ export default function AdminStoresPage() {
                       >
                         {store.is_active ? "활성" : "비활성"}
                       </button>
+                    </td>
+                    <td className="px-5 py-4">
+                      {store.is_active ? (
+                        <div className="flex flex-col gap-1 min-w-[160px]">
+                          {[0, 1, 2].map((slot) => (
+                            <select
+                              key={slot}
+                              value={store.product_ids?.[slot] ?? ""}
+                              onChange={(e) => setProductSlot(store, slot, e.target.value)}
+                              className="px-2 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:border-[#1A2B4A]"
+                            >
+                              <option value="">판매제품 {slot + 1} 선택 안 함</option>
+                              {products.map((p) => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300">비활성 매장</span>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <Link
