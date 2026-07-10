@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { type FeedItem } from "@/data/inquiryDummy";
+import PasswordInput from "@/components/PasswordInput";
 
 // 가맹/제휴 페이지 우측 '문의 현황' 보드.
 // 통합 피드(더미 + 마스킹된 실제)를 불러와 누적 전체를 스크롤로 보여준다.
@@ -88,11 +89,11 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">작성 시 설정한 <b>비밀번호</b>를 입력하면<br />내용과 답변을 볼 수 있어요.</p>
               </div>
-              <input type="text" inputMode="numeric" pattern="\d*" maxLength={4}
+              <PasswordInput mode="mask" inputMode="numeric" pattern="\d*" maxLength={4}
                 value={pw} onChange={(e) => setPw(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 autoFocus placeholder="숫자 4자리"
                 autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                className="pw-mask w-full border border-gray-200 px-4 py-2.5 text-sm text-center tracking-[0.3em] focus:outline-none focus:border-[#1A2B4A] bg-white" />
+                className="w-full border border-gray-200 px-4 py-2.5 text-sm text-center tracking-[0.3em] focus:outline-none focus:border-[#1A2B4A] bg-white" />
               {error && <p className="text-xs text-red-500 text-center">{error}</p>}
             </form>
           ) : (
