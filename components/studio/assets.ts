@@ -41,7 +41,7 @@ export const SHIRT_COLORS: { id: string; label: string; value: string }[] = [
   { id: "sand", label: "샌드", value: "#D8C8A8" },
   { id: "mustard", label: "머스타드", value: "#E0A93B" },
   { id: "yellow", label: "옐로우", value: "#F2D44E" },
-  { id: "orange", label: "오렌지", value: "#FF550C" },
+  { id: "orange", label: "오렌지", value: "#E5541B" },
   { id: "red", label: "레드", value: "#C0392B" },
   { id: "burgundy", label: "버건디", value: "#6E2733" },
   { id: "pink", label: "핑크", value: "#E8A6BE" },
@@ -65,7 +65,7 @@ export const TEXT_FONTS: { label: string; family: string; weight: number }[] = [
 
 // ── 텍스트 색상 팔레트 ────────────────────────────────────
 export const PALETTE_COLORS = [
-  "#FFFFFF", "#303236", "#FF550C", "#000000", "#F5C518", "#2E7D32",
+  "#FFFFFF", "#303236", "#E5541B", "#000000", "#F5C518", "#2E7D32",
   "#1976D2", "#C62828", "#7B1FA2", "#E91E63", "#00897B", "#8D6E63",
 ];
 

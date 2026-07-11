@@ -22,7 +22,7 @@ export default async function FieldTestPage() {
     <main>
 
       {/* ── 페이지 타이틀 ── */}
-      <section className="pt-16 pb-0 bg-[#F5F2ED]">
+      <section className="pt-16 pb-0 bg-[#FAFAF8]">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
             {header.title}
@@ -36,7 +36,7 @@ export default async function FieldTestPage() {
       </section>
 
       {/* ── 테스트 결과 카드 ── */}
-      <section className="bg-[#F5F2ED] pt-[60px] pb-16">
+      <section className="bg-[#FAFAF8] pt-[60px] pb-16">
         <div className="px-[15px] md:px-[70px]">
 
           <div className="mb-8 flex items-center gap-3">
@@ -50,7 +50,7 @@ export default async function FieldTestPage() {
             {tests.map((test) => (
               <div
                 key={test.id}
-                className="bg-white border-l-4 border-[#ff550c] overflow-hidden"
+                className="bg-white border-l-4 border-[#E5541B] overflow-hidden"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-3">
 
@@ -80,7 +80,7 @@ export default async function FieldTestPage() {
                         <h3 className="text-[18px] font-bold text-[#303236] mb-1">{test.product}</h3>
                         <p className="text-sm text-gray-500">{test.title}</p>
                       </div>
-                      <span className="flex-shrink-0 text-xs font-bold px-4 py-2 bg-[#ff550c] text-white">
+                      <span className="flex-shrink-0 text-xs font-bold px-4 py-2 bg-[#E5541B] text-white">
                         통과
                       </span>
                     </div>
@@ -101,7 +101,7 @@ export default async function FieldTestPage() {
                       {test.data.map((d) => (
                         <div key={d.spec} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="bg-gray-50 px-3 py-2 text-xs text-gray-500 font-mono">{d.spec}</div>
-                          <div className="bg-orange-50 px-3 py-2 text-xs font-semibold text-[#ff550c]">→ {d.plain}</div>
+                          <div className="bg-orange-50 px-3 py-2 text-xs font-semibold text-[#E5541B]">→ {d.plain}</div>
                         </div>
                       ))}
                     </div>

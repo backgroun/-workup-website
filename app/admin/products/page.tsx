@@ -507,7 +507,7 @@ export default function AdminProductsPage() {
             Excel 업로드
           </Link>
           <Link href="/admin/products/new"
-            className="px-6 py-2.5 text-base bg-[#ff550c] text-white hover:bg-[#e04500] rounded font-bold">
+            className="px-6 py-2.5 text-base bg-[#E5541B] text-white hover:bg-[#e04500] rounded font-bold">
             + 새 제품 추가
           </Link>
         </div>
@@ -543,7 +543,7 @@ export default function AdminProductsPage() {
             <button onClick={handleReset}
               className={`px-4 py-2 border text-[15px] rounded transition-colors ${
                 isFiltered
-                  ? "border-[#ff550c] text-[#ff550c] hover:bg-orange-50 font-semibold"
+                  ? "border-[#E5541B] text-[#E5541B] hover:bg-orange-50 font-semibold"
                   : "border-gray-200 text-gray-400 hover:border-gray-300"
               }`}>초기화</button>
           </div>
@@ -609,7 +609,7 @@ export default function AdminProductsPage() {
 
       {loading ? (
         <div className="flex items-center gap-3 py-20 text-base text-gray-400">
-          <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+          <span className="w-6 h-6 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
           불러오는 중...
         </div>
       ) : (
@@ -639,7 +639,7 @@ export default function AdminProductsPage() {
               </button>
               <div className="w-px h-5 bg-gray-300 mx-1" />
               <button onClick={() => selected.size && openCatModal()} disabled={!selected.size}
-                className="px-3 py-1.5 text-[14px] border border-[#ff550c] bg-white text-[#ff550c] hover:bg-[#ff550c] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
+                className="px-3 py-1.5 text-[14px] border border-[#E5541B] bg-white text-[#E5541B] hover:bg-[#E5541B] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
                 카테고리 추가
               </button>
               <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
@@ -775,7 +775,7 @@ export default function AdminProductsPage() {
                               <option value="">서브 없음</option>
                               {(catList.find(c => c.name === rowMain)?.subs ?? []).map(s => <option key={s}>{s}</option>)}
                             </select>
-                            <button onClick={() => addRowCat(p)} className="text-[12px] font-bold text-[#303236] px-1 hover:text-[#ff550c]">추가</button>
+                            <button onClick={() => addRowCat(p)} className="text-[12px] font-bold text-[#303236] px-1 hover:text-[#E5541B]">추가</button>
                             <button onClick={() => setCatRowId(null)} className="text-[12px] text-gray-400 px-0.5 hover:text-gray-600">취소</button>
                           </span>
                         ) : (
@@ -882,7 +882,7 @@ export default function AdminProductsPage() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
             <div className="px-7 py-5 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">카테고리 추가</h2>
-              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#ff550c]">{selected.size}개</span> 상품의 기존 카테고리에 추가됩니다.</p>
+              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#E5541B]">{selected.size}개</span> 상품의 기존 카테고리에 추가됩니다.</p>
             </div>
             <div className="px-7 py-6 space-y-5">
               {/* 현재 설정된 카테고리 태그 */}
@@ -928,7 +928,7 @@ export default function AdminProductsPage() {
               <button onClick={() => { setCatModal(false); setCatModalCats([]); }}
                 className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
               <button onClick={bulkApplyCat} disabled={catModalCats.length === 0 || catSaving}
-                className="px-6 py-2.5 bg-[#ff550c] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
+                className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
                 {catSaving ? "추가 중..." : `${selected.size}개에 추가`}
               </button>
             </div>
@@ -969,7 +969,7 @@ export default function AdminProductsPage() {
                     <button key={opt} type="button"
                       onClick={() => setExposeTarget(prev => { const n = new Set(prev); n.has(opt) ? n.delete(opt) : n.add(opt); return n; })}
                       className={`px-4 py-2 text-[15px] border rounded font-medium transition-colors ${
-                        exposeTarget.has(opt) ? "bg-[#ff550c] text-white border-[#ff550c]" : "bg-white text-gray-600 border-gray-200 hover:border-[#ff550c]"
+                        exposeTarget.has(opt) ? "bg-[#E5541B] text-white border-[#E5541B]" : "bg-white text-gray-600 border-gray-200 hover:border-[#E5541B]"
                       }`}>{opt}</button>
                   ))}
                 </div>
@@ -979,7 +979,7 @@ export default function AdminProductsPage() {
               <button onClick={() => { setExposeModal(false); setExposeTarget(new Set()); }}
                 className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
               <button onClick={applyMainExpose} disabled={!exposeTarget.size || exposeSaving}
-                className="px-6 py-2.5 bg-[#ff550c] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
+                className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
                 {exposeSaving ? "적용 중..." : `${selected.size}개에 적용`}
               </button>
             </div>

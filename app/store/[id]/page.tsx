@@ -172,7 +172,7 @@ export default async function StoreDetailPage({ params }: Props) {
       <div className="max-w-2xl mx-auto">
         {/* 매장명 + 기본 정보 */}
         <div className="px-5 py-6 border-b border-gray-100">
-          <p className="text-xs font-semibold text-[#ff550c] mb-1">{store.store_type}</p>
+          <p className="text-xs font-semibold text-[#E5541B] mb-1">{store.store_type}</p>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">{store.name}</h1>
           <div className="mt-3 space-y-2">
             <div className="flex items-start gap-2">
@@ -208,7 +208,7 @@ export default async function StoreDetailPage({ params }: Props) {
                 <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <a href={`tel:${store.phone}`} className="text-sm text-gray-700 hover:text-[#ff550c] transition-colors">{store.phone}</a>
+                <a href={`tel:${store.phone}`} className="text-sm text-gray-700 hover:text-[#E5541B] transition-colors">{store.phone}</a>
               </div>
             )}
           </div>
@@ -248,7 +248,7 @@ export default async function StoreDetailPage({ params }: Props) {
                       <img
                         src={p.image_url}
                         alt={p.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">이미지 없음</div>

@@ -11,7 +11,7 @@ export default function SitePage() {
     <main>
       <div className="bg-[#303236] py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">WORKUP SITE</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">WORKUP SITE</p>
           <h1 className="text-4xl font-bold text-white mb-4">현장을 위한 라인</h1>
           <p className="text-gray-300 text-sm leading-relaxed max-w-xl">
             혹독한 환경에서 살아남도록 설계된 순수 기능 워크웨어.<br />

@@ -210,7 +210,7 @@ export default function ReportPage() {
 
           <div className="bg-[#303236] text-white rounded-lg px-6 py-4 flex justify-between items-center">
             <p className="font-bold">월 예상 총 비용</p>
-            <p className="text-xl font-bold text-[#ff550c]">$45 <span className="text-sm font-normal text-gray-300">(약 61,000원/월)</span></p>
+            <p className="text-xl font-bold text-[#E5541B]">$45 <span className="text-sm font-normal text-gray-300">(약 61,000원/월)</span></p>
           </div>
         </section>
 

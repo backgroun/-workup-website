@@ -74,11 +74,11 @@ export type PartnershipConfig = {
 const s = (size: number, color: string): TextStyle => ({ size, color });
 
 const BASE_STYLES: PartnerStyles = {
-  eyebrow: s(12, "#ff550c"),
+  eyebrow: s(12, "#E5541B"),
   panel_title: s(24, "#ffffff"),
   panel_desc: s(14, "#d1d5db"),
   benefits: s(12, "#d1d5db"),
-  bullet_color: "#ff550c",
+  bullet_color: "#E5541B",
   phone_label: s(12, "#9ca3af"),
   phone: s(14, "#ffffff"),
   hours: s(12, "#6b7280"),

@@ -340,7 +340,7 @@ export default function MyPage() {
                         <img
                           src={item.imageUrl}
                           alt={item.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover transition-transform"
                         />
                       )}
                     </div>

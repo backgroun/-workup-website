@@ -313,7 +313,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] tracking-widest uppercase">WORKUP</span>
         )}
         {product.isNew && (
-          <span className="absolute top-2 left-2 bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest z-10">NEW</span>
+          <span className="absolute top-2 left-2 bg-white/90 text-[#E5541B] text-[10px] tracking-[0.2em] px-2 py-0.5 z-10">NEW</span>
         )}
         <button
           onClick={(e) => { e.preventDefault(); toggleFav(product); }}
@@ -322,8 +322,8 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         >
           <svg
             className="w-7 h-7 transition-colors duration-150"
-            fill={hasProduct(product.id) ? "#ff550c" : "none"}
-            stroke={hasProduct(product.id) ? "#ff550c" : "white"}
+            fill={hasProduct(product.id) ? "#E5541B" : "none"}
+            stroke={hasProduct(product.id) ? "#E5541B" : "white"}
             strokeWidth={1.5}
             viewBox="0 0 24 24"
           >
@@ -342,7 +342,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           </div>
         )}
         <h3 className={`font-medium text-[#303236] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
-          <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">{productDisplayName(product)}</Link>
+          <Link href={`/products/${product.id}`} className="hover:underline underline-offset-4 decoration-1 transition-colors">{productDisplayName(product)}</Link>
         </h3>
         {product.sku && (
           <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{product.sku}</p>
@@ -390,7 +390,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" />
             </svg>
             {count > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] bg-[#ff550c] text-white text-[9px] font-bold flex items-center justify-center rounded-full px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] bg-[#E5541B] text-white text-[9px] font-bold flex items-center justify-center rounded-full px-0.5">
                 {count}
               </span>
             )}
@@ -444,7 +444,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
         {/* Search banner */}
         {searchQuery && (
-          <div className="mx-[15px] mt-3 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#ff550c] px-4 py-2.5">
+          <div className="mx-[15px] mt-3 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#E5541B] px-4 py-2.5">
             <p className="text-[12px] text-[#303236]">
               <span className="font-bold">"{searchQuery}"</span>
               <span className="text-gray-400 ml-1">{filtered.length}개</span>
@@ -561,7 +561,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           <div className="px-[70px]">
 
             {searchQuery && (
-              <div className="mb-6 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#ff550c] px-4 py-3">
+              <div className="mb-6 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#E5541B] px-4 py-3">
                 <p className="text-[13px] text-[#303236]">
                   <span className="font-bold">"{searchQuery}"</span> 검색 결과
                   <span className="text-gray-400 ml-2">{filtered.length}개</span>
@@ -623,7 +623,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                     <FilterDropdown label="가격" options={filtersCfg.priceRanges.map((pr) => pr.label)} selected={selectedPrices} onToggle={togglePrice} activeCount={selectedPrices.length} />
                     {(selectedSeasons.length + selectedSizes.length + selectedPrices.length) > 0 && (
                       <button onClick={resetFilters}
-                        className="text-[11px] text-gray-400 hover:text-[#ff550c] transition-colors underline underline-offset-2 ml-1">
+                        className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2 ml-1">
                         초기화
                       </button>
                     )}

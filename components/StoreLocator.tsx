@@ -170,6 +170,11 @@ export default function StoreLocator({
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // 리스트 각 항목의 DOM 참조 — 지도에서 매장을 고르면 해당 항목으로 스크롤하기 위함
+  const itemRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  // 지도 클릭으로 선택했을 때만 리스트를 해당 항목으로 스크롤하도록 하는 대기 플래그
+  // (리스트 항목 클릭은 반대로 지도로 스크롤하므로 서로 간섭하지 않게 구분)
+  const pendingListScrollId = useRef<number | null>(null);
 
   // ?store=<id> 딥링크 — 마이페이지 "가까운 매장" 등에서 리스트 내 특정 매장으로 바로 스크롤
   const searchParams = useSearchParams();
@@ -302,26 +307,33 @@ export default function StoreLocator({
     setSelectedStore(null);
   };
 
-  // 지도에서 매장 핀/카드를 클릭하면 해당 매장이 속한 지역으로 하단 리스트도 필터링
+  // 지도에서 매장 핀/카드를 클릭하면: 해당 지역으로 리스트 필터 + 매장 선택/펼침 +
+  // 그 항목으로 리스트를 스크롤해 지도와 목록이 확실히 연동되도록 한다.
   const selectStoreFromMap = (store: Store) => {
+    trackStoreEvent("list_click", { id: store.id, name: store.name });
     setSelectedStore(store);
-    setMapCenter({ lat: store.lat, lng: store.lng, level: 3 });
+    setExpanded(store.id);
+    setMapCenter({ lat: store.lat, lng: store.lng, level: 5 });
     const { sido, sigungu } = regionOf(store.address);
     if (SIDO_LIST.includes(sido)) {
       setSelectedSido(sido);
       setSelectedSigungu(sigungu);
     }
+    pendingListScrollId.current = store.id;
   };
 
-  // 지도에서 여러 매장이 묶인 클러스터(숫자) 클릭 시 해당 지역으로 리스트 필터링
+  // 지도에서 여러 매장이 묶인 클러스터(숫자) 클릭 시 해당 지역으로 리스트 필터 후
+  // 리스트 영역으로 스크롤해 어떤 지역이 열렸는지 바로 보이게 한다.
   const selectClusterFromMap = (clusterStores: Store[]) => {
     if (clusterStores.length === 0) return;
     const { sido } = regionOf(clusterStores[0].address);
     if (!SIDO_LIST.includes(sido)) return;
     const sigungus = new Set(clusterStores.map((s) => regionOf(s.address).sigungu));
     setSelectedStore(null);
+    setExpanded(null);
     setSelectedSido(sido);
     setSelectedSigungu(sigungus.size === 1 ? [...sigungus][0] : "");
+    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   };
 
   // 검색어 입력 시 지도도 결과 위치로 이동 — 결과가 1개면 그 매장으로, 여러 개면 평균 위치로
@@ -366,8 +378,20 @@ export default function StoreLocator({
       : baseList
   );
 
+  // 지도 클릭으로 매장이 선택되면(대기 플래그 존재) 리스트가 재정렬/필터된 뒤
+  // 해당 항목을 화면 중앙으로 스크롤한다. displayList가 바뀔 때마다 확인.
+  useEffect(() => {
+    const id = pendingListScrollId.current;
+    if (id == null) return;
+    const el = itemRefs.current.get(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      pendingListScrollId.current = null;
+    }
+  }, [displayList, selectedStore]);
+
   return (
-    <section id={id} className="bg-[#F5F2ED]">
+    <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
       <div className="bg-white py-16 border-b border-gray-100">
@@ -385,7 +409,7 @@ export default function StoreLocator({
             <ul className="flex flex-col gap-2">
               {header.bullets.map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-[13px] text-gray-500">
-                  <span className="text-[#ff550c] font-bold flex-shrink-0 mt-0.5">✓</span>
+                  <span className="text-[#E5541B] font-bold flex-shrink-0 mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
@@ -542,7 +566,7 @@ export default function StoreLocator({
         {/* 근거리 결과 배너 */}
         {locStatus === "success" && !isSearching && (
           <div className={`mb-4 px-4 py-3 border-l-4 flex items-start justify-between gap-4 ${
-            nearbyStores.length > 0 ? "border-[#ff550c] bg-orange-50" : "border-gray-300 bg-gray-50"
+            nearbyStores.length > 0 ? "border-[#E5541B] bg-orange-50" : "border-gray-300 bg-gray-50"
           }`}>
             <div>
               {nearbyStores.length > 0 ? (
@@ -551,7 +575,7 @@ export default function StoreLocator({
                     {showAll ? `전국 ${allSorted.length}개 매장 — 거리순` : `가장 가까운 ${NEARBY_COUNT}개 매장`}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    가장 가까운 매장: <strong className="text-[#ff550c]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
+                    가장 가까운 매장: <strong className="text-[#E5541B]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
                     {" "}— {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
                   </p>
                 </>
@@ -641,7 +665,7 @@ export default function StoreLocator({
         </div>
 
         {/* ── 매장 목록 ── */}
-        <div className="flex items-center justify-between mb-3">
+        <div ref={listRef} className="flex items-center justify-between mb-3 scroll-mt-4">
           <p className="text-xs text-gray-400">
             {isSearching
               ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
@@ -668,7 +692,8 @@ export default function StoreLocator({
                 <div
                   key={store.id}
                   id={`store-row-${store.id}`}
-                  className={`bg-white overflow-hidden transition-colors ${
+                  ref={(el) => { itemRefs.current.set(store.id, el); }}
+                  className={`bg-white overflow-hidden transition-colors scroll-mt-4 ${
                     isSelected ? "border-2 border-[#303236]" : "border border-gray-200"
                   }`}
                 >
@@ -689,7 +714,7 @@ export default function StoreLocator({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={`w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"
+                        index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"
                       }`}>
                         {index + 1}
                       </span>
@@ -698,7 +723,7 @@ export default function StoreLocator({
                           <span className="font-bold text-sm text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
                             <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
-                              index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600"
+                              index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600"
                             }`}>
                               {formatDist(store.distance, store.estimated)}
                             </span>
@@ -750,7 +775,7 @@ export default function StoreLocator({
                                 <li key={p.id}>
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors leading-tight py-0.5"
+                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#E5541B] transition-colors leading-tight py-0.5"
                                   >
                                     <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
                                       {i + 1}

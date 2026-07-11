@@ -141,11 +141,11 @@ export default function Header({
             {studioEnabled && (
               <Link
                 href="/studio"
-                className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#ff550c] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
+                className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#E5541B] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
                 style={{ fontWeight: 650 }}
               >
                 STUDIO
-                <span className="text-[9px] font-bold leading-none bg-white text-[#ff550c] rounded-full px-1 py-[3px]">NEW</span>
+                <span className="text-[9px] font-bold leading-none bg-white text-[#E5541B] rounded-full px-1 py-[3px]">NEW</span>
               </Link>
             )}
           </nav>
@@ -156,10 +156,10 @@ export default function Header({
             {search.enabled && (
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-                className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+                className={`p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
                 aria-label="검색"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                 </svg>
@@ -169,15 +169,20 @@ export default function Header({
             {/* 찜 목록 — 비로그인 시 로그인 유도 */}
             <button
               onClick={() => { memberSession ? router.push("/cart") : router.push("/member/login?from=cart"); }}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+              className={`relative p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label="찜 목록"
             >
-              <svg className="w-5 h-5" fill="none" stroke={count > 0 ? "#ff550c" : "currentColor"} viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6" />
+                <circle cx="9" cy="21" r="1.4" fill="currentColor" stroke="none" />
+                <circle cx="20" cy="21" r="1.4" fill="currentColor" stroke="none" />
               </svg>
               {count > 0 && (
-                <span className="absolute inset-0 flex items-center justify-center text-[#ff550c] text-[9px] font-bold leading-none pointer-events-none">
+                <span
+                  className="absolute text-[9px] font-extrabold leading-none pointer-events-none"
+                  style={{ left: "60%", top: "38%", transform: "translate(-50%, -50%)" }}
+                >
                   {count}
                 </span>
               )}
@@ -186,16 +191,16 @@ export default function Header({
             {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 로그인 */}
             <Link
               href={memberSession ? "/mypage" : "/member/login"}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+              className={`relative p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label={memberSession ? "마이페이지" : "로그인"}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
               </svg>
               {/* 로그인 상태 표시 점 */}
               {memberSession && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ff550c] rounded-full" />
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#E5541B] rounded-full" />
               )}
             </Link>
 
@@ -228,7 +233,7 @@ export default function Header({
               )}
               <button
                 onClick={() => handleSearch(searchQuery)}
-                className="text-[#303236] hover:text-[#ff550c] transition-colors flex-shrink-0"
+                className="text-[#303236] hover:text-[#E5541B] transition-colors flex-shrink-0"
                 aria-label="검색 실행"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +252,7 @@ export default function Header({
                 <button
                   key={`${term}-${idx}`}
                   onClick={() => handleSearch(term)}
-                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#ff550c] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
+                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#E5541B] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
                 >
                   {term}
                 </button>

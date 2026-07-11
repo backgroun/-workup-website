@@ -72,7 +72,7 @@ export default function AnalyticsDashboardPage() {
           <p className="text-base text-gray-400 mt-1">회원 추이, 픽셀 설정 현황, 광고 채널 관리</p>
         </div>
         <Link href="/admin/analytics/pixels"
-          className="px-6 py-2.5 text-base bg-[#ff550c] text-white hover:bg-[#e04500] rounded font-bold">
+          className="px-6 py-2.5 text-base bg-[#E5541B] text-white hover:bg-[#e04500] rounded font-bold">
           픽셀/광고 설정 →
         </Link>
       </div>
@@ -101,7 +101,7 @@ export default function AnalyticsDashboardPage() {
         {/* 회원 요약 카드 */}
         {[
           { label: "전체 회원",   value: memberStats.total,     color: "text-[#303236]" },
-          { label: "이번달 신규", value: memberStats.thisMonth, color: "text-[#ff550c]" },
+          { label: "이번달 신규", value: memberStats.thisMonth, color: "text-[#E5541B]" },
           { label: "활성 회원",   value: memberStats.active,    color: "text-emerald-600" },
         ].map(s => (
           <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-6 text-center">
@@ -147,7 +147,7 @@ export default function AnalyticsDashboardPage() {
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-800">광고 채널 및 픽셀 현황</h2>
           <Link href="/admin/analytics/pixels"
-            className="text-[14px] text-[#ff550c] hover:underline font-semibold">설정하기 →</Link>
+            className="text-[14px] text-[#E5541B] hover:underline font-semibold">설정하기 →</Link>
         </div>
         <div className="p-6 grid grid-cols-5 gap-4">
           {Object.entries(PLATFORM_INFO).map(([key, info]) => {

@@ -175,7 +175,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
 
         {/* 데스크탑 하단 바 */}
         <div className="hidden md:flex items-center justify-center gap-3 py-2 flex-shrink-0">
-          <Link href="/" className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white/70 hover:text-white flex items-center justify-center transition-colors" aria-label="메인으로">
+          <Link href="/" className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white/70 hover:text-white flex items-center justify-center transition-colors" aria-label="메인으로">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
@@ -183,10 +183,10 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
           {total > 1 && (
             <>
               <button onClick={() => bookRef.current?.pageFlip().flipPrev()} disabled={currentPage === 0}
-                className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-lg flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
+                className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-lg flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
               <span className="text-gray-500 text-[10px] tracking-widest w-14 text-center">{currentPage + 1} / {total}</span>
               <button onClick={() => bookRef.current?.pageFlip().flipNext()} disabled={currentPage >= total - 1}
-                className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-lg flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
+                className="w-8 h-8 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-lg flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
             </>
           )}
         </div>
@@ -244,7 +244,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                     }}
                     className={`aspect-square flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
                       i === currentPage
-                        ? "bg-[#ff550c] text-white"
+                        ? "bg-[#E5541B] text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
@@ -265,12 +265,12 @@ function CoverThumb({ name, active, onClick, children }: { name: string; active:
   return (
     <button onClick={onClick} className="block flex-shrink-0 w-[64px] md:w-full group">
       <div
-        className={`relative w-full overflow-hidden rounded border-2 transition-all ${active ? "border-[#ff550c]" : "border-transparent group-hover:border-white/30"}`}
+        className={`relative w-full overflow-hidden rounded border-2 transition-all ${active ? "border-[#E5541B]" : "border-transparent group-hover:border-white/30"}`}
         style={{ aspectRatio: "5 / 7", filter: active ? "grayscale(1)" : "none" }}
       >
         {children}
       </div>
-      <p className={`text-[11px] text-center mt-1 truncate ${active ? "text-[#ff550c] font-semibold" : "text-white/60 group-hover:text-white/90"}`}>{name}</p>
+      <p className={`text-[11px] text-center mt-1 truncate ${active ? "text-[#E5541B] font-semibold" : "text-white/60 group-hover:text-white/90"}`}>{name}</p>
     </button>
   );
 }

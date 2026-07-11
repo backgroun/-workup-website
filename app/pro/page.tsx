@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function ProPage() {
   return (
     <main>
-      <div className="bg-[#ff550c] py-16">
+      <div className="bg-[#E5541B] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-xs tracking-widest text-orange-100 uppercase mb-3">WORKUP PRO</p>
           <h1 className="text-4xl font-bold text-white mb-4">프리미엄 라인</h1>
@@ -19,9 +19,9 @@ export default function ProPage() {
           </p>
         </div>
       </div>
-      <section className="py-32 bg-[#F5F2ED]">
+      <section className="py-32 bg-[#FAFAF8]">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">COMING SOON</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-6">COMING SOON</p>
           <h2 className="text-3xl font-bold text-[#303236] mb-6">
             WORKUP PRO를 준비하고 있습니다.
           </h2>

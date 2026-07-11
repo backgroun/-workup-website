@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F2ED;
+  --background: #FAFAF8;
   --foreground: #303236;
   /* 상단 탑바(공지바) 높이 — 관리자에서 변경되면 app/layout.tsx 가 <html> 에 덮어쓴다.
      헤더 sticky 오프셋·카탈로그 뷰어 높이가 이 값을 참조한다(var(--wu-topbar-h)). */
@@ -31,6 +31,75 @@ body.catalog-page footer {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+}
+
+/* 타이포 스케일 확대 — 무지코리아 벤치마킹(넓은 여백·큰 가독성).
+   Tailwind v4 의 text-* 유틸리티는 아래 토큰을 var() 로 참조하므로, 여기서 한 번만
+   키우면 사이트 전체 글자 크기가 비율 그대로 커진다(여백/레이아웃 spacing 은 그대로).
+   기본값(px) → 변경값(px), 본문에 몰린 xs·sm·base 를 우선 키움. */
+@theme {
+  --text-xs: 0.875rem;    /* 12 → 14 */
+  --text-sm: 1rem;        /* 14 → 16 */
+  --text-base: 1.125rem;  /* 16 → 18 */
+  --text-lg: 1.25rem;     /* 18 → 20 */
+  --text-xl: 1.4375rem;   /* 20 → 23 */
+  --text-2xl: 1.6875rem;  /* 24 → 27 */
+  --text-3xl: 2.0625rem;  /* 30 → 33 */
+  --text-4xl: 2.5rem;     /* 36 → 40 */
+  --text-5xl: 3.25rem;    /* 48 → 52 */
+  --text-6xl: 4rem;       /* 60 → 64 */
+  --text-7xl: 4.875rem;   /* 72 → 78 */
+}
+
+/* 관리자 화면은 조밀한 표·폼이 많아 확대에서 제외 — 기존(작은) 스케일로 되돌린다. */
+.admin-content {
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+  --text-7xl: 4.5rem;
+}
+
+/* ── 무지(MUJI) 스타일 기반 — 공개 화면 전반 ──────────────────────────────
+   무지 감성의 핵심은 "얇은 글씨 · 넓은 여백 · 절제"다. 컴포넌트를 일일이 고치는
+   대신, 공개 영역(#scroll-root) 전체의 글자 두께를 한 단계씩 낮추고 자간을 살짝
+   넓혀 사이트 전반의 톤을 무지풍으로 맞춘다. (#id 선택자라 Tailwind 유틸리티보다
+   우선순위가 높아 !important 없이 덮어쓴다. 인라인 style의 font-weight는 예외 —
+   해당 컴포넌트에서 직접 조정한다. 관리자 화면은 #scroll-root 밖이라 영향 없음.) */
+#scroll-root { letter-spacing: 0.01em; }
+#scroll-root .font-black    { font-weight: 600; }
+#scroll-root .font-extrabold{ font-weight: 600; }
+#scroll-root .font-bold     { font-weight: 500; }
+#scroll-root .font-semibold { font-weight: 500; }
+
+/* 하드코딩된 임의 px 폰트 크기(text-[13px] 등) 일괄 상향 — 제품명·가격·라벨이
+   대부분 px 직접 지정이라 위 토큰 변경이 닿지 않는다. 공개 화면(#scroll-root)에서만
+   작은 px들을 한 단계씩 키워 전체 가독성을 무지풍으로 끌어올린다. 큰 디스플레이
+   크기(18px↑)는 이미 충분히 커서 그대로 둔다. (#id 선택자라 우선순위로 덮어쓴다.) */
+#scroll-root .text-\[7px\]  { font-size: 9px; }
+#scroll-root .text-\[8px\]  { font-size: 10px; }
+#scroll-root .text-\[9px\]  { font-size: 11px; }
+#scroll-root .text-\[10px\] { font-size: 12px; }
+#scroll-root .text-\[11px\] { font-size: 13px; }
+#scroll-root .text-\[12px\] { font-size: 14px; }
+#scroll-root .text-\[13px\] { font-size: 15px; }
+#scroll-root .text-\[14px\] { font-size: 16px; }
+#scroll-root .text-\[15px\] { font-size: 17px; }
+#scroll-root .text-\[16px\] { font-size: 17px; }
+#scroll-root .text-\[17px\] { font-size: 18px; }
+/* 반응형(md:) 소형 하드코딩도 데스크톱에서 동일하게 상향 (미디어쿼리 안에서 덮어씀) */
+@media (min-width: 768px) {
+  #scroll-root .md\:text-\[12px\] { font-size: 14px; }
+  #scroll-root .md\:text-\[13px\] { font-size: 15px; }
+  #scroll-root .md\:text-\[14px\] { font-size: 16px; }
+  #scroll-root .md\:text-\[15px\] { font-size: 17px; }
+  #scroll-root .md\:text-\[17px\] { font-size: 18px; }
 }
 
 body {
@@ -69,15 +138,15 @@ html {
 }
 
 /* 가까운 매장 찾기 CTA — 오프라인 방문 유도 핵심 버튼
-   기본 #ff550c 채움(높은 시인성) / 호버·터치: 흰색 배경이 좌→우로 채워지며 텍스트·아이콘이 주황으로 반전 + 리프트 + 핀 바운스 */
+   기본 #E5541B 채움(높은 시인성) / 호버·터치: 흰색 배경이 좌→우로 채워지며 텍스트·아이콘이 주황으로 반전 + 리프트 + 핀 바운스 */
 .store-cta {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  border: 2px solid #ff550c;
+  border: 2px solid #E5541B;
   color: #fff;
-  background: #ff550c;
-  box-shadow: 0 4px 14px -4px rgba(255, 85, 12, 0.45);
+  background: #E5541B;
+  box-shadow: 0 4px 14px -4px rgba(229, 84, 27, 0.45);
   transition: color 0.3s ease, box-shadow 0.35s ease, transform 0.18s ease;
 }
 /* 호버 시 좌→우로 채워지는 흰색 배경 (텍스트·아이콘 뒤) */
@@ -93,13 +162,13 @@ html {
 }
 .store-cta:hover,
 .store-cta:focus-visible {
-  color: #ff550c;
-  box-shadow: 0 10px 24px -8px rgba(255, 85, 12, 0.4);
+  color: #E5541B;
+  box-shadow: 0 10px 24px -8px rgba(229, 84, 27, 0.4);
   transform: translateY(-2px);
 }
 /* 터치(모바일): 누르는 순간 흰색 채움 + 살짝 눌리는 피드백 */
 .store-cta:active {
-  color: #ff550c;
+  color: #E5541B;
   transform: scale(0.98);
 }
 .store-cta:hover::before,
@@ -132,7 +201,7 @@ html {
   .store-cta svg { transition: none; }
   .store-cta:hover,
   .store-cta:focus-visible,
-  .store-cta:active { transform: none; color: #ff550c; }
+  .store-cta:active { transform: none; color: #E5541B; }
   .store-cta:hover svg,
   .store-cta:focus-visible svg,
   .store-cta:active svg { animation: none; }

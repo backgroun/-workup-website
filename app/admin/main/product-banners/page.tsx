@@ -56,7 +56,7 @@ export default function AdminProductBannersPage() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-10 text-sm text-gray-400">
-        <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+        <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
         불러오는 중...
       </div>
     );
@@ -106,7 +106,7 @@ export default function AdminProductBannersPage() {
 
       <div className="flex gap-3">
         <button onClick={handleSave} disabled={saving}
-          className="px-8 py-2.5 bg-[#ff550c] text-white text-sm font-semibold hover:bg-[#e04500] disabled:opacity-50 rounded">
+          className="px-8 py-2.5 bg-[#E5541B] text-white text-sm font-semibold hover:bg-[#e04500] disabled:opacity-50 rounded">
           {saving ? "저장 중..." : "저장"}
         </button>
       </div>

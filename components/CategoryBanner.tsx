@@ -6,7 +6,7 @@
     href: "/site",
     bg: "bg-[#303236]",
     text: "text-white",
-    sub_color: "text-[#ff550c]",
+    sub_color: "text-[#E5541B]",
   },
   {
     label: "WORKUP DAILY",
@@ -22,7 +22,7 @@
     sub: "프리미엄 라인",
     desc: "소재와 설계를 타협하지 않은 워크업의 플래그십",
     href: "/pro",
-    bg: "bg-[#ff550c]",
+    bg: "bg-[#E5541B]",
     text: "text-white",
     sub_color: "text-orange-100",
   },
@@ -31,15 +31,15 @@
     sub: "가장 많이 팔린",
     desc: "이번 시즌 가장 많이 팔린 이유가 있습니다",
     href: "/site",
-    bg: "bg-[#F5F2ED]",
+    bg: "bg-[#FAFAF8]",
     text: "text-[#303236]",
-    sub_color: "text-[#ff550c]",
+    sub_color: "text-[#E5541B]",
   },
 ];
 
 export default function CategoryBanner() {
   return (
-    <section className="py-16 bg-[#F5F2ED]">
+    <section className="py-16 bg-[#FAFAF8]">
       <div className="max-w-6xl mx-auto px-6">
         <h2 className="text-2xl font-bold text-[#303236] tracking-wide mb-8">
           라인업

@@ -24,11 +24,11 @@ const EMPTY: Omit<PopupPage, "id"> = {
   admin_title: "",
   is_visible: true,
   label: "",
-  label_color: "#ff550c",
+  label_color: "#E5541B",
   title: "",
   description: "",
   hero_image_url: "",
-  page_bg: "#F5F2ED",
+  page_bg: "#FAFAF8",
   product_section_title: "이 기획전의 제품",
   product_ids: [],
   cta_text: "가까운 매장 찾기",
@@ -339,7 +339,7 @@ export default function PopupPagesAdmin() {
                           <input type="text" value={editing.page_bg}
                             onChange={e => set("page_bg", e.target.value)}
                             className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-400" />
-                          <button type="button" onClick={() => set("page_bg", "#F5F2ED")}
+                          <button type="button" onClick={() => set("page_bg", "#FAFAF8")}
                             className="text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500">기본</button>
                           <div className="w-8 h-8 rounded border border-gray-200 flex-shrink-0" style={{ background: editing.page_bg }} />
                         </div>

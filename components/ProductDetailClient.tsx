@@ -152,7 +152,7 @@ export default function ProductDetailClient({
     <>
       {locStatus === "loading" && (
         <div className="flex items-center gap-3 py-6 text-sm text-gray-500">
-          <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <span className="w-5 h-5 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin flex-shrink-0" />
           위치를 확인하는 중입니다...
         </div>
       )}
@@ -170,15 +170,15 @@ export default function ProductDetailClient({
           {nearStores.map((s, i) => (
             <div key={s.id} className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 last:border-0">
               <div className="flex items-start gap-3">
-                <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${i === 0 ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"}`}>{i + 1}</span>
+                <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${i === 0 ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"}`}>{i + 1}</span>
                 <div>
                   <p className="text-sm font-bold text-[#303236]">{s.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{s.address}</p>
                 </div>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#ff550c]" : "text-gray-500"}`}>{formatDist(s.distance)}</p>
-                <button onClick={() => openKakao(s)} className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors">길찾기</button>
+                <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#E5541B]" : "text-gray-500"}`}>{formatDist(s.distance)}</p>
+                <button onClick={() => openKakao(s)} className="text-xs text-[#303236] underline hover:text-[#E5541B] transition-colors">길찾기</button>
               </div>
             </div>
           ))}
@@ -232,14 +232,14 @@ export default function ProductDetailClient({
           <ul className="space-y-3">
             {product.coreValues.map((v) => (
               <li key={v} className="flex items-start gap-3 text-sm text-[#303236] font-medium leading-relaxed">
-                <span className="w-5 h-5 bg-[#ff550c] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
+                <span className="w-5 h-5 bg-[#E5541B] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">✓</span>
                 {v}
               </li>
             ))}
           </ul>
           {product.fieldTest && (
-            <div className="flex items-start gap-2.5 bg-orange-50 px-4 py-3 border-l-2 border-[#ff550c]">
-              <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
+            <div className="flex items-start gap-2.5 bg-orange-50 px-4 py-3 border-l-2 border-[#E5541B]">
+              <span className="text-[#E5541B] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
               <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
             </div>
           )}
@@ -289,7 +289,7 @@ export default function ProductDetailClient({
               <Link key={rp.id} href={`/products/${rp.id}`} className="flex-shrink-0 w-[88px] group">
                 <div className={`relative w-[88px] h-[88px] overflow-hidden mb-2 ${rp.bg}`}>
                   {rp.imageUrl
-                    ? <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="88px" />
+                    ? <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover transition-transform duration-300" sizes="88px" />
                     : <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[8px]">WORKUP</span>
                   }
                 </div>
@@ -319,10 +319,10 @@ export default function ProductDetailClient({
 
           {/* 찜(하트) — 피팅 리스트 담기 */}
           <button onClick={toggleFav} aria-label="찜하기" title="찜하기"
-            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 hover:border-[#ff550c] transition-colors">
+            className="flex-shrink-0 w-[52px] flex items-center justify-center border border-gray-300 hover:border-[#E5541B] transition-colors">
             <svg className="w-5 h-5 transition-colors"
-              fill={hasProduct(product.id) ? "#ff550c" : "none"}
-              stroke={hasProduct(product.id) ? "#ff550c" : "#9ca3af"}
+              fill={hasProduct(product.id) ? "#E5541B" : "none"}
+              stroke={hasProduct(product.id) ? "#E5541B" : "#9ca3af"}
               strokeWidth={1.6} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -348,7 +348,7 @@ export default function ProductDetailClient({
         <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
           <p className="text-xs font-semibold text-[#303236] mb-1">피팅 리스트란?</p>
           <p className="text-xs text-gray-500 leading-relaxed">원하는 제품을 담아두고 매장 방문 시 직원에게 보여주세요.</p>
-          <Link href="/cart" className="text-xs text-[#ff550c] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
+          <Link href="/cart" className="text-xs text-[#E5541B] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
         </div>
       </div>
 
@@ -376,7 +376,7 @@ export default function ProductDetailClient({
         <div className="hidden md:block border border-gray-200 bg-white overflow-hidden">
           <div className="bg-[#303236] px-5 py-4 flex items-center justify-between">
             <div>
-              <p className="text-xs tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
+              <p className="text-xs tracking-widest text-[#E5541B] uppercase">내 주변 매장</p>
               <p className="text-sm font-bold text-white mt-0.5">가까운 매장 5곳</p>
             </div>
             <Link href="/store" className="text-gray-300 hover:text-white transition-colors text-xs flex items-center gap-1">
@@ -405,7 +405,7 @@ export default function ProductDetailClient({
           </div>
           <div className="px-5 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
-              <p className="text-[11px] tracking-widest text-[#ff550c] uppercase">내 주변 매장</p>
+              <p className="text-[11px] tracking-widest text-[#E5541B] uppercase">내 주변 매장</p>
               <p className="text-base font-bold text-[#303236]">가까운 매장 찾기</p>
             </div>
             <button onClick={() => setShowStorePanel(false)} className="text-gray-400 hover:text-gray-700 p-1">

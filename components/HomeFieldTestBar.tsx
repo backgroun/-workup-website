@@ -12,7 +12,7 @@
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* 카피 */}
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">Field Test</p>
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">Field Test</p>
             <h2 className="text-3xl font-bold text-white leading-snug mb-4">
               팔기 전에
               <br />
@@ -27,10 +27,10 @@
           {/* 숫자 4개 */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-6">
             {stats.map((s) => (
-              <div key={s.label} className="border-l-2 border-[#ff550c] pl-4">
+              <div key={s.label} className="border-l-2 border-[#E5541B] pl-4">
                 <p className="text-3xl font-black text-white leading-none">
                   {s.value}
-                  <span className="text-base font-semibold text-[#ff550c] ml-0.5">{s.unit}</span>
+                  <span className="text-base font-semibold text-[#E5541B] ml-0.5">{s.unit}</span>
                 </p>
                 <p className="text-xs text-gray-400 mt-1 leading-snug">{s.label}</p>
               </div>

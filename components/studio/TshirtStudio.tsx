@@ -435,7 +435,7 @@ export default function TshirtStudio({
         style={{ left: `${l.x * 100}%`, top: `${l.y * 100}%`, opacity: l.opacity, transform: `translate(-50%, -50%) rotate(${l.rotation}deg)` }}
         onPointerDown={(e) => startMove(e, l)}
       >
-        {isSel && <span className="pointer-events-none absolute -inset-2 border border-dashed border-[#ff550c]" aria-hidden />}
+        {isSel && <span className="pointer-events-none absolute -inset-2 border border-dashed border-[#E5541B]" aria-hidden />}
         {content}
         {isSel && (
           <>
@@ -467,7 +467,7 @@ export default function TshirtStudio({
             <button
               type="button"
               onPointerDown={(e) => startScale(e, l)}
-              className="absolute -bottom-2 -right-2 flex h-7 w-7 translate-x-1/2 translate-y-1/2 cursor-nwse-resize touch-none items-center justify-center rounded-full bg-[#ff550c] text-white shadow-md"
+              className="absolute -bottom-2 -right-2 flex h-7 w-7 translate-x-1/2 translate-y-1/2 cursor-nwse-resize touch-none items-center justify-center rounded-full bg-[#E5541B] text-white shadow-md"
               aria-label="크기"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -484,7 +484,7 @@ export default function TshirtStudio({
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
       {/* 헤더 */}
       <div className="mb-6 text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff550c]">WORKUP STUDIO</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E5541B]">WORKUP STUDIO</p>
         <h1 className="mt-1 text-2xl font-extrabold text-[#303236] md:text-3xl">
           {heading ?? "나만의 티셔츠 꾸미기"}
         </h1>
@@ -545,7 +545,7 @@ export default function TshirtStudio({
                     key={c.id}
                     type="button"
                     onClick={() => setShirtId(c.id)}
-                    className={`h-8 w-8 rounded-full ring-1 transition ${shirtId === c.id ? "ring-2 ring-[#ff550c] ring-offset-2" : "ring-gray-300"}`}
+                    className={`h-8 w-8 rounded-full ring-1 transition ${shirtId === c.id ? "ring-2 ring-[#E5541B] ring-offset-2" : "ring-gray-300"}`}
                     style={{ backgroundColor: c.value }}
                     aria-label={c.label}
                     aria-pressed={shirtId === c.id}
@@ -591,7 +591,7 @@ export default function TshirtStudio({
                       type="button"
                       disabled={!!loadingDesign}
                       onClick={() => addPresetDesign(d)}
-                      className={`relative flex flex-col items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 p-2 transition hover:border-[#ff550c] hover:bg-[#ff550c]/5 ${loadingDesign === d.id ? "opacity-60" : ""}`}
+                      className={`relative flex flex-col items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 p-2 transition hover:border-[#E5541B] hover:bg-[#E5541B]/5 ${loadingDesign === d.id ? "opacity-60" : ""}`}
                     >
                       <div className="flex h-16 w-full items-center justify-center rounded-lg bg-white">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -602,7 +602,7 @@ export default function TshirtStudio({
                       )}
                       {loadingDesign === d.id && (
                         <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
-                          <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+                          <span className="w-5 h-5 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
                         </span>
                       )}
                     </button>
@@ -611,7 +611,7 @@ export default function TshirtStudio({
                 <button
                   type="button"
                   onClick={() => setTab("image")}
-                  className="mt-4 w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:border-[#ff550c] hover:text-[#ff550c] transition"
+                  className="mt-4 w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:border-[#E5541B] hover:text-[#E5541B] transition"
                 >
                   + 내 이미지 직접 올리기
                 </button>
@@ -623,9 +623,9 @@ export default function TshirtStudio({
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-8 text-center transition hover:border-[#ff550c] hover:bg-[#ff550c]/5"
+                  className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-8 text-center transition hover:border-[#E5541B] hover:bg-[#E5541B]/5"
                 >
-                  <svg className="h-8 w-8 text-[#ff550c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-8 w-8 text-[#E5541B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M4 16l4.6-4.6a2 2 0 0 1 2.8 0L16 16m-2-2l1.6-1.6a2 2 0 0 1 2.8 0L20 14M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" />
                   </svg>
                   <span className="text-sm font-semibold text-[#303236]">이미지 업로드</span>
@@ -640,7 +640,7 @@ export default function TshirtStudio({
                 <button
                   type="button"
                   onClick={addText}
-                  className="w-full rounded-lg bg-[#303236] py-3 text-sm font-semibold text-white transition hover:bg-[#ff550c]"
+                  className="w-full rounded-lg bg-[#303236] py-3 text-sm font-semibold text-white transition hover:bg-[#E5541B]"
                 >
                   + 텍스트 추가
                 </button>
@@ -669,7 +669,7 @@ export default function TshirtStudio({
                     value={selected.text ?? ""}
                     onChange={(e) => updateLayer(selected.id, { text: e.target.value })}
                     placeholder="문구 입력"
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#ff550c]"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#E5541B]"
                   />
                   <div className="flex flex-wrap gap-1.5">
                     {TEXT_FONTS.map((f) => (
@@ -677,7 +677,7 @@ export default function TshirtStudio({
                         key={f.label}
                         type="button"
                         onClick={() => updateLayer(selected.id, { font: f.family, weight: f.weight })}
-                        className={`rounded-md border px-2.5 py-1 text-xs transition ${selected.font === f.family ? "border-[#ff550c] text-[#ff550c]" : "border-gray-200 text-gray-600"}`}
+                        className={`rounded-md border px-2.5 py-1 text-xs transition ${selected.font === f.family ? "border-[#E5541B] text-[#E5541B]" : "border-gray-200 text-gray-600"}`}
                         style={{ fontFamily: f.family }}
                       >
                         {f.label}
@@ -692,7 +692,7 @@ export default function TshirtStudio({
                           key={c}
                           type="button"
                           onClick={() => updateLayer(selected.id, { color: c })}
-                          className={`h-7 w-7 rounded-full ring-1 transition ${selected.color === c ? "ring-2 ring-[#ff550c] ring-offset-1" : "ring-gray-200"}`}
+                          className={`h-7 w-7 rounded-full ring-1 transition ${selected.color === c ? "ring-2 ring-[#E5541B] ring-offset-1" : "ring-gray-200"}`}
                           style={{ backgroundColor: c }}
                           aria-label={`색상 ${c}`}
                         />
@@ -704,11 +704,11 @@ export default function TshirtStudio({
 
               <div className="mt-3">
                 <p className="mb-1 text-xs text-gray-400">크기</p>
-                <input type="range" min={MIN_SCALE} max={MAX_SCALE} step={0.05} value={selected.scale} onChange={(e) => updateLayer(selected.id, { scale: Number(e.target.value) })} className="w-full accent-[#ff550c]" aria-label="크기" />
+                <input type="range" min={MIN_SCALE} max={MAX_SCALE} step={0.05} value={selected.scale} onChange={(e) => updateLayer(selected.id, { scale: Number(e.target.value) })} className="w-full accent-[#E5541B]" aria-label="크기" />
               </div>
               <div className="mt-2">
                 <p className="mb-1 text-xs text-gray-400">투명도</p>
-                <input type="range" min={0.1} max={1} step={0.05} value={selected.opacity} onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} className="w-full accent-[#ff550c]" aria-label="투명도" />
+                <input type="range" min={0.1} max={1} step={0.05} value={selected.opacity} onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} className="w-full accent-[#E5541B]" aria-label="투명도" />
               </div>
             </div>
           )}

@@ -10,7 +10,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
   return (
     <main>
-      <section className="bg-[#F5F2ED] py-12 min-h-[60vh]">
+      <section className="bg-[#FAFAF8] py-12 min-h-[60vh]">
         <div className="max-w-3xl mx-auto px-6">
           <h1 className="text-xl font-bold text-[#303236] mb-8">피팅 리스트</h1>
 
@@ -20,7 +20,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
               <p className="text-sm text-gray-500 mb-8">{c.emptyDesc}</p>
               <Link
                 href={c.emptyCtaHref}
-                className="inline-block bg-[#303236] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#ff550c] transition-colors"
+                className="inline-block bg-[#303236] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#E5541B] transition-colors"
               >
                 {c.emptyCtaLabel}
               </Link>
@@ -45,7 +45,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             src={item.imageUrl}
                             alt={item.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-200"
+                            className="object-cover transition-transform duration-200"
                             sizes="64px"
                           />
                         ) : (
@@ -56,7 +56,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-[#303236] leading-tight group-hover:text-[#ff550c] transition-colors">{item.name}</p>
+                        <p className="text-sm font-bold text-[#303236] leading-tight group-hover:text-[#E5541B] transition-colors">{item.name}</p>
                         {item.sku && (
                           <p className="text-xs text-gray-400 mt-0.5">품번 {item.sku}</p>
                         )}
@@ -101,7 +101,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href={c.primaryHref}
-                  className="flex-1 text-center bg-[#ff550c] text-white text-sm font-bold tracking-widest py-4 hover:bg-[#d05518] transition-colors"
+                  className="flex-1 text-center bg-[#E5541B] text-white text-sm font-bold tracking-widest py-4 hover:bg-[#d05518] transition-colors"
                 >
                   {c.primaryLabel}
                 </Link>

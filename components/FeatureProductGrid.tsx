@@ -31,18 +31,18 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
                 <span className="text-white/20 text-xs tracking-widest uppercase">WORKUP</span>
               )}
               {product.isNew && (
-                <span className="absolute top-3 left-3 bg-[#ff550c] text-white text-xs font-bold px-2 py-0.5 tracking-widest z-10">
+                <span className="absolute top-3 left-3 bg-[#E5541B] text-white text-xs font-bold px-2 py-0.5 tracking-widest z-10">
                   NEW
                 </span>
               )}
             </Link>
 
             <div className="p-6 flex flex-col flex-1">
-              <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-1">
+              <p className="text-xs text-[#E5541B] tracking-widest uppercase mb-1">
                 {product.category} · {product.subCategory}
               </p>
               <h3 className="text-base font-bold text-[#303236] mb-3">
-                <Link href={`/products/${product.id}`} className="hover:text-[#ff550c] transition-colors">
+                <Link href={`/products/${product.id}`} className="hover:text-[#E5541B] transition-colors">
                   {productDisplayName(product)}
                 </Link>
               </h3>
@@ -53,7 +53,7 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
               <ul className="space-y-1 mb-4">
                 {product.features.map((f) => (
                   <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
-                    <span className="w-1 h-1 bg-[#ff550c] rounded-full flex-shrink-0" />
+                    <span className="w-1 h-1 bg-[#E5541B] rounded-full flex-shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -61,7 +61,7 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
 
               {product.fieldTest && (
                 <div className="flex items-center gap-2 mb-4 bg-orange-50 px-3 py-2">
-                  <span className="text-[#ff550c] text-xs font-bold flex-shrink-0">✓ FIELD TEST</span>
+                  <span className="text-[#E5541B] text-xs font-bold flex-shrink-0">✓ FIELD TEST</span>
                   <span className="text-xs text-gray-500 truncate">{product.fieldTest}</span>
                 </div>
               )}
@@ -70,7 +70,7 @@ export default function FeatureProductGrid({ products }: { products: Product[] }
 
               <button
                 onClick={() => setModalProduct(product.name)}
-                className="w-full text-center bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors"
+                className="w-full text-center bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#E5541B] transition-colors"
               >
                 근처 매장 찾아보기
               </button>

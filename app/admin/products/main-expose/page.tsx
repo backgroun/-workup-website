@@ -5,7 +5,7 @@ import Image from "next/image";
 import type { Product, MainExpose } from "@/data/products";
 
 const EXPOSE_SECTIONS: { key: MainExpose; label: string; color: string }[] = [
-  { key: "신상품",   label: "신상품",   color: "bg-[#ff550c] text-white" },
+  { key: "신상품",   label: "신상품",   color: "bg-[#E5541B] text-white" },
   { key: "추천상품", label: "추천상품", color: "bg-purple-100 text-purple-700" },
   { key: "베스트",   label: "베스트",   color: "bg-amber-100 text-amber-700" },
   { key: "기획전",   label: "기획전",   color: "bg-blue-100 text-blue-700" },
@@ -113,7 +113,7 @@ export default function MainExposePage() {
 
       {loading ? (
         <div className="flex items-center gap-3 py-20 text-base text-gray-400">
-          <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+          <span className="w-6 h-6 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
           불러오는 중...
         </div>
       ) : (
@@ -181,7 +181,7 @@ export default function MainExposePage() {
                             onClick={() => toggle(product, section.key)}
                             disabled={!!saving}
                             className={`relative inline-flex items-center w-14 h-7 rounded-full transition-colors duration-200 focus:outline-none disabled:cursor-wait ${
-                              isOn ? "bg-[#ff550c]" : "bg-gray-200"
+                              isOn ? "bg-[#E5541B]" : "bg-gray-200"
                             }`}
                           >
                             <span className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
@@ -193,7 +193,7 @@ export default function MainExposePage() {
                               </span>
                             )}
                           </button>
-                          <p className={`text-[12px] font-semibold mt-1 ${isOn ? "text-[#ff550c]" : "text-gray-300"}`}>
+                          <p className={`text-[12px] font-semibold mt-1 ${isOn ? "text-[#E5541B]" : "text-gray-300"}`}>
                             {isOn ? "ON" : "OFF"}
                           </p>
                         </td>

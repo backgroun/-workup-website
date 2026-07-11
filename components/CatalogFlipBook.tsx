@@ -114,7 +114,7 @@ export default function CatalogFlipBook({ pages }: { pages: CatalogPage[] }) {
       <div className="flex-shrink-0 flex items-center gap-6 py-3">
         <Link
           href="/"
-          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white flex items-center justify-center transition-colors"
+          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white flex items-center justify-center transition-colors"
           aria-label="메인으로"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -124,7 +124,7 @@ export default function CatalogFlipBook({ pages }: { pages: CatalogPage[] }) {
         <button
           onClick={() => bookRef.current?.pageFlip().flipPrev()}
           disabled={currentPage === 0}
-          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
         >
           ‹
         </button>
@@ -134,7 +134,7 @@ export default function CatalogFlipBook({ pages }: { pages: CatalogPage[] }) {
         <button
           onClick={() => bookRef.current?.pageFlip().flipNext()}
           disabled={currentPage >= totalPages - 1}
-          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+          className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
         >
           ›
         </button>

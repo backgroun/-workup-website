@@ -156,8 +156,8 @@ export default function ProductTabs({ product }: { product: Product }) {
 
           {/* 필드 테스트 */}
           {product.fieldTest && (
-            <div className="flex items-start gap-2.5 bg-amber-50 px-4 py-3 border-l-2 border-[#ff550c] mb-8">
-              <span className="text-[#ff550c] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
+            <div className="flex items-start gap-2.5 bg-amber-50 px-4 py-3 border-l-2 border-[#E5541B] mb-8">
+              <span className="text-[#E5541B] text-xs font-bold mt-0.5 flex-shrink-0">✓</span>
               <p className="text-xs text-gray-600 leading-relaxed">{product.fieldTest}</p>
             </div>
           )}
@@ -165,7 +165,7 @@ export default function ProductTabs({ product }: { product: Product }) {
           {/* 착용자 후기 */}
           {product.wearerQuote && (
             <div className="bg-gray-50 px-5 md:px-8 py-6 md:py-8 mb-8">
-              <p className="text-[10px] tracking-[0.2em] text-[#ff550c] uppercase mb-4">실제 착용자 이야기</p>
+              <p className="text-[10px] tracking-[0.2em] text-[#E5541B] uppercase mb-4">실제 착용자 이야기</p>
               <blockquote className="text-base md:text-xl font-bold text-[#303236] leading-snug mb-4">
                 &ldquo;{product.wearerQuote.text}&rdquo;
               </blockquote>
@@ -245,7 +245,7 @@ export default function ProductTabs({ product }: { product: Product }) {
         <div ref={qnaRef} data-tab="상품문의" className={`${sectionClass} border-t border-gray-100`}>
           <div className="flex items-center justify-between gap-4 pb-5 border-b border-gray-200">
             <p className="text-[15px] md:text-base font-bold text-[#303236]">
-              문의 <span className="text-[#ff550c]">{inquiries.length}</span>건
+              문의 <span className="text-[#E5541B]">{inquiries.length}</span>건
             </p>
             <button type="button" onClick={() => setInquiryOpen(true)}
               className="text-sm text-[#303236] border border-gray-300 px-6 py-3 rounded hover:border-[#303236] transition-colors">

@@ -105,7 +105,7 @@ export default function AdminNewArrivalsPage() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-10 text-sm text-gray-400">
-        <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+        <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
         불러오는 중...
       </div>
     );

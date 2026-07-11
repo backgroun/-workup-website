@@ -325,7 +325,7 @@ export default function MemberListPage() {
 
       {loading ? (
         <div className="flex items-center gap-3 py-20 text-base text-gray-400">
-          <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+          <span className="w-6 h-6 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
           불러오는 중...
         </div>
       ) : (

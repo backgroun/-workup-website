@@ -50,7 +50,7 @@ export const DEFAULT_TOPBAR: TopbarConfig = {
   enabled: true,
   height: 56,
   mobile_height: 40,
-  bg_color: "#ff550c",
+  bg_color: "#E5541B",
   text_color: "#ffffff",
   font_size: 11,
   mobile_font_size: 10,

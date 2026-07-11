@@ -517,7 +517,7 @@ function ImageField({
           onDragLeave={onDragLeave} onDrop={onDrop}
           onClick={() => !uploading && ref.current?.click()}
           className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-            dragging ? "border-[#ff550c] bg-orange-50" :
+            dragging ? "border-[#E5541B] bg-orange-50" :
             value ? "border-gray-200 hover:border-gray-300" :
                     "border-dashed border-gray-300 hover:border-[#303236]"
           }`}
@@ -529,7 +529,7 @@ function ImageField({
             <img src={value} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
-              <svg className={`w-6 h-6 ${dragging ? "text-[#ff550c]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <svg className={`w-6 h-6 ${dragging ? "text-[#E5541B]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
               </svg>
               <p className="text-[10px] text-gray-400 text-center leading-snug px-2">클릭 또는<br/>드래그</p>
@@ -537,7 +537,7 @@ function ImageField({
           )}
           {uploading && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-              <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>
@@ -567,7 +567,7 @@ function ImageField({
         onDragLeave={onDragLeave} onDrop={onDrop}
         onClick={() => !uploading && ref.current?.click()}
         className={`relative rounded-xl border-2 transition-all cursor-pointer ${
-          dragging ? "border-[#ff550c] bg-orange-50 scale-[1.01]" :
+          dragging ? "border-[#E5541B] bg-orange-50 scale-[1.01]" :
           value     ? "border-gray-200 hover:border-gray-300" :
                       "border-dashed border-gray-300 hover:border-[#303236]"
         }`}
@@ -593,12 +593,12 @@ function ImageField({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 py-5 px-4 text-center pointer-events-none">
-            <svg className={`w-7 h-7 transition-colors ${dragging ? "text-[#ff550c]" : "text-gray-300"}`}
+            <svg className={`w-7 h-7 transition-colors ${dragging ? "text-[#E5541B]" : "text-gray-300"}`}
               fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
-            <p className={`text-[13px] font-medium transition-colors ${dragging ? "text-[#ff550c]" : "text-gray-500"}`}>
+            <p className={`text-[13px] font-medium transition-colors ${dragging ? "text-[#E5541B]" : "text-gray-500"}`}>
               {dragging ? "여기에 이미지를 놓으세요" : "클릭하거나 이미지를 드래그"}
             </p>
             <p className="text-[11px] text-gray-400">{hint}</p>
@@ -608,7 +608,7 @@ function ImageField({
         {uploading && (
           <div className="absolute inset-0 bg-white/80 rounded-xl flex items-center justify-center">
             <div className="flex items-center gap-2 text-[13px] text-gray-600">
-              <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
               업로드 중...
             </div>
           </div>
@@ -791,7 +791,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
               title={tag.name || `태그 ${idx + 1}`}
             >
               <span className={`flex items-center justify-center rounded-full transition-all ${
-                selectedIdx === idx ? "w-5 h-5 bg-[#ff550c]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
+                selectedIdx === idx ? "w-5 h-5 bg-[#E5541B]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
               }`}>
                 <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
               </span>
@@ -808,7 +808,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
               {tags.map((tag, idx) => (
                 <button key={tag.id} onClick={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
-                    selectedIdx === idx ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    selectedIdx === idx ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}>
                   <span className="w-3.5 h-3.5 rounded-full bg-current opacity-30 flex items-center justify-center text-[9px] font-bold">{idx + 1}</span>
                   {tag.name || "이름 미입력"}
@@ -818,9 +818,9 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
           )}
 
           {selectedTag !== null && selectedIdx !== null ? (
-            <div className="border-2 border-[#ff550c]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
+            <div className="border-2 border-[#E5541B]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-[#ff550c]">태그 {selectedIdx + 1} 편집</span>
+                <span className="text-[11px] font-bold text-[#E5541B]">태그 {selectedIdx + 1} 편집</span>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] text-gray-400">{selectedTag.x}%, {selectedTag.y}%</span>
                   <button onClick={() => deleteTag(selectedIdx)} className="text-[11px] text-red-500 hover:text-red-700 font-medium">삭제</button>
@@ -897,298 +897,6 @@ function SlotItemEditor({ item, onChange, products }: {
           <Field label="가격" value={item.price} onChange={(v) => onChange({ price: v })} placeholder="19,000원" />
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── 서브 컴포넌트: 기획전 합성기 ───────────────────────────
-// 모델컷/착용컷 3장을 캔버스로 픽셀 그대로 한 배너(440×495)에 합성 → 의류 변형 0%
-type ComposeLayout = "duoV" | "duoH" | "vtri" | "htri" | "main2" | "quad";
-const COMPOSE_LAYOUTS = [
-  { key: "duoV",  label: "2분할 세로", panels: 2, desc: "2컬럼" },
-  { key: "duoH",  label: "2분할 가로", panels: 2, desc: "2로우" },
-  { key: "vtri",  label: "세로 3분할", panels: 3, desc: "3컬럼 트립틱 (전신컷에 적합)" },
-  { key: "htri",  label: "가로 3분할", panels: 3, desc: "3로우 (가로 크롭)" },
-  { key: "main2", label: "메인 + 2",   panels: 3, desc: "좌측 큰 컷 + 우측 작은 2컷" },
-  { key: "quad",  label: "4분할",      panels: 4, desc: "2×2 그리드" },
-] as const;
-
-type ComposeSlot = { url: string; img: HTMLImageElement | null; fx: number; fy: number };
-
-function composePanelCount(layout: ComposeLayout): number {
-  return COMPOSE_LAYOUTS.find((l) => l.key === layout)?.panels ?? 3;
-}
-
-function composePanels(layout: ComposeLayout, W: number, H: number, g: number) {
-  switch (layout) {
-    case "duoV": { const pw = (W - g) / 2; return [0, 1].map((i) => ({ x: i * (pw + g), y: 0, w: pw, h: H })); }
-    case "duoH": { const ph = (H - g) / 2; return [0, 1].map((i) => ({ x: 0, y: i * (ph + g), w: W, h: ph })); }
-    case "vtri": { const pw = (W - 2 * g) / 3; return [0, 1, 2].map((i) => ({ x: i * (pw + g), y: 0, w: pw, h: H })); }
-    case "htri": { const ph = (H - 2 * g) / 3; return [0, 1, 2].map((i) => ({ x: 0, y: i * (ph + g), w: W, h: ph })); }
-    case "quad": {
-      const pw = (W - g) / 2, ph = (H - g) / 2;
-      return ([[0, 0], [1, 0], [0, 1], [1, 1]] as const).map(([cx, cy]) => ({ x: cx * (pw + g), y: cy * (ph + g), w: pw, h: ph }));
-    }
-    default: {
-      const lw = Math.round((W - g) * 0.58), rw = W - g - lw, rh = (H - g) / 2;
-      return [
-        { x: 0, y: 0, w: lw, h: H },
-        { x: lw + g, y: 0, w: rw, h: rh },
-        { x: lw + g, y: rh + g, w: rw, h: rh },
-      ];
-    }
-  }
-}
-
-function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rr);
-  ctx.arcTo(x + w, y + h, x, y + h, rr);
-  ctx.arcTo(x, y + h, x, y, rr);
-  ctx.arcTo(x, y, x + w, y, rr);
-  ctx.closePath();
-}
-
-function drawCover(
-  ctx: CanvasRenderingContext2D, img: HTMLImageElement,
-  dx: number, dy: number, dw: number, dh: number, fx: number, fy: number
-) {
-  const ir = img.width / img.height, pr = dw / dh;
-  let sw: number, sh: number, sx: number, sy: number;
-  if (ir > pr) { sh = img.height; sw = sh * pr; sx = (img.width - sw) * fx; sy = 0; }
-  else { sw = img.width; sh = sw / pr; sx = 0; sy = (img.height - sh) * fy; }
-  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-}
-
-function BannerComposer({ items, onApply }: {
-  items: ProductItem[];
-  onApply: (url: string) => void;
-}) {
-  const [open, setOpen]     = useState(false);
-  const [layout, setLayout] = useState<ComposeLayout>("vtri");
-  const [gap, setGap]       = useState(6);
-  const [bg, setBg]         = useState("#ffffff");
-  const [slots, setSlots]   = useState<ComposeSlot[]>([
-    { url: "", img: null, fx: 0.5, fy: 0.5 },
-    { url: "", img: null, fx: 0.5, fy: 0.5 },
-    { url: "", img: null, fx: 0.5, fy: 0.5 },
-    { url: "", img: null, fx: 0.5, fy: 0.5 },
-  ]);
-  const [radius, setRadius]           = useState(0);
-  const [border, setBorder]           = useState(0);
-  const [borderColor, setBorderColor] = useState("#ffffff");
-  const [vignette, setVignette]       = useState(0);
-  const [busy, setBusy]     = useState(false);
-  const [err, setErr]       = useState("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // 언마운트 시 살아있는 blob URL 정리 (누수 방지)
-  const slotsRef = useRef(slots);
-  slotsRef.current = slots;
-  useEffect(() => () => {
-    slotsRef.current.forEach((s) => { if (s.url.startsWith("blob:")) URL.revokeObjectURL(s.url); });
-  }, []);
-
-  const W = 880, H = 990; // 440×495 @2x
-
-  useEffect(() => {
-    const c = canvasRef.current; if (!c) return;
-    c.width = W; c.height = H;
-    const ctx = c.getContext("2d"); if (!ctx) return;
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    // 라운드는 패널이 떨어져 있을 때만 의미 — gap=0이면 경계에 흰 노치가 생기므로 비활성
-    const effRadius = gap > 0 ? radius : 0;
-    composePanels(layout, W, H, gap).forEach((p, i) => {
-      const s = slots[i];
-      ctx.save();
-      if (effRadius > 0) { roundRectPath(ctx, p.x, p.y, p.w, p.h, effRadius); ctx.clip(); }
-      if (s?.img) {
-        drawCover(ctx, s.img, p.x, p.y, p.w, p.h, s.fx, s.fy);
-        if (vignette > 0) {
-          const cx = p.x + p.w / 2, cy = p.y + p.h / 2, rad = Math.max(p.w, p.h) / 2;
-          const grd = ctx.createRadialGradient(cx, cy, rad * 0.55, cx, cy, rad);
-          grd.addColorStop(0, "rgba(0,0,0,0)");
-          grd.addColorStop(1, `rgba(0,0,0,${(0.55 * vignette).toFixed(3)})`);
-          ctx.fillStyle = grd; ctx.fillRect(p.x, p.y, p.w, p.h);
-        }
-      } else {
-        ctx.fillStyle = "#e5e7eb"; ctx.fillRect(p.x, p.y, p.w, p.h);
-      }
-      ctx.restore();
-      if (border > 0) {
-        ctx.save();
-        ctx.lineWidth = border; ctx.strokeStyle = borderColor;
-        const bx = p.x + border / 2, by = p.y + border / 2, bw = p.w - border, bh = p.h - border;
-        if (effRadius > 0) roundRectPath(ctx, bx, by, bw, bh, Math.max(0, effRadius - border / 2));
-        else { ctx.beginPath(); ctx.rect(bx, by, bw, bh); }
-        ctx.stroke();
-        ctx.restore();
-      }
-    });
-  }, [slots, layout, gap, bg, radius, border, borderColor, vignette]);
-
-  function setSlot(idx: number, patch: Partial<ComposeSlot>) {
-    setSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
-  }
-  function loadFile(idx: number, file: File) {
-    setErr("");
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => setSlots((prev) => prev.map((s, i) => {
-      if (i !== idx) return s;
-      if (s.url.startsWith("blob:")) URL.revokeObjectURL(s.url); // 직전 blob 해제
-      return { ...s, url, img };
-    }));
-    img.onerror = () => { URL.revokeObjectURL(url); setErr("이미지를 불러오지 못했습니다."); };
-    img.src = url;
-  }
-  function loadProductCut(idx: number, src: string) {
-    setErr("");
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => setSlot(idx, { url: src, img });
-    img.onerror = () => setErr("제품 이미지를 불러오지 못했습니다 — 파일로 업로드해 주세요.");
-    img.src = src;
-  }
-
-  async function apply() {
-    const c = canvasRef.current; if (!c) return;
-    setBusy(true); setErr("");
-    try {
-      const blob: Blob = await new Promise((res, rej) =>
-        c.toBlob((b) => (b ? res(b) : rej(new Error("export failed"))), "image/jpeg", 0.92));
-      const file = new File([blob], "showcase-composed.jpg", { type: "image/jpeg" });
-      const url = await uploadImage(file);
-      onApply(url);
-    } catch (e) {
-      const name = (e as { name?: string })?.name ?? "";
-      const msg = e instanceof Error ? e.message : "";
-      const tainted = name === "SecurityError" || /tainted|security|insecure/i.test(msg);
-      setErr(tainted
-        ? "교차 출처 이미지로 내보내기 실패 — 각 칸을 ‘파일 업로드’로 올려 주세요."
-        : "합성 이미지 생성에 실패했습니다.");
-    } finally { setBusy(false); }
-  }
-
-  const panelCount = composePanelCount(layout);
-  const filled = slots.slice(0, panelCount).filter((s) => s.img).length;
-  const hiddenFilled = slots.slice(panelCount).filter((s) => s.img).length;
-
-  return (
-    <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl overflow-hidden">
-      <button type="button" onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2.5 text-left">
-        <span className="text-[12px] font-bold text-emerald-700">🧩 기획전 합성기 — 모델컷을 한 배너로 (생성형 X · 옷 100% 유지)</span>
-        <span className="text-[11px] text-emerald-600">{open ? "접기 ▲" : "열기 ▼"}</span>
-      </button>
-
-      {open && (
-        <div className="px-3 pb-3 space-y-3">
-          <p className="text-[10px] text-emerald-700 leading-relaxed bg-white/70 rounded-lg p-2 border border-emerald-100">
-            각 칸에 그 제품의 <b>모델컷·착용컷</b>을 올리면, 생성형이 아니라 <b>픽셀 그대로 합성</b>하므로 의류가 절대 바뀌지 않습니다.
-            완성본은 그대로 <b>섹션 이미지</b>로 적용됩니다.
-          </p>
-
-          {/* 레이아웃 */}
-          <div className="flex flex-wrap gap-1.5">
-            {COMPOSE_LAYOUTS.map((l) => (
-              <button key={l.key} type="button" onClick={() => setLayout(l.key)} title={l.desc}
-                className={`text-[11px] px-2.5 py-1 rounded-full border font-medium transition-colors ${
-                  layout === l.key ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400"
-                }`}>{l.label}</button>
-            ))}
-          </div>
-
-          <div className="flex gap-3 items-start">
-            {/* 미리보기 */}
-            <div className="flex-shrink-0">
-              <canvas ref={canvasRef} style={{ width: "180px", height: "202.5px" }}
-                className="rounded-lg border border-emerald-200 bg-white" />
-              <div className="mt-2 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">간격</label>
-                  <input type="range" min={0} max={40} value={gap} onChange={(e) => setGap(+e.target.value)}
-                    className="flex-1 h-1 accent-emerald-600" />
-                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)}
-                    className="w-6 h-6 rounded border border-gray-300 cursor-pointer flex-shrink-0" title="배경색" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">모서리</label>
-                  <input type="range" min={0} max={48} value={radius} onChange={(e) => setRadius(+e.target.value)}
-                    className="flex-1 h-1 accent-emerald-600" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">테두리</label>
-                  <input type="range" min={0} max={16} value={border} onChange={(e) => setBorder(+e.target.value)}
-                    className="flex-1 h-1 accent-emerald-600" />
-                  <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)}
-                    className="w-6 h-6 rounded border border-gray-300 cursor-pointer flex-shrink-0" title="테두리색" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-[10px] text-gray-500 w-9 flex-shrink-0">비네트</label>
-                  <input type="range" min={0} max={100} value={Math.round(vignette * 100)} onChange={(e) => setVignette(+e.target.value / 100)}
-                    className="flex-1 h-1 accent-emerald-600" />
-                </div>
-              </div>
-            </div>
-
-            {/* 3 슬롯 */}
-            <div className="flex-1 min-w-0 space-y-2">
-              {slots.slice(0, panelCount).map((s, i) => (
-                <div key={i} className="bg-white border border-gray-200 rounded-lg p-2 flex items-center gap-2">
-                  <div className="w-10 h-12 flex-shrink-0 rounded bg-gray-100 overflow-hidden flex items-center justify-center">
-                    {s.img ? <img src={s.url} alt="" className="w-full h-full object-cover" /> : <span className="text-[9px] text-gray-400 font-bold">{i + 1}</span>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-gray-500 truncate mb-1">{items[i]?.name || `칸 ${i + 1}`}</p>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <label className="text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded cursor-pointer hover:bg-emerald-700">
-                        파일 업로드
-                        <input type="file" accept="image/*" className="hidden"
-                          onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(i, f); e.target.value = ""; }} />
-                      </label>
-                      {items[i]?.image_url && (
-                        <button type="button" onClick={() => loadProductCut(i, items[i].image_url)}
-                          className="text-[10px] px-2 py-0.5 border border-gray-300 rounded text-gray-600 hover:bg-gray-50">제품컷 사용</button>
-                      )}
-                      {s.img && (
-                        <>
-                          <span className="text-[9px] text-gray-400">좌우</span>
-                          <input type="range" min={0} max={100} value={Math.round(s.fx * 100)}
-                            onChange={(e) => setSlot(i, { fx: +e.target.value / 100 })} className="w-14 h-1 accent-emerald-600" />
-                          <span className="text-[9px] text-gray-400">상하</span>
-                          <input type="range" min={0} max={100} value={Math.round(s.fy * 100)}
-                            onChange={(e) => setSlot(i, { fy: +e.target.value / 100 })} className="w-14 h-1 accent-emerald-600" />
-                          <button type="button" onClick={() => setSlots((prev) => prev.map((sl, j) => {
-                              if (j !== i) return sl;
-                              if (sl.url.startsWith("blob:")) URL.revokeObjectURL(sl.url);
-                              return { ...sl, url: "", img: null };
-                            }))}
-                            className="text-[10px] text-red-400 hover:text-red-600">비우기</button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {hiddenFilled > 0 && (
-            <p className="text-[11px] text-amber-600">
-              현재 레이아웃은 {panelCount}칸만 사용 — 숨겨진 칸 {hiddenFilled}개의 사진은 합성에 포함되지 않습니다.
-            </p>
-          )}
-          {err && <p className="text-[11px] text-red-500">{err}</p>}
-
-          <button type="button" onClick={apply} disabled={busy || filled === 0}
-            className="w-full py-2 text-[12px] font-semibold rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-            {busy ? "생성 중..." : `합성 이미지 생성 → 섹션 이미지로 적용 (${filled}/${panelCount})`}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -1348,9 +1056,6 @@ function BannerEditor({ banner, label, onChange, products }: {
           </div>
         </div>
       </div>
-
-      {/* 기획전 합성기 — 모델컷 3장을 옷 변형 없이 한 배너로 합쳐 섹션 이미지로 적용 */}
-      <BannerComposer items={items3} onApply={(url) => onChange({ image_url: url })} />
 
       {/* 상세페이지 추가 상품 — 섹션이미지 클릭 시 이동하는 상세페이지에만 노출 (메인 3개 뒤) */}
       <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/60">
@@ -1723,7 +1428,7 @@ function HeroEditor({ hero, onChange, products }: {
                   >
                     <span className={`flex items-center justify-center rounded-full transition-all duration-150 ${
                       selectedIdx === idx
-                        ? "w-6 h-6 bg-[#ff550c]/90 border-2 border-white shadow-lg"
+                        ? "w-6 h-6 bg-[#E5541B]/90 border-2 border-white shadow-lg"
                         : "w-4 h-4 bg-white/80 border-2 border-white shadow-md hover:w-5 hover:h-5"
                     }`}>
                       <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
@@ -1753,7 +1458,7 @@ function HeroEditor({ hero, onChange, products }: {
                     onClick={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
                       selectedIdx === idx
-                        ? "bg-[#ff550c] text-white"
+                        ? "bg-[#E5541B] text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
@@ -1766,9 +1471,9 @@ function HeroEditor({ hero, onChange, products }: {
 
             {/* 선택된 태그 편집 */}
             {selectedTag !== null && selectedIdx !== null && (
-              <div className="border-2 border-[#ff550c]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
+              <div className="border-2 border-[#E5541B]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#ff550c]">태그 {selectedIdx + 1} 편집</span>
+                  <span className="text-[11px] font-bold text-[#E5541B]">태그 {selectedIdx + 1} 편집</span>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-gray-400">
                       📱 {selectedTag.x}%,{selectedTag.y}%

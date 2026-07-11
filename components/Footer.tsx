@@ -170,7 +170,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
               <p>{c.cs_hours_weekday}</p>
               <p>{c.cs_hours_weekend}</p>
             </div>
-            <Link href="/support" className="mt-4 inline-block text-[12px] font-semibold text-[#ff550c] hover:underline">
+            <Link href="/support" className="mt-4 inline-block text-[12px] font-semibold text-[#E5541B] hover:underline">
               1:1 문의하기 →
             </Link>
           </div>
@@ -230,7 +230,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
                 </p>
                 <p>{c.cs_hours_weekday}</p>
                 <p>{c.cs_hours_weekend}</p>
-                <Link href="/support" className="mt-2 inline-block text-[12px] font-semibold text-[#ff550c]">
+                <Link href="/support" className="mt-2 inline-block text-[12px] font-semibold text-[#E5541B]">
                   1:1 문의하기 →
                 </Link>
               </div>

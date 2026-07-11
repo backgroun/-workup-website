@@ -21,12 +21,12 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
           </>
         )}
         <div className="relative">
-          {d.eyebrow && <p className="text-[9px] tracking-[0.2em] text-[#ff550c] uppercase">{d.eyebrow}</p>}
+          {d.eyebrow && <p className="text-[9px] tracking-[0.2em] text-[#E5541B] uppercase">{d.eyebrow}</p>}
           {d.season && <p className="text-[8px] tracking-[0.15em] text-gray-300 uppercase mt-0.5">{d.season}</p>}
         </div>
         <div className="relative">
           <h1 className="text-4xl font-black text-white tracking-tight leading-none">{d.brand || "WORKUP"}</h1>
-          {d.badge && <p className="text-lg font-bold text-[#ff550c] tracking-widest mt-1">{d.badge}</p>}
+          {d.badge && <p className="text-lg font-bold text-[#E5541B] tracking-widest mt-1">{d.badge}</p>}
           {d.note && <p className="text-[9px] text-gray-300 mt-2 tracking-widest">{d.note}</p>}
         </div>
         <div className="relative">
@@ -41,7 +41,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
     const items = d.items ?? [];
     return (
       <div className="w-full h-full bg-white flex flex-col" style={{ padding: "8% 9%" }}>
-        {d.eyebrow && <p className="text-[8px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">{d.eyebrow}</p>}
+        {d.eyebrow && <p className="text-[8px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">{d.eyebrow}</p>}
         <div className="flex-1 space-y-3">
           {items.map((item, i) => (
             <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2.5">
@@ -78,7 +78,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
           {d.no && <div className="text-6xl font-black text-white/10 leading-none select-none mb-2">{d.no}</div>}
           <h2 className="text-3xl font-bold text-white">{d.title}</h2>
           {d.desc && <p className="text-[10px] text-gray-300 mt-2 leading-relaxed whitespace-pre-line">{d.desc}</p>}
-          {d.count && <p className="text-[9px] text-[#ff550c] mt-3">{d.count}</p>}
+          {d.count && <p className="text-[9px] text-[#E5541B] mt-3">{d.count}</p>}
         </div>
         <div className="relative" />
       </div>
@@ -108,7 +108,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
               href={page.link_url}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
-              className="inline-block bg-[#ff550c] text-white font-semibold rounded"
+              className="inline-block bg-[#E5541B] text-white font-semibold rounded"
               style={{ fontSize: "3.4cqw", marginTop: "3.2cqw", padding: "1.8cqw 3.4cqw" }}
             >
               {page.link_label}
