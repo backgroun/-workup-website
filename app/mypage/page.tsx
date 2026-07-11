@@ -251,8 +251,8 @@ export default function MyPage() {
   if (!member) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8f8f6] px-4 py-12">
-      <div className="max-w-md lg:max-w-5xl mx-auto">
+    <div className="min-h-screen bg-[#f8f8f6] px-4 lg:px-12 py-12">
+      <div className="max-w-md lg:max-w-none 2xl:max-w-[1680px] mx-auto">
 
         {/* 헤더 */}
         <div className="mb-6">
