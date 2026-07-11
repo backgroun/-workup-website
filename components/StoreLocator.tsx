@@ -418,13 +418,13 @@ export default function StoreLocator({
     <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
-      <div className="bg-white pt-12 pb-6 border-b border-gray-100">
+      <div className="bg-white pt-10 pb-3 md:pt-12 md:pb-6 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-3">
             {header.title}
           </h1>
           {header.description && (
-            <p className="text-[14px] text-gray-500 leading-relaxed mb-5 whitespace-pre-line">
+            <p className="text-[14px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
               {header.description.replace(/\{count\}/g, String(stores.length))}
             </p>
           )}
@@ -442,7 +442,7 @@ export default function StoreLocator({
         </div>
       </div>
 
-      <div className="px-[15px] md:px-[70px] pt-6 pb-10">
+      <div className="px-[15px] md:px-[70px] pt-3 pb-10 md:pt-6">
 
         {/* ── 컨트롤 바 (무지 스타일: 지역선택·검색 / 검색초기화·전체·가까운 매장) ── */}
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
