@@ -3,6 +3,7 @@ import { Fragment, type ReactNode, type CSSProperties } from "react";
 import { Oxanium } from "next/font/google";
 import TopbarIcon from "./TopbarIcon";
 import { DEFAULT_TOPBAR, safeHref, type TopbarConfig } from "@/lib/topbar";
+import type { WeatherMood } from "@/lib/weather";
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
@@ -20,7 +21,42 @@ function SmartLink({ href, newTab, className, style, children }: {
   );
 }
 
-export default function AnnouncementBanner({ config }: { config?: TopbarConfig | null }) {
+// 무드별로 관리자가 지정한 배경색(bg_color) 위에 얹는 아주 옅은 결 — 배경 밝기와 무관하게
+// 자연스럽게 섞이도록 mix-blend-mode를 사용한다. 색상 자체는 바꾸지 않고 은은한 톤만 더한다.
+const WEATHER_OVERLAY: Record<WeatherMood, CSSProperties> = {
+  "clear-day": {
+    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 55%)",
+    mixBlendMode: "soft-light",
+  },
+  "clear-night": {
+    backgroundImage: "linear-gradient(135deg, rgba(10,15,40,0.03), rgba(10,15,40,0.18))",
+    mixBlendMode: "multiply",
+  },
+  cloudy: {
+    backgroundImage: "linear-gradient(135deg, rgba(200,205,215,0.14), rgba(200,205,215,0.02))",
+    mixBlendMode: "soft-light",
+  },
+  rain: {
+    backgroundImage: "linear-gradient(160deg, rgba(255,255,255,0.02), rgba(60,90,130,0.18))",
+    mixBlendMode: "multiply",
+  },
+  snow: {
+    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.03))",
+    mixBlendMode: "soft-light",
+  },
+  fog: {
+    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05))",
+    mixBlendMode: "soft-light",
+  },
+};
+
+export default function AnnouncementBanner({
+  config,
+  weatherMood,
+}: {
+  config?: TopbarConfig | null;
+  weatherMood?: WeatherMood | null;
+}) {
   const c = config ?? DEFAULT_TOPBAR;
   if (!c.enabled) return null;
 
@@ -42,15 +78,7 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
         <TopbarIcon name={c.left_icon} className="wu-tb-icon flex-shrink-0" />
       )}
       <span className={`wu-tb-text ${oxanium.className} whitespace-nowrap`} style={sharedStyle}>
-        {c.left_text.split("").map((ch, i) => (
-          <span
-            key={i}
-            className="wu-tb-shimmer-char"
-            style={{ animationDelay: `${i * 0.14}s` }}
-          >
-            {ch === " " ? " " : ch}
-          </span>
-        ))}
+        {c.left_text}
       </span>
     </>
   );
@@ -67,24 +95,15 @@ export default function AnnouncementBanner({ config }: { config?: TopbarConfig |
           .wu-tb-icon{width:${pIcon}px;height:${pIcon}px}
           .wu-tb-text{font-size:${pFS}px}
         }
-        .wu-tb-shimmer-char{
-          display:inline-block;
-          color:rgba(255,255,255,0.35);
-          animation:wu-tb-shimmer 4.8s ease-in-out infinite;
-        }
-        @keyframes wu-tb-shimmer{
-          0%,100%{color:rgba(255,255,255,0.35);}
-          50%{color:#ffffff;}
-        }
-        @media(prefers-reduced-motion:reduce){
-          .wu-tb-shimmer-char{animation:none;color:#ffffff}
-        }
       `}</style>
       <div
-        className="wu-tb sticky top-0 z-[60] flex items-center flex-shrink-0"
+        className="wu-tb sticky top-0 z-[60] flex items-center flex-shrink-0 relative overflow-hidden"
         style={{ backgroundColor: c.bg_color, color: c.text_color }}
       >
-        <div className="px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
+        {weatherMood && (
+          <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={WEATHER_OVERLAY[weatherMood]} />
+        )}
+        <div className="relative z-10 px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
           <SmartLink href={c.left_link || "/"} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
             {leftInner}
           </SmartLink>

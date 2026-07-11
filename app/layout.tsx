@@ -14,6 +14,7 @@ import { getHeaderNavConfig } from "@/lib/header-nav-server";
 import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
+import { getWeatherMood } from "@/lib/weather-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Analytics } from "@vercel/analytics/next";
@@ -59,11 +60,11 @@ export default async function RootLayout({
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdmin = pathname.startsWith("/admin");
 
-  const [topbar, footer, headerNav, logo, search, studio] = isAdmin
-    ? [null, null, null, null, null, null]
+  const [topbar, footer, headerNav, logo, search, studio, weatherMood] = isAdmin
+    ? [null, null, null, null, null, null, null]
     : await Promise.all([
         getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
-        getStudioSettings(),
+        getStudioSettings(), getWeatherMood(),
       ]);
 
   // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
@@ -95,7 +96,7 @@ export default async function RootLayout({
             >
               {!isAdmin && topbar && headerNav && logo && search && (
                 <>
-                  <AnnouncementBanner config={topbar} />
+                  <AnnouncementBanner config={topbar} weatherMood={weatherMood} />
                   <Header navItems={visibleNavItems} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
                 </>
               )}
