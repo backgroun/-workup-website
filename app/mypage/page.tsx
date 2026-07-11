@@ -24,6 +24,22 @@ type MyInquiry = {
   repliedAt: string;
 };
 
+type NearbyStore = { id: number; name: string; distance: number };
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDist(km: number): string {
+  return km < 1 ? `~${Math.round(km * 1000)}m` : `~${km.toFixed(1)}km`;
+}
+
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   new:        { label: "접수",     cls: "bg-gray-100 text-gray-600" },
   processing: { label: "처리중",   cls: "bg-amber-100 text-amber-700" },
@@ -33,6 +49,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 // PC(2×2 배치)에서 4개 카드를 동일한 크기로 맞추는 고정 높이.
 // 내용이 넘치는 카드(문의 내역 등)는 내부 스크롤로 처리한다.
 const CARD_H = "lg:h-[340px]";
+const CARD_CLS = "bg-white border border-gray-300";
 
 // 마이페이지(고객 화면)에 노출할 등급만 화이트리스트로 관리한다.
 // "관리자"는 내부 운영 등급이라 고객 화면에는 보여주지 않는다.
@@ -162,6 +179,8 @@ export default function MyPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { items: wishlist } = useCart();
   const router = useRouter();
+  const [nearbyStores, setNearbyStores] = useState<NearbyStore[]>([]);
+  const [nearbyStatus, setNearbyStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   useEffect(() => {
     fetch("/api/member/me")
@@ -185,6 +204,31 @@ export default function MyPage() {
       .then(data => setInquiries(Array.isArray(data) ? data : []))
       .catch(() => setInquiries([]))
       .finally(() => setInquiriesLoading(false));
+  }, [member]);
+
+  // 현재 위치 기준 가까운 매장 3곳
+  useEffect(() => {
+    if (!member) return;
+    if (!navigator.geolocation) { setNearbyStatus("error"); return; }
+    setNearbyStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        fetch("/api/stores")
+          .then(r => r.json())
+          .then((stores: { id: number; name: string; lat: number; lng: number }[]) => {
+            const sorted = (Array.isArray(stores) ? stores : [])
+              .map(s => ({ id: s.id, name: s.name, distance: haversine(lat, lng, s.lat, s.lng) }))
+              .sort((a, b) => a.distance - b.distance)
+              .slice(0, 3);
+            setNearbyStores(sorted);
+            setNearbyStatus("success");
+          })
+          .catch(() => setNearbyStatus("error"));
+      },
+      () => setNearbyStatus("error"),
+      { timeout: 8000, maximumAge: 60000 }
+    );
   }, [member]);
 
   const handleLogout = async () => {
@@ -211,50 +255,48 @@ export default function MyPage() {
       <div className="max-w-md lg:max-w-5xl mx-auto">
 
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#303236]">{member.name}님, 안녕하세요.</h1>
-          <button
-            onClick={handleLogout} disabled={loggingOut}
-            className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
-          >
-            {loggingOut ? "로그아웃 중..." : "로그아웃"}
-          </button>
         </div>
 
         {/* PC(lg~)에서는 2×2 배치로 4개 카드를 동일한 크기(CARD_H)로 맞춘다. 모바일은 1열 유지. */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* 회원 정보 카드 */}
-        <div className={`bg-white rounded-2xl border border-gray-100 p-7 lg:p-8 ${CARD_H} lg:overflow-y-auto`}>
-          <div className="flex items-center gap-4 mb-6">
-            {/* 아바타 */}
-            <div className="w-14 h-14 rounded-full bg-[#303236] flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xl font-bold">{member.name.charAt(0)}</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-lg font-bold text-gray-900">{member.name}</p>
-                {VISIBLE_GRADES.includes(member.grade) && (
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
-                    {member.grade}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-400 mt-0.5">{member.email}</p>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-100 pt-5 space-y-3">
+        <div className={`${CARD_CLS} p-7 lg:p-8 ${CARD_H} lg:overflow-y-auto`}>
+          <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-400">이름</span>
               <span className="font-medium text-gray-800">{member.name}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400">이메일</span>
+              <span className="text-gray-400">아이디</span>
               <span className="font-medium text-gray-800">{member.email}</span>
             </div>
+
+            {/* 가까운 매장 3곳 (현재 위치 기준) */}
+            {nearbyStatus === "loading" && (
+              <p className="text-xs text-gray-400 pt-1">가까운 매장 확인 중...</p>
+            )}
+            {nearbyStatus === "success" && nearbyStores.length > 0 && (
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-400 mb-2">가까운 매장</p>
+                <ul className="space-y-1.5">
+                  {nearbyStores.map(s => (
+                    <li key={s.id}>
+                      <Link href={`/store/${s.id}`}
+                        className="flex items-center justify-between text-sm text-gray-700 hover:text-[#303236] transition-colors">
+                        <span className="truncate">{s.name}</span>
+                        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{formatDist(s.distance)}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {VISIBLE_GRADES.includes(member.grade) && (
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-sm pt-1">
                 <span className="text-gray-400">회원등급</span>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
                   {member.grade}
@@ -269,7 +311,7 @@ export default function MyPage() {
         </div>
 
         {/* 찜한 제품 */}
-        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col ${CARD_H}`}>
+        <div className={`${CARD_CLS} overflow-hidden flex flex-col ${CARD_H}`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
             <p className="text-sm font-bold text-gray-800">찜한 제품</p>
             {wishlist.length > 0 && (
@@ -314,7 +356,7 @@ export default function MyPage() {
         </div>
 
         {/* 내 문의 내역 */}
-        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col ${CARD_H}`}>
+        <div className={`${CARD_CLS} overflow-hidden flex flex-col ${CARD_H}`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
             <p className="text-sm font-bold text-gray-800">내 문의 내역</p>
             {inquiries.length > 0 && (
@@ -388,7 +430,7 @@ export default function MyPage() {
         </div>
 
         {/* 빠른 메뉴 */}
-        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col justify-center ${CARD_H}`}>
+        <div className={`${CARD_CLS} overflow-hidden flex flex-col justify-center ${CARD_H}`}>
           {[
             { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
             { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },
