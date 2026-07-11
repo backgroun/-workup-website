@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { type Store } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 import { trackStoreEvent } from "@/lib/track";
@@ -175,6 +176,10 @@ export default function StoreLocator({
   // (리스트 항목 클릭은 반대로 지도로 스크롤하므로 서로 간섭하지 않게 구분)
   const pendingListScrollId = useRef<number | null>(null);
 
+  // ?store=<id> 딥링크 — 마이페이지 "가까운 매장" 등에서 리스트 내 특정 매장으로 바로 스크롤
+  const searchParams = useSearchParams();
+  const didApplyDeepLink = useRef(false);
+
   const handleLocate = () => {
     if (!navigator.geolocation) {
       setLocError("이 브라우저는 위치 서비스를 지원하지 않습니다.");
@@ -244,6 +249,29 @@ export default function StoreLocator({
   // 페이지 진입 시 자동 위치 요청
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { handleLocate(); }, []);
+
+  // ?store=<id> 딥링크 처리 — handleLocate가 상태를 초기화하므로, 그게 끝난 뒤(성공/실패 확정 후) 1회만 적용한다.
+  useEffect(() => {
+    if (didApplyDeepLink.current) return;
+    if (locStatus === "idle" || locStatus === "loading") return;
+    didApplyDeepLink.current = true;
+
+    const idParam = searchParams.get("store");
+    if (!idParam) return;
+    const target = stores.find((s) => String(s.id) === idParam);
+    if (!target) return;
+
+    setShowAll(true);
+    setSearch("");
+    setSelectedSido("");
+    setSelectedSigungu("");
+    setExpanded(target.id);
+    setSelectedStore(target);
+    setMapCenter({ lat: target.lat, lng: target.lng, level: 5 });
+    setTimeout(() => {
+      document.getElementById(`store-row-${target.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  }, [locStatus, searchParams, stores]);
 
   // 지도에서 보기 — 지도 중심 이동 + 스크롤
   const handleShowOnMap = (store: Store) => {
@@ -663,6 +691,7 @@ export default function StoreLocator({
               return (
                 <div
                   key={store.id}
+                  id={`store-row-${store.id}`}
                   ref={(el) => { itemRefs.current.set(store.id, el); }}
                   className={`bg-white overflow-hidden transition-colors scroll-mt-4 ${
                     isSelected ? "border-2 border-[#303236]" : "border border-gray-200"
