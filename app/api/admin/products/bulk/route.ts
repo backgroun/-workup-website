@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createAdminClient, mapToDb } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
     .select("id");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag("products", "max");
   await logAudit({
     action: "create",
     resource: "products",

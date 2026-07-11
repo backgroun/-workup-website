@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createAdminClient, mapFromDb, mapToDb } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
@@ -17,6 +18,7 @@ export async function PUT(req: Request, { params }: Params) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag("products", "max");
   await logAudit({
     action: "update",
     resource: "products",
@@ -33,6 +35,7 @@ export async function DELETE(_req: Request, { params }: Params) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag("products", "max");
   await logAudit({
     action: "delete",
     resource: "products",

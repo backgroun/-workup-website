@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createAdminClient, mapFromDb, mapToDb } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
@@ -27,6 +28,8 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 공개 제품 목록(/api/products)이 unstable_cache(tags:["products"])로 캐싱되므로 저장 즉시 갱신한다.
+  revalidateTag("products", "max");
   await logAudit({
     action: "create",
     resource: "products",
