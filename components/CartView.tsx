@@ -10,9 +10,18 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
   return (
     <main>
-      <section className="bg-[#FAFAF8] py-14 md:py-20 min-h-[70vh]">
+      {/* 상단 히어로 — 매장 찾기 페이지와 동일한 스타일(굵은 타이틀 + 설명) */}
+      <div className="bg-white py-16 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#303236] tracking-wide mb-10 md:mb-14">피팅 리스트</h1>
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">피팅 리스트</h1>
+          {items.length > 0 && (
+            <p className="text-[14px] text-gray-500 leading-relaxed">{c.noticeDesc}</p>
+          )}
+        </div>
+      </div>
+
+      <section className="bg-[#FAFAF8] py-14 md:py-20 min-h-[50vh]">
+        <div className="px-[15px] md:px-[70px]">
 
           {items.length === 0 ? (
             <div className="text-center py-24 md:py-32">
@@ -26,32 +35,21 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
               </Link>
             </div>
           ) : (
-            <div className="max-w-5xl">
-              {/* 매장 방문 안내 배너 */}
-              <div className="bg-[#F5F2ED] border border-[#E9E4DA] px-6 md:px-8 py-6 mb-10 flex gap-4 items-start">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#8F8B81]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p className="font-bold text-[#303236] mb-1.5">{c.noticeTitle}</p>
-                  <p className="text-sm text-[#6B6660] leading-relaxed">{c.noticeDesc}</p>
-                </div>
-              </div>
-
-              {/* 아이템 목록 */}
-              <div className="divide-y divide-gray-200 mb-12">
+            <>
+              {/* 아이템 그리드 — 화면 폭을 그대로 활용, PC에서 썸네일이 커지도록 열 수를 제한 */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-8 md:gap-y-16 mb-16">
                 {items.map((item) => (
-                  <div key={item.cartId} className="flex items-start gap-5 md:gap-6 py-7 group">
-                    <Link href={`/products/${item.productId}`} className="flex items-center gap-5 md:gap-6 flex-1 min-w-0">
+                  <div key={item.cartId} className="group">
+                    <Link href={`/products/${item.productId}`} className="block">
                       {/* 제품 이미지 */}
-                      <div className="w-24 h-24 md:w-28 md:h-28 flex-shrink-0 overflow-hidden relative bg-[#f0f0f0]">
+                      <div className="relative aspect-square overflow-hidden bg-[#f0f0f0]">
                         {item.imageUrl ? (
                           <Image
                             src={item.imageUrl}
                             alt={item.name}
                             fill
                             className="object-cover transition-opacity duration-300 group-hover:opacity-90"
-                            sizes="112px"
+                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
                           />
                         ) : (
                           <div
@@ -59,14 +57,23 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             style={{ backgroundColor: item.colorHex }}
                           />
                         )}
+                        <button
+                          onClick={(e) => { e.preventDefault(); removeItem(item.cartId); }}
+                          aria-label="삭제"
+                          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/80 hover:bg-white transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-bold text-[#303236] leading-snug group-hover:underline underline-offset-4 decoration-1">{item.name}</p>
+                      <div className="pt-3.5">
+                        <p className="text-[15px] font-bold text-[#303236] leading-snug group-hover:underline underline-offset-4 decoration-1">{item.name}</p>
                         {item.sku && (
                           <p className="text-xs text-[#8F8B81] mt-1">품번 {item.sku}</p>
                         )}
                         {item.allSizes && item.allSizes.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-3">
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
                             {item.allSizes.map((s) => (
                               <span key={s} className="text-[11px] border border-gray-300 text-gray-600 px-2 py-0.5 leading-none">
                                 {s}
@@ -87,15 +94,9 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             ))}
                           </div>
                         )}
-                        <p className="text-base font-bold text-[#303236] mt-3">{item.price}</p>
+                        <p className="text-[15px] font-bold text-[#303236] mt-2.5">{item.price}</p>
                       </div>
                     </Link>
-                    <button
-                      onClick={() => removeItem(item.cartId)}
-                      className="flex-shrink-0 text-xs text-[#8F8B81] hover:text-red-500 transition-colors mt-1"
-                    >
-                      삭제
-                    </button>
                   </div>
                 ))}
               </div>
@@ -126,7 +127,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
               >
                 전체 비우기
               </button>
-            </div>
+            </>
           )}
         </div>
       </section>
