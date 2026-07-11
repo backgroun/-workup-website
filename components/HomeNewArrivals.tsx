@@ -130,7 +130,7 @@ export default function HomeNewArrivals() {
   return (
     <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
-        <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-5">{cfg.title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-5 tracking-tight">{cfg.title}</h2>
 
         {/* 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만 */}
         {availableTabs.length > 0 && (
