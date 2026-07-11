@@ -287,9 +287,10 @@ export default function StoreLocator({
   const hasLocated = locStatus === "success";
   const showNearby = hasLocated && !isSearching && !showAll && nearbyStores.length > 0;
 
-  const sigunguList = selectedSido
-    ? Array.from(new Set(stores.filter((s) => regionOf(s.address).sido === selectedSido).map((s) => regionOf(s.address).sigungu))).sort()
-    : [];
+  // 매장이 실제로 존재하는 시/도만 지역 드롭다운에 노출 (SIDO_LIST 순서 유지)
+  const availableSidos = SIDO_LIST.filter((sido) =>
+    stores.some((s) => regionOf(s.address).sido === sido)
+  );
 
   // 지역(시/도, 시/군/구) 선택 시 하단 지도를 해당 지역 매장들의 평균 좌표로 이동
   const moveToRegion = (sido: string, sigungu: string) => {
@@ -390,17 +391,40 @@ export default function StoreLocator({
     }
   }, [displayList, selectedStore]);
 
+  // 검색 초기화 — 검색어·지역필터·전체보기 상태 초기화 후 지도 복귀
+  const resetSearch = () => {
+    setSearch("");
+    setSelectedSido("");
+    setSelectedSigungu("");
+    setShowAll(false);
+    setExpanded(null);
+    setSelectedStore(null);
+    if (userCoords) setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
+    else setMapCenter({ lat: 37.3205, lng: 127.0423, level: 9 });
+  };
+
+  // 전체 매장 보기 — 지역/검색 필터 해제 후 전국 매장을 지도에 축소 노출
+  const showAllStores = () => {
+    setShowAll(true);
+    setSearch("");
+    setSelectedSido("");
+    setSelectedSigungu("");
+    setExpanded(null);
+    setSelectedStore(null);
+    setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
+  };
+
   return (
     <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
-      <div className="bg-white py-16 border-b border-gray-100">
+      <div className="bg-white pt-12 pb-6 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-3">
             {header.title}
           </h1>
           {header.description && (
-            <p className="text-[14px] text-gray-500 leading-relaxed mb-8 whitespace-pre-line">
+            <p className="text-[14px] text-gray-500 leading-relaxed mb-5 whitespace-pre-line">
               {header.description.replace(/\{count\}/g, String(stores.length))}
             </p>
           )}
@@ -418,141 +442,80 @@ export default function StoreLocator({
         </div>
       </div>
 
-      <div className="px-[15px] md:px-[70px] py-10">
+      <div className="px-[15px] md:px-[70px] pt-6 pb-10">
 
-        {/* ── 컨트롤 바 ── */}
+        {/* ── 컨트롤 바 (무지 스타일: 지역선택·검색 / 검색초기화·전체·가까운 매장) ── */}
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 
-        {/* PC: 한 줄 — 근처 매장 찾기 | 시/도 | 시/군/구 | 검색 */}
-        <div className="hidden md:flex items-center gap-3 mb-6">
-          <button
-            onClick={handleLocate}
-            disabled={locStatus === "loading"}
-            className="inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap flex-shrink-0"
-          >
-            {locStatus === "loading" ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                위치 확인 중...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {locStatus === "success" ? "위치 다시 찾기" : "근처 매장 찾기"}
-              </>
-            )}
-          </button>
-
-          <select
-            value={selectedSido}
-            onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0"
-            style={{ minWidth: "120px" }}
-          >
-            <option value="">시/도 선택</option>
-            {SIDO_LIST.map((sido) => (
-              <option key={sido} value={sido}>{sido}</option>
-            ))}
-          </select>
-
-          <select
-            value={selectedSigungu}
-            onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
-            disabled={!selectedSido}
-            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0 disabled:opacity-40"
-            style={{ minWidth: "130px" }}
-          >
-            <option value="">시/군/구 선택</option>
-            {sigunguList.map((sigungu) => (
-              <option key={sigungu} value={sigungu}>{sigungu}</option>
-            ))}
-          </select>
-
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
-            )}
-          </div>
-        </div>
-
-        {/* 모바일: 3줄 — 버튼 / 드롭다운 2개 나란히 / 검색 */}
-        <div className="flex md:hidden flex-col gap-3 mb-6">
-          {/* 줄 1: 근처 매장 찾기 */}
-          <button
-            onClick={handleLocate}
-            disabled={locStatus === "loading"}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60"
-          >
-            {locStatus === "loading" ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                위치 확인 중...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {locStatus === "success" ? "위치 다시 찾기" : "근처 매장 찾기"}
-              </>
-            )}
-          </button>
-
-          {/* 줄 2: 시/도 + 시/군/구 나란히 */}
-          <div className="flex gap-3">
+          {/* 지역 선택 + 검색 */}
+          <div className="flex flex-col sm:flex-row gap-2.5 md:flex-1 md:max-w-2xl">
             <select
               value={selectedSido}
-              onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236]"
+              onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); setShowAll(false); moveToRegion(v, ""); }}
+              className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-2.5 focus:outline-none focus:border-[#303236] sm:w-36 flex-shrink-0"
             >
-              <option value="">시/도 선택</option>
-              {SIDO_LIST.map((sido) => (
+              <option value="">지역 전체</option>
+              {availableSidos.map((sido) => (
                 <option key={sido} value={sido}>{sido}</option>
               ))}
             </select>
-            <select
-              value={selectedSigungu}
-              onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
-              disabled={!selectedSido}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] disabled:opacity-40"
-            >
-              <option value="">시/군/구 선택</option>
-              {sigunguList.map((sigungu) => (
-                <option key={sigungu} value={sigungu}>{sigungu}</option>
-              ))}
-            </select>
+
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="매장명 또는 지역 검색"
+                className="w-full pl-9 pr-8 py-2.5 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+              )}
+            </div>
           </div>
 
-          {/* 줄 3: 검색 (버튼과 동일 너비 = 100%) */}
-          <div className="relative w-full">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
-            )}
+          {/* 검색 초기화(위) + 액션 버튼(아래) */}
+          <div className="flex flex-col gap-2 md:items-end md:flex-shrink-0">
+            <button
+              onClick={resetSearch}
+              className="self-end inline-flex items-center gap-1 text-xs text-gray-400 hover:text-[#303236] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M5.5 9a7 7 0 0111.9-2.1L20 9M18.5 15a7 7 0 01-11.9 2.1L4 15" />
+              </svg>
+              검색 초기화
+            </button>
+            <div className="grid grid-cols-2 gap-2 md:flex">
+              <button
+                onClick={showAllStores}
+                className="inline-flex items-center justify-center border border-[#303236] text-[#303236] text-sm px-5 py-2.5 hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
+              >
+                전체 매장 보기
+              </button>
+              <button
+                onClick={handleLocate}
+                disabled={locStatus === "loading"}
+                className="inline-flex items-center justify-center gap-1.5 bg-[#303236] text-white text-sm px-5 py-2.5 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap"
+              >
+                {locStatus === "loading" ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    위치 확인 중
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    가까운 매장 찾기
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -560,54 +523,6 @@ export default function StoreLocator({
           <div className="mb-4 bg-red-50 border-l-4 border-red-400 px-4 py-3">
             <p className="text-sm font-semibold text-red-700 mb-0.5">위치를 확인할 수 없습니다</p>
             <p className="text-xs text-red-500 leading-relaxed">{locError}</p>
-          </div>
-        )}
-
-        {/* 근거리 결과 배너 */}
-        {locStatus === "success" && !isSearching && (
-          <div className={`mb-4 px-4 py-3 border-l-4 flex items-start justify-between gap-4 ${
-            nearbyStores.length > 0 ? "border-[#E5541B] bg-orange-50" : "border-gray-300 bg-gray-50"
-          }`}>
-            <div>
-              {nearbyStores.length > 0 ? (
-                <>
-                  <p className="text-sm font-bold text-[#303236]">
-                    {showAll ? `전국 ${allSorted.length}개 매장 — 거리순` : `가장 가까운 ${NEARBY_COUNT}개 매장`}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    가장 가까운 매장: <strong className="text-[#E5541B]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
-                    {" "}— {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-bold text-gray-600">근처매장이 없습니다.</p>
-                  <p className="text-xs text-gray-400 mt-0.5">전체 매장을 거리순으로 보여드립니다.</p>
-                </>
-              )}
-            </div>
-            {nearbyStores.length > 0 && (
-              <button
-                onClick={() => {
-                  const next = !showAll;
-                  setShowAll(next);
-                  setExpanded(null);
-                  setSelectedStore(null);
-                  if (next) {
-                    // 전국 매장이 한눈에 보이도록 지도를 축소, 지역 필터가 남아있으면
-                    // 리스트가 그 지역으로만 걸러지므로 함께 초기화한다.
-                    setSelectedSido("");
-                    setSelectedSigungu("");
-                    setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
-                  } else if (userCoords) {
-                    setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
-                  }
-                }}
-                className="flex-shrink-0 text-xs border px-3 py-1.5 border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
-              >
-                {showAll ? "근처 매장 찾아보기" : "전체 매장 보기"}
-              </button>
-            )}
           </div>
         )}
 
@@ -828,6 +743,13 @@ export default function StoreLocator({
             })
           )}
         </div>
+
+        {/* 가장 가까운 매장 요약 — 리스트 하단, 작게 */}
+        {hasLocated && !isSearching && nearbyStores.length > 0 && (
+          <p className="mt-4 text-[11px] text-gray-400 text-center">
+            가장 가까운 매장: {(showAll ? allSorted : nearbyStores)[0]?.name} — {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
+          </p>
+        )}
       </div>
     </section>
   );
