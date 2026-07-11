@@ -177,7 +177,7 @@ export default function Header({
                   d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               {count > 0 && (
-                <span className="absolute inset-0 flex items-center justify-center pt-0 text-white text-[9px] font-bold leading-none pointer-events-none -translate-y-[2px]">
+                <span className="absolute inset-0 flex items-center justify-center text-white text-[9px] font-bold leading-none pointer-events-none">
                   {count}
                 </span>
               )}
