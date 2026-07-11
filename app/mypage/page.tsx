@@ -48,7 +48,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 
 // PC(2×2 배치)에서 4개 카드를 동일한 크기로 맞추는 고정 높이.
 // 내용이 넘치는 카드(문의 내역 등)는 내부 스크롤로 처리한다.
-const CARD_H = "lg:h-[340px]";
+const CARD_H = "lg:h-[260px]";
 const CARD_CLS = "bg-white border border-gray-300";
 
 // 마이페이지(고객 화면)에 노출할 등급만 화이트리스트로 관리한다.
@@ -284,7 +284,7 @@ export default function MyPage() {
                 <ul className="space-y-1.5">
                   {nearbyStores.map(s => (
                     <li key={s.id}>
-                      <Link href={`/store/${s.id}`}
+                      <Link href={`/store?store=${s.id}`}
                         className="flex items-center justify-between text-sm text-gray-700 hover:text-[#303236] transition-colors">
                         <span className="truncate">{s.name}</span>
                         <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{formatDist(s.distance)}</span>
@@ -430,7 +430,7 @@ export default function MyPage() {
         </div>
 
         {/* 빠른 메뉴 */}
-        <div className={`${CARD_CLS} overflow-hidden flex flex-col justify-center ${CARD_H}`}>
+        <div className={`${CARD_CLS} overflow-hidden flex flex-col ${CARD_H}`}>
           {[
             { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
             { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },

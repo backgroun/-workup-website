@@ -63,8 +63,6 @@ function LoginContent() {
               priority
             />
           </Link>
-          <h1 className="text-xl font-bold text-gray-900 mt-4">로그인</h1>
-          <p className="text-sm text-gray-400 mt-1">워크업 회원 전용 로그인</p>
         </div>
 
         {/* 찜 목록 접근 시 안내 */}
@@ -73,7 +71,7 @@ function LoginContent() {
             <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>찜 목록은 로그인 후 이용하실 수 있습니다.</span>
+            <span>찜 목록은 로그인 후 이용 가능</span>
           </div>
         )}
 
