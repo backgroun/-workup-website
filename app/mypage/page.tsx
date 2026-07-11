@@ -255,14 +255,8 @@ export default function MyPage() {
       <div className="max-w-md lg:max-w-5xl mx-auto">
 
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#303236]">{member.name}님, 안녕하세요.</h1>
-          <button
-            onClick={handleLogout} disabled={loggingOut}
-            className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
-          >
-            {loggingOut ? "로그아웃 중..." : "로그아웃"}
-          </button>
         </div>
 
         {/* PC(lg~)에서는 2×2 배치로 4개 카드를 동일한 크기(CARD_H)로 맞춘다. 모바일은 1열 유지. */}
