@@ -45,6 +45,44 @@ const WEATHER_OVERLAY: Record<WeatherMood, CSSProperties> = {
   },
 };
 
+// 톤 그라데이션만으로는 "무슨 날씨인지" 형태가 안 읽혀서, TopbarIcon과 동일한
+// 얇은 선 스타일의 작은 날씨 모티프를 함께 얹는다 — 여전히 장식용(aria-hidden)이며
+// 데스크톱 여백에만 노출해 좁은 화면에서 겹침·혼잡을 피한다.
+const WEATHER_MOTIF_PATHS: Record<WeatherMood, ReactNode> = {
+  "clear-day": (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2.5 12h2M19.5 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </>
+  ),
+  "clear-night": <path d="M20.5 14.7A8.2 8.2 0 019.3 3.5a8.2 8.2 0 1011.2 11.2z" />,
+  cloudy: <path d="M6.5 18a4 4 0 01-.5-7.97 5 5 0 019.6-2.03A4 4 0 0118 18H6.5z" />,
+  rain: (
+    <>
+      <path d="M6.5 14a4 4 0 01-.5-7.97 5 5 0 019.6-2.03A4 4 0 0118 14H6.5z" />
+      <path d="M8 17.5l-1 3M12 17.5l-1 3M16 17.5l-1 3" />
+    </>
+  ),
+  snow: <path d="M12 3v18M4.5 7.5l15 9M4.5 16.5l15-9" />,
+  fog: <path d="M3 9h14M6 13h15M3 17h11" />,
+};
+
+function WeatherMotif({ mood, style }: { mood: WeatherMood; style?: CSSProperties }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={style}
+    >
+      {WEATHER_MOTIF_PATHS[mood]}
+    </svg>
+  );
+}
+
 export default function AnnouncementBanner({
   config,
   weatherMood,
@@ -102,6 +140,13 @@ export default function AnnouncementBanner({
           <SmartLink href={c.left_link || "/"} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
             {leftInner}
           </SmartLink>
+
+          {weatherMood && (
+            <div aria-hidden="true" className="hidden lg:flex flex-1 items-center justify-center gap-5 overflow-hidden">
+              <WeatherMotif mood={weatherMood} style={{ width: 18, height: 18, opacity: 0.55 }} />
+              <WeatherMotif mood={weatherMood} style={{ width: 13, height: 13, opacity: 0.35 }} />
+            </div>
+          )}
 
           {c.items.length > 0 && (
             <div className="flex items-center gap-2 md:gap-2.5 flex-shrink-0">
