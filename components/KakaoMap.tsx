@@ -14,6 +14,7 @@ interface Props {
   selectedStore: Store | null;
   userCoords?: { lat: number; lng: number } | null;
   onStoreSelect?: (store: Store) => void;
+  onClusterSelect?: (stores: Store[]) => void;
 }
 
 // ── 카드 마커 (레벨 ≤ 8) ───────────────────────────────
@@ -129,7 +130,7 @@ function clusterByScreen(pts: XYStore[], gridSize: number): Cluster[] {
   return result;
 }
 
-export default function KakaoMap({ stores, center, selectedStore, userCoords, onStoreSelect }: Props) {
+export default function KakaoMap({ stores, center, selectedStore, userCoords, onStoreSelect, onClusterSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
@@ -138,6 +139,8 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
   const rafRef = useRef<number | null>(null);
   const onStoreSelectRef = useRef(onStoreSelect);
   useEffect(() => { onStoreSelectRef.current = onStoreSelect; }, [onStoreSelect]);
+  const onClusterSelectRef = useRef(onClusterSelect);
+  useEffect(() => { onClusterSelectRef.current = onClusterSelect; }, [onClusterSelect]);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
   const [positions, setPositions] = useState<XYStore[]>([]);
@@ -273,10 +276,13 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
                 onClick={() => {
                   if (c.stores.length === 1) {
                     onStoreSelectRef.current?.(c.stores[0]);
-                  } else if (window.kakao?.maps && mapRef.current) {
-                    const bounds = new window.kakao.maps.LatLngBounds();
-                    c.stores.forEach(s => bounds.extend(new window.kakao.maps.LatLng(s.lat, s.lng)));
-                    mapRef.current.setBounds(bounds);
+                  } else {
+                    onClusterSelectRef.current?.(c.stores);
+                    if (window.kakao?.maps && mapRef.current) {
+                      const bounds = new window.kakao.maps.LatLngBounds();
+                      c.stores.forEach(s => bounds.extend(new window.kakao.maps.LatLng(s.lat, s.lng)));
+                      mapRef.current.setBounds(bounds);
+                    }
                   }
                 }}
               >

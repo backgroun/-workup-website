@@ -10,6 +10,20 @@ const NEARBY_COUNT = 5;
 const KAKAO_CHANNEL = "https://pf.kakao.com/_workup"; // 실제 채널 URL로 교체
 const SIDO_LIST = ["강원","경기","경남","경북","광주","대구","대전","부산","서울","울산","인천","전남","전북","제주","충남","충북"];
 
+// 주소 첫 토큰이 "경기도"처럼 정식 명칭이어도 드롭다운의 짧은 표기와 매칭되도록 정규화
+const PROVINCE_SHORT: Record<string, string> = {
+  경상북도: "경북", 경상남도: "경남", 전라북도: "전북", 전라남도: "전남",
+  충청북도: "충북", 충청남도: "충남", 경기도: "경기", 강원특별자치도: "강원",
+  강원도: "강원", 제주특별자치도: "제주", 제주도: "제주", 서울특별시: "서울",
+  부산광역시: "부산", 대구광역시: "대구", 인천광역시: "인천", 광주광역시: "광주",
+  대전광역시: "대전", 울산광역시: "울산", 세종특별자치시: "세종",
+};
+const normalizeSido = (raw: string) => PROVINCE_SHORT[raw] ?? raw;
+const regionOf = (address: string) => {
+  const parts = address.split(" ");
+  return { sido: normalizeSido(parts[0] ?? ""), sigungu: parts[1] ?? "" };
+};
+
 type StoreWithDistance = Store & { distance: number; estimated?: boolean };
 type LocStatus = "idle" | "loading" | "success" | "error";
 
@@ -241,16 +255,16 @@ export default function StoreLocator({
   const showNearby = hasLocated && !isSearching && !showAll && nearbyStores.length > 0;
 
   const sigunguList = selectedSido
-    ? Array.from(new Set(stores.filter((s) => s.address.split(" ")[0] === selectedSido).map((s) => s.address.split(" ")[1]))).sort()
+    ? Array.from(new Set(stores.filter((s) => regionOf(s.address).sido === selectedSido).map((s) => regionOf(s.address).sigungu))).sort()
     : [];
 
   // 지역(시/도, 시/군/구) 선택 시 하단 지도를 해당 지역 매장들의 평균 좌표로 이동
   const moveToRegion = (sido: string, sigungu: string) => {
     if (!sido) return;
     const matches = stores.filter((s) => {
-      const parts = s.address.split(" ");
-      if (parts[0] !== sido) return false;
-      if (sigungu && parts[1] !== sigungu) return false;
+      const parts = regionOf(s.address);
+      if (parts.sido !== sido) return false;
+      if (sigungu && parts.sigungu !== sigungu) return false;
       return true;
     });
     if (matches.length === 0) return;
@@ -258,6 +272,28 @@ export default function StoreLocator({
     const lng = matches.reduce((sum, s) => sum + s.lng, 0) / matches.length;
     setMapCenter({ lat, lng, level: sigungu ? 7 : 9 });
     setSelectedStore(null);
+  };
+
+  // 지도에서 매장 핀/카드를 클릭하면 해당 매장이 속한 지역으로 하단 리스트도 필터링
+  const selectStoreFromMap = (store: Store) => {
+    setSelectedStore(store);
+    setMapCenter({ lat: store.lat, lng: store.lng, level: 3 });
+    const { sido, sigungu } = regionOf(store.address);
+    if (SIDO_LIST.includes(sido)) {
+      setSelectedSido(sido);
+      setSelectedSigungu(sigungu);
+    }
+  };
+
+  // 지도에서 여러 매장이 묶인 클러스터(숫자) 클릭 시 해당 지역으로 리스트 필터링
+  const selectClusterFromMap = (clusterStores: Store[]) => {
+    if (clusterStores.length === 0) return;
+    const { sido } = regionOf(clusterStores[0].address);
+    if (!SIDO_LIST.includes(sido)) return;
+    const sigungus = new Set(clusterStores.map((s) => regionOf(s.address).sigungu));
+    setSelectedStore(null);
+    setSelectedSido(sido);
+    setSelectedSigungu(sigungus.size === 1 ? [...sigungus][0] : "");
   };
 
   // 검색어 입력 시 지도도 결과 위치로 이동 — 결과가 1개면 그 매장으로, 여러 개면 평균 위치로
@@ -281,9 +317,9 @@ export default function StoreLocator({
   const applyRegionFilter = (list: StoreWithDistance[]) => {
     if (!selectedSido) return list;
     return list.filter((s) => {
-      const parts = s.address.split(" ");
-      if (parts[0] !== selectedSido) return false;
-      if (selectedSigungu && parts[1] !== selectedSigungu) return false;
+      const parts = regionOf(s.address);
+      if (parts.sido !== selectedSido) return false;
+      if (selectedSigungu && parts.sigungu !== selectedSigungu) return false;
       return true;
     });
   };
@@ -531,10 +567,8 @@ export default function StoreLocator({
               center={mapCenter}
               selectedStore={selectedStore}
               userCoords={userCoords}
-              onStoreSelect={(store) => {
-                setSelectedStore(store);
-                setMapCenter({ lat: store.lat, lng: store.lng, level: 3 });
-              }}
+              onStoreSelect={selectStoreFromMap}
+              onClusterSelect={selectClusterFromMap}
             />
           </div>
 
