@@ -30,10 +30,13 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   done:       { label: "답변완료", cls: "bg-green-100 text-green-700" },
 };
 
-// PC(2×2 배치)에서 각 행의 좌우 카드 초기 높이를 맞추기 위한 최소 높이.
-// 내용이 많아지면(문의가 쌓이면) 카드는 이 값을 넘어 자연히 늘어난다.
-const ROW_TOP_MIN_H = "lg:min-h-[256px]";     // 회원 정보 / 찜한 제품
-const ROW_BOTTOM_MIN_H = "lg:min-h-[144px]";  // 내 문의 내역 / 빠른 메뉴
+// PC(2×2 배치)에서 4개 카드를 동일한 크기로 맞추는 고정 높이.
+// 내용이 넘치는 카드(문의 내역 등)는 내부 스크롤로 처리한다.
+const CARD_H = "lg:h-[340px]";
+
+// 마이페이지(고객 화면)에 노출할 등급만 화이트리스트로 관리한다.
+// "관리자"는 내부 운영 등급이라 고객 화면에는 보여주지 않는다.
+const VISIBLE_GRADES = ["일반회원", "VIP", "VVIP", "도매회원", "거래처"];
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -209,7 +212,7 @@ export default function MyPage() {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black tracking-[0.15em] text-[#303236]">MY PAGE</h1>
+          <h1 className="text-2xl font-bold text-[#303236]">{member.name}님, 안녕하세요.</h1>
           <button
             onClick={handleLogout} disabled={loggingOut}
             className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
@@ -218,13 +221,11 @@ export default function MyPage() {
           </button>
         </div>
 
-        {/* PC(lg~)에서는 2×2 배치, 모바일은 1열 유지.
-            items-start + 행별 최소 높이(ROW_*_MIN_H) 로, 처음엔 좌우 높이가 같고
-            문의가 쌓이면 왼쪽 카드만 늘어난다(오른쪽은 그대로). */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
+        {/* PC(lg~)에서는 2×2 배치로 4개 카드를 동일한 크기(CARD_H)로 맞춘다. 모바일은 1열 유지. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* 회원 정보 카드 */}
-        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-7 lg:p-8 ${ROW_TOP_MIN_H}`}>
+        <div className={`bg-white rounded-2xl border border-gray-100 p-7 lg:p-8 ${CARD_H} lg:overflow-y-auto`}>
           <div className="flex items-center gap-4 mb-6">
             {/* 아바타 */}
             <div className="w-14 h-14 rounded-full bg-[#303236] flex items-center justify-center flex-shrink-0">
@@ -233,9 +234,11 @@ export default function MyPage() {
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-lg font-bold text-gray-900">{member.name}</p>
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
-                  {member.grade}
-                </span>
+                {VISIBLE_GRADES.includes(member.grade) && (
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
+                    {member.grade}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-400 mt-0.5">{member.email}</p>
             </div>
@@ -250,12 +253,14 @@ export default function MyPage() {
               <span className="text-gray-400">이메일</span>
               <span className="font-medium text-gray-800">{member.email}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400">회원등급</span>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
-                {member.grade}
-              </span>
-            </div>
+            {VISIBLE_GRADES.includes(member.grade) && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">회원등급</span>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${GRADE_COLOR[member.grade] ?? "bg-gray-100 text-gray-600"}`}>
+                  {member.grade}
+                </span>
+              </div>
+            )}
             <button onClick={() => setShowPasswordModal(true)}
               className="w-full mt-1 py-2.5 border border-gray-200 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
               비밀번호 변경
@@ -264,8 +269,8 @@ export default function MyPage() {
         </div>
 
         {/* 찜한 제품 */}
-        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_TOP_MIN_H}`}>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col ${CARD_H}`}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
             <p className="text-sm font-bold text-gray-800">찜한 제품</p>
             {wishlist.length > 0 && (
               <Link href="/cart" className="text-xs text-gray-400 hover:text-[#303236] transition-colors">
@@ -275,14 +280,14 @@ export default function MyPage() {
           </div>
 
           {wishlist.length === 0 ? (
-            <div className="px-5 py-10 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
               <p className="text-sm text-gray-400">찜한 제품이 없습니다.</p>
               <Link href="/products" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 제품 보러 가기
               </Link>
             </div>
           ) : (
-            <>
+            <div className="flex-1 overflow-y-auto">
               <div className="p-4 grid grid-cols-4 gap-3">
                 {wishlist.slice(0, 4).map(item => (
                   <Link key={item.cartId} href={`/products/${item.productId}`} className="group">
@@ -304,13 +309,13 @@ export default function MyPage() {
               <p className="px-5 pb-4 text-xs text-gray-400">
                 매장을 방문하시면 찜한 제품을 직접 입어보실 수 있습니다.
               </p>
-            </>
+            </div>
           )}
         </div>
 
         {/* 내 문의 내역 */}
-        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_BOTTOM_MIN_H}`}>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col ${CARD_H}`}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
             <p className="text-sm font-bold text-gray-800">내 문의 내역</p>
             {inquiries.length > 0 && (
               <span className="text-xs text-gray-400">{inquiries.length}건</span>
@@ -318,18 +323,18 @@ export default function MyPage() {
           </div>
 
           {inquiriesLoading ? (
-            <div className="flex items-center justify-center py-10">
+            <div className="flex-1 flex items-center justify-center">
               <span className="w-5 h-5 border-2 border-[#303236] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : inquiries.length === 0 ? (
-            <div className="px-5 py-10 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
               <p className="text-sm text-gray-400">아직 남기신 문의가 없습니다.</p>
               <Link href="/support" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 1:1 문의하기
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="flex-1 overflow-y-auto divide-y divide-gray-100">
               {inquiries.map(inq => {
                 const meta = STATUS_META[inq.status] ?? STATUS_META.new;
                 const isOpen = openId === inq.id;
@@ -383,7 +388,7 @@ export default function MyPage() {
         </div>
 
         {/* 빠른 메뉴 */}
-        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${ROW_BOTTOM_MIN_H}`}>
+        <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col justify-center ${CARD_H}`}>
           {[
             { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
             { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },
