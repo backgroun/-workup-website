@@ -66,7 +66,7 @@ export default async function HomeInstagramFeed() {
         {/* 헤더 */}
         <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">Instagram</p>
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-2">Instagram</p>
             <h2 className="text-2xl font-bold text-[#303236]">@workup_official_kr</h2>
           </div>
           <a

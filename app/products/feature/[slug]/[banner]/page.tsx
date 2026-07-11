@@ -35,7 +35,7 @@ export default async function BannerDetailPage({ params }: Props) {
           {/* 좌: 기획전 타이틀 + 설명 — 오른쪽 이미지와 동일한 높이의 흰색 패널 */}
           <div className="md:flex-1 md:min-w-0 order-2 md:order-1 bg-white flex flex-col justify-center px-6 py-8 md:px-10 md:py-12">
             {detail.label && (
-              <p className="text-[11px] tracking-[0.25em] text-[#ff550c] uppercase mb-4">
+              <p className="text-[11px] tracking-[0.25em] text-[#E5541B] uppercase mb-4">
                 {detail.label}
               </p>
             )}
@@ -100,7 +100,7 @@ export default async function BannerDetailPage({ params }: Props) {
       {/* ── 최종 CTA: 매장 방문 유도 ──────────────────────────── */}
       <section className="bg-[#303236] py-14 md:py-20">
         <div className="max-w-screen-xl mx-auto px-6 md:px-12 text-center">
-          <p className="text-[11px] tracking-[0.3em] text-[#ff550c] uppercase mb-5">VISIT US</p>
+          <p className="text-[11px] tracking-[0.3em] text-[#E5541B] uppercase mb-5">VISIT US</p>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">
             직접 입어봐야<br className="sm:hidden" /> 알 수 있습니다
           </h2>
@@ -110,7 +110,7 @@ export default async function BannerDetailPage({ params }: Props) {
           </p>
           <Link
             href="/store"
-            className="inline-flex items-center gap-2 bg-[#ff550c] text-white font-bold px-10 md:px-12 py-4 text-sm tracking-widest hover:bg-[#e04a0a] transition-colors"
+            className="inline-flex items-center gap-2 bg-[#E5541B] text-white font-bold px-10 md:px-12 py-4 text-sm tracking-widest hover:bg-[#e04a0a] transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

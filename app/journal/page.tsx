@@ -10,14 +10,14 @@ export default function JournalPage() {
     <main>
       <div className="bg-[#303236] py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">JOURNAL</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">JOURNAL</p>
           <h1 className="text-4xl font-bold text-white mb-4">콘텐츠 허브</h1>
           <p className="text-gray-300 text-sm">일하는 사람들의 세계를 담은 이야기.</p>
         </div>
       </div>
       <div className="min-h-[60vh] flex items-center justify-center bg-[#FAFAF8]">
         <div className="text-center">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-4">COMING SOON</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-4">COMING SOON</p>
           <p className="text-2xl font-bold text-[#303236]">콘텐츠를 준비 중입니다.</p>
         </div>
       </div>

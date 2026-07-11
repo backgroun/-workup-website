@@ -262,7 +262,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                       <a
                         href={slide.btn1_link}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-block bg-[#ff550c] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
+                        className="inline-block bg-[#E5541B] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
                       >
                         {slide.btn1_text}
                       </a>

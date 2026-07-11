@@ -539,7 +539,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
                 <button key={m} onClick={() => setMediaTab(m)}
                   className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors ${
                     mediaTab === m
-                      ? (m === "video" ? "bg-[#ff550c] text-white shadow-sm" : "bg-white text-slate-900 shadow-sm")
+                      ? (m === "video" ? "bg-[#E5541B] text-white shadow-sm" : "bg-white text-slate-900 shadow-sm")
                       : "text-white/55 hover:text-white"
                   }`}>
                   {m === "image" ? "이미지 슬라이드" : "동영상 슬라이드"}{isNew ? " 추가" : ""}
@@ -642,7 +642,7 @@ ALTER TABLE hero_slides ADD COLUMN IF NOT EXISTS link_new_tab BOOLEAN NOT NULL D
           {/* 동영상 (동영상 슬라이드 전용) */}
           {mediaTab === "video" && (
             <div className="pb-7 border-b border-slate-100 space-y-4">
-              <SectionTitle title="동영상 (PC · 모바일)" accent="bg-[#ff550c]" desc="권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다." />
+              <SectionTitle title="동영상 (PC · 모바일)" accent="bg-[#E5541B]" desc="권장: 짧은 루프 · MP4 · 압축본(수 MB). 모바일 미입력 시 PC 동영상으로 대체됩니다." />
               <VideoField label="PC 동영상" value={editing.pc_video_url} uploading={uploading === "pc"} onUpload={(f) => uploadVideo(f, "pc")} onClear={() => set("pc_video_url", "")} />
               <VideoField label="모바일 동영상 (선택)" value={editing.mobile_video_url} uploading={uploading === "mobile"} onUpload={(f) => uploadVideo(f, "mobile")} onClear={() => set("mobile_video_url", "")} />
               <Field label="노출 시간 (초)" hint="비워두면 영상 재생이 끝난 뒤 자동으로 다음 슬라이드로 전환됩니다. 값을 입력하면 영상 길이와 무관하게 지정한 초 후 전환됩니다.">

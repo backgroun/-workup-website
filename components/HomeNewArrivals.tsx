@@ -201,8 +201,8 @@ export default function HomeNewArrivals() {
                     aria-label="찜하기"
                   >
                     <svg className="w-7 h-7 transition-colors duration-150"
-                      fill={hasProduct(p.id) ? "#ff550c" : "none"}
-                      stroke={hasProduct(p.id) ? "#ff550c" : "white"}
+                      fill={hasProduct(p.id) ? "#E5541B" : "none"}
+                      stroke={hasProduct(p.id) ? "#E5541B" : "white"}
                       strokeWidth={1.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round"
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -211,7 +211,7 @@ export default function HomeNewArrivals() {
                 </div>
                 <div className="pt-3">
                   {p.isNew && (
-                    <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1.5">NEW</span>
+                    <span className="inline-block bg-[#E5541B] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1.5">NEW</span>
                   )}
                   <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-2">
                     {productDisplayName(p)}
@@ -247,8 +247,8 @@ export default function HomeNewArrivals() {
                     aria-label="찜하기"
                   >
                     <svg className="w-7 h-7 transition-colors duration-150"
-                      fill={hasProduct(p.id) ? "#ff550c" : "none"}
-                      stroke={hasProduct(p.id) ? "#ff550c" : "white"}
+                      fill={hasProduct(p.id) ? "#E5541B" : "none"}
+                      stroke={hasProduct(p.id) ? "#E5541B" : "white"}
                       strokeWidth={1.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round"
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -257,7 +257,7 @@ export default function HomeNewArrivals() {
                 </div>
                 <div className="pt-2.5">
                   {p.isNew && (
-                    <span className="inline-block bg-[#ff550c] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1">NEW</span>
+                    <span className="inline-block bg-[#E5541B] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1">NEW</span>
                   )}
                   <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
                   <p className="text-[11px] text-gray-400 line-clamp-1 mb-1.5">{p.tagline}</p>

@@ -69,15 +69,15 @@ export default function BottomNav({
             >
               <Link
                 href="/studio"
-                className="flex items-center justify-between py-4 text-[13px] font-bold text-[#ff550c] tracking-[0.15em] transition-transform active:scale-[0.97]"
+                className="flex items-center justify-between py-4 text-[13px] font-bold text-[#E5541B] tracking-[0.15em] transition-transform active:scale-[0.97]"
                 onClick={() => setMenuOpen(false)}
               >
                 <span className="flex items-center gap-2">
                   STUDIO
-                  <span className="text-[9px] font-bold bg-[#ff550c] text-white rounded-full px-1.5 py-0.5 tracking-normal">NEW</span>
+                  <span className="text-[9px] font-bold bg-[#E5541B] text-white rounded-full px-1.5 py-0.5 tracking-normal">NEW</span>
                   <span className="text-[11px] font-medium text-gray-400 tracking-normal">티셔츠 꾸미기</span>
                 </span>
-                <svg className="w-3.5 h-3.5 text-[#ff550c]/60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-[#E5541B]/60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
                 </svg>
               </Link>
@@ -97,7 +97,7 @@ export default function BottomNav({
                 href={item.href}
                 target={item.newTab ? "_blank" : undefined}
                 rel={item.newTab ? "noopener noreferrer" : undefined}
-                className="flex items-center justify-between py-4 text-[#303236] hover:text-[#ff550c] active:text-[#ff550c] transition-[color,transform] active:scale-[0.97]"
+                className="flex items-center justify-between py-4 text-[#303236] hover:text-[#E5541B] active:text-[#E5541B] transition-[color,transform] active:scale-[0.97]"
                 onClick={() => setMenuOpen(false)}
               >
                 <span className="flex items-baseline gap-3">
@@ -131,7 +131,7 @@ export default function BottomNav({
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className={`flex-1 flex flex-col items-center justify-center gap-1 touch-manipulation transition-[color,background-color,transform] active:scale-95 active:bg-gray-100 ${
-              menuOpen ? "text-[#ff550c]" : "text-[#666666]"
+              menuOpen ? "text-[#E5541B]" : "text-[#666666]"
             }`}
             aria-label="메뉴"
             aria-expanded={menuOpen}

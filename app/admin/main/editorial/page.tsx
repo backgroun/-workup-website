@@ -517,7 +517,7 @@ function ImageField({
           onDragLeave={onDragLeave} onDrop={onDrop}
           onClick={() => !uploading && ref.current?.click()}
           className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-            dragging ? "border-[#ff550c] bg-orange-50" :
+            dragging ? "border-[#E5541B] bg-orange-50" :
             value ? "border-gray-200 hover:border-gray-300" :
                     "border-dashed border-gray-300 hover:border-[#303236]"
           }`}
@@ -529,7 +529,7 @@ function ImageField({
             <img src={value} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
-              <svg className={`w-6 h-6 ${dragging ? "text-[#ff550c]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <svg className={`w-6 h-6 ${dragging ? "text-[#E5541B]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
               </svg>
               <p className="text-[10px] text-gray-400 text-center leading-snug px-2">클릭 또는<br/>드래그</p>
@@ -537,7 +537,7 @@ function ImageField({
           )}
           {uploading && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-              <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>
@@ -567,7 +567,7 @@ function ImageField({
         onDragLeave={onDragLeave} onDrop={onDrop}
         onClick={() => !uploading && ref.current?.click()}
         className={`relative rounded-xl border-2 transition-all cursor-pointer ${
-          dragging ? "border-[#ff550c] bg-orange-50 scale-[1.01]" :
+          dragging ? "border-[#E5541B] bg-orange-50 scale-[1.01]" :
           value     ? "border-gray-200 hover:border-gray-300" :
                       "border-dashed border-gray-300 hover:border-[#303236]"
         }`}
@@ -593,12 +593,12 @@ function ImageField({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 py-5 px-4 text-center pointer-events-none">
-            <svg className={`w-7 h-7 transition-colors ${dragging ? "text-[#ff550c]" : "text-gray-300"}`}
+            <svg className={`w-7 h-7 transition-colors ${dragging ? "text-[#E5541B]" : "text-gray-300"}`}
               fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
-            <p className={`text-[13px] font-medium transition-colors ${dragging ? "text-[#ff550c]" : "text-gray-500"}`}>
+            <p className={`text-[13px] font-medium transition-colors ${dragging ? "text-[#E5541B]" : "text-gray-500"}`}>
               {dragging ? "여기에 이미지를 놓으세요" : "클릭하거나 이미지를 드래그"}
             </p>
             <p className="text-[11px] text-gray-400">{hint}</p>
@@ -608,7 +608,7 @@ function ImageField({
         {uploading && (
           <div className="absolute inset-0 bg-white/80 rounded-xl flex items-center justify-center">
             <div className="flex items-center gap-2 text-[13px] text-gray-600">
-              <span className="w-4 h-4 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
               업로드 중...
             </div>
           </div>
@@ -791,7 +791,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
               title={tag.name || `태그 ${idx + 1}`}
             >
               <span className={`flex items-center justify-center rounded-full transition-all ${
-                selectedIdx === idx ? "w-5 h-5 bg-[#ff550c]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
+                selectedIdx === idx ? "w-5 h-5 bg-[#E5541B]/90 border-2 border-white shadow-lg" : "w-4 h-4 bg-white/80 border-2 border-white shadow-md"
               }`}>
                 <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
               </span>
@@ -808,7 +808,7 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
               {tags.map((tag, idx) => (
                 <button key={tag.id} onClick={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
-                    selectedIdx === idx ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    selectedIdx === idx ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}>
                   <span className="w-3.5 h-3.5 rounded-full bg-current opacity-30 flex items-center justify-center text-[9px] font-bold">{idx + 1}</span>
                   {tag.name || "이름 미입력"}
@@ -818,9 +818,9 @@ function BannerTagEditor({ tags, imageUrl, onChange, products }: {
           )}
 
           {selectedTag !== null && selectedIdx !== null ? (
-            <div className="border-2 border-[#ff550c]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
+            <div className="border-2 border-[#E5541B]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-[#ff550c]">태그 {selectedIdx + 1} 편집</span>
+                <span className="text-[11px] font-bold text-[#E5541B]">태그 {selectedIdx + 1} 편집</span>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] text-gray-400">{selectedTag.x}%, {selectedTag.y}%</span>
                   <button onClick={() => deleteTag(selectedIdx)} className="text-[11px] text-red-500 hover:text-red-700 font-medium">삭제</button>
@@ -1723,7 +1723,7 @@ function HeroEditor({ hero, onChange, products }: {
                   >
                     <span className={`flex items-center justify-center rounded-full transition-all duration-150 ${
                       selectedIdx === idx
-                        ? "w-6 h-6 bg-[#ff550c]/90 border-2 border-white shadow-lg"
+                        ? "w-6 h-6 bg-[#E5541B]/90 border-2 border-white shadow-lg"
                         : "w-4 h-4 bg-white/80 border-2 border-white shadow-md hover:w-5 hover:h-5"
                     }`}>
                       <span className="text-[8px] font-bold text-[#303236]">{idx + 1}</span>
@@ -1753,7 +1753,7 @@ function HeroEditor({ hero, onChange, products }: {
                     onClick={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
                       selectedIdx === idx
-                        ? "bg-[#ff550c] text-white"
+                        ? "bg-[#E5541B] text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
@@ -1766,9 +1766,9 @@ function HeroEditor({ hero, onChange, products }: {
 
             {/* 선택된 태그 편집 */}
             {selectedTag !== null && selectedIdx !== null && (
-              <div className="border-2 border-[#ff550c]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
+              <div className="border-2 border-[#E5541B]/30 rounded-xl p-3 bg-orange-50/30 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#ff550c]">태그 {selectedIdx + 1} 편집</span>
+                  <span className="text-[11px] font-bold text-[#E5541B]">태그 {selectedIdx + 1} 편집</span>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-gray-400">
                       📱 {selectedTag.x}%,{selectedTag.y}%

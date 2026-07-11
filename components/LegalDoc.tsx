@@ -4,7 +4,7 @@ export default function LegalDoc({ title, content }: { title: string; content: s
     <main className="bg-[#FAFAF8] min-h-screen">
       <div className="bg-[#303236] py-14 md:py-16">
         <div className="max-w-3xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">WORKUP</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-2">WORKUP</p>
           <h1 className="text-2xl md:text-3xl font-bold text-white">{title}</h1>
         </div>
       </div>

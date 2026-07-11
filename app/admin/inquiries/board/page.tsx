@@ -87,7 +87,7 @@ export default function AdminInquiryBoardPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-sm font-semibold text-slate-700">더미 데이터</h2>
-            <span className="text-sm text-slate-500">{typeLabel(dummyType)} <b className="text-[#ff550c]">{dummyTotal.toLocaleString()}</b>개</span>
+            <span className="text-sm text-slate-500">{typeLabel(dummyType)} <b className="text-[#E5541B]">{dummyTotal.toLocaleString()}</b>개</span>
           </div>
           <p className="text-xs text-slate-400 mb-4">방문자에게는 ‘더미’ 표시가 보이지 않습니다. 가맹/입점 페이지가 각각 자기 유형만 표시합니다.</p>
           <div className="flex items-center gap-2 mb-3">
@@ -115,7 +115,7 @@ export default function AdminInquiryBoardPage() {
               <ul className="divide-y divide-slate-50">
                 {dummies.map((d) => (
                   <li key={d.id} className="flex items-center gap-3 px-5 py-2 text-xs hover:bg-slate-50">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${d.type === "wholesale" ? "bg-blue-50 text-blue-500" : "bg-orange-50 text-[#ff550c]"}`}>{d.type === "wholesale" ? "입점" : "가맹"}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${d.type === "wholesale" ? "bg-blue-50 text-blue-500" : "bg-orange-50 text-[#E5541B]"}`}>{d.type === "wholesale" ? "입점" : "가맹"}</span>
                     <span className="text-slate-700 flex-1 truncate">{d.content}</span>
                     <span className="text-slate-500 w-16 truncate">{d.name}</span>
                     <span className="text-slate-300 w-28 text-right">{fmt(d.created_at)}</span>

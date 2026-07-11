@@ -96,7 +96,7 @@ export default function ProductInquiryModal({
 
           {/* 문의글 제목 */}
           <div className="mb-3">
-            <label className="block text-sm font-bold text-[#303236] mb-2">문의글 제목 <span className="text-[#ff550c]">*</span></label>
+            <label className="block text-sm font-bold text-[#303236] mb-2">문의글 제목 <span className="text-[#E5541B]">*</span></label>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목은 필수로 입력해 주세요."
               className="w-full border-b border-gray-300 py-2 text-sm focus:outline-none focus:border-[#303236] placeholder:text-gray-300" />
           </div>
@@ -109,7 +109,7 @@ export default function ProductInquiryModal({
 
           {/* 내용 */}
           <div className="mb-5">
-            <label className="block text-sm font-bold text-[#303236] mb-2">내용 <span className="text-[#ff550c]">*</span></label>
+            <label className="block text-sm font-bold text-[#303236] mb-2">내용 <span className="text-[#E5541B]">*</span></label>
             <textarea required value={content} onChange={(e) => setContent(e.target.value)} rows={5} placeholder="문의 내용은 필수로 입력해 주세요."
               className="w-full border border-gray-300 rounded p-3 text-sm focus:outline-none focus:border-[#303236] placeholder:text-gray-300 resize-y" />
           </div>

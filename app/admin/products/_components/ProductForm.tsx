@@ -239,7 +239,7 @@ function SaveBar({ saving, isEdit, onCancel, onPreview, status, onStatusChange }
         미리보기
       </button>
       <button type="submit" disabled={saving}
-        className="px-8 py-2.5 bg-[#ff550c] text-white text-sm font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded">
+        className="px-8 py-2.5 bg-[#E5541B] text-white text-sm font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded">
         {saving ? "저장 중..." : isEdit ? "수정 완료" : "제품 추가"}
       </button>
       <button type="button" onClick={onCancel}
@@ -1335,7 +1335,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <p className="text-xs font-semibold text-[#303236] mb-1">측정 위치 안내 이미지 <span className="text-gray-400 font-normal">(선택)</span></p>
                 <p className="text-xs text-gray-400 leading-relaxed">어깨·가슴·총장 등 <b>어디를 잰 치수인지</b> 보여주는 도식 이미지입니다. 등록하면 &quot;사이즈 및 소재&quot; 탭에서 사이즈표 <b>바로 위</b>에 표시됩니다.</p>
                 {sg.guideImage && sgDiagramDim && (
-                  <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgDiagramDim.w} × {sgDiagramDim.h}px</b>{sgDiagramResized && <span className="text-[#ff550c]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
+                  <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgDiagramDim.w} × {sgDiagramDim.h}px</b>{sgDiagramResized && <span className="text-[#E5541B]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
                 )}
                 <p className="text-[11px] text-gray-300 mt-1">기준 폭 {SIZE_GUIDE_MAX_WIDTH}px — 초과 시 자동 축소, 이하면 원본 그대로.</p>
               </div>
@@ -1414,7 +1414,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div className="flex-1">
                   <p className="text-xs text-gray-400 leading-relaxed">사이즈표 이미지를 등록하면 &quot;사이즈 및 소재&quot; 탭에 그대로 표시됩니다.</p>
                   {sg.image && sgImageDim && (
-                    <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgImageDim.w} × {sgImageDim.h}px</b>{sgImageResized && <span className="text-[#ff550c]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
+                    <p className="text-[11px] text-gray-500 mt-1.5">이미지 크기: <b>{sgImageDim.w} × {sgImageDim.h}px</b>{sgImageResized && <span className="text-[#E5541B]"> · {SIZE_GUIDE_MAX_WIDTH}px로 축소됨</span>}</p>
                   )}
                   <p className="text-[11px] text-gray-300 mt-1">기준 폭 {SIZE_GUIDE_MAX_WIDTH}px — 초과 시 자동 축소, 이하면 원본 그대로.</p>
                 </div>
@@ -2268,11 +2268,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   return (
                     <button key={preset.name} type="button" onClick={() => toggleColor(preset)}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 border text-xs transition-all rounded ${
-                        selected ? "border-[#ff550c] bg-orange-50 font-semibold text-gray-800" : "border-gray-200 text-gray-600 hover:border-gray-400"
+                        selected ? "border-[#E5541B] bg-orange-50 font-semibold text-gray-800" : "border-gray-200 text-gray-600 hover:border-gray-400"
                       }`}>
                       <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: preset.hex }} />
                       {preset.name}
-                      {selected && <span className="text-[#ff550c] font-bold">✓</span>}
+                      {selected && <span className="text-[#E5541B] font-bold">✓</span>}
                     </button>
                   );
                 })}

@@ -190,12 +190,12 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.recommendedFor && product.recommendedFor.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">RECOMMENDED FOR</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">RECOMMENDED FOR</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">이런 분께 추천합니다</h2>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                   {product.recommendedFor.map((item) => (
                     <li key={item} className="flex items-start gap-3 bg-white border border-gray-100 px-5 py-4">
-                      <span className="text-[#ff550c] font-bold text-base flex-shrink-0 mt-0.5">✓</span>
+                      <span className="text-[#E5541B] font-bold text-base flex-shrink-0 mt-0.5">✓</span>
                       <span className="text-sm text-[#303236] leading-relaxed">{item}</span>
                     </li>
                   ))}
@@ -208,7 +208,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.keyFeatures && product.keyFeatures.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">KEY FEATURES</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">KEY FEATURES</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">핵심 기능</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
                   {product.keyFeatures.map((feat, i) => (
@@ -231,7 +231,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.detailPoints && product.detailPoints.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20 bg-gray-50">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">DETAIL</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">DETAIL</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">디테일 포인트</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {product.detailPoints.map((label) => (
@@ -248,12 +248,12 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.lifestyleScenes && product.lifestyleScenes.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">LIFESTYLE</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">LIFESTYLE</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">이렇게 활용하세요</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {product.lifestyleScenes.map((scene, i) => (
                     <div key={scene.tag} className={`${i % 2 === 0 ? "bg-[#303236]" : "bg-gray-100"} p-8 md:p-12 flex flex-col justify-end min-h-[240px]`}>
-                      <p className="text-[10px] tracking-[0.3em] text-[#ff550c] uppercase mb-2">{scene.tag}</p>
+                      <p className="text-[10px] tracking-[0.3em] text-[#E5541B] uppercase mb-2">{scene.tag}</p>
                       <p className={`text-lg font-bold mb-1 ${i % 2 === 0 ? "text-white" : "text-[#303236]"}`}>{scene.title}</p>
                       <p className={`text-sm leading-relaxed ${i % 2 === 0 ? "text-gray-300" : "text-gray-500"}`}>{scene.desc}</p>
                     </div>
@@ -266,7 +266,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* S6: 사이즈 가이드 (신체 치수 기반) */}
           <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">
             <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-              <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">SIZE GUIDE</p>
+              <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">SIZE GUIDE</p>
               <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-2">사이즈 가이드</h2>
               {product.fitNote && (
                 <p className="text-xs text-gray-400 mb-6">{product.fitNote}</p>
@@ -286,7 +286,7 @@ export default async function ProductDetailPage({ params }: Props) {
                         <tr key={row.size} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                           <td className="px-5 py-3 font-bold text-[#303236] text-xs">{row.size}</td>
                           <td className="px-5 py-3 text-gray-500 text-xs">{row.weight ?? "-"}</td>
-                          <td className="px-5 py-3 text-[#ff550c] font-semibold text-xs">{row.price}</td>
+                          <td className="px-5 py-3 text-[#E5541B] font-semibold text-xs">{row.price}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -344,7 +344,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.materialSpecs && product.materialSpecs.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">MATERIAL & SPECS</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">MATERIAL & SPECS</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">소재 및 스펙</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 max-w-2xl">
                   {product.materialSpecs.map((spec, i) => (
@@ -362,7 +362,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.washCare && product.washCare.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20 bg-[#fafafa]">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">CARE</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">CARE</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">세탁 및 관리</h2>
                 <div className="flex flex-wrap gap-6 max-w-2xl">
                   {product.washCare.map((care) => (
@@ -382,14 +382,14 @@ export default async function ProductDetailPage({ params }: Props) {
           {product.productReviews && product.productReviews.length > 0 && (
             <section className="border-t border-gray-100 py-16 md:py-20">
               <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-                <p className="text-[11px] tracking-[0.2em] text-[#ff550c] uppercase mb-3">REVIEWS</p>
+                <p className="text-[11px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">REVIEWS</p>
                 <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-8">실제 사용 후기</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {product.productReviews.map((review, i) => (
                     <div key={i} className="border border-gray-100 p-6 bg-white">
                       <div className="flex gap-0.5 mb-3">
                         {Array.from({ length: 5 }).map((_, si) => (
-                          <span key={si} className={`text-sm ${si < review.stars ? "text-[#ff550c]" : "text-gray-200"}`}>★</span>
+                          <span key={si} className={`text-sm ${si < review.stars ? "text-[#E5541B]" : "text-gray-200"}`}>★</span>
                         ))}
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
@@ -407,7 +407,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* S10: 최종 CTA — 매장 방문 유도 */}
           <section className="bg-[#303236] py-16 md:py-24">
             <div className="max-w-screen-xl mx-auto px-6 md:px-12 text-center">
-              <p className="text-[11px] tracking-[0.3em] text-[#ff550c] uppercase mb-5">VISIT US</p>
+              <p className="text-[11px] tracking-[0.3em] text-[#E5541B] uppercase mb-5">VISIT US</p>
               <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 leading-snug">
                 직접 입어봐야<br className="sm:hidden" /> 알 수 있습니다
               </h2>
@@ -416,7 +416,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 가까운 매장에서 직접 확인하세요.
               </p>
               <Link href="/store"
-                className="inline-block bg-[#ff550c] text-white font-bold px-12 py-4 text-sm tracking-widest hover:bg-[#e04a0a] transition-colors">
+                className="inline-block bg-[#E5541B] text-white font-bold px-12 py-4 text-sm tracking-widest hover:bg-[#e04a0a] transition-colors">
                 가까운 매장 찾기
               </Link>
             </div>

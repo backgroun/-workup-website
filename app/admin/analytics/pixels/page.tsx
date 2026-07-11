@@ -228,11 +228,11 @@ export default function PixelSettingsPage() {
                       <div className="flex flex-col items-center gap-1 pt-5">
                         <button
                           onClick={() => setLocalEnabled(p => ({ ...p, [key]: !p[key] }))}
-                          className={`relative inline-flex items-center w-14 h-7 rounded-full transition-colors duration-200 ${isEnabled ? "bg-[#ff550c]" : "bg-gray-200"}`}
+                          className={`relative inline-flex items-center w-14 h-7 rounded-full transition-colors duration-200 ${isEnabled ? "bg-[#E5541B]" : "bg-gray-200"}`}
                         >
                           <span className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isEnabled ? "translate-x-8" : "translate-x-1"}`} />
                         </button>
-                        <span className={`text-[12px] font-semibold ${isEnabled ? "text-[#ff550c]" : "text-gray-300"}`}>
+                        <span className={`text-[12px] font-semibold ${isEnabled ? "text-[#E5541B]" : "text-gray-300"}`}>
                           {isEnabled ? "ON" : "OFF"}
                         </span>
                       </div>

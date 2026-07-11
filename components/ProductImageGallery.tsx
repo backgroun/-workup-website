@@ -123,7 +123,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           )}
 
           {product.isNew && (
-            <span className="absolute top-4 left-4 bg-[#ff550c] text-white text-xs font-bold px-2.5 py-1 tracking-widest z-10">
+            <span className="absolute top-4 left-4 bg-[#E5541B] text-white text-xs font-bold px-2.5 py-1 tracking-widest z-10">
               NEW
             </span>
           )}
@@ -135,7 +135,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
             <button key={i} onClick={() => go(i)} aria-label={`미디어 ${i + 1}`}
               className={`w-2 h-2 rounded-full transition-all ${
                 i === activeIdx ? "bg-[#303236] scale-125" : "bg-gray-300"
-              } ${m.kind === "video" ? "ring-1 ring-[#ff550c] ring-offset-1" : ""}`}
+              } ${m.kind === "video" ? "ring-1 ring-[#E5541B] ring-offset-1" : ""}`}
             />
           ))}
         </div>
@@ -203,7 +203,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
           )}
 
           {product.isNew && (
-            <span className="absolute top-5 left-5 bg-[#ff550c] text-white text-xs font-bold px-3 py-1 tracking-widest z-10">
+            <span className="absolute top-5 left-5 bg-[#E5541B] text-white text-xs font-bold px-3 py-1 tracking-widest z-10">
               NEW
             </span>
           )}

@@ -93,7 +93,7 @@ export function blockToEditorial(block: DBBlock): Editorial {
     bg: block.hero?.bg_color || "#303236",
     heroImageUrl: block.hero?.image_url || undefined,
     heroImagePosition: block.hero?.image_position || undefined,
-    textAccent: "#ff550c",
+    textAccent: "#E5541B",
     heroSubtitle: block.hero?.hero_subtitle || "",
     tags: (block.hero?.tags ?? []).map((t) => ({
       x: t.x, y: t.y, pcX: t.pc_x, pcY: t.pc_y,

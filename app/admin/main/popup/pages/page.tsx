@@ -24,7 +24,7 @@ const EMPTY: Omit<PopupPage, "id"> = {
   admin_title: "",
   is_visible: true,
   label: "",
-  label_color: "#ff550c",
+  label_color: "#E5541B",
   title: "",
   description: "",
   hero_image_url: "",

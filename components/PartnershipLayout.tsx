@@ -49,9 +49,9 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
 
           {/* 페이지 간 이동 */}
           <div className="flex items-center justify-center gap-5 text-xs flex-wrap">
-            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">가맹·창업 문의</Link>
-            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">브랜드 입점·제휴 문의</Link>
-            <Link href="/products" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">제품 라인업 보기</Link>
+            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">가맹·창업 문의</Link>
+            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">브랜드 입점·제휴 문의</Link>
+            <Link href="/products" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">제품 라인업 보기</Link>
           </div>
         </div>
       </div>

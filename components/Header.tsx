@@ -141,11 +141,11 @@ export default function Header({
             {studioEnabled && (
               <Link
                 href="/studio"
-                className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#ff550c] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
+                className={`${oxanium.className} flex items-center gap-1.5 text-[15px] text-white bg-[#E5541B] hover:brightness-95 px-3.5 py-1.5 rounded-full transition tracking-wide whitespace-nowrap shadow-sm`}
                 style={{ fontWeight: 650 }}
               >
                 STUDIO
-                <span className="text-[9px] font-bold leading-none bg-white text-[#ff550c] rounded-full px-1 py-[3px]">NEW</span>
+                <span className="text-[9px] font-bold leading-none bg-white text-[#E5541B] rounded-full px-1 py-[3px]">NEW</span>
               </Link>
             )}
           </nav>
@@ -156,7 +156,7 @@ export default function Header({
             {search.enabled && (
               <button
                 onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-                className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+                className={`p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
                 aria-label="검색"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,7 +169,7 @@ export default function Header({
             {/* 찜 목록 — 비로그인 시 로그인 유도 */}
             <button
               onClick={() => { memberSession ? router.push("/cart") : router.push("/member/login?from=cart"); }}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+              className={`relative p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label="찜 목록"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,7 @@ export default function Header({
                   d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
               </svg>
               {count > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] bg-[#ff550c] text-white text-[9px] font-bold flex items-center justify-center rounded-full ring-2 ring-white px-0.5 leading-none">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] bg-[#E5541B] text-white text-[9px] font-bold flex items-center justify-center rounded-full ring-2 ring-white px-0.5 leading-none">
                   {count}
                 </span>
               )}
@@ -186,7 +186,7 @@ export default function Header({
             {/* 회원 버튼: 로그인 여부에 따라 마이페이지 / 로그인 */}
             <Link
               href={memberSession ? "/mypage" : "/member/login"}
-              className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+              className={`relative p-1 hover:text-[#E5541B] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label={memberSession ? "마이페이지" : "로그인"}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +195,7 @@ export default function Header({
               </svg>
               {/* 로그인 상태 표시 점 */}
               {memberSession && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ff550c] rounded-full" />
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#E5541B] rounded-full" />
               )}
             </Link>
 
@@ -228,7 +228,7 @@ export default function Header({
               )}
               <button
                 onClick={() => handleSearch(searchQuery)}
-                className="text-[#303236] hover:text-[#ff550c] transition-colors flex-shrink-0"
+                className="text-[#303236] hover:text-[#E5541B] transition-colors flex-shrink-0"
                 aria-label="검색 실행"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@ export default function Header({
                 <button
                   key={`${term}-${idx}`}
                   onClick={() => handleSearch(term)}
-                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#ff550c] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
+                  className="text-[11px] text-gray-600 bg-gray-100 hover:bg-[#E5541B] hover:text-white px-2.5 py-1 transition-colors flex-shrink-0"
                 >
                   {term}
                 </button>

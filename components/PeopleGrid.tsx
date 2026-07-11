@@ -48,7 +48,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-center px-[15px] md:px-[70px]">
-          <span className="text-[#ff550c] text-[12px] md:text-[13px] font-bold tracking-wider mb-3">WORKUP MATE</span>
+          <span className="text-[#E5541B] text-[12px] md:text-[13px] font-bold tracking-wider mb-3">WORKUP MATE</span>
           <h2 className="text-white text-[26px] md:text-[42px] font-bold leading-tight mb-4 max-w-[600px]">
             {person.quote.split("\n").map((line, i) => (
               <span key={i} className="block">{line}</span>
@@ -67,11 +67,11 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             <div className="flex items-center justify-between border-y border-gray-200 py-3">
               <span className="text-[12px] text-gray-500">
                 MATE 이야기 · 총 <span className="font-semibold text-[#303236]">{total}</span>편 중{" "}
-                <span className="font-semibold text-[#ff550c]">{current + 1}</span>편째
+                <span className="font-semibold text-[#E5541B]">{current + 1}</span>편째
               </span>
               <button
                 onClick={() => setListOpen((v) => !v)}
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-[#303236] hover:text-[#ff550c] transition-colors min-h-[44px] px-2"
+                className="flex items-center gap-1.5 text-[12px] font-semibold text-[#303236] hover:text-[#E5541B] transition-colors min-h-[44px] px-2"
                 aria-expanded={listOpen}
                 aria-controls="mate-list"
               >
@@ -92,11 +92,11 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                         }`}
                         aria-current={isActive ? "true" : undefined}
                       >
-                        <span className={`text-[11px] font-bold mt-0.5 ${isActive ? "text-[#ff550c]" : "text-gray-300"}`}>
+                        <span className={`text-[11px] font-bold mt-0.5 ${isActive ? "text-[#E5541B]" : "text-gray-300"}`}>
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         <span className="flex-1">
-                          <span className="block text-[12px] text-[#ff550c] font-semibold mb-0.5">{p.job}</span>
+                          <span className="block text-[12px] text-[#E5541B] font-semibold mb-0.5">{p.job}</span>
                           <span className="block text-[14px] text-[#303236] font-medium leading-snug">
                             {p.quote.split("\n")[0]}
                           </span>
@@ -171,7 +171,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                       ) : null}
                     </div>
                     <p className="text-[14px] font-semibold text-[#303236] mb-1">{product.name}</p>
-                    <span className="text-[12px] text-gray-500 group-hover:text-[#ff550c] transition-colors">자세히 보기 →</span>
+                    <span className="text-[12px] text-gray-500 group-hover:text-[#E5541B] transition-colors">자세히 보기 →</span>
                   </Link>
                 ))}
               </div>
@@ -202,7 +202,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 href={ig.link || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col sm:flex-row sm:items-center border border-gray-200 bg-white hover:border-[#ff550c] transition-colors overflow-hidden"
+                className="group flex flex-col sm:flex-row sm:items-center border border-gray-200 bg-white hover:border-[#E5541B] transition-colors overflow-hidden"
               >
                 {igBarImage && (
                   <div className="w-full sm:w-44 h-44 sm:h-32 flex-shrink-0 overflow-hidden bg-gray-100">
@@ -215,7 +215,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                   <p className="text-[17px] font-semibold text-[#303236] mb-1 truncate">{ig.handle}</p>
                   <p className="text-[13px] text-gray-500 truncate">{ig.description.replace(/\n/g, " ")}</p>
                 </div>
-                <span className="px-5 pb-5 sm:pb-0 sm:pr-6 text-[13px] font-semibold text-[#303236] group-hover:text-[#ff550c] transition-colors whitespace-nowrap">
+                <span className="px-5 pb-5 sm:pb-0 sm:pr-6 text-[13px] font-semibold text-[#303236] group-hover:text-[#E5541B] transition-colors whitespace-nowrap">
                   인스타그램 바로가기 →
                 </span>
               </a>
@@ -229,7 +229,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             {hasPrev && (
               <button
                 onClick={() => goTo(current - 1)}
-                className="flex-1 flex flex-col items-start border border-gray-200 bg-white px-5 py-4 text-left hover:border-[#ff550c] transition-colors min-h-[44px]"
+                className="flex-1 flex flex-col items-start border border-gray-200 bg-white px-5 py-4 text-left hover:border-[#E5541B] transition-colors min-h-[44px]"
               >
                 <span className="text-[11px] text-gray-400 mb-1">← 이전 이야기</span>
                 <span className="text-[13px] font-medium text-[#303236] line-clamp-1">
@@ -240,7 +240,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             {hasNext && (
               <button
                 onClick={() => goTo(current + 1)}
-                className="flex-1 flex flex-col items-end border border-gray-200 bg-white px-5 py-4 text-right hover:border-[#ff550c] transition-colors min-h-[44px]"
+                className="flex-1 flex flex-col items-end border border-gray-200 bg-white px-5 py-4 text-right hover:border-[#E5541B] transition-colors min-h-[44px]"
               >
                 <span className="text-[11px] text-gray-400 mb-1">다음 이야기 →</span>
                 <span className="text-[13px] font-medium text-[#303236] line-clamp-1">
@@ -262,7 +262,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
       {/* 데스크톱 우하단 고정 CTA — 글을 읽는 내내 매장 방문 유도(모바일은 전역 하단바 '매장' 탭이 담당) */}
       <Link
         href="/store"
-        className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#ff550c] text-white text-[14px] font-semibold px-6 py-3.5 rounded-full shadow-[0_4px_20px_rgba(255,85,12,0.35)] hover:bg-[#303236] transition-colors"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#E5541B] text-white text-[14px] font-semibold px-6 py-3.5 rounded-full shadow-[0_4px_20px_rgba(229,84,27,0.35)] hover:bg-[#303236] transition-colors"
       >
         가까운 매장 찾기 →
       </Link>
@@ -385,7 +385,7 @@ function InterviewAccordion({ qna }: { qna: { q: string; a: string }[] }) {
               aria-expanded={isOpen}
             >
               <span className="text-[15px] md:text-[17px] font-bold text-[#303236]">
-                <span className="text-[#ff550c] mr-2">Q{i + 1}.</span>
+                <span className="text-[#E5541B] mr-2">Q{i + 1}.</span>
                 {item.q}
               </span>
               <span className="text-[18px] text-gray-400 flex-shrink-0">{isOpen ? "−" : "+"}</span>

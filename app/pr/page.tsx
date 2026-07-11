@@ -84,7 +84,7 @@ export default async function PrRoomPage() {
                       {/* 텍스트 */}
                       <div className="p-5 flex flex-col flex-1">
                         {post.date && (
-                          <p className="text-[11px] font-medium text-[#ff550c] tracking-wide mb-2">{post.date}</p>
+                          <p className="text-[11px] font-medium text-[#E5541B] tracking-wide mb-2">{post.date}</p>
                         )}
                         <h2 className="text-[15px] md:text-base font-bold text-[#303236] leading-snug line-clamp-2">
                           {post.title}

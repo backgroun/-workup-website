@@ -204,7 +204,7 @@ export default function AdminFieldTestPage() {
                     onDrop={() => handleDrop(i)}
                     onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
                     className={`px-3 py-2.5 cursor-grab active:cursor-grabbing transition-colors ${editing?.id === t.id ? "bg-blue-50" : "hover:bg-slate-50"} ${dragOver === i && dragIndex !== i ? "bg-orange-50 border-l-2 border-orange-400" : ""}`}>
-                    <p className="text-[11px] text-[#ff550c] font-semibold truncate">{t.category || "(분류 없음)"}</p>
+                    <p className="text-[11px] text-[#E5541B] font-semibold truncate">{t.category || "(분류 없음)"}</p>
                     <p className="text-xs font-semibold text-slate-800 truncate">{t.product || "(제품 없음)"}</p>
                     <p className="text-[11px] text-slate-400 truncate">{t.title}</p>
                     <div className="flex items-center gap-1 mt-1.5">

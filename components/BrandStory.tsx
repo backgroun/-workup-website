@@ -4,7 +4,7 @@
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-4">
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-4">
               Brand Story
             </p>
             <h2 className="text-3xl font-bold text-white leading-snug mb-6">
@@ -28,7 +28,7 @@
             </p>
             <a
               href="/site"
-              className="inline-block border border-[#ff550c] text-[#ff550c] text-sm tracking-widest px-8 py-3 hover:bg-[#ff550c] hover:text-white transition-colors"
+              className="inline-block border border-[#E5541B] text-[#E5541B] text-sm tracking-widest px-8 py-3 hover:bg-[#E5541B] hover:text-white transition-colors"
             >
               제품 전체 보기 →
             </a>
@@ -37,7 +37,7 @@
             <p className="text-4xl font-bold text-white text-center leading-tight">
               "땀 흘리는 사람이<br />제일 멋있다고<br />생각합니다."
             </p>
-            <p className="text-xs text-[#ff550c] tracking-widest uppercase">WORKUP</p>
+            <p className="text-xs text-[#E5541B] tracking-widest uppercase">WORKUP</p>
           </div>
         </div>
 
@@ -48,7 +48,7 @@
             { label: "가격", value: "납득 가능한", desc: "기능과 품질에 맞는 정직한 가격표" },
           ].map((item) => (
             <div key={item.label}>
-              <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-2">{item.label}</p>
+              <p className="text-xs text-[#E5541B] tracking-widest uppercase mb-2">{item.label}</p>
               <p className="text-xl font-bold text-white mb-2">{item.value}</p>
               <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
             </div>
