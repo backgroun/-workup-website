@@ -422,9 +422,9 @@ export default function FeatureHeroLayout({
             />
           ))}
 
-          <div className="absolute bottom-6 left-4 z-[2] text-white">
+          <div className="absolute bottom-[39px] left-4 z-[2] text-white">
             <p className="text-xs mb-1 opacity-80">{editorial.heroSubtitle}</p>
-            <h1 className="text-2xl font-bold leading-tight">{editorial.title}</h1>
+            <h1 className="text-[22px] font-bold leading-tight tracking-tight">{editorial.title}</h1>
           </div>
         </div>
 
