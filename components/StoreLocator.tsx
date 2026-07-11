@@ -448,11 +448,11 @@ export default function StoreLocator({
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 
           {/* 지역 선택 + 검색 */}
-          <div className="flex flex-col sm:flex-row gap-2.5 md:flex-1 md:max-w-2xl">
+          <div className="flex flex-row gap-2 sm:gap-2.5 md:flex-1 md:max-w-2xl">
             <select
               value={selectedSido}
               onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); setShowAll(false); moveToRegion(v, ""); }}
-              className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-2.5 focus:outline-none focus:border-[#303236] sm:w-36 flex-shrink-0"
+              className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-2.5 focus:outline-none focus:border-[#303236] w-28 sm:w-36 flex-shrink-0"
             >
               <option value="">지역 전체</option>
               {availableSidos.map((sido) => (
@@ -626,13 +626,14 @@ export default function StoreLocator({
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm text-[#303236]">{store.name}</span>
+                          <span className="font-bold text-sm md:text-[15px] text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
-                            <span className="text-xs px-2 py-0.5 font-semibold flex-shrink-0 bg-gray-100 text-gray-600">
+                            <span className="text-xs md:text-[13px] px-2 py-0.5 font-semibold flex-shrink-0 bg-gray-100 text-gray-600">
                               {formatDist(store.distance, store.estimated)}
                             </span>
                           )}
                         </div>
+                        <p className="text-xs md:text-[13px] mt-0.5 truncate pr-2 text-gray-500">{store.address}</p>
                       </div>
                     </div>
                     <svg
@@ -649,21 +650,15 @@ export default function StoreLocator({
                       {/* 주소 + 운영시간 + 판매제품 */}
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                         <div className="space-y-1.5">
-                          <div className="flex items-start gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            </svg>
-                            <span>{store.address}</span>
-                          </div>
-                          {/* PC: 시간·전화 한 줄 / 모바일: 2줄 */}
+                          {/* 주소는 리스트 헤더로 이동 — 여기선 시간·전화만 (PC 한 줄 / 모바일 2줄) */}
                           <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-5">
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
                               <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                               <span>{store.hours}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
                               <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                               </svg>
@@ -672,19 +667,19 @@ export default function StoreLocator({
                           </div>
                         </div>
 
-                        {/* 판매제품 — 무지 스타일: 얇은 흰 패널·조용한 번호·밑줄 hover */}
+                        {/* 판매제품 — 무지 스타일: 얇은 흰 패널. PC는 가로 배치(가로폭 채움·높이 절약) */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 border border-gray-200 bg-white px-3.5 py-3">
+                          <div className="border border-gray-200 bg-white px-3.5 py-3 md:flex-1 md:min-w-0">
                             <p className="text-[11px] tracking-wide text-gray-400 mb-2">스토어 베스트 상품</p>
-                            <ul className="space-y-1">
+                            <ul className="flex flex-col md:flex-row md:flex-wrap gap-y-1 md:gap-x-6">
                               {store.products.map((p, i) => (
                                 <li key={p.id}>
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2.5 text-xs text-[#303236] hover:underline underline-offset-2 transition-colors leading-tight py-0.5"
+                                    className="flex items-center gap-2 text-xs md:text-[13px] text-[#303236] hover:underline underline-offset-2 transition-colors leading-tight py-0.5"
                                   >
-                                    <span className="w-3 flex-shrink-0 text-[11px] text-gray-400 tabular-nums">{i + 1}</span>
-                                    <span className="truncate">{p.name}</span>
+                                    <span className="flex-shrink-0 text-[11px] md:text-xs text-gray-500 tabular-nums">{i + 1}</span>
+                                    <span className="truncate md:whitespace-nowrap md:max-w-[220px]">{p.name}</span>
                                   </Link>
                                 </li>
                               ))}
