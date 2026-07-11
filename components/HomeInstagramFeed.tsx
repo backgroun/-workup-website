@@ -97,7 +97,7 @@ export default async function HomeInstagramFeed() {
                   alt="워크업 인스타그램 게시물"
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <span className="absolute inset-0 flex items-center justify-center text-gray-300 text-2xl font-black select-none">

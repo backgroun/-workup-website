@@ -106,7 +106,7 @@ export default function HomeNewArrivals() {
 
   if (loading) {
     return (
-      <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14">
+      <section className="bg-white pt-10 pb-8 md:pt-12 md:pb-14">
         <div className="px-[15px] md:px-[70px]">
           <div className="h-7 w-52 bg-gray-100 rounded animate-pulse mb-5" />
           <div className="hidden md:flex gap-4">
@@ -128,9 +128,9 @@ export default function HomeNewArrivals() {
   if (!cfg.is_visible || newItems.length === 0) return null;
 
   return (
-    <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
+    <section className="bg-white pt-10 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
-        <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-5">{cfg.title}</h2>
+        <h2 className="text-[19px] md:text-2xl font-[600] md:font-[500] text-[#303236] mb-5 tracking-tight">{cfg.title}</h2>
 
         {/* 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만 */}
         {availableTabs.length > 0 && (
@@ -191,7 +191,7 @@ export default function HomeNewArrivals() {
                 >
                   {p.imageUrl ? (
                     <img src={p.imageUrl} alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90" />
                   ) : (
                     <span className="text-[#303236]/10 text-6xl font-black select-none">WU</span>
                   )}
@@ -211,13 +211,13 @@ export default function HomeNewArrivals() {
                 </div>
                 <div className="pt-3">
                   {p.isNew && (
-                    <span className="inline-block bg-[#E5541B] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1.5">NEW</span>
+                    <span className="inline-block text-[10px] tracking-[0.2em] text-[#E5541B] mb-2">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-2">
+                  <p className="text-[13px] text-[#303236] leading-snug line-clamp-2 mb-1 group-hover:underline underline-offset-4 decoration-1">
                     {productDisplayName(p)}
                   </p>
-                  <p className="text-[11px] text-gray-400 line-clamp-1 mb-2">{p.tagline}</p>
-                  <p className="text-[14px] font-bold text-[#303236]">{p.price}</p>
+                  <p className="text-[12px] text-[#8F8B81] line-clamp-1 mb-2.5">{p.tagline}</p>
+                  <p className="text-[14px] text-[#303236]" style={{ fontWeight: 700 }}>{p.price}</p>
                 </div>
               </Link>
             ))}
@@ -257,11 +257,12 @@ export default function HomeNewArrivals() {
                 </div>
                 <div className="pt-2.5">
                   {p.isNew && (
-                    <span className="inline-block bg-[#E5541B] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest mb-1">NEW</span>
+                    <span className="inline-block text-[10px] tracking-[0.2em] text-[#E5541B] mb-1.5">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#303236] font-medium leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
-                  <p className="text-[11px] text-gray-400 line-clamp-1 mb-1.5">{p.tagline}</p>
-                  <p className="text-[13px] font-bold text-[#303236]">{p.price}</p>
+                  {/* 모바일: 브랜드 프리픽스 비노출(순수 제품명만). PC 캐러셀은 productDisplayName으로 브랜드 노출 */}
+                  <p className="text-[13px] text-[#303236] leading-snug line-clamp-2 mb-1">{p.name}</p>
+                  <p className="text-[11px] text-[#8F8B81] line-clamp-1 mb-1.5">{p.tagline}</p>
+                  <p className="text-[13px] text-[#303236]" style={{ fontWeight: 700 }}>{p.price}</p>
                 </div>
               </Link>
             ))}

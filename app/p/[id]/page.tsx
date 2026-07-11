@@ -152,7 +152,7 @@ export default async function PopupLandingPage({ params }: Props) {
                     <img
                       src={p.thumbnail_url}
                       alt={p.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain transition-transform duration-300"
                     />
                   ) : (
                     <span className="text-gray-300 text-sm font-black">WU</span>

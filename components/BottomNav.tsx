@@ -74,7 +74,7 @@ export default function BottomNav({
               >
                 <span className="flex items-center gap-2">
                   STUDIO
-                  <span className="text-[9px] font-bold bg-[#E5541B] text-white rounded-full px-1.5 py-0.5 tracking-normal">NEW</span>
+                  <span className="text-[9px] tracking-[0.15em] text-[#E5541B]">NEW</span>
                   <span className="text-[11px] font-medium text-gray-400 tracking-normal">티셔츠 꾸미기</span>
                 </span>
                 <svg className="w-3.5 h-3.5 text-[#E5541B]/60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

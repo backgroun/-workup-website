@@ -161,9 +161,9 @@ function WhiteBox({
         }}
       >
         <h3
+          className="text-[18px] lg:text-[20px] xl:text-[22px] break-keep tracking-tight"
           style={{
-            fontSize: "16px",
-            fontWeight: "bold",
+            fontWeight: 500,
             color: "#303236",
             lineHeight: 1.3,
             marginBottom: "20px",
@@ -199,14 +199,15 @@ function WhiteBox({
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-contain transition-transform"
                   />
                 ) : (
                   <span className="text-gray-300 text-[10px] font-black">WU</span>
                 )}
               </div>
+              {/* PC: 브랜드 비노출(순수 상품명). 모바일 리스트는 displayName으로 브랜드 노출 */}
               <p style={{ fontSize: "11px", color: "#303236", lineHeight: 1.3, marginBottom: "3px" }}>
-                {item.displayName || item.name}
+                {item.name}
               </p>
               <p style={{ fontSize: "12px", fontWeight: "bold", color: "#303236" }}>
                 {item.price}
@@ -421,9 +422,9 @@ export default function FeatureHeroLayout({
             />
           ))}
 
-          <div className="absolute bottom-6 left-4 z-[2] text-white">
-            <p className="text-xs mb-1 opacity-80">{editorial.heroSubtitle}</p>
-            <h1 className="text-2xl font-bold leading-tight">{editorial.title}</h1>
+          <div className="absolute bottom-[39px] left-4 z-[2] text-white">
+            <p className="mb-1 opacity-80" style={{ fontSize: "12px" }}>{editorial.heroSubtitle}</p>
+            <h1 className="text-[22px] leading-tight tracking-tight" style={{ fontWeight: 700 }}>{editorial.title}</h1>
           </div>
         </div>
 
@@ -480,7 +481,7 @@ export default function FeatureHeroLayout({
 
               {/* 텍스트 + 상품 목록 */}
               <div style={{ paddingTop: "20px", paddingLeft: "15px", paddingRight: "15px", paddingBottom: "20px" }}>
-                <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#303236", margin: 0, marginBottom: "16px" }}>
+                <h3 className="text-[18px] lg:text-[20px] break-keep" style={{ fontWeight: 700, color: "#303236", margin: 0, marginBottom: "16px" }}>
                   {section.title}
                 </h3>
                 <p style={{ fontSize: "13px", color: "#6b7280", lineHeight: 1.7, margin: 0, marginBottom: "16px" }}>

@@ -289,7 +289,7 @@ export default function ProductDetailClient({
               <Link key={rp.id} href={`/products/${rp.id}`} className="flex-shrink-0 w-[88px] group">
                 <div className={`relative w-[88px] h-[88px] overflow-hidden mb-2 ${rp.bg}`}>
                   {rp.imageUrl
-                    ? <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="88px" />
+                    ? <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover transition-transform duration-300" sizes="88px" />
                     : <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[8px]">WORKUP</span>
                   }
                 </div>
