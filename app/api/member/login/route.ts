@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { hashPassword } from "@/lib/password";
+import { signMemberId } from "@/lib/session";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
     await sb.from("members").update({ last_login_at: new Date().toISOString() }).eq("id", member.id);
 
     const cookieStore = await cookies();
-    cookieStore.set("wu-member", String(member.id), {
+    cookieStore.set("wu-member", signMemberId(member.id), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import { getProductById } from "@/data/products";
+import { verifyMemberCookie } from "@/lib/session";
 
 // 회원별 찜(피팅 리스트). 로그인 회원만 사용하며, 비로그인은 클라이언트 localStorage 를 그대로 쓴다.
 // 제품 정보는 저장하지 않고 products 에서 최신값을 조회해 조립한다(가격·이미지 변경 자동 반영).
@@ -10,7 +11,7 @@ type WishRow = { id: number; product_id: string; size: string; color: string; co
 
 async function getMemberId(): Promise<string | null> {
   const store = await cookies();
-  const memberId = store.get("wu-member")?.value;
+  const memberId = verifyMemberCookie(store.get("wu-member")?.value);
   if (!memberId) return null;
 
   const sb = createAdminClient();

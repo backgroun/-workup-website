@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { hashPassword } from "@/lib/password";
+import { signMemberId } from "@/lib/session";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
     // 회원가입 후 자동 로그인
     const cookieStore = await cookies();
-    cookieStore.set("wu-member", String(data.id), {
+    cookieStore.set("wu-member", signMemberId(data.id), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

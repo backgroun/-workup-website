@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
 import { hashPassword } from "@/lib/password";
+import { verifyMemberCookie } from "@/lib/session";
 
 // 로그인한 회원 본인이 비밀번호를 변경한다 (관리자의 임시 비밀번호 발급과는 별개).
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
-    const memberId = cookieStore.get("wu-member")?.value;
+    const memberId = verifyMemberCookie(cookieStore.get("wu-member")?.value);
     if (!memberId) return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
 
     const { currentPassword, newPassword } = await req.json();

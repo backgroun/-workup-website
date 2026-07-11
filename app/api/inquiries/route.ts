@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-server";
 import { getSiteSection } from "@/lib/site-settings";
 import { normalizeNotifications, notifyRecipients, type NotificationConfig } from "@/lib/site-content";
 import { normalizePartnership, type PartnershipConfig } from "@/data/partnership";
+import { verifyMemberCookie } from "@/lib/session";
 
 function typeLabelOf(type: string): string {
   return type === "wholesale" ? "입점·제휴"
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
 
   // 로그인 상태라면 작성자(회원)를 연결해 마이페이지에서 조회할 수 있게 한다.
   // 비로그인 접수도 그대로 허용하므로 없으면 null 로 저장한다.
-  const memberId = (await cookies()).get("wu-member")?.value ?? null;
+  const memberId = verifyMemberCookie((await cookies()).get("wu-member")?.value);
 
   try {
     const supabase = createAdminClient();
