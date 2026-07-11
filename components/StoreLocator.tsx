@@ -580,22 +580,7 @@ export default function StoreLocator({
         </div>
 
         {/* ── 매장 목록 ── */}
-        <div ref={listRef} className="flex items-center justify-between mb-3 scroll-mt-4">
-          <p className="text-xs text-gray-400">
-            {isSearching
-              ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
-              : showNearby
-              ? `가장 가까운 ${NEARBY_COUNT}개 매장 — 거리순`
-              : hasLocated
-              ? `전체 ${displayList.length}개 매장 — 거리순`
-              : `전체 ${displayList.length}개 매장`}
-          </p>
-          {hasLocated && (
-            <p className="text-xs text-gray-400">~표시는 추정 거리, 그 외는 실제 이동거리</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
+        <div ref={listRef} className="space-y-2 scroll-mt-4">
           {displayList.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
           ) : (
@@ -744,12 +729,21 @@ export default function StoreLocator({
           )}
         </div>
 
-        {/* 가장 가까운 매장 요약 — 리스트 하단, 작게 */}
-        {hasLocated && !isSearching && nearbyStores.length > 0 && (
-          <p className="mt-4 text-[11px] text-gray-400 text-center">
-            가장 가까운 매장: {(showAll ? allSorted : nearbyStores)[0]?.name} — {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
+        {/* 리스트 정보 — 하단으로 이동 (건수·거리순 + 추정거리 안내). 여백은 기존 mb-3과 동일하게 mt-3 유지 */}
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs text-gray-400">
+            {isSearching
+              ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
+              : showNearby
+              ? `가장 가까운 ${NEARBY_COUNT}개 매장 — 거리순`
+              : hasLocated
+              ? `전체 ${displayList.length}개 매장 — 거리순`
+              : `전체 ${displayList.length}개 매장`}
           </p>
-        )}
+          {hasLocated && (
+            <p className="text-xs text-gray-400">~표시는 추정 거리, 그 외는 실제 이동거리</p>
+          )}
+        </div>
       </div>
     </section>
   );
