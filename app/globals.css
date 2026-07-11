@@ -38,14 +38,14 @@ body.catalog-page footer {
    키우면 사이트 전체 글자 크기가 비율 그대로 커진다(여백/레이아웃 spacing 은 그대로).
    기본값(px) → 변경값(px), 본문에 몰린 xs·sm·base 를 우선 키움. */
 @theme {
-  --text-xs: 0.8125rem;   /* 12 → 13 */
-  --text-sm: 0.9375rem;   /* 14 → 15 */
-  --text-base: 1.0625rem; /* 16 → 17 */
-  --text-lg: 1.1875rem;   /* 18 → 19 */
-  --text-xl: 1.375rem;    /* 20 → 22 */
-  --text-2xl: 1.625rem;   /* 24 → 26 */
-  --text-3xl: 2rem;       /* 30 → 32 */
-  --text-4xl: 2.4375rem;  /* 36 → 39 */
+  --text-xs: 0.875rem;    /* 12 → 14 */
+  --text-sm: 1rem;        /* 14 → 16 */
+  --text-base: 1.125rem;  /* 16 → 18 */
+  --text-lg: 1.25rem;     /* 18 → 20 */
+  --text-xl: 1.4375rem;   /* 20 → 23 */
+  --text-2xl: 1.6875rem;  /* 24 → 27 */
+  --text-3xl: 2.0625rem;  /* 30 → 33 */
+  --text-4xl: 2.5rem;     /* 36 → 40 */
   --text-5xl: 3.25rem;    /* 48 → 52 */
   --text-6xl: 4rem;       /* 60 → 64 */
   --text-7xl: 4.875rem;   /* 72 → 78 */
@@ -77,6 +77,30 @@ body.catalog-page footer {
 #scroll-root .font-extrabold{ font-weight: 600; }
 #scroll-root .font-bold     { font-weight: 500; }
 #scroll-root .font-semibold { font-weight: 500; }
+
+/* 하드코딩된 임의 px 폰트 크기(text-[13px] 등) 일괄 상향 — 제품명·가격·라벨이
+   대부분 px 직접 지정이라 위 토큰 변경이 닿지 않는다. 공개 화면(#scroll-root)에서만
+   작은 px들을 한 단계씩 키워 전체 가독성을 무지풍으로 끌어올린다. 큰 디스플레이
+   크기(18px↑)는 이미 충분히 커서 그대로 둔다. (#id 선택자라 우선순위로 덮어쓴다.) */
+#scroll-root .text-\[7px\]  { font-size: 9px; }
+#scroll-root .text-\[8px\]  { font-size: 10px; }
+#scroll-root .text-\[9px\]  { font-size: 11px; }
+#scroll-root .text-\[10px\] { font-size: 12px; }
+#scroll-root .text-\[11px\] { font-size: 13px; }
+#scroll-root .text-\[12px\] { font-size: 14px; }
+#scroll-root .text-\[13px\] { font-size: 15px; }
+#scroll-root .text-\[14px\] { font-size: 16px; }
+#scroll-root .text-\[15px\] { font-size: 17px; }
+#scroll-root .text-\[16px\] { font-size: 17px; }
+#scroll-root .text-\[17px\] { font-size: 18px; }
+/* 반응형(md:) 소형 하드코딩도 데스크톱에서 동일하게 상향 (미디어쿼리 안에서 덮어씀) */
+@media (min-width: 768px) {
+  #scroll-root .md\:text-\[12px\] { font-size: 14px; }
+  #scroll-root .md\:text-\[13px\] { font-size: 15px; }
+  #scroll-root .md\:text-\[14px\] { font-size: 16px; }
+  #scroll-root .md\:text-\[15px\] { font-size: 17px; }
+  #scroll-root .md\:text-\[17px\] { font-size: 18px; }
+}
 
 body {
   background: var(--background);
