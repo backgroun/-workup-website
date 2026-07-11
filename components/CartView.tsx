@@ -10,7 +10,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
   return (
     <main>
-      <section className="bg-[#F5F2ED] py-12 min-h-[60vh]">
+      <section className="bg-[#FAFAF8] py-12 min-h-[60vh]">
         <div className="max-w-3xl mx-auto px-6">
           <h1 className="text-xl font-bold text-[#303236] mb-8">피팅 리스트</h1>
 

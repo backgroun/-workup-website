@@ -38,7 +38,7 @@ export default function PartnershipPage() {
         </div>
       </div>
 
-      <div className="bg-[#F5F2ED] py-16">
+      <div className="bg-[#FAFAF8] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-6">
             {CHOICES.map((c) => (

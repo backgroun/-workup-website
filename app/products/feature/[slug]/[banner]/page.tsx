@@ -28,7 +28,7 @@ export default async function BannerDetailPage({ params }: Props) {
   const products = detail.products.filter((p) => p.productId || p.name);
 
   return (
-    <main className="bg-[#F5F2ED]">
+    <main className="bg-[#FAFAF8]">
       {/* ── 상단: 좌 텍스트 / 우 섹션이미지 ───────────────────── */}
       <section className="max-w-screen-xl mx-auto px-6 md:px-10 py-10 md:py-16">
         <div className="flex flex-col md:flex-row md:items-stretch gap-5 md:gap-8">

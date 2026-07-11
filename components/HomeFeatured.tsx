@@ -9,7 +9,7 @@ export default function HomeFeatured() {
   const subs = SUB_IDS.map((id) => getProductById(id)!);
 
   return (
-    <section className="bg-[#F5F2ED] py-16">
+    <section className="bg-[#FAFAF8] py-16">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-end justify-between mb-10">
           <div>

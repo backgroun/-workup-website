@@ -15,7 +15,7 @@ export default function JournalPage() {
           <p className="text-gray-300 text-sm">일하는 사람들의 세계를 담은 이야기.</p>
         </div>
       </div>
-      <div className="min-h-[60vh] flex items-center justify-center bg-[#F5F2ED]">
+      <div className="min-h-[60vh] flex items-center justify-center bg-[#FAFAF8]">
         <div className="text-center">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-4">COMING SOON</p>
           <p className="text-2xl font-bold text-[#303236]">콘텐츠를 준비 중입니다.</p>

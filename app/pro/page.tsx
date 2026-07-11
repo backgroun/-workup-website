@@ -19,7 +19,7 @@ export default function ProPage() {
           </p>
         </div>
       </div>
-      <section className="py-32 bg-[#F5F2ED]">
+      <section className="py-32 bg-[#FAFAF8]">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">COMING SOON</p>
           <h2 className="text-3xl font-bold text-[#303236] mb-6">

@@ -363,7 +363,7 @@ export default function StoreLocator({
   }, [displayList, selectedStore]);
 
   return (
-    <section id={id} className="bg-[#F5F2ED]">
+    <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
       <div className="bg-white py-16 border-b border-gray-100">

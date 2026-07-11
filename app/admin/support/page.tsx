@@ -166,7 +166,7 @@ export default function SupportEditPage() {
         {/* 오른쪽: 실시간 미리보기 */}
         <div className="lg:sticky lg:top-4">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">실시간 미리보기</p>
-          <div className="border border-gray-200 bg-[#F5F2ED] overflow-hidden rounded-lg shadow-sm">
+          <div className="border border-gray-200 bg-[#FAFAF8] overflow-hidden rounded-lg shadow-sm">
             <div className="px-6 pt-8 pb-2">
               {cfg.hero_eyebrow && <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">{cfg.hero_eyebrow}</p>}
               {cfg.hero_title && <h2 className="text-2xl font-bold text-[#303236] leading-tight mb-2">{cfg.hero_title}</h2>}

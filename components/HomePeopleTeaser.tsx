@@ -8,7 +8,7 @@ const stories = [
 
 export default function HomePeopleTeaser() {
   return (
-    <section className="bg-[#F5F2ED] py-16 border-t border-gray-200">
+    <section className="bg-[#FAFAF8] py-16 border-t border-gray-200">
       <div className="px-[15px] md:px-[70px]">
         <div className="flex items-end justify-between mb-10">
           <div>

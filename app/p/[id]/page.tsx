@@ -84,7 +84,7 @@ export default async function PopupLandingPage({ params }: Props) {
   if (!page) notFound();
 
   const products = await getProducts(page.product_ids ?? []);
-  const pageBg       = page.page_bg       || "#F5F2ED";
+  const pageBg       = page.page_bg       || "#FAFAF8";
   const labelColor   = page.label_color   || "#ff550c";
   const ctaBg        = "#303236";
 

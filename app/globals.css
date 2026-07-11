@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F2ED;
+  --background: #FAFAF8;
   --foreground: #303236;
   /* 상단 탑바(공지바) 높이 — 관리자에서 변경되면 app/layout.tsx 가 <html> 에 덮어쓴다.
      헤더 sticky 오프셋·카탈로그 뷰어 높이가 이 값을 참조한다(var(--wu-topbar-h)). */

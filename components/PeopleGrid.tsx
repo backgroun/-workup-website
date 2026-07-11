@@ -37,7 +37,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
   const hasInstagram = !!ig && (hasIgEmbed || !!ig.handle.trim());
 
   return (
-    <section className="bg-[#F5F2ED]">
+    <section className="bg-[#FAFAF8]">
       {/* ── 히어로 (최상단) ── */}
       <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#303236]">
         {person.image_url ? (
@@ -88,7 +88,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                       <button
                         onClick={() => goTo(i)}
                         className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors min-h-[44px] ${
-                          isActive ? "bg-[#F5F2ED]" : "hover:bg-gray-50"
+                          isActive ? "bg-[#FAFAF8]" : "hover:bg-gray-50"
                         }`}
                         aria-current={isActive ? "true" : undefined}
                       >

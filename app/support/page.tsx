@@ -21,7 +21,7 @@ export default async function SupportPage() {
   return (
     <main>
       {/* 히어로 */}
-      <section className="bg-[#F5F2ED] pt-16 md:pt-20 pb-2">
+      <section className="bg-[#FAFAF8] pt-16 md:pt-20 pb-2">
         <div className="max-w-6xl mx-auto px-6">
           {sup.hero_eyebrow && (
             <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{sup.hero_eyebrow}</p>
@@ -35,7 +35,7 @@ export default async function SupportPage() {
         </div>
       </section>
 
-      <div className="bg-[#F5F2ED] pb-12 md:pb-16 pt-8 md:pt-10">
+      <div className="bg-[#FAFAF8] pb-12 md:pb-16 pt-8 md:pt-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-6 lg:items-stretch">
 

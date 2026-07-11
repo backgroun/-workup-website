@@ -37,7 +37,7 @@ export default async function PrRoomPage() {
   return (
     <main>
       {/* ── 페이지 타이틀 (메이트·필드테스트와 동일 스타일) ── */}
-      <section className="pt-16 pb-0 bg-[#F5F2ED]">
+      <section className="pt-16 pb-0 bg-[#FAFAF8]">
         <div className="px-[15px] md:px-[70px]">
           <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
             {config.title}
@@ -51,7 +51,7 @@ export default async function PrRoomPage() {
       </section>
 
       {/* ── 게시판 ── */}
-      <section className="bg-[#F5F2ED] pt-[60px] pb-16 min-h-[40vh]">
+      <section className="bg-[#FAFAF8] pt-[60px] pb-16 min-h-[40vh]">
         <div className="px-[15px] md:px-[70px]">
           {posts.length === 0 ? (
             <div className="text-center py-24">
