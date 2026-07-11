@@ -562,10 +562,16 @@ export default function StoreLocator({
 
           {/* 선택된 매장 오버레이 */}
           {selectedStore && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#303236] px-4 py-3 flex items-center justify-between gap-4">
-              <div className="min-w-0">
+            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#4a4d53]/85 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-4">
+              {/* PC: 지점명 | 주소 한 줄 / 모바일: 2줄 */}
+              <div className="hidden md:flex items-center gap-2 min-w-0">
+                <p className="text-white font-bold text-sm flex-shrink-0">{selectedStore.name}</p>
+                <span className="text-white/40 flex-shrink-0">|</span>
+                <p className="text-gray-200 text-xs truncate">{selectedStore.address}</p>
+              </div>
+              <div className="md:hidden min-w-0">
                 <p className="text-white font-bold text-sm truncate">{selectedStore.name}</p>
-                <p className="text-gray-300 text-xs mt-0.5 truncate">{selectedStore.address}</p>
+                <p className="text-gray-200 text-xs mt-0.5 truncate">{selectedStore.address}</p>
               </div>
               <button
                 onClick={() => setSelectedStore(null)}
@@ -598,9 +604,11 @@ export default function StoreLocator({
                   }`}
                 >
 
-                  {/* 헤더 */}
+                  {/* 헤더 — 가장 가까운 매장은 주황 배지 대신 지점명 섹션에 옅은 음영 */}
                   <button
-                    className="w-full text-left px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className={`w-full text-left px-4 py-4 flex items-center justify-between transition-colors ${
+                      index === 0 && showNearby ? "bg-[#f4f1ec]" : "hover:bg-gray-50"
+                    }`}
                     onClick={() => {
                       const next = isOpen ? null : store.id;
                       setExpanded(next);
@@ -613,23 +621,18 @@ export default function StoreLocator({
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"
-                      }`}>
+                      <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-gray-100 text-gray-500">
                         {index + 1}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-sm text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
-                            <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
-                              index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600"
-                            }`}>
+                            <span className="text-xs px-2 py-0.5 font-semibold flex-shrink-0 bg-gray-100 text-gray-600">
                               {formatDist(store.distance, store.estimated)}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs mt-0.5 truncate pr-2 text-gray-400">{store.address}</p>
                       </div>
                     </div>
                     <svg
@@ -652,17 +655,20 @@ export default function StoreLocator({
                             </svg>
                             <span>{store.address}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{store.hours}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <span>{store.phone}</span>
+                          {/* PC: 시간·전화 한 줄 / 모바일: 2줄 */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-5">
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{store.hours}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <span>{store.phone}</span>
+                            </div>
                           </div>
                         </div>
 
