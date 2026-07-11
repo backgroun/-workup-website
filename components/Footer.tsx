@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { normalizeFooter, type FooterConfig, type FooterSocialLink } from "@/lib/site-content";
 import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
+import { ikSrc } from "@/lib/imageSrc";
 
 
 // 플랫폼별 내장 SVG 아이콘. 여기에 없는 플랫폼(custom 등)은 등록한 iconUrl 이미지를 사용한다.
@@ -67,7 +68,7 @@ function SocialIcon({ social }: { social: FooterSocialLink }) {
   if (social.iconUrl) {
     // 직접 등록한 외부 아이콘은 next/image 도메인 설정 없이 쓰도록 일반 img 사용
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={social.iconUrl} alt="" width={22} height={22} className="w-[22px] h-[22px] object-contain" />;
+    return <img src={ikSrc(social.iconUrl, 64)} alt="" width={22} height={22} className="w-[22px] h-[22px] object-contain" />;
   }
   return <>{GenericLinkIcon}</>;
 }

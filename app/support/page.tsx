@@ -4,6 +4,7 @@ import { getSiteSection } from "@/lib/site-settings";
 import { getFooterConfig } from "@/lib/footer-server";
 import { DEFAULT_SUPPORT, normalizeSupport, type SupportConfig } from "@/lib/site-content";
 import SupportForm from "@/components/SupportForm";
+import { ikSrc } from "@/lib/imageSrc";
 
 export const metadata: Metadata = {
   title: "고객센터 · 1:1 문의 — WORKUP",
@@ -43,7 +44,7 @@ export default async function SupportPage() {
             <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">
               {sup.guide_image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={sup.guide_image_url} alt="고객센터 안내" className="w-full object-cover" />
+                <img src={ikSrc(sup.guide_image_url, 1200)} alt="고객센터 안내" className="w-full object-cover" />
               ) : (
                 <div className="bg-[#303236] px-8 py-12">
                   <h2 className="text-2xl font-bold text-white mb-3 whitespace-pre-line">{sup.intro_title}</h2>

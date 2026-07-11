@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { DEFAULT_TESTS, type Test } from "@/data/field-test";
 import { getSiteSection } from "@/lib/site-settings";
+import { ikSrc } from "@/lib/imageSrc";
 
 const DEFAULT_HEADER = {
   title: "제품 검증 콘텐츠",
@@ -58,7 +59,7 @@ export default async function FieldTestPage() {
                   {test.image_url ? (
                     <div className="bg-[#303236] aspect-video lg:aspect-auto relative overflow-hidden min-h-[200px]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={test.image_url} alt={test.product} className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={ikSrc(test.image_url!, 1200)} alt={test.product} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   ) : (
                     <div className="bg-[#303236] aspect-video lg:aspect-auto flex flex-col items-center justify-center gap-3 p-8">

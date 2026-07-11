@@ -2,6 +2,7 @@
 import { forwardRef, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import HTMLFlipBook from "react-pageflip";
+import { ikSrc } from "@/lib/imageSrc";
 
 export type BrandViewModel = {
   id: string;
@@ -14,7 +15,7 @@ export type BrandViewModel = {
 const FlipPage = forwardRef<HTMLDivElement, { src: string; alt: string }>(({ src, alt }, ref) => (
   <div ref={ref} className="bg-[#0d1826] w-full h-full overflow-hidden flex items-center justify-center">
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={src} alt={alt} className="w-full h-full object-contain" loading="lazy" decoding="async" />
+    <img src={ikSrc(src, 1200)} alt={alt} className="w-full h-full object-contain" loading="lazy" decoding="async" />
   </div>
 ));
 FlipPage.displayName = "FlipPage";
@@ -76,7 +77,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               <div className="w-16 md:w-full aspect-[5/7] bg-[#303236] overflow-hidden">
                 {b.cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.cover} alt={b.brand_name} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={ikSrc(b.cover, 300)} alt={b.brand_name} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white/30 text-[9px]">PDF</div>
                 )}

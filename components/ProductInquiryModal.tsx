@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { Product } from "@/data/products";
+import { ikSrc } from "@/lib/imageSrc";
 
 // 상품 문의 유형 — 오프라인 방문/상담 유도에 맞춘 항목
 const INQUIRY_TYPES = ["제품 정보 안내", "재고 문의", "사이즈 문의", "매장 방문·픽업 문의", "기타"];
@@ -78,7 +79,7 @@ export default function ProductInquiryModal({
               <div className="w-14 h-14 bg-[#f4f4f4] rounded overflow-hidden flex-shrink-0">
                 {product.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={ikSrc(product.imageUrl, 200)} alt={product.name} className="w-full h-full object-cover" />
                 )}
               </div>
               <p className="text-sm text-[#303236]">{product.name}</p>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { ikSrc } from "@/lib/imageSrc";
 
 // ── 타입 ──────────────────────────────────────────────────────────────────────
 
@@ -200,7 +201,7 @@ export default function PopupBanner() {
         {/* 이미지 배경 — object-position으로 위치 반영, scale로 확대 */}
         {isImageBg && bgImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={bgImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          <img src={ikSrc(bgImageUrl, 800)} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             style={{ objectPosition: bgImagePos, transform: bgScale !== 1 ? `scale(${bgScale})` : undefined, transformOrigin: bgImagePos }} />
         )}
         {/* 텍스트 */}

@@ -9,6 +9,7 @@ import {
   type InstagramFeedConfig,
 } from "@/lib/instagram-feed";
 import type { InstagramMedia } from "@/data/products";
+import { ikSrc } from "@/lib/imageSrc";
 
 // 로고와 유사한 영문 디스플레이 폰트 (WORKUP on Instagram 타이틀용)
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "700"] });
@@ -97,7 +98,7 @@ export default function InstagramFeed({ posts, contained }: { posts?: InstagramM
             const media = (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt={`인스타그램 ${i + 1}`} loading="lazy"
+                <img src={ikSrc(item.image, 600)} alt={`인스타그램 ${i + 1}`} loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300" />
                 {isVideo && (
                   <span className="absolute top-2 right-2 z-10 text-white drop-shadow-md">

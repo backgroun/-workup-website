@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase-server";
+import { ikSrc } from "@/lib/imageSrc";
 
 type QuickCategoryItem = {
   id: string;
@@ -109,7 +110,7 @@ export default async function HomeCategoryGrid() {
               >
                 {cat.icon_url && !cat.icon_url.startsWith("data:") ? (
                   <img
-                    src={cat.icon_url}
+                    src={ikSrc(cat.icon_url, 112)}
                     alt={cat.name}
                     width={56}
                     height={56}
@@ -149,7 +150,7 @@ export default async function HomeCategoryGrid() {
               >
                 {cat.icon_url && !cat.icon_url.startsWith("data:") ? (
                   <img
-                    src={cat.icon_url}
+                    src={ikSrc(cat.icon_url, 88)}
                     alt={cat.name}
                     width={44}
                     height={44}
