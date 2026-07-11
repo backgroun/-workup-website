@@ -161,8 +161,9 @@ function WhiteBox({
         }}
       >
         <h3
-          className="text-lg lg:text-xl xl:text-2xl font-semibold break-keep"
+          className="text-[18px] lg:text-[20px] xl:text-[24px] break-keep"
           style={{
+            fontWeight: 600,
             color: "#303236",
             lineHeight: 1.3,
             marginBottom: "20px",
@@ -479,7 +480,7 @@ export default function FeatureHeroLayout({
 
               {/* 텍스트 + 상품 목록 */}
               <div style={{ paddingTop: "20px", paddingLeft: "15px", paddingRight: "15px", paddingBottom: "20px" }}>
-                <h3 className="text-lg lg:text-xl font-semibold break-keep" style={{ color: "#303236", margin: 0, marginBottom: "16px" }}>
+                <h3 className="text-[18px] lg:text-[20px] break-keep" style={{ fontWeight: 600, color: "#303236", margin: 0, marginBottom: "16px" }}>
                   {section.title}
                 </h3>
                 <p style={{ fontSize: "13px", color: "#6b7280", lineHeight: 1.7, margin: 0, marginBottom: "16px" }}>
