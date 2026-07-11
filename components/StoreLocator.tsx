@@ -287,9 +287,10 @@ export default function StoreLocator({
   const hasLocated = locStatus === "success";
   const showNearby = hasLocated && !isSearching && !showAll && nearbyStores.length > 0;
 
-  const sigunguList = selectedSido
-    ? Array.from(new Set(stores.filter((s) => regionOf(s.address).sido === selectedSido).map((s) => regionOf(s.address).sigungu))).sort()
-    : [];
+  // 매장이 실제로 존재하는 시/도만 지역 드롭다운에 노출 (SIDO_LIST 순서 유지)
+  const availableSidos = SIDO_LIST.filter((sido) =>
+    stores.some((s) => regionOf(s.address).sido === sido)
+  );
 
   // 지역(시/도, 시/군/구) 선택 시 하단 지도를 해당 지역 매장들의 평균 좌표로 이동
   const moveToRegion = (sido: string, sigungu: string) => {
@@ -390,18 +391,44 @@ export default function StoreLocator({
     }
   }, [displayList, selectedStore]);
 
+  // 검색 초기화 — 검색어·지역필터·전체보기 상태 초기화 후 지도 복귀
+  const resetSearch = () => {
+    setSearch("");
+    setSelectedSido("");
+    setSelectedSigungu("");
+    setShowAll(false);
+    setExpanded(null);
+    setSelectedStore(null);
+    if (userCoords) setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
+    else setMapCenter({ lat: 37.3205, lng: 127.0423, level: 9 });
+  };
+
+  // 전체 매장 보기 — 지역/검색 필터 해제 후 전국 매장을 지도에 축소 노출
+  const showAllStores = () => {
+    setShowAll(true);
+    setSearch("");
+    setSelectedSido("");
+    setSelectedSigungu("");
+    setExpanded(null);
+    setSelectedStore(null);
+    setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
+  };
+
   return (
     <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
-      <div className="bg-white py-16 border-b border-gray-100">
+      <div className="bg-white pt-10 pb-3 md:pt-12 md:pb-6 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-3">
             {header.title}
           </h1>
           {header.description && (
-            <p className="text-[14px] text-gray-500 leading-relaxed mb-8 whitespace-pre-line">
-              {header.description.replace(/\{count\}/g, String(stores.length))}
+            <p className="text-[15px] md:text-[17px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
+              {header.description
+                .replace(/\{count\}/g, String(stores.length))
+                /* 관리자가 숫자를 직접 입력해 저장한 경우에도 실제 매장 수로 자동 치환 */
+                .replace(/\d[\d,]*(?=\s*개\s*매장)/g, String(stores.length))}
             </p>
           )}
           {/* 방문 안내 */}
@@ -418,141 +445,80 @@ export default function StoreLocator({
         </div>
       </div>
 
-      <div className="px-[15px] md:px-[70px] py-10">
+      <div className="px-[15px] md:px-[70px] pt-3 pb-10 md:pt-6">
 
-        {/* ── 컨트롤 바 ── */}
+        {/* ── 컨트롤 바 (무지 스타일: 지역선택·검색 / 검색초기화·전체·가까운 매장) ── */}
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 
-        {/* PC: 한 줄 — 근처 매장 찾기 | 시/도 | 시/군/구 | 검색 */}
-        <div className="hidden md:flex items-center gap-3 mb-6">
-          <button
-            onClick={handleLocate}
-            disabled={locStatus === "loading"}
-            className="inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap flex-shrink-0"
-          >
-            {locStatus === "loading" ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                위치 확인 중...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {locStatus === "success" ? "위치 다시 찾기" : "근처 매장 찾기"}
-              </>
-            )}
-          </button>
-
-          <select
-            value={selectedSido}
-            onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0"
-            style={{ minWidth: "120px" }}
-          >
-            <option value="">시/도 선택</option>
-            {SIDO_LIST.map((sido) => (
-              <option key={sido} value={sido}>{sido}</option>
-            ))}
-          </select>
-
-          <select
-            value={selectedSigungu}
-            onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
-            disabled={!selectedSido}
-            className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] flex-shrink-0 disabled:opacity-40"
-            style={{ minWidth: "130px" }}
-          >
-            <option value="">시/군/구 선택</option>
-            {sigunguList.map((sigungu) => (
-              <option key={sigungu} value={sigungu}>{sigungu}</option>
-            ))}
-          </select>
-
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
-            )}
-          </div>
-        </div>
-
-        {/* 모바일: 3줄 — 버튼 / 드롭다운 2개 나란히 / 검색 */}
-        <div className="flex md:hidden flex-col gap-3 mb-6">
-          {/* 줄 1: 근처 매장 찾기 */}
-          <button
-            onClick={handleLocate}
-            disabled={locStatus === "loading"}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold px-6 py-3 hover:bg-[#243d5e] transition-colors disabled:opacity-60"
-          >
-            {locStatus === "loading" ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                위치 확인 중...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {locStatus === "success" ? "위치 다시 찾기" : "근처 매장 찾기"}
-              </>
-            )}
-          </button>
-
-          {/* 줄 2: 시/도 + 시/군/구 나란히 */}
-          <div className="flex gap-3">
+          {/* 지역 선택 + 검색 */}
+          <div className="flex flex-row gap-2 sm:gap-2.5 md:flex-1 md:max-w-2xl">
             <select
               value={selectedSido}
-              onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); moveToRegion(v, ""); }}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236]"
+              onChange={(e) => { const v = e.target.value; setSelectedSido(v); setSelectedSigungu(""); setShowAll(false); moveToRegion(v, ""); }}
+              className="border border-gray-300 bg-white text-sm text-[#303236] px-3 py-2.5 focus:outline-none focus:border-[#303236] w-28 sm:w-36 flex-shrink-0"
             >
-              <option value="">시/도 선택</option>
-              {SIDO_LIST.map((sido) => (
+              <option value="">지역 전체</option>
+              {availableSidos.map((sido) => (
                 <option key={sido} value={sido}>{sido}</option>
               ))}
             </select>
-            <select
-              value={selectedSigungu}
-              onChange={(e) => { const v = e.target.value; setSelectedSigungu(v); moveToRegion(selectedSido, v); }}
-              disabled={!selectedSido}
-              className="flex-1 border border-gray-300 bg-white text-sm text-[#303236] px-3 py-3 focus:outline-none focus:border-[#303236] disabled:opacity-40"
-            >
-              <option value="">시/군/구 선택</option>
-              {sigunguList.map((sigungu) => (
-                <option key={sigungu} value={sigungu}>{sigungu}</option>
-              ))}
-            </select>
+
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="매장명 또는 지역 검색"
+                className="w-full pl-9 pr-8 py-2.5 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+              )}
+            </div>
           </div>
 
-          {/* 줄 3: 검색 (버튼과 동일 너비 = 100%) */}
-          <div className="relative w-full">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="지역명 또는 매장명 검색 (지역선택없이 검색 가능)"
-              className="w-full pl-9 pr-8 py-3 border border-gray-300 bg-white text-sm text-[#303236] placeholder-gray-400 focus:outline-none focus:border-[#303236]"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
-            )}
+          {/* 검색 초기화(위) + 액션 버튼(아래) */}
+          <div className="flex flex-col gap-2 md:items-end md:flex-shrink-0">
+            <button
+              onClick={resetSearch}
+              className="self-end inline-flex items-center gap-1 text-xs text-gray-400 hover:text-[#303236] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M5.5 9a7 7 0 0111.9-2.1L20 9M18.5 15a7 7 0 01-11.9 2.1L4 15" />
+              </svg>
+              검색 초기화
+            </button>
+            <div className="grid grid-cols-2 gap-2 md:flex">
+              <button
+                onClick={showAllStores}
+                className="inline-flex items-center justify-center border border-[#303236] text-[#303236] text-sm px-5 py-2.5 hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
+              >
+                전체 매장 보기
+              </button>
+              <button
+                onClick={handleLocate}
+                disabled={locStatus === "loading"}
+                className="inline-flex items-center justify-center gap-1.5 bg-[#303236] text-white text-sm px-5 py-2.5 hover:bg-[#243d5e] transition-colors disabled:opacity-60 whitespace-nowrap"
+              >
+                {locStatus === "loading" ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    위치 확인 중
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    가까운 매장 찾기
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -560,54 +526,6 @@ export default function StoreLocator({
           <div className="mb-4 bg-red-50 border-l-4 border-red-400 px-4 py-3">
             <p className="text-sm font-semibold text-red-700 mb-0.5">위치를 확인할 수 없습니다</p>
             <p className="text-xs text-red-500 leading-relaxed">{locError}</p>
-          </div>
-        )}
-
-        {/* 근거리 결과 배너 */}
-        {locStatus === "success" && !isSearching && (
-          <div className={`mb-4 px-4 py-3 border-l-4 flex items-start justify-between gap-4 ${
-            nearbyStores.length > 0 ? "border-[#E5541B] bg-orange-50" : "border-gray-300 bg-gray-50"
-          }`}>
-            <div>
-              {nearbyStores.length > 0 ? (
-                <>
-                  <p className="text-sm font-bold text-[#303236]">
-                    {showAll ? `전국 ${allSorted.length}개 매장 — 거리순` : `가장 가까운 ${NEARBY_COUNT}개 매장`}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    가장 가까운 매장: <strong className="text-[#E5541B]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
-                    {" "}— {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-bold text-gray-600">근처매장이 없습니다.</p>
-                  <p className="text-xs text-gray-400 mt-0.5">전체 매장을 거리순으로 보여드립니다.</p>
-                </>
-              )}
-            </div>
-            {nearbyStores.length > 0 && (
-              <button
-                onClick={() => {
-                  const next = !showAll;
-                  setShowAll(next);
-                  setExpanded(null);
-                  setSelectedStore(null);
-                  if (next) {
-                    // 전국 매장이 한눈에 보이도록 지도를 축소, 지역 필터가 남아있으면
-                    // 리스트가 그 지역으로만 걸러지므로 함께 초기화한다.
-                    setSelectedSido("");
-                    setSelectedSigungu("");
-                    setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
-                  } else if (userCoords) {
-                    setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
-                  }
-                }}
-                className="flex-shrink-0 text-xs border px-3 py-1.5 border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors whitespace-nowrap"
-              >
-                {showAll ? "근처 매장 찾아보기" : "전체 매장 보기"}
-              </button>
-            )}
           </div>
         )}
 
@@ -647,10 +565,16 @@ export default function StoreLocator({
 
           {/* 선택된 매장 오버레이 */}
           {selectedStore && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#303236] px-4 py-3 flex items-center justify-between gap-4">
-              <div className="min-w-0">
+            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#4a4d53]/85 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-4">
+              {/* PC: 지점명 | 주소 한 줄 / 모바일: 2줄 */}
+              <div className="hidden md:flex items-center gap-2 min-w-0">
+                <p className="text-white font-bold text-sm flex-shrink-0">{selectedStore.name}</p>
+                <span className="text-white/40 flex-shrink-0">|</span>
+                <p className="text-gray-200 text-xs truncate">{selectedStore.address}</p>
+              </div>
+              <div className="md:hidden min-w-0">
                 <p className="text-white font-bold text-sm truncate">{selectedStore.name}</p>
-                <p className="text-gray-300 text-xs mt-0.5 truncate">{selectedStore.address}</p>
+                <p className="text-gray-200 text-xs mt-0.5 truncate">{selectedStore.address}</p>
               </div>
               <button
                 onClick={() => setSelectedStore(null)}
@@ -665,22 +589,7 @@ export default function StoreLocator({
         </div>
 
         {/* ── 매장 목록 ── */}
-        <div ref={listRef} className="flex items-center justify-between mb-3 scroll-mt-4">
-          <p className="text-xs text-gray-400">
-            {isSearching
-              ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
-              : showNearby
-              ? `가장 가까운 ${NEARBY_COUNT}개 매장 — 거리순`
-              : hasLocated
-              ? `전체 ${displayList.length}개 매장 — 거리순`
-              : `전체 ${displayList.length}개 매장`}
-          </p>
-          {hasLocated && (
-            <p className="text-xs text-gray-400">~표시는 추정 거리, 그 외는 실제 이동거리</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
+        <div ref={listRef} className="space-y-2 scroll-mt-4">
           {displayList.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
           ) : (
@@ -698,9 +607,11 @@ export default function StoreLocator({
                   }`}
                 >
 
-                  {/* 헤더 */}
+                  {/* 헤더 — 가장 가까운 매장은 주황 배지 대신 지점명 섹션에 옅은 음영 */}
                   <button
-                    className="w-full text-left px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className={`w-full text-left px-4 py-4 flex items-center justify-between transition-colors ${
+                      index === 0 && showNearby ? "bg-[#f4f1ec]" : "hover:bg-gray-50"
+                    }`}
                     onClick={() => {
                       const next = isOpen ? null : store.id;
                       setExpanded(next);
@@ -713,23 +624,19 @@ export default function StoreLocator({
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"
-                      }`}>
+                      <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-[#4b4e53] text-white">
                         {index + 1}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm text-[#303236]">{store.name}</span>
+                          <span className="font-bold text-sm md:text-[15px] text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
-                            <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
-                              index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600"
-                            }`}>
+                            <span className="text-xs md:text-[13px] px-2 py-0.5 font-medium flex-shrink-0 border border-gray-300 text-gray-600">
                               {formatDist(store.distance, store.estimated)}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs mt-0.5 truncate pr-2 text-gray-400">{store.address}</p>
+                        <p className="text-xs md:text-[13px] mt-0.5 truncate pr-2 text-gray-500">{store.address}</p>
                       </div>
                     </div>
                     <svg
@@ -744,47 +651,42 @@ export default function StoreLocator({
                   {isOpen && (
                     <div className="border-t border-gray-100 px-4 py-4">
                       {/* 주소 + 운영시간 + 판매제품 */}
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-8 mb-4">
                         <div className="space-y-1.5">
-                          <div className="flex items-start gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            </svg>
-                            <span>{store.address}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{store.hours}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <span>{store.phone}</span>
+                          {/* 주소는 리스트 헤더로 이동 — 여기선 시간·전화만 (PC 한 줄 / 모바일 2줄) */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-5">
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{store.hours}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <span>{store.phone}</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
+                        {/* 판매제품 — STORE BEST | 제품…  한 줄, 오른쪽 정렬(넘치면 가로 스크롤) */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 bg-[#ebebeb] px-3 py-2">
-                            <p className="text-xs font-semibold text-gray-500 mb-1">스토어 베스트 상품</p>
-                            <ul className="space-y-0.5">
-                              {store.products.map((p, i) => (
-                                <li key={p.id}>
-                                  <Link
-                                    href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#E5541B] transition-colors leading-tight py-0.5"
-                                  >
-                                    <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
-                                      {i + 1}
-                                    </span>
-                                    <span className="truncate">{p.name}</span>
-                                  </Link>
-                                </li>
+                          <div className="md:flex-1 md:min-w-0 md:flex md:justify-end">
+                            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 md:pb-0" style={{ scrollbarWidth: "none" }}>
+                              {/* STORE BEST 라벨 — 박스 컬러 구분(진한 차콜) */}
+                              <span className="flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">STORE BEST</span>
+                              <span className="flex-shrink-0 text-gray-300">|</span>
+                              {store.products.map((p) => (
+                                <Link
+                                  key={p.id}
+                                  href={`/products/${p.id}`}
+                                  className="flex-shrink-0 text-xs md:text-[13px] text-[#303236] hover:underline underline-offset-2 transition-colors whitespace-nowrap"
+                                >
+                                  {p.name}
+                                </Link>
                               ))}
-                            </ul>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -826,6 +728,22 @@ export default function StoreLocator({
                 </div>
               );
             })
+          )}
+        </div>
+
+        {/* 리스트 정보 — 하단으로 이동 (건수·거리순 + 추정거리 안내). 여백은 기존 mb-3과 동일하게 mt-3 유지 */}
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs text-gray-400">
+            {isSearching
+              ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
+              : showNearby
+              ? `가장 가까운 ${NEARBY_COUNT}개 매장 — 거리순`
+              : hasLocated
+              ? `전체 ${displayList.length}개 매장 — 거리순`
+              : `전체 ${displayList.length}개 매장`}
+          </p>
+          {hasLocated && (
+            <p className="text-xs text-gray-400">~표시는 추정 거리, 그 외는 실제 이동거리</p>
           )}
         </div>
       </div>

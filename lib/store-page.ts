@@ -9,7 +9,7 @@ export type StorePageConfig = {
 
 export const DEFAULT_STORE_PAGE: StorePageConfig = {
   title: "직접 입어봐야 압니다.",
-  description: "몸으로 느끼는 기능은 화면으로 전할 수 없습니다. 전국 {count}개 매장에서 직접 확인해 보세요.",
+  description: "몸으로 느끼는 기능은 화면으로 전할 수 없습니다.\n전국 {count}개 매장에서 직접 확인해 보세요.",
   bullets: [
     "직종을 말씀해 주시면 맞춤 추천해 드립니다.",
     "방문 전 피팅리스트 제품 재고 상황을 유선상으로 확인할 수 있습니다.",

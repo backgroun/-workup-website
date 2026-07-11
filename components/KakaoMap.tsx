@@ -242,7 +242,7 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
   return (
     // isolation: isolate → mix-blend-mode가 이 영역 안에서만 적용됨
     <div
-      className="relative w-full h-full bg-white"
+      className="relative w-full h-full bg-[#FAFAF8]"
       style={{ isolation: "isolate" }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
