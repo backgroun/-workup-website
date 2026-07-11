@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { type Store } from "@/data/stores";
+import { type Store, type StoreProduct } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 import { trackStoreEvent } from "@/lib/track";
 import { DEFAULT_STORE_PAGE, type StorePageConfig } from "@/lib/store-page";
@@ -168,6 +168,8 @@ export default function StoreLocator({
   // 지도 중심 (선택된 매장 or 기본값) — level은 카카오맵 기준 (작을수록 확대)
   const [mapCenter, setMapCenter] = useState({ lat: 37.3205, lng: 127.0423, level: 9 });
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  // 스토어 베스트 제품 클릭 시 미리보기 팝업
+  const [popupProduct, setPopupProduct] = useState<StoreProduct | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   // 리스트 각 항목의 DOM 참조 — 지도에서 매장을 고르면 해당 항목으로 스크롤하기 위함
@@ -651,7 +653,7 @@ export default function StoreLocator({
                   {isOpen && (
                     <div className="border-t border-gray-100 px-4 py-4">
                       {/* 주소 + 운영시간 + 판매제품 */}
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-8 mb-4">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-8 mb-4">
                         <div className="space-y-1.5">
                           {/* 주소는 리스트 헤더로 이동 — 여기선 시간·전화만 (PC 한 줄 / 모바일 2줄) */}
                           <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-5">
@@ -678,13 +680,13 @@ export default function StoreLocator({
                               <span className="flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">STORE BEST</span>
                               <span className="flex-shrink-0 text-gray-300 mr-0.5">|</span>
                               {store.products.map((p) => (
-                                <Link
+                                <button
                                   key={p.id}
-                                  href={`/products/${p.id}`}
+                                  onClick={() => setPopupProduct(p)}
                                   className="flex-shrink-0 border border-gray-300 px-2.5 py-1 text-xs md:text-[13px] text-[#303236] hover:border-[#303236] transition-colors whitespace-nowrap"
                                 >
                                   {p.name}
-                                </Link>
+                                </button>
                               ))}
                             </div>
                           </div>
@@ -747,6 +749,46 @@ export default function StoreLocator({
           )}
         </div>
       </div>
+
+      {/* 스토어 베스트 제품 미리보기 팝업 */}
+      {popupProduct && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <button
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setPopupProduct(null)}
+            aria-label="닫기"
+          />
+          <div className="relative bg-white w-full max-w-sm max-h-[85vh] overflow-y-auto">
+            <button
+              onClick={() => setPopupProduct(null)}
+              className="absolute top-2.5 right-2.5 z-10 w-8 h-8 flex items-center justify-center bg-white/90 text-gray-500 hover:text-[#303236] transition-colors"
+              aria-label="닫기"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+              {popupProduct.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={popupProduct.image_url} alt={popupProduct.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-gray-300 text-2xl font-black select-none">WU</span>
+              )}
+            </div>
+            <div className="p-5">
+              <p className="text-[15px] text-[#303236] leading-snug mb-4">{popupProduct.name}</p>
+              <Link
+                href={`/products/${popupProduct.id}`}
+                onClick={() => trackStoreEvent("list_click", { name: popupProduct.name })}
+                className="block text-center bg-[#303236] text-white text-sm py-3 hover:bg-[#243d5e] transition-colors"
+              >
+                제품 상세 보기
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
