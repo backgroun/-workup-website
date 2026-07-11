@@ -205,8 +205,9 @@ function WhiteBox({
                   <span className="text-gray-300 text-[10px] font-black">WU</span>
                 )}
               </div>
+              {/* PC: 브랜드 비노출(순수 상품명). 모바일 리스트는 displayName으로 브랜드 노출 */}
               <p style={{ fontSize: "11px", color: "#303236", lineHeight: 1.3, marginBottom: "3px" }}>
-                {item.displayName || item.name}
+                {item.name}
               </p>
               <p style={{ fontSize: "12px", fontWeight: "bold", color: "#303236" }}>
                 {item.price}
