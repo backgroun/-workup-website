@@ -12,10 +12,12 @@ export type BrandViewModel = {
   pdf_url: string;     // 원본 PDF (대체 보기)
 };
 
-const FlipPage = forwardRef<HTMLDivElement, { src: string; alt: string }>(({ src, alt }, ref) => (
+// 페이지플립 라이브러리가 전 페이지를 동시에 DOM에 올리는 구조라 loading="lazy"만으로는
+// 뷰포트 판정이 무의미해진다 — loadImage=false면 이미지를 렌더하지 않는다(현재 페이지 ±2만 로드).
+const FlipPage = forwardRef<HTMLDivElement, { src: string; alt: string; loadImage: boolean }>(({ src, alt, loadImage }, ref) => (
   <div ref={ref} className="bg-[#0d1826] w-full h-full overflow-hidden flex items-center justify-center">
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={ikResize(src, 1200)} alt={alt} className="w-full h-full object-contain" loading="lazy" decoding="async" />
+    {loadImage && <img src={ikResize(src, 1200)} alt={alt} className="w-full h-full object-contain" loading="lazy" decoding="async" />}
   </div>
 ));
 FlipPage.displayName = "FlipPage";
@@ -123,7 +125,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               showPageCorners={true}
             >
               {selected.pages.map((src, i) => (
-                <FlipPage key={i} src={src} alt={`${selected.brand_name} ${i + 1}`} />
+                <FlipPage key={i} src={src} alt={`${selected.brand_name} ${i + 1}`} loadImage={Math.abs(i - currentPage) <= 2} />
               ))}
             </Book>
           ) : total === 0 ? (

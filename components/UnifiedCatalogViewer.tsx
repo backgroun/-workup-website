@@ -56,11 +56,13 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
 
   const isWorkup = selectedId === "workup";
   const brand = brands.find((b) => b.id === selectedId);
+  // 페이지플립 라이브러리가 전 페이지를 동시에 DOM에 올리는 구조라 loading="lazy"만으로는
+  // 뷰포트 판정이 무의미해진다 — 현재 페이지 ±2만 실제로 이미지를 불러온다.
   const pageNodes: React.ReactNode[] = isWorkup
-    ? workupPages.map((p) => <CatalogPageView key={p.id} page={p} />)
+    ? workupPages.map((p, i) => <CatalogPageView key={p.id} page={p} loadImage={Math.abs(i - currentPage) <= 2} />)
     : (brand?.pages ?? []).map((url, i) => (
         // eslint-disable-next-line @next/next/no-img-element
-        <img key={i} src={ikResize(url, 1200)} alt="" className="w-full h-full object-contain bg-[#0d1826]" loading="lazy" decoding="async" />
+        <img key={i} src={Math.abs(i - currentPage) <= 2 ? ikResize(url, 1200) : undefined} alt="" className="w-full h-full object-contain bg-[#0d1826]" loading="lazy" decoding="async" />
       ));
   const total = pageNodes.length;
   const pdfUrl = isWorkup ? "" : (brand?.pdf_url ?? "");

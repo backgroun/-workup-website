@@ -6,7 +6,10 @@ import { ikResize } from "@/lib/image-url";
 // 카탈로그 한 페이지의 시각 표현 — 플립북과 관리자 미리보기에서 공용으로 사용한다(DRY).
 // 종류(page_type): cover/contents/divider 는 옛 플립북 디자인을 그대로 재현(고정 px),
 //                  image 는 업로드 이미지 + 캡션(cqw 비례).
-export default function CatalogPageView({ page }: { page: CatalogPage }) {
+// loadImage=false면 이미지를 렌더하지 않는다 — 플립북에서 페이지플립 라이브러리가 전 페이지를
+// 동시에(같은 영역에 겹쳐) DOM에 올리는 구조라 loading="lazy"만으로는 뷰포트 판정이 무의미해지므로,
+// 현재 페이지 주변(±2)만 실제로 이미지를 불러오게 상위(UnifiedCatalogViewer 등)에서 제어한다.
+export default function CatalogPageView({ page, loadImage = true }: { page: CatalogPage; loadImage?: boolean }) {
   const type = page.page_type ?? "image";
   const d = page.data ?? {};
 
@@ -14,7 +17,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   if (type === "cover") {
     return (
       <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#303236" }}>
-        {page.image_url && (
+        {page.image_url && loadImage && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={ikResize(page.image_url, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
@@ -67,7 +70,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   if (type === "divider") {
     return (
       <div className="relative w-full h-full flex flex-col justify-between overflow-hidden" style={{ padding: "8% 9%", backgroundColor: d.bg || "#303236" }}>
-        {page.image_url && (
+        {page.image_url && loadImage && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={ikResize(page.image_url, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
@@ -90,12 +93,12 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
   const hasCaption = !!(page.title || page.description || (page.link_url && page.link_label));
   return (
     <div className="relative w-full h-full bg-[#0d1826] overflow-hidden" style={{ containerType: "inline-size" }}>
-      {page.image_url ? (
+      {page.image_url && loadImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={ikResize(page.image_url, 1200)} alt={page.title || page.admin_title || "카탈로그 페이지"} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-      ) : (
+      ) : !page.image_url ? (
         <div className="w-full h-full flex items-center justify-center text-white/25" style={{ fontSize: "4cqw" }}>이미지 없음</div>
-      )}
+      ) : null}
 
       {hasCaption && (
         <div

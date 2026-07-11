@@ -59,6 +59,16 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   // 슬라이드별 동영상 엘리먼트(PC/모바일) 보관 — 현재 슬라이드 영상만 처음부터 재생.
   const videoMap = useRef<Record<number, { pc: HTMLVideoElement | null; mobile: HTMLVideoElement | null }>>({});
   const endedHandledRef = useRef(false);
+  // 뷰포트에 실제 보이는 쪽(PC/모바일) 영상만 재생 — 반대쪽은 preload="none"이라 재생을
+  // 호출하지 않는 한 다운로드되지 않는다. 측정 전(null)에는 어느 쪽도 재생하지 않는다.
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // 자동 슬라이드(이미지). 동영상 슬라이드는 노출 시간(video_duration)이 설정된 경우 그 시간 후 전환,
   // 설정하지 않았다면 타이머로 넘기지 않고 영상이 1회 재생 완료되면 onEnded 로 넘어간다.
@@ -74,20 +84,23 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     return () => clearTimeout(t);
   }, [current, total, slides]);
 
-  // 현재 슬라이드가 동영상이면 처음부터 재생, 나머지 영상은 일시정지.
+  // 현재 슬라이드가 동영상이면 뷰포트에 실제 보이는 쪽만 처음부터 재생, 나머지는 일시정지.
+  // isDesktop 측정 전(null)에는 아무것도 재생하지 않는다 — 잘못된 쪽(반대 뷰포트) 영상이
+  // 먼저 재생·다운로드되는 것을 막기 위함.
   useEffect(() => {
+    if (isDesktop === null) return;
     endedHandledRef.current = false;
     Object.entries(videoMap.current).forEach(([k, v]) => {
       const isCur = Number(k) === current;
-      [v.pc, v.mobile].forEach((el) => {
-        if (!el) return;
-        try {
-          if (isCur) { el.currentTime = 0; const p = el.play(); if (p) p.catch(() => {}); }
-          else el.pause();
-        } catch { /* noop */ }
-      });
+      const active = isDesktop ? v.pc : v.mobile;
+      const inactive = isDesktop ? v.mobile : v.pc;
+      try {
+        if (isCur && active) { active.currentTime = 0; const p = active.play(); if (p) p.catch(() => {}); }
+        else active?.pause();
+        inactive?.pause();
+      } catch { /* noop */ }
     });
-  }, [current]);
+  }, [current, isDesktop]);
 
   // 동영상 1회 재생 완료 → 다음 슬라이드로 (PC/모바일 중복 호출 방지).
   const onVideoEnd = (idx: number) => {
@@ -161,7 +174,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   <video
                     ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).pc = el; }}
                     src={pcVideo}
-                    autoPlay muted playsInline preload="metadata"
+                    muted playsInline preload="none"
                     loop={loopVideo}
                     onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
@@ -174,7 +187,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   <video
                     ref={(el) => { (videoMap.current[idx] ??= { pc: null, mobile: null }).mobile = el; }}
                     src={mobileVideo || pcVideo}
-                    autoPlay muted playsInline preload="metadata"
+                    muted playsInline preload="none"
                     loop={loopVideo}
                     onEnded={() => onVideoEnd(idx)}
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
