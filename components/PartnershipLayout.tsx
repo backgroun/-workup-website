@@ -15,16 +15,16 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
   const st = info.styles;
   return (
     <main>
-      <div className="bg-[#FAFAF8] py-8">
-        <div className="max-w-6xl mx-auto px-6 space-y-8">
-          <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-            {/* 좌: 소개 패널 + 폼 (세로 스택) */}
-            <div className="flex flex-col border border-gray-200 bg-white overflow-hidden">
+      <div className="bg-[#FAFAF8] pb-8 lg:pt-8">
+        <div className="max-w-6xl mx-auto lg:px-6 space-y-8">
+          <div className="grid lg:grid-cols-2 gap-0 lg:gap-6 items-stretch">
+            {/* 좌: 소개 패널 + 폼 (세로 스택) — 모바일은 여백 없는 전체화면형, lg 이상은 카드형 */}
+            <div className="flex flex-col border-0 lg:border border-gray-200 bg-white overflow-hidden min-w-0">
               <PartnershipPanel info={info} />
 
               {guideButton}
 
-              <div className="px-8 py-8">
+              <div className="px-6 sm:px-8 py-8">
                 <h3 className="font-bold" style={{ fontSize: st.form_title.size, color: st.form_title.color }}>
                   {info.form_title}
                 </h3>
@@ -40,7 +40,7 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
             </div>
 
             {/* 우: 실시간 문의 현황 — 데스크톱은 좌측 칼럼 높이에 맞춰 내부 스크롤, 모바일은 고정 높이 */}
-            <div className="relative h-[600px] lg:h-auto">
+            <div className="relative h-[600px] lg:h-auto min-w-0">
               <div className="h-full lg:absolute lg:inset-0">
                 <InquiryBoard type={boardType} />
               </div>
@@ -48,7 +48,7 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
           </div>
 
           {/* 페이지 간 이동 */}
-          <div className="flex items-center justify-center gap-5 text-xs flex-wrap">
+          <div className="flex items-center justify-center gap-5 text-xs flex-wrap px-6 lg:px-0">
             <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">가맹·창업 문의</Link>
             <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">브랜드 입점·제휴 문의</Link>
             <Link href="/products" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">제품 라인업 보기</Link>
