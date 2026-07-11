@@ -92,7 +92,7 @@ export default function ProductGrid({ id, title, subtitle, filter }: Props) {
                   {product.line}
                 </span>
               </div>
-              <p className="text-xs text-[#ff550c] tracking-widest uppercase mb-1">
+              <p className="text-xs text-[#E5541B] tracking-widest uppercase mb-1">
                 WORKUP {product.line}
               </p>
               <h3 className="text-base font-semibold text-[#303236] mb-2 group-hover:underline underline-offset-2 transition-all">

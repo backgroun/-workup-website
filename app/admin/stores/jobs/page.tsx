@@ -396,7 +396,7 @@ export default function AdminStoreJobsPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 py-3 bg-[#ff550c] text-white font-semibold text-sm hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded-lg"
+                className="flex-1 py-3 bg-[#E5541B] text-white font-semibold text-sm hover:bg-[#e04500] transition-colors disabled:opacity-50 rounded-lg"
               >
                 {saving ? (
                   <span className="flex items-center justify-center gap-2">

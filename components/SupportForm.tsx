@@ -115,7 +115,7 @@ export default function SupportForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-12 h-12 bg-[#ff550c] flex items-center justify-center mb-4">
+        <div className="w-12 h-12 bg-[#E5541B] flex items-center justify-center mb-4">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -135,7 +135,7 @@ export default function SupportForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* 문의 구분 */}
       <div>
-        <label className="block text-xs text-gray-500 mb-2">문의 구분<span className="text-[#ff550c] ml-0.5">*</span></label>
+        <label className="block text-xs text-gray-500 mb-2">문의 구분<span className="text-[#E5541B] ml-0.5">*</span></label>
         <div className="flex flex-wrap gap-2">
           {SUPPORT_CATEGORIES.map((cat) => (
             <button
@@ -171,19 +171,19 @@ export default function SupportForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="support-name" className="block text-xs text-gray-500 mb-1.5">이름<span className="text-[#ff550c] ml-0.5">*</span></label>
+          <label htmlFor="support-name" className="block text-xs text-gray-500 mb-1.5">이름<span className="text-[#E5541B] ml-0.5">*</span></label>
           <input id="support-name" type="text" required placeholder="홍길동" value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={cls} />
         </div>
         <div>
-          <label htmlFor="support-phone" className="block text-xs text-gray-500 mb-1.5">연락처<span className="text-[#ff550c] ml-0.5">*</span></label>
+          <label htmlFor="support-phone" className="block text-xs text-gray-500 mb-1.5">연락처<span className="text-[#E5541B] ml-0.5">*</span></label>
           <input id="support-phone" type="tel" required placeholder="010-0000-0000" value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className={cls} />
         </div>
       </div>
 
       <div>
-        <label htmlFor="support-message" className="block text-xs text-gray-500 mb-1.5">문의 내용<span className="text-[#ff550c] ml-0.5">*</span></label>
+        <label htmlFor="support-message" className="block text-xs text-gray-500 mb-1.5">문의 내용<span className="text-[#E5541B] ml-0.5">*</span></label>
         <textarea id="support-message" required rows={5} placeholder="궁금하신 내용을 자유롭게 적어주세요."
           value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
           className={cls + " resize-none"} />
@@ -194,7 +194,7 @@ export default function SupportForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50"
+        className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#E5541B] transition-colors disabled:opacity-50"
       >
         {submitting ? "접수 중..." : "1:1 문의 접수하기 →"}
       </button>

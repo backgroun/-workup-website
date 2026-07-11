@@ -57,11 +57,11 @@ export default async function CatalogPage() {
 function CatalogEmpty() {
   return (
     <div className="bg-[#0d1826] flex flex-col items-center justify-center text-center px-6" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
-      <p className="text-[10px] tracking-[0.3em] text-[#ff550c] uppercase mb-4">Catalog</p>
+      <p className="text-[10px] tracking-[0.3em] text-[#E5541B] uppercase mb-4">Catalog</p>
       <h1 className="text-2xl md:text-3xl font-bold text-white leading-snug mb-3">카탈로그를 준비하고 있습니다</h1>
       <p className="text-sm text-gray-400 leading-relaxed mb-8">새 카탈로그가 곧 공개됩니다.<br />그동안 제품과 가까운 매장을 먼저 둘러보세요.</p>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link href="/products" className="inline-block bg-[#ff550c] text-white text-sm tracking-widest px-7 py-3 hover:bg-[#d05518] transition-colors">제품 보기</Link>
+        <Link href="/products" className="inline-block bg-[#E5541B] text-white text-sm tracking-widest px-7 py-3 hover:bg-[#d05518] transition-colors">제품 보기</Link>
         <Link href="/store" className="inline-block border border-white/40 text-white text-sm tracking-widest px-7 py-3 hover:bg-white hover:text-[#303236] transition-colors">매장 찾기</Link>
       </div>
       <Link href="/" className="mt-6 text-xs text-white/40 hover:text-white/80 tracking-widest transition-colors">메인으로 ←</Link>

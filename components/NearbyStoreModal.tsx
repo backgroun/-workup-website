@@ -107,7 +107,7 @@ export default function NearbyStoreModal({
         {/* 헤더 */}
         <div className="bg-[#303236] px-6 py-5 flex items-start justify-between">
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-1">내 주변 매장</p>
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-1">내 주변 매장</p>
             <p className="text-base font-bold text-white">{productName}</p>
             <p className="text-xs text-gray-400 mt-0.5">가장 가까운 매장 5곳</p>
           </div>
@@ -125,7 +125,7 @@ export default function NearbyStoreModal({
         <div className="px-6 py-5">
           {status === "loading" && (
             <div className="flex items-center gap-3 py-8 text-sm text-gray-500">
-              <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+              <span className="w-5 h-5 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin flex-shrink-0" />
               위치를 확인하는 중입니다...
             </div>
           )}
@@ -136,7 +136,7 @@ export default function NearbyStoreModal({
               <Link
                 href="/store"
                 onClick={onClose}
-                className="inline-block bg-[#303236] text-white text-xs px-5 py-2.5 hover:bg-[#ff550c] transition-colors"
+                className="inline-block bg-[#303236] text-white text-xs px-5 py-2.5 hover:bg-[#E5541B] transition-colors"
               >
                 전체 매장 보기 →
               </Link>
@@ -149,7 +149,7 @@ export default function NearbyStoreModal({
                 <div key={s.id} className="flex items-start justify-between gap-4 py-4">
                   <div className="flex items-start gap-3">
                     <span className={`w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${
-                      i === 0 ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"
+                      i === 0 ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"
                     }`}>
                       {i + 1}
                     </span>
@@ -159,12 +159,12 @@ export default function NearbyStoreModal({
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#ff550c]" : "text-gray-500"}`}>
+                    <p className={`text-sm font-bold mb-1 ${i === 0 ? "text-[#E5541B]" : "text-gray-500"}`}>
                       {formatDist(s.distance)}
                     </p>
                     <button
                       onClick={() => openKakao(s)}
-                      className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors"
+                      className="text-xs text-[#303236] underline hover:text-[#E5541B] transition-colors"
                     >
                       길찾기
                     </button>
@@ -179,7 +179,7 @@ export default function NearbyStoreModal({
           <Link
             href="/store"
             onClick={onClose}
-            className="flex-1 text-center bg-[#303236] text-white text-xs font-semibold py-3 hover:bg-[#ff550c] transition-colors"
+            className="flex-1 text-center bg-[#303236] text-white text-xs font-semibold py-3 hover:bg-[#E5541B] transition-colors"
           >
             전체 매장 보기 →
           </Link>

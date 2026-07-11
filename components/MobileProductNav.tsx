@@ -33,7 +33,7 @@ export default function MobileProductNav() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
           {count > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#ff550c] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#E5541B] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {count > 9 ? "9+" : count}
             </span>
           )}

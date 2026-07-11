@@ -83,7 +83,7 @@ export default function MemberDashboardPage() {
       {/* 통계 카드 */}
       <div className="grid grid-cols-5 gap-4">
         {[
-          { label: "이번달 신규", value: stats.newThisMonth, color: "text-[#ff550c]",    href: "/admin/members/list" },
+          { label: "이번달 신규", value: stats.newThisMonth, color: "text-[#E5541B]",    href: "/admin/members/list" },
           { label: "전체 회원",   value: stats.total,        color: "text-[#303236]",    href: "/admin/members/list" },
           { label: "활성 회원",   value: stats.active,       color: "text-emerald-600",  href: "/admin/members/list" },
           { label: "휴면 회원",   value: stats.dormant,      color: "text-amber-500",    href: "/admin/members/dormant" },

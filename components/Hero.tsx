@@ -65,7 +65,7 @@ function HeroDefault() {
     <section className="relative bg-[#303236] overflow-hidden min-h-[520px] md:min-h-[700px] flex flex-col justify-center">
       <div className="max-w-6xl mx-auto px-6 py-16 w-full">
         <div className="max-w-2xl">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-6">
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-6">
             2026 Summer Collection
           </p>
           <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
@@ -81,7 +81,7 @@ function HeroDefault() {
           <div className="flex flex-wrap gap-4">
             <a
               href="/site"
-              className="inline-block bg-[#ff550c] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
+              className="inline-block bg-[#E5541B] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
             >
               컬렉션 보기
             </a>

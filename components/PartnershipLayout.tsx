@@ -15,7 +15,7 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
   const st = info.styles;
   return (
     <main>
-      <div className="bg-[#F5F2ED] py-8">
+      <div className="bg-[#FAFAF8] py-8">
         <div className="max-w-6xl mx-auto px-6 space-y-8">
           <div className="grid lg:grid-cols-2 gap-6 items-stretch">
             {/* 좌: 소개 패널 + 폼 (세로 스택) */}
@@ -49,9 +49,9 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
 
           {/* 페이지 간 이동 */}
           <div className="flex items-center justify-center gap-5 text-xs flex-wrap">
-            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">가맹·창업 문의</Link>
-            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">브랜드 입점·제휴 문의</Link>
-            <Link href="/products" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">제품 라인업 보기</Link>
+            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">가맹·창업 문의</Link>
+            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">브랜드 입점·제휴 문의</Link>
+            <Link href="/products" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">제품 라인업 보기</Link>
           </div>
         </div>
       </div>

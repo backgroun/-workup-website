@@ -21,10 +21,10 @@ export default async function SupportPage() {
   return (
     <main>
       {/* 히어로 */}
-      <section className="bg-[#F5F2ED] pt-16 md:pt-20 pb-2">
+      <section className="bg-[#FAFAF8] pt-16 md:pt-20 pb-2">
         <div className="max-w-6xl mx-auto px-6">
           {sup.hero_eyebrow && (
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{sup.hero_eyebrow}</p>
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">{sup.hero_eyebrow}</p>
           )}
           {sup.hero_title && (
             <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">{sup.hero_title}</h1>
@@ -35,7 +35,7 @@ export default async function SupportPage() {
         </div>
       </section>
 
-      <div className="bg-[#F5F2ED] pb-12 md:pb-16 pt-8 md:pt-10">
+      <div className="bg-[#FAFAF8] pb-12 md:pb-16 pt-8 md:pt-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-6 lg:items-stretch">
 
@@ -57,7 +57,7 @@ export default async function SupportPage() {
                 )}
 
                 <p className="text-xs text-gray-400 tracking-widest uppercase mb-1">고객센터</p>
-                <a href={telHref} className="text-2xl font-bold text-[#303236] hover:text-[#ff550c] transition-colors">
+                <a href={telHref} className="text-2xl font-bold text-[#303236] hover:text-[#E5541B] transition-colors">
                   {footer.cs_phone}
                 </a>
                 <div className="text-sm text-gray-500 mt-2 leading-relaxed">
@@ -68,7 +68,7 @@ export default async function SupportPage() {
                 {/* 오프라인 전환 CTA */}
                 <div className="mt-7 flex flex-wrap gap-2.5">
                   <a href={telHref}
-                    className="inline-flex items-center gap-1.5 bg-[#ff550c] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#d6480a] transition-colors">
+                    className="inline-flex items-center gap-1.5 bg-[#E5541B] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#d6480a] transition-colors">
                     전화 문의
                   </a>
                   <Link href="/store"
@@ -92,9 +92,9 @@ export default async function SupportPage() {
 
           {/* 다른 문의 경로 */}
           <div className="flex items-center justify-center gap-5 text-xs flex-wrap mt-8">
-            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">가맹·창업 문의</Link>
-            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">입점·제휴 문의</Link>
-            <Link href="/store" className="text-[#303236] underline hover:text-[#ff550c] transition-colors">매장 안내</Link>
+            <Link href="/partnership/franchise" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">가맹·창업 문의</Link>
+            <Link href="/partnership/wholesale" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">입점·제휴 문의</Link>
+            <Link href="/store" className="text-[#303236] underline hover:text-[#E5541B] transition-colors">매장 안내</Link>
           </div>
         </div>
       </div>

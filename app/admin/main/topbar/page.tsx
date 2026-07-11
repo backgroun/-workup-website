@@ -13,7 +13,7 @@ import {
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
-const COLOR_PRESETS = ["#ff550c", "#303236", "#0f172a", "#111827", "#2d4f72", "#16a34a", "#dc2626", "#ffffff"];
+const COLOR_PRESETS = ["#E5541B", "#303236", "#0f172a", "#111827", "#2d4f72", "#16a34a", "#dc2626", "#ffffff"];
 
 function uid() {
   return (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `item-${Math.random().toString(36).slice(2)}`;

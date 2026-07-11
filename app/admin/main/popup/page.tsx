@@ -50,7 +50,7 @@ const GRADIENT_PRESETS = [
   { label: "딥 네이비",      from: "#303236", to: "#2d4a7a", angle: 135 },
   { label: "민트 그린",      from: "#43b89c", to: "#2b6cb0", angle: 135 },
   { label: "핑크 드림",      from: "#f093fb", to: "#f5576c", angle: 135 },
-  { label: "워크업 오렌지",  from: "#ff550c", to: "#ff9a44", angle: 135 },
+  { label: "워크업 오렌지",  from: "#E5541B", to: "#ff9a44", angle: 135 },
 ];
 
 const EMPTY: Omit<PopupItem, "id"> = {

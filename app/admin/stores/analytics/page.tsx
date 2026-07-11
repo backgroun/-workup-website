@@ -33,7 +33,7 @@ const PRESETS = [
   { label: "전체", days: 0 },
 ];
 
-const RANK_BADGE = ["bg-[#ff550c] text-white", "bg-amber-400 text-white", "bg-amber-300 text-amber-900"];
+const RANK_BADGE = ["bg-[#E5541B] text-white", "bg-amber-400 text-white", "bg-amber-300 text-amber-900"];
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -73,7 +73,7 @@ export default function StoreAnalyticsPage() {
     { label: "길찾기", value: totals?.directions ?? 0, color: "text-[#303236]" },
     { label: "전화 문의", value: totals?.call ?? 0, color: "text-emerald-600" },
     { label: "카카오톡 상담", value: totals?.kakao_chat ?? 0, color: "text-yellow-600" },
-    { label: "전환 합계", value: totals?.conversions ?? 0, color: "text-[#ff550c]" },
+    { label: "전환 합계", value: totals?.conversions ?? 0, color: "text-[#E5541B]" },
   ];
 
   const downloadExcel = () => {
@@ -213,7 +213,7 @@ export default function StoreAnalyticsPage() {
                     </td>
                     <td className="px-4 py-3.5 font-medium text-gray-900">
                       {s.store_id ? (
-                        <Link href={`/store/${s.store_id}`} target="_blank" className="hover:text-[#ff550c] hover:underline">
+                        <Link href={`/store/${s.store_id}`} target="_blank" className="hover:text-[#E5541B] hover:underline">
                           {s.store_name}
                         </Link>
                       ) : s.store_name}
@@ -224,7 +224,7 @@ export default function StoreAnalyticsPage() {
                     <td className="px-4 py-3.5 text-right text-emerald-600">{s.call.toLocaleString()}</td>
                     <td className="px-4 py-3.5 text-right text-yellow-600">{s.kakao_chat.toLocaleString()}</td>
                     <td className="px-4 py-3.5 text-right text-gray-400">{s.list_click.toLocaleString()}</td>
-                    <td className="px-4 py-3.5 text-right font-bold text-[#ff550c]">{s.conversions.toLocaleString()}</td>
+                    <td className="px-4 py-3.5 text-right font-bold text-[#E5541B]">{s.conversions.toLocaleString()}</td>
                   </tr>
                 ))
               )}

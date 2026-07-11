@@ -105,7 +105,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
               <div className="text-[#303236] whitespace-pre-line break-words leading-relaxed border border-gray-100 rounded-lg p-3.5 bg-gray-50/40">{post.content || "(내용 없음)"}</div>
               {post.reply ? (
                 <div className="border border-[#ffd9c4] bg-[#fff7f1] rounded-lg p-3.5">
-                  <p className="text-xs font-bold text-[#ff550c] mb-1.5">답변{post.repliedAt ? ` · ${fmtDate(post.repliedAt)}` : ""}</p>
+                  <p className="text-xs font-bold text-[#E5541B] mb-1.5">답변{post.repliedAt ? ` · ${fmtDate(post.repliedAt)}` : ""}</p>
                   <p className="text-[#303236] whitespace-pre-line break-words leading-relaxed">{post.reply}</p>
                 </div>
               ) : (
@@ -118,7 +118,7 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
         {/* 하단 고정 액션 버튼 — 스크롤·키보드와 무관하게 항상 보이도록 분리 */}
         <div className="flex-shrink-0 p-4 border-t border-gray-100 bg-white">
           {!post ? (
-            <button type="submit" form="post-view-form" disabled={loading} className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#ff550c] transition-colors disabled:opacity-50">
+            <button type="submit" form="post-view-form" disabled={loading} className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-3 hover:bg-[#E5541B] transition-colors disabled:opacity-50">
               {loading ? "확인 중..." : "확인"}
             </button>
           ) : (
@@ -144,7 +144,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
   const title = type === "wholesale" ? "워크업 입점/제휴 문의 현황"
     : type === "franchise" ? "워크업 가맹/창업 문의 현황"
     : "워크업 문의 현황";
-  const accent = type === "wholesale" ? "#2563eb" : "#ff550c"; // 입점=블루, 가맹=오렌지
+  const accent = type === "wholesale" ? "#2563eb" : "#E5541B"; // 입점=블루, 가맹=오렌지
 
   const load = () => {
     setRefreshing(true);
@@ -212,10 +212,10 @@ export default function InquiryBoard({ type }: { type?: string }) {
               <div
                 key={it.id}
                 onClick={it.locked ? () => setViewItem(it) : undefined}
-                className={`grid grid-cols-[1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 border-l-2 transition-colors hover:bg-slate-50/70 ${it.locked ? "cursor-pointer" : ""} ${today ? "bg-[#fff7f1] border-l-[#ff550c]" : "border-l-transparent"}`}
+                className={`grid grid-cols-[1fr_70px_64px] px-5 py-2.5 text-[11px] items-center border-b border-gray-50 border-l-2 transition-colors hover:bg-slate-50/70 ${it.locked ? "cursor-pointer" : ""} ${today ? "bg-[#fff7f1] border-l-[#E5541B]" : "border-l-transparent"}`}
               >
                 <span className="text-[#303236] truncate flex items-center gap-1.5 min-w-0">
-                  {today && <span className="flex-shrink-0 text-[9px] font-bold text-white bg-[#ff550c] rounded px-1 leading-tight py-0.5">NEW</span>}
+                  {today && <span className="flex-shrink-0 text-[9px] font-bold text-white bg-[#E5541B] rounded px-1 leading-tight py-0.5">NEW</span>}
                   {it.locked && (
                     <svg className="w-3 h-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-label="비밀글">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -224,7 +224,7 @@ export default function InquiryBoard({ type }: { type?: string }) {
                   <span className="truncate">{it.content}</span>
                 </span>
                 <span className="text-center text-gray-500 truncate">{it.name}</span>
-                <span className={`text-right whitespace-nowrap ${today ? "text-[#ff550c] font-medium" : "text-gray-400"}`}>{fmtDate(it.created_at)}</span>
+                <span className={`text-right whitespace-nowrap ${today ? "text-[#E5541B] font-medium" : "text-gray-400"}`}>{fmtDate(it.created_at)}</span>
               </div>
             );
           })

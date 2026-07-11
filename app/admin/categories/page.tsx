@@ -112,7 +112,7 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center gap-3 py-20 text-base text-gray-400">
-        <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+        <span className="w-6 h-6 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
         불러오는 중...
       </div>
     );
@@ -167,7 +167,7 @@ export default function CategoriesPage() {
                   />
                 ) : (
                   <button onClick={() => startEditMain(catIdx)}
-                    className="flex-1 text-left text-[15px] font-bold text-gray-800 hover:text-[#ff550c] transition-colors">
+                    className="flex-1 text-left text-[15px] font-bold text-gray-800 hover:text-[#E5541B] transition-colors">
                     {cat.name}
                     <span className="ml-2 text-[11px] font-normal text-gray-400">클릭하여 이름 수정</span>
                   </button>

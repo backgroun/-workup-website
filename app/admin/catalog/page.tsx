@@ -308,7 +308,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${page.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                         </button>
                       </div>
-                      {page.link_url && <p className="text-[10px] text-[#ff550c] mt-0.5 truncate">↗ {page.link_label || page.link_url}</p>}
+                      {page.link_url && <p className="text-[10px] text-[#E5541B] mt-0.5 truncate">↗ {page.link_label || page.link_url}</p>}
                       <div className="flex items-center gap-1.5 mt-2">
                         <button onClick={() => openEdit(page)} className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">수정</button>
                         <button onClick={() => handleDuplicate(page)} title="복제" className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">복제</button>

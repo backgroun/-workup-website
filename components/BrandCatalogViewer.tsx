@@ -71,7 +71,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               key={b.id}
               onClick={() => setSelectedId(b.id)}
               style={{ minWidth: 64 }}
-              className={`flex-shrink-0 md:w-full text-left rounded-lg overflow-hidden border transition-colors ${b.id === selectedId ? "border-[#ff550c]" : "border-white/10 hover:border-white/30"}`}
+              className={`flex-shrink-0 md:w-full text-left rounded-lg overflow-hidden border transition-colors ${b.id === selectedId ? "border-[#E5541B]" : "border-white/10 hover:border-white/30"}`}
             >
               <div className="w-16 md:w-full aspect-[5/7] bg-[#303236] overflow-hidden">
                 {b.cover ? (
@@ -92,7 +92,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
         <div className="flex items-center justify-between px-4 py-2 flex-shrink-0">
           <span className="text-white/80 text-sm font-medium truncate">{selected.brand_name}</span>
           {selected.pdf_url && (
-            <a href={selected.pdf_url} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#ff550c] text-xs whitespace-nowrap ml-3">원본 PDF ↗</a>
+            <a href={selected.pdf_url} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E5541B] text-xs whitespace-nowrap ml-3">원본 PDF ↗</a>
           )}
         </div>
 
@@ -133,7 +133,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
               <div className="flex flex-col items-center justify-center text-center px-6 gap-4">
                 <p className="text-white/60 text-sm">미리보기를 준비 중입니다.</p>
                 <div className="flex gap-3">
-                  <Link href="/products" className="bg-[#ff550c] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</Link>
+                  <Link href="/products" className="bg-[#E5541B] text-white text-xs tracking-widest px-5 py-2.5 hover:bg-[#d05518] transition-colors">제품 보기</Link>
                   <Link href="/store" className="border border-white/40 text-white text-xs tracking-widest px-5 py-2.5 hover:bg-white hover:text-[#303236] transition-colors">매장 찾기</Link>
                 </div>
               </div>
@@ -144,10 +144,10 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
         {total > 0 && (
           <div className="flex items-center justify-center gap-6 py-3 flex-shrink-0">
             <button onClick={() => bookRef.current?.pageFlip().flipPrev()} disabled={currentPage === 0}
-              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
+              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">‹</button>
             <span className="text-gray-500 text-[10px] tracking-widest w-16 text-center">{currentPage + 1} / {total}</span>
             <button onClick={() => bookRef.current?.pageFlip().flipNext()} disabled={currentPage >= total - 1}
-              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#ff550c] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
+              className="w-9 h-9 bg-[#303236] border border-[#243d5e] hover:border-[#E5541B] text-white text-xl flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed">›</button>
           </div>
         )}
       </div>

@@ -9,11 +9,11 @@ export default function HomeFeatured() {
   const subs = SUB_IDS.map((id) => getProductById(id)!);
 
   return (
-    <section className="bg-[#F5F2ED] py-16">
+    <section className="bg-[#FAFAF8] py-16">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-2">Featured</p>
+            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-2">Featured</p>
             <h2 className="text-2xl font-bold text-[#303236]">이번 시즌 주목 제품</h2>
           </div>
           <Link href="/products" className="text-xs text-gray-400 hover:text-[#303236] tracking-wide transition-colors hidden sm:block">
@@ -33,7 +33,7 @@ export default function HomeFeatured() {
               </div>
             </div>
             <div className="p-8">
-              <p className="text-[10px] text-[#ff550c] tracking-widest uppercase mb-2">
+              <p className="text-[10px] text-[#E5541B] tracking-widest uppercase mb-2">
                 {main.category} · {main.subCategory}
               </p>
               <h3 className="text-xl font-bold text-[#303236] mb-2 group-hover:underline underline-offset-2">
@@ -43,13 +43,13 @@ export default function HomeFeatured() {
               <ul className="flex flex-wrap gap-x-4 gap-y-1 mb-6">
                 {main.features.map((f) => (
                   <li key={f} className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <span className="w-1 h-1 bg-[#ff550c] rounded-full" />{f}
+                    <span className="w-1 h-1 bg-[#E5541B] rounded-full" />{f}
                   </li>
                 ))}
               </ul>
               {main.fieldTest && (
                 <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 mb-5">
-                  <span className="text-[#ff550c] text-xs font-bold">✓ FIELD TEST</span>
+                  <span className="text-[#E5541B] text-xs font-bold">✓ FIELD TEST</span>
                   <span className="text-xs text-gray-500">{main.fieldTest}</span>
                 </div>
               )}
@@ -75,7 +75,7 @@ export default function HomeFeatured() {
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="text-[10px] text-[#ff550c] tracking-widest uppercase mb-1">
+                  <p className="text-[10px] text-[#E5541B] tracking-widest uppercase mb-1">
                     {p.category} · {p.subCategory}
                   </p>
                   <h3 className="text-sm font-bold text-[#303236] mb-1 group-hover:underline underline-offset-2">

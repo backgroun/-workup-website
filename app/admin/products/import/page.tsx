@@ -555,7 +555,7 @@ export default function ProductImportPage() {
             <button
               onClick={handleImport}
               disabled={importing || validRows.length === 0 || errorRows.length > 0}
-              className="px-8 py-3 bg-[#ff550c] text-white text-base font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
+              className="px-8 py-3 bg-[#E5541B] text-white text-base font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
             >
               {importing ? (
                 <span className="flex items-center gap-2">

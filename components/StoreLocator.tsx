@@ -363,7 +363,7 @@ export default function StoreLocator({
   }, [displayList, selectedStore]);
 
   return (
-    <section id={id} className="bg-[#F5F2ED]">
+    <section id={id} className="bg-[#FAFAF8]">
 
       {/* ── 페이지 타이틀 ── */}
       <div className="bg-white py-16 border-b border-gray-100">
@@ -381,7 +381,7 @@ export default function StoreLocator({
             <ul className="flex flex-col gap-2">
               {header.bullets.map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-[13px] text-gray-500">
-                  <span className="text-[#ff550c] font-bold flex-shrink-0 mt-0.5">✓</span>
+                  <span className="text-[#E5541B] font-bold flex-shrink-0 mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
@@ -538,7 +538,7 @@ export default function StoreLocator({
         {/* 근거리 결과 배너 */}
         {locStatus === "success" && !isSearching && (
           <div className={`mb-4 px-4 py-3 border-l-4 flex items-start justify-between gap-4 ${
-            nearbyStores.length > 0 ? "border-[#ff550c] bg-orange-50" : "border-gray-300 bg-gray-50"
+            nearbyStores.length > 0 ? "border-[#E5541B] bg-orange-50" : "border-gray-300 bg-gray-50"
           }`}>
             <div>
               {nearbyStores.length > 0 ? (
@@ -547,7 +547,7 @@ export default function StoreLocator({
                     {showAll ? `전국 ${allSorted.length}개 매장 — 거리순` : `가장 가까운 ${NEARBY_COUNT}개 매장`}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    가장 가까운 매장: <strong className="text-[#ff550c]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
+                    가장 가까운 매장: <strong className="text-[#E5541B]">{(showAll ? allSorted : nearbyStores)[0]?.name}</strong>
                     {" "}— {formatDist((showAll ? allSorted : nearbyStores)[0]?.distance, (showAll ? allSorted : nearbyStores)[0]?.estimated)}
                   </p>
                 </>
@@ -685,7 +685,7 @@ export default function StoreLocator({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={`w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-500"
+                        index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-500"
                       }`}>
                         {index + 1}
                       </span>
@@ -694,7 +694,7 @@ export default function StoreLocator({
                           <span className="font-bold text-sm text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
                             <span className={`text-xs px-2 py-0.5 font-semibold flex-shrink-0 ${
-                              index === 0 && showNearby ? "bg-[#ff550c] text-white" : "bg-gray-100 text-gray-600"
+                              index === 0 && showNearby ? "bg-[#E5541B] text-white" : "bg-gray-100 text-gray-600"
                             }`}>
                               {formatDist(store.distance, store.estimated)}
                             </span>
@@ -746,7 +746,7 @@ export default function StoreLocator({
                                 <li key={p.id}>
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors leading-tight py-0.5"
+                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#E5541B] transition-colors leading-tight py-0.5"
                                   >
                                     <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
                                       {i + 1}

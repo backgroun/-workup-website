@@ -68,7 +68,7 @@ export const editorials: Editorial[] = [
     subtitle: "자외선 차단 + 흡한속건",
     desc: "UPF 인증 소재로 자외선을 막고, 땀은 날려버립니다.",
     bg: "bg-[#7C3400]",
-    textAccent: "#ff550c",
+    textAccent: "#E5541B",
     heroSubtitle: "여름 현장 필수 아이템",
     tags: [
       { x: 32, y: 22, name: "쿨링 반팔 티셔츠", price: "19,000원", productId: "cooling-short-sleeve", bg: "bg-[#2d4f72]" },
@@ -297,7 +297,7 @@ export const editorials: Editorial[] = [
     desc: "올 시즌 가장 새로운 아이템만 모았습니다.",
     bg: "bg-[#111111]",
     heroImageUrl: "/images/hero-new-arrivals.png",
-    textAccent: "#ff550c",
+    textAccent: "#E5541B",
     heroSubtitle: "2026 SS · 신규 라인업",
     tags: [
       { x: 33, y: 32, name: "쿨링 반팔 티셔츠", price: "19,000원", productId: "cooling-short-sleeve", bg: "bg-[#243d5e]" },

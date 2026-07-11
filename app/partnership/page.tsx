@@ -29,7 +29,7 @@ export default function PartnershipPage() {
       {/* 히어로 */}
       <div className="bg-[#303236] py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">PARTNERSHIP</p>
+          <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">PARTNERSHIP</p>
           <h1 className="text-4xl font-bold text-white mb-4">WORKUP과 함께</h1>
           <p className="text-gray-300 text-sm leading-relaxed max-w-xl">
             WORKUP 브랜드로 창업하거나, 내 브랜드를 WORKUP 매장에 입점시키고 싶다면
@@ -38,7 +38,7 @@ export default function PartnershipPage() {
         </div>
       </div>
 
-      <div className="bg-[#F5F2ED] py-16">
+      <div className="bg-[#FAFAF8] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-6">
             {CHOICES.map((c) => (
@@ -49,7 +49,7 @@ export default function PartnershipPage() {
               >
                 <div className="px-10 py-12 flex flex-col justify-between min-h-[260px]" style={{ backgroundColor: c.bg }}>
                   <div>
-                    <p className="text-xs tracking-widest text-[#ff550c] uppercase mb-3">{c.eyebrow}</p>
+                    <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">{c.eyebrow}</p>
                     <h2 className="text-2xl font-bold text-white mb-4">{c.title}</h2>
                     <p className="text-gray-300 text-sm leading-relaxed">{c.desc}</p>
                   </div>
@@ -62,7 +62,7 @@ export default function PartnershipPage() {
           </div>
 
           <div className="text-center mt-10">
-            <Link href="/products" className="text-xs text-[#303236] underline hover:text-[#ff550c] transition-colors">
+            <Link href="/products" className="text-xs text-[#303236] underline hover:text-[#E5541B] transition-colors">
               제품 라인업 먼저 둘러보기 →
             </Link>
           </div>

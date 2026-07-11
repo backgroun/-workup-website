@@ -107,7 +107,7 @@ export default function StorePageSettings() {
             <div className="space-y-2">
               {cfg.bullets.map((b, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-[#ff550c] font-bold flex-shrink-0">✓</span>
+                  <span className="text-[#E5541B] font-bold flex-shrink-0">✓</span>
                   <input
                     type="text"
                     value={b}
@@ -137,7 +137,7 @@ export default function StorePageSettings() {
             <ul className="flex flex-col gap-2">
               {cfg.bullets.filter((b) => b.trim()).map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-[12px] text-gray-500">
-                  <span className="text-[#ff550c] font-bold flex-shrink-0 mt-0.5">✓</span>
+                  <span className="text-[#E5541B] font-bold flex-shrink-0 mt-0.5">✓</span>
                   {item}
                 </li>
               ))}

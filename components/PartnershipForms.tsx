@@ -19,7 +19,7 @@ function formatPhone(raw: string): string {
 function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc: string; passwordHint?: boolean; onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="w-12 h-12 bg-[#ff550c] flex items-center justify-center mb-4">
+      <div className="w-12 h-12 bg-[#E5541B] flex items-center justify-center mb-4">
         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
@@ -37,11 +37,11 @@ function SuccessMessage({ title, passwordHint, onReset }: { title: string; desc:
         {passwordHint && (
           <p className="flex items-start gap-2 border-t border-slate-200 pt-2.5">
             <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#fff1e8] flex items-center justify-center mt-px">
-              <svg className="w-3 h-3 text-[#ff550c]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-3 h-3 text-[#E5541B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </span>
-            <span>비로그인 문의 작성시 <b className="text-[#ff550c]">비밀번호를 꼭 기억하셔야</b> 확인할 수 있습니다.</span>
+            <span>비로그인 문의 작성시 <b className="text-[#E5541B]">비밀번호를 꼭 기억하셔야</b> 확인할 수 있습니다.</span>
           </p>
         )}
       </div>
@@ -66,7 +66,7 @@ function Field({
   return (
     <div>
       <label htmlFor={`pf-${name}`} className="block mb-1.5" style={labelStyle}>
-        {label}{required && <span className="text-[#ff550c] ml-0.5">*</span>}
+        {label}{required && <span className="text-[#E5541B] ml-0.5">*</span>}
       </label>
       {type === "textarea" ? (
         <>
@@ -168,7 +168,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
 
           <p className="text-gray-400">
             자세한 내용은{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#303236] hover:text-[#ff550c]">
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#303236] hover:text-[#E5541B]">
               개인정보처리방침
             </a>
             에서 확인하실 수 있습니다.
@@ -180,7 +180,7 @@ function ConsentModal({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-2.5 hover:bg-[#ff550c] transition-colors"
+            className="w-full bg-[#303236] text-white text-xs font-semibold tracking-widest py-2.5 hover:bg-[#E5541B] transition-colors"
           >
             확인
           </button>
@@ -207,11 +207,11 @@ function PrivacyConsent({
           className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[#303236]"
         />
         <span className="text-xs text-gray-500 leading-relaxed">
-          <span className="text-[#ff550c] font-medium">[필수]</span> {text}{" "}
+          <span className="text-[#E5541B] font-medium">[필수]</span> {text}{" "}
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="underline text-[#303236] hover:text-[#ff550c] transition-colors"
+            className="underline text-[#303236] hover:text-[#E5541B] transition-colors"
           >
             내용 보기
           </button>

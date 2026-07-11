@@ -250,7 +250,7 @@ export default function AdminCombinedCategoriesPage() {
   if (catLoading || qcLoading) {
     return (
       <div className="flex items-center gap-3 py-20 text-base text-gray-400">
-        <span className="w-6 h-6 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+        <span className="w-6 h-6 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
         불러오는 중...
       </div>
     );
@@ -461,7 +461,7 @@ export default function AdminCombinedCategoriesPage() {
                 </span>
               )}
               <button onClick={() => saveQc(qcConfig)} disabled={qcSaving}
-                className="px-4 py-2 bg-[#ff550c] text-white text-sm font-semibold hover:bg-[#e04400] disabled:opacity-50 transition-colors rounded-lg">
+                className="px-4 py-2 bg-[#E5541B] text-white text-sm font-semibold hover:bg-[#e04400] disabled:opacity-50 transition-colors rounded-lg">
                 {qcSaving ? "저장 중..." : "저장"}
               </button>
             </div>
@@ -849,7 +849,7 @@ export default function AdminCombinedCategoriesPage() {
           </div>
 
           <button onClick={addItem}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[#ff550c] hover:text-[#ff550c] transition-colors">
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-[#E5541B] hover:text-[#E5541B] transition-colors">
             + 카테고리 추가
           </button>
 

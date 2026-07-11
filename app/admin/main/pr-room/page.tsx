@@ -87,7 +87,7 @@ function ImageField({ value, onChange }: { value: string; onChange: (url: string
         onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
         onClick={() => !uploading && ref.current?.click()}
         className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer aspect-[4/3] ${
-          dragging ? "border-[#ff550c] bg-orange-50" :
+          dragging ? "border-[#E5541B] bg-orange-50" :
           value ? "border-gray-200 hover:border-gray-300" :
                   "border-dashed border-gray-300 hover:border-[#303236]"
         }`}
@@ -99,7 +99,7 @@ function ImageField({ value, onChange }: { value: string; onChange: (url: string
           <img src={value} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
-            <svg className={`w-7 h-7 ${dragging ? "text-[#ff550c]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <svg className={`w-7 h-7 ${dragging ? "text-[#E5541B]" : "text-gray-300"}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
             <p className="text-[11px] text-gray-400 text-center leading-snug px-2">클릭 또는 드래그<br/>(권장 4:3)</p>
@@ -107,7 +107,7 @@ function ImageField({ value, onChange }: { value: string; onChange: (url: string
         )}
         {uploading && (
           <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-            <span className="w-5 h-5 border-2 border-[#ff550c] border-t-transparent rounded-full animate-spin" />
+            <span className="w-5 h-5 border-2 border-[#E5541B] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </div>
