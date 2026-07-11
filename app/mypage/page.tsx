@@ -322,7 +322,7 @@ export default function MyPage() {
           </div>
 
           {wishlist.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 text-center">
               <p className="text-sm text-gray-400">찜한 제품이 없습니다.</p>
               <Link href="/products" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 제품 보러 가기
@@ -369,7 +369,7 @@ export default function MyPage() {
               <span className="w-5 h-5 border-2 border-[#303236] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : inquiries.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 text-center">
               <p className="text-sm text-gray-400">아직 남기신 문의가 없습니다.</p>
               <Link href="/support" className="inline-block mt-3 text-sm font-semibold text-[#303236] hover:underline">
                 1:1 문의하기
