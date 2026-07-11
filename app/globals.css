@@ -66,6 +66,18 @@ body.catalog-page footer {
   --text-7xl: 4.5rem;
 }
 
+/* ── 무지(MUJI) 스타일 기반 — 공개 화면 전반 ──────────────────────────────
+   무지 감성의 핵심은 "얇은 글씨 · 넓은 여백 · 절제"다. 컴포넌트를 일일이 고치는
+   대신, 공개 영역(#scroll-root) 전체의 글자 두께를 한 단계씩 낮추고 자간을 살짝
+   넓혀 사이트 전반의 톤을 무지풍으로 맞춘다. (#id 선택자라 Tailwind 유틸리티보다
+   우선순위가 높아 !important 없이 덮어쓴다. 인라인 style의 font-weight는 예외 —
+   해당 컴포넌트에서 직접 조정한다. 관리자 화면은 #scroll-root 밖이라 영향 없음.) */
+#scroll-root { letter-spacing: 0.01em; }
+#scroll-root .font-black    { font-weight: 600; }
+#scroll-root .font-extrabold{ font-weight: 600; }
+#scroll-root .font-bold     { font-weight: 500; }
+#scroll-root .font-semibold { font-weight: 500; }
+
 body {
   background: var(--background);
   color: var(--foreground);
