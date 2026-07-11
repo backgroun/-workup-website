@@ -648,7 +648,7 @@ export default function StoreLocator({
                   {isOpen && (
                     <div className="border-t border-gray-100 px-4 py-4">
                       {/* 주소 + 운영시간 + 판매제품 */}
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-8 mb-4">
                         <div className="space-y-1.5">
                           {/* 주소는 리스트 헤더로 이동 — 여기선 시간·전화만 (PC 한 줄 / 모바일 2줄) */}
                           <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-5">
@@ -667,19 +667,18 @@ export default function StoreLocator({
                           </div>
                         </div>
 
-                        {/* 판매제품 — 무지 스타일: 얇은 흰 패널. PC는 가로 배치(가로폭 채움·높이 절약) */}
+                        {/* 판매제품 — 무지 스타일 칩. 한 줄 표기(넘치면 가로 스크롤) */}
                         {store.products && store.products.length > 0 && (
-                          <div className="border border-gray-200 bg-white px-3.5 py-3 md:flex-1 md:min-w-0">
+                          <div className="md:flex-1 md:min-w-0">
                             <p className="text-[11px] tracking-wide text-gray-400 mb-2">스토어 베스트 상품</p>
-                            <ul className="flex flex-col md:flex-row md:flex-wrap gap-y-1 md:gap-x-6">
-                              {store.products.map((p, i) => (
-                                <li key={p.id}>
+                            <ul className="flex flex-nowrap gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                              {store.products.map((p) => (
+                                <li key={p.id} className="flex-shrink-0">
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs md:text-[13px] text-[#303236] hover:underline underline-offset-2 transition-colors leading-tight py-0.5"
+                                    className="inline-flex items-center border border-gray-200 bg-white px-3 py-1.5 text-xs md:text-[13px] text-[#303236] hover:border-[#303236] transition-colors whitespace-nowrap"
                                   >
-                                    <span className="flex-shrink-0 text-[11px] md:text-xs text-gray-500 tabular-nums">{i + 1}</span>
-                                    <span className="truncate md:whitespace-nowrap md:max-w-[220px]">{p.name}</span>
+                                    {p.name}
                                   </Link>
                                 </li>
                               ))}
