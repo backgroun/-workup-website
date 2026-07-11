@@ -45,7 +45,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             src={item.imageUrl}
                             alt={item.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-200"
+                            className="object-cover transition-transform duration-200"
                             sizes="64px"
                           />
                         ) : (

@@ -207,7 +207,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 {igBarImage && (
                   <div className="w-full sm:w-44 h-44 sm:h-32 flex-shrink-0 overflow-hidden bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={igBarImage} alt={ig.handle} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img src={igBarImage} alt={ig.handle} className="w-full h-full object-cover transition-transform" />
                   </div>
                 )}
                 <div className="flex-1 px-5 py-5 sm:py-0 min-w-0">

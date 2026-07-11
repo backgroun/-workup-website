@@ -70,7 +70,7 @@ export default async function PrRoomPage() {
                           src={post.image_url}
                           alt={post.title || "워크업 소식"}
                           loading="lazy"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
                         />
                         {post.link && (
                           <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-black/55 text-white text-[10px] font-medium px-2 py-1 rounded-full backdrop-blur-sm">

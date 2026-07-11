@@ -199,7 +199,7 @@ function WhiteBox({
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-contain transition-transform"
                   />
                 ) : (
                   <span className="text-gray-300 text-[10px] font-black">WU</span>

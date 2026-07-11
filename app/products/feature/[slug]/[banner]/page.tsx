@@ -83,7 +83,7 @@ export default async function BannerDetailPage({ params }: Props) {
                     <img
                       src={p.imageUrl}
                       alt={p.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain transition-transform duration-300"
                     />
                   ) : (
                     <span className="text-gray-300 text-sm font-black">WU</span>
