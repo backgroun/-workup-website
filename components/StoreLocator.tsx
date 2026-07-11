@@ -624,14 +624,14 @@ export default function StoreLocator({
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-gray-100 text-gray-500">
+                      <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-[#4b4e53] text-white">
                         {index + 1}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-sm md:text-[15px] text-[#303236]">{store.name}</span>
                           {store.distance >= 0 && (
-                            <span className="text-xs md:text-[13px] px-2 py-0.5 font-semibold flex-shrink-0 bg-gray-100 text-gray-600">
+                            <span className="text-xs md:text-[13px] px-2 py-0.5 font-medium flex-shrink-0 border border-gray-300 text-gray-600">
                               {formatDist(store.distance, store.estimated)}
                             </span>
                           )}
@@ -670,22 +670,23 @@ export default function StoreLocator({
                           </div>
                         </div>
 
-                        {/* 판매제품 — 무지 스타일 칩. 한 줄 표기(넘치면 가로 스크롤) */}
+                        {/* 판매제품 — STORE BEST | 제품…  한 줄, 오른쪽 정렬(넘치면 가로 스크롤) */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:flex-1 md:min-w-0">
-                            <p className="text-[11px] tracking-wide text-gray-400 mb-2">스토어 베스트 상품</p>
-                            <ul className="flex flex-nowrap gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                          <div className="md:flex-1 md:min-w-0 md:flex md:justify-end">
+                            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 md:pb-0" style={{ scrollbarWidth: "none" }}>
+                              {/* STORE BEST 라벨 — 박스 컬러 구분(진한 차콜) */}
+                              <span className="flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">STORE BEST</span>
+                              <span className="flex-shrink-0 text-gray-300">|</span>
                               {store.products.map((p) => (
-                                <li key={p.id} className="flex-shrink-0">
-                                  <Link
-                                    href={`/products/${p.id}`}
-                                    className="inline-flex items-center border border-gray-200 bg-white px-3 py-1.5 text-xs md:text-[13px] text-[#303236] hover:border-[#303236] transition-colors whitespace-nowrap"
-                                  >
-                                    {p.name}
-                                  </Link>
-                                </li>
+                                <Link
+                                  key={p.id}
+                                  href={`/products/${p.id}`}
+                                  className="flex-shrink-0 text-xs md:text-[13px] text-[#303236] hover:underline underline-offset-2 transition-colors whitespace-nowrap"
+                                >
+                                  {p.name}
+                                </Link>
                               ))}
-                            </ul>
+                            </div>
                           </div>
                         )}
                       </div>
