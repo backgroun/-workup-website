@@ -17,7 +17,8 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
           {items.length > 0 && (
             <>
               <p className="text-[14px] text-gray-500 leading-relaxed mb-6">{c.noticeDesc}</p>
-              <div className="flex flex-wrap gap-2.5">
+              {/* PC에서만 상단 노출 — 모바일은 그리드 하단에 큰 버튼으로 표시 */}
+              <div className="hidden lg:flex flex-wrap gap-2.5">
                 <Link
                   href={c.primaryHref}
                   className="store-cta-outline text-xs font-bold tracking-wide px-5 py-2.5 flex items-center gap-1.5"
@@ -119,6 +120,26 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                     </Link>
                   </div>
                 ))}
+              </div>
+
+              {/* 모바일 전용 하단 액션 — PC는 상단 버튼 사용 */}
+              <div className="flex flex-col sm:flex-row gap-3 max-w-xl lg:hidden mb-5">
+                <Link
+                  href={c.primaryHref}
+                  className="store-cta-outline flex-1 text-center text-sm font-bold tracking-widest px-8 py-4 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {c.primaryLabel}
+                </Link>
+                <Link
+                  href={c.secondaryHref}
+                  className="flex-1 text-center border border-[#303236] text-[#303236] text-sm py-4 hover:bg-[#303236] hover:text-white transition-colors"
+                >
+                  {c.secondaryLabel}
+                </Link>
               </div>
 
               <button
