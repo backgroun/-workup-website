@@ -296,7 +296,7 @@ export const editorials: Editorial[] = [
     subtitle: "이번 시즌 첫 출시",
     desc: "올 시즌 가장 새로운 아이템만 모았습니다.",
     bg: "bg-[#111111]",
-    heroImageUrl: "/images/hero-new-arrivals.png",
+    heroImageUrl: "/images/hero-new-arrivals.jpg",
     textAccent: "#E5541B",
     heroSubtitle: "2026 SS · 신규 라인업",
     tags: [
