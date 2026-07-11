@@ -680,14 +680,14 @@ export default function StoreLocator({
 
                         {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 bg-[#ebebeb] rounded-lg px-3 py-3">
-                            <p className="text-xs font-semibold text-gray-500 mb-2">스토어 베스트 상품</p>
-                            <ul className="space-y-1.5">
+                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 bg-[#ebebeb] px-3 py-2">
+                            <p className="text-xs font-semibold text-gray-500 mb-1">스토어 베스트 상품</p>
+                            <ul className="space-y-0.5">
                               {store.products.map((p, i) => (
                                 <li key={p.id}>
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors"
+                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#ff550c] transition-colors leading-tight py-0.5"
                                   >
                                     <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
                                       {i + 1}
