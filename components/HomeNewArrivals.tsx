@@ -259,7 +259,8 @@ export default function HomeNewArrivals() {
                   {p.isNew && (
                     <span className="inline-block text-[10px] tracking-[0.2em] text-[#E5541B] mb-1.5">NEW</span>
                   )}
-                  <p className="text-[13px] text-[#303236] leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
+                  {/* 모바일: 브랜드 프리픽스 비노출(순수 제품명만). PC 캐러셀은 productDisplayName으로 브랜드 노출 */}
+                  <p className="text-[13px] text-[#303236] leading-snug line-clamp-2 mb-1">{p.name}</p>
                   <p className="text-[11px] text-[#8F8B81] line-clamp-1 mb-1.5">{p.tagline}</p>
                   <p className="text-[13px] text-[#303236]" style={{ fontWeight: 700 }}>{p.price}</p>
                 </div>
