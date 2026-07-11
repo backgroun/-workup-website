@@ -15,7 +15,7 @@ export default function PartnershipLayout({ info, boardType, guideButton, childr
   const st = info.styles;
   return (
     <main>
-      <div className="bg-[#FAFAF8] py-8">
+      <div className="bg-[#FAFAF8] pb-8 lg:pt-8">
         <div className="max-w-6xl mx-auto lg:px-6 space-y-8">
           <div className="grid lg:grid-cols-2 gap-0 lg:gap-6 items-stretch">
             {/* 좌: 소개 패널 + 폼 (세로 스택) — 모바일은 여백 없는 전체화면형, lg 이상은 카드형 */}
