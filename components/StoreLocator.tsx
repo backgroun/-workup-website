@@ -424,8 +424,11 @@ export default function StoreLocator({
             {header.title}
           </h1>
           {header.description && (
-            <p className="text-[14px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
-              {header.description.replace(/\{count\}/g, String(stores.length))}
+            <p className="text-[15px] md:text-[17px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
+              {header.description
+                .replace(/\{count\}/g, String(stores.length))
+                /* 관리자가 숫자를 직접 입력해 저장한 경우에도 실제 매장 수로 자동 치환 */
+                .replace(/\d[\d,]*(?=\s*개\s*매장)/g, String(stores.length))}
             </p>
           )}
           {/* 방문 안내 */}
