@@ -8,8 +8,11 @@ const FALLBACK = { lat: 37.5665, lng: 126.978 };
 export async function getWeatherMood(): Promise<WeatherMood | null> {
   try {
     const h = await headers();
-    const lat = Number(h.get("x-vercel-ip-latitude"));
-    const lng = Number(h.get("x-vercel-ip-longitude"));
+    // h.get()이 null이면 Number(null)이 0(적도 부근)이 되어버리므로, 헤더가 있을 때만 숫자로 변환한다.
+    const latHeader = h.get("x-vercel-ip-latitude");
+    const lngHeader = h.get("x-vercel-ip-longitude");
+    const lat = latHeader !== null ? Number(latHeader) : NaN;
+    const lng = lngHeader !== null ? Number(lngHeader) : NaN;
 
     // 캐시 적중률을 위해 좌표를 0.1도(약 11km) 단위로 반올림 — 인근 방문자는 같은 fetch 캐시를 공유한다.
     const rLat = Math.round((Number.isFinite(lat) ? lat : FALLBACK.lat) * 10) / 10;
@@ -25,15 +28,22 @@ export async function getWeatherMood(): Promise<WeatherMood | null> {
       next: { revalidate: 1800 },
       signal: AbortSignal.timeout(2500),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[weather] open-meteo ${res.status}`);
+      return null;
+    }
 
     const data = await res.json();
     const code = data?.current?.weather_code;
     const isDay = data?.current?.is_day === 1;
-    if (typeof code !== "number") return null;
+    if (typeof code !== "number") {
+      console.error("[weather] unexpected open-meteo response shape");
+      return null;
+    }
 
     return wmoCodeToMood(code, isDay);
-  } catch {
+  } catch (e) {
+    console.error("[weather] fetch failed:", e);
     return null;
   }
 }

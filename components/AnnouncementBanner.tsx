@@ -21,32 +21,27 @@ function SmartLink({ href, newTab, className, style, children }: {
   );
 }
 
-// 무드별로 관리자가 지정한 배경색(bg_color) 위에 얹는 아주 옅은 결 — 배경 밝기와 무관하게
-// 자연스럽게 섞이도록 mix-blend-mode를 사용한다. 색상 자체는 바꾸지 않고 은은한 톤만 더한다.
+// 무드별로 관리자가 지정한 배경색(bg_color) 위에 얹는 옅은 톤 그라데이션.
+// mix-blend-mode는 배경이 아주 어둡거나 채도가 높으면 효과가 거의 사라지므로,
+// 배경 밝기와 무관하게 항상 일정하게 보이는 일반 알파 블렌딩을 사용한다.
 const WEATHER_OVERLAY: Record<WeatherMood, CSSProperties> = {
   "clear-day": {
-    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 55%)",
-    mixBlendMode: "soft-light",
+    backgroundImage: "linear-gradient(135deg, rgba(255,196,102,0.16), rgba(255,196,102,0) 60%)",
   },
   "clear-night": {
-    backgroundImage: "linear-gradient(135deg, rgba(10,15,40,0.03), rgba(10,15,40,0.18))",
-    mixBlendMode: "multiply",
+    backgroundImage: "linear-gradient(135deg, rgba(12,18,58,0.32), rgba(12,18,58,0.06))",
   },
   cloudy: {
-    backgroundImage: "linear-gradient(135deg, rgba(200,205,215,0.14), rgba(200,205,215,0.02))",
-    mixBlendMode: "soft-light",
+    backgroundImage: "linear-gradient(135deg, rgba(190,196,206,0.2), rgba(190,196,206,0.04))",
   },
   rain: {
-    backgroundImage: "linear-gradient(160deg, rgba(255,255,255,0.02), rgba(60,90,130,0.18))",
-    mixBlendMode: "multiply",
+    backgroundImage: "linear-gradient(160deg, rgba(90,120,160,0.1), rgba(50,80,125,0.26))",
   },
   snow: {
-    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.03))",
-    mixBlendMode: "soft-light",
+    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06))",
   },
   fog: {
-    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05))",
-    mixBlendMode: "soft-light",
+    backgroundImage: "linear-gradient(135deg, rgba(225,228,232,0.22), rgba(225,228,232,0.06))",
   },
 };
 
