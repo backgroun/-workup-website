@@ -424,7 +424,7 @@ export default function FeatureHeroLayout({
 
           <div className="absolute bottom-[39px] left-4 z-[2] text-white">
             <p className="mb-1 opacity-80" style={{ fontSize: "12px" }}>{editorial.heroSubtitle}</p>
-            <h1 className="text-[22px] font-bold leading-tight tracking-tight">{editorial.title}</h1>
+            <h1 className="text-[22px] leading-tight tracking-tight" style={{ fontWeight: 700 }}>{editorial.title}</h1>
           </div>
         </div>
 
