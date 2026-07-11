@@ -174,13 +174,13 @@ export default function Header({
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6" />
                 <circle cx="9" cy="21" r="1.4" fill="currentColor" stroke="none" />
                 <circle cx="20" cy="21" r="1.4" fill="currentColor" stroke="none" />
               </svg>
               {count > 0 && (
                 <span
-                  className="absolute text-[#E5541B] text-[9px] font-extrabold leading-none pointer-events-none"
+                  className="absolute text-[9px] font-extrabold leading-none pointer-events-none"
                   style={{ left: "60%", top: "38%", transform: "translate(-50%, -50%)" }}
                 >
                   {count}
