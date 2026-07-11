@@ -422,11 +422,11 @@ export default function StoreLocator({
       {/* ── 페이지 타이틀 ── */}
       <div className="bg-white pt-10 pb-3 md:pt-12 md:pb-6 border-b border-gray-100">
         <div className="px-[15px] md:px-[70px]">
-          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-3">
+          <h1 className="text-[26px] md:text-[42px] font-[700] md:font-[500] text-[#303236] leading-tight mb-3">
             {header.title}
           </h1>
           {header.description && (
-            <p className="text-[15px] md:text-[17px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
+            <p className="text-[13px] md:text-[17px] text-gray-500 leading-relaxed mb-2 md:mb-5 whitespace-pre-line">
               {header.description
                 .replace(/\{count\}/g, String(stores.length))
                 /* 관리자가 숫자를 직접 입력해 저장한 경우에도 실제 매장 수로 자동 치환 */
@@ -672,20 +672,21 @@ export default function StoreLocator({
                           </div>
                         </div>
 
-                        {/* 판매제품 — STORE BEST | 제품…  한 줄, 오른쪽 정렬(넘치면 가로 스크롤) */}
+                        {/* 판매제품 — PC: 라벨 | 박스 가로 / 모바일: 라벨 위, 번호 세로 리스트 */}
                         {store.products && store.products.length > 0 && (
                           <div className="md:flex-1 md:min-w-0 md:flex md:justify-end md:pr-4">
-                            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" style={{ scrollbarWidth: "none" }}>
-                              {/* STORE BEST 라벨 — 박스 컬러 구분(진한 차콜) */}
-                              <span className="flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">STORE BEST</span>
-                              <span className="flex-shrink-0 text-gray-300 mr-0.5">|</span>
-                              {store.products.map((p) => (
+                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:overflow-x-auto md:pb-0" style={{ scrollbarWidth: "none" }}>
+                              {/* 라벨 — 박스 컬러 구분(진한 차콜) */}
+                              <span className="self-start md:self-auto flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">스토어 베스트 제품</span>
+                              <span className="hidden md:inline flex-shrink-0 text-gray-300 mr-0.5">|</span>
+                              {store.products.map((p, i) => (
                                 <button
                                   key={p.id}
                                   onClick={() => setPopupProduct(p)}
-                                  className="flex-shrink-0 border border-gray-300 px-2.5 py-1 text-xs md:text-[13px] text-[#303236] hover:border-[#303236] transition-colors whitespace-nowrap"
+                                  className="flex items-center gap-2 text-left text-xs md:text-[13px] text-[#303236] transition-colors py-0.5 md:flex-shrink-0 md:border md:border-gray-300 md:px-2.5 md:py-1 md:hover:border-[#303236]"
                                 >
-                                  {p.name}
+                                  <span className="md:hidden flex-shrink-0 w-3.5 text-gray-400 tabular-nums">{i + 1}</span>
+                                  <span className="md:whitespace-nowrap">{p.name}</span>
                                 </button>
                               ))}
                             </div>
