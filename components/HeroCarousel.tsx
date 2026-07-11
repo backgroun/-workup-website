@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { bgColorWithAlpha } from "@/lib/color";
+import { ikResize } from "@/lib/image-url";
 
 type TextLayer = {
   id: string;
@@ -188,8 +189,10 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={pcImage}
+                    src={ikResize(pcImage, 1920, 85)}
                     alt=""
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
                       objectPosition: slide.pc_image_position || "50% 50%",
@@ -199,8 +202,10 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={mobileImage || pcImage}
+                    src={ikResize(mobileImage || pcImage, 750, 85)}
                     alt=""
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{
                       objectPosition: slide.mobile_image_position || "50% 50%",

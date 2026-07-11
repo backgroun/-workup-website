@@ -4,6 +4,7 @@ import { getSizeGuides, SIZE_NOTE_DEFAULT, type Product, type SizeGuide } from "
 import ProductInquiryModal from "./ProductInquiryModal";
 import InstagramFeed from "./InstagramFeed";
 import SizeGuideLinesOverlay from "./SizeGuideLinesOverlay";
+import { ikResize } from "@/lib/image-url";
 
 // 가이드에 실제 내용이 있는지 (도식/이미지/표 중 하나라도)
 function hasSizeGuideContent(g: SizeGuide): boolean {
@@ -25,7 +26,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
         <div className="mb-6 flex justify-center">
           <div className="relative inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={guide.guideImage} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full grayscale opacity-40" loading="lazy" />
+            <img src={ikResize(guide.guideImage, 800)} alt={`${productName} 사이즈 측정 위치 안내`} className="block h-auto max-w-full grayscale opacity-40" loading="lazy" />
             {guide.guideLines && guide.guideLines.length > 0 && <SizeGuideLinesOverlay lines={guide.guideLines} />}
           </div>
         </div>
@@ -33,7 +34,7 @@ function SizeGuideView({ guide, productName }: { guide: SizeGuide; productName: 
       {hasImage ? (
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={guide.image} alt={`${productName} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
+          <img src={ikResize(guide.image, 1000)} alt={`${productName} 사이즈 가이드`} className="block h-auto max-w-full" loading="lazy" />
           <p className="text-xs text-gray-400 mt-4">{guide.note?.trim() || SIZE_NOTE_DEFAULT}</p>
         </div>
       ) : hasTable ? (
@@ -186,7 +187,7 @@ export default function ProductTabs({ product }: { product: Product }) {
             <div className="space-y-3 max-w-3xl mx-auto mb-10">
               {product.detailBlocks!.filter((b) => b.imageUrl).map((b, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={b.id ?? i} src={b.imageUrl} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
+                <img key={b.id ?? i} src={ikResize(b.imageUrl, 1000)} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
               ))}
             </div>
           )}
@@ -196,7 +197,7 @@ export default function ProductTabs({ product }: { product: Product }) {
             <div className="space-y-3 max-w-3xl mx-auto mb-10">
               {product.subImages!.map((src, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={src} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
+                <img key={i} src={ikResize(src, 1000)} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
               ))}
             </div>
           )}

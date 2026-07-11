@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import type { CatalogPage } from "@/data/catalog";
+import { ikResize } from "@/lib/image-url";
 
 // 카탈로그 한 페이지의 시각 표현 — 플립북과 관리자 미리보기에서 공용으로 사용한다(DRY).
 // 종류(page_type): cover/contents/divider 는 옛 플립북 디자인을 그대로 재현(고정 px),
@@ -16,7 +17,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
         {page.image_url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={page.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={ikResize(page.image_url, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/30" />
           </>
         )}
@@ -69,7 +70,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
         {page.image_url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={page.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={ikResize(page.image_url, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/35" />
           </>
         )}
@@ -91,7 +92,7 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
     <div className="relative w-full h-full bg-[#0d1826] overflow-hidden" style={{ containerType: "inline-size" }}>
       {page.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={page.image_url} alt={page.title || page.admin_title || "카탈로그 페이지"} className="w-full h-full object-cover" />
+        <img src={ikResize(page.image_url, 1200)} alt={page.title || page.admin_title || "카탈로그 페이지"} loading="lazy" decoding="async" className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white/25" style={{ fontSize: "4cqw" }}>이미지 없음</div>
       )}

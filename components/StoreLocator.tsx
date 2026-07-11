@@ -6,6 +6,7 @@ import { type Store, type StoreProduct } from "@/data/stores";
 import KakaoMap from "@/components/KakaoMap";
 import { trackStoreEvent } from "@/lib/track";
 import { DEFAULT_STORE_PAGE, type StorePageConfig } from "@/lib/store-page";
+import { ikResize } from "@/lib/image-url";
 
 const NEARBY_COUNT = 5;
 const KAKAO_CHANNEL = "https://pf.kakao.com/_workup"; // 실제 채널 URL로 교체
@@ -773,7 +774,7 @@ export default function StoreLocator({
             <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
               {popupProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={popupProduct.image_url} alt={popupProduct.name} className="w-full h-full object-cover" />
+                <img src={ikResize(popupProduct.image_url, 400)} alt={popupProduct.name} loading="lazy" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-gray-300 text-2xl font-black select-none">WU</span>
               )}

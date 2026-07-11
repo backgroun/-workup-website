@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Editorial, EditorialSection, EditorialSectionTag } from "@/data/editorial";
+import { ikResize } from "@/lib/image-url";
 
 // 섹션 이미지 위 상품 핫스팟 — 클릭 시 제품 상세로 이동 (PC는 hover 라벨)
 function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
@@ -51,8 +52,10 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
 function ImageOnlyCard({ imageUrl, link, title, fill = false }: { imageUrl?: string; link?: string; title?: string; fill?: boolean }) {
   const img = imageUrl ? (
     <img
-      src={imageUrl}
+      src={ikResize(imageUrl, fill ? 900 : 700)}
       alt={title || "기획전 이미지"}
+      loading="lazy"
+      decoding="async"
       className={fill ? "absolute inset-0 w-full h-full object-cover" : "block w-full h-auto"}
     />
   ) : (
@@ -123,8 +126,10 @@ function WhiteBox({
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           {section.imageUrl ? (
             <img
-              src={section.imageUrl}
+              src={ikResize(section.imageUrl, 700)}
               alt={section.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-contain"
             />
           ) : (
@@ -198,8 +203,10 @@ function WhiteBox({
               >
                 {item.imageUrl ? (
                   <img
-                    src={item.imageUrl}
+                    src={ikResize(item.imageUrl, 260)}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-contain transition-transform"
                   />
                 ) : (
@@ -274,8 +281,10 @@ export default function FeatureHeroLayout({
       <>
         {editorial.heroImageUrl && (
           <img
-            src={editorial.heroImageUrl}
+            src={ikResize(editorial.heroImageUrl, 1200, 85)}
             alt={editorial.title}
+            loading="eager"
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
             style={{ objectPosition: imgPos }}
           />
@@ -396,8 +405,10 @@ export default function FeatureHeroLayout({
         >
           {editorial.heroImageUrl && (
             <img
-              src={editorial.heroImageUrl}
+              src={ikResize(editorial.heroImageUrl, 900, 85)}
               alt={editorial.title}
+              loading="eager"
+              fetchPriority="high"
               className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
             />
           )}
@@ -455,8 +466,10 @@ export default function FeatureHeroLayout({
               >
                 {section.imageUrl ? (
                   <img
-                    src={section.imageUrl}
+                    src={ikResize(section.imageUrl, 700)}
                     alt={section.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-contain"
                   />
                 ) : (
@@ -501,7 +514,7 @@ export default function FeatureHeroLayout({
                         style={{ width: "72px", height: "72px" }}
                       >
                         {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
+                          <img src={ikResize(item.imageUrl, 144)} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
                         ) : (
                           <span className="text-gray-300 text-xs font-black">WU</span>
                         )}
@@ -571,7 +584,7 @@ export default function FeatureHeroLayout({
                     style={{ width: "72px", height: "72px" }}
                   >
                     {tag.imageUrl ? (
-                      <img src={tag.imageUrl} alt={tag.name} className="w-full h-full object-contain" />
+                      <img src={ikResize(tag.imageUrl, 144)} alt={tag.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-gray-300 text-xs font-black">WU</span>
                     )}

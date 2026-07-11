@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBannerDetail } from "@/lib/editorial-blocks";
+import { ikResize } from "@/lib/image-url";
 
 type Props = { params: Promise<{ slug: string; banner: string }> };
 
@@ -57,7 +58,7 @@ export default async function BannerDetailPage({ params }: Props) {
             >
               {detail.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={detail.imageUrl} alt={detail.title} className="w-full h-full object-cover" />
+                <img src={ikResize(detail.imageUrl, 900)} alt={detail.title} loading="eager" fetchPriority="high" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-gray-300 text-6xl font-black select-none">WU</span>
               )}

@@ -7,6 +7,7 @@ import TrackView from "./_components/TrackView";
 import TrackedLink from "@/components/TrackedLink";
 import JsonLd from "@/components/JsonLd";
 import { absoluteUrl } from "@/lib/site";
+import { ikResize } from "@/lib/image-url";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -316,7 +317,7 @@ export default async function StoreDetailPage({ params }: Props) {
             <div className="grid grid-cols-1 gap-0.5">
               {store.image_urls.map((url, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt={`${store.name} 매장 사진`} className="w-full object-cover" />
+                <img key={i} src={ikResize(url, 900)} alt={`${store.name} 매장 사진`} loading="lazy" decoding="async" className="w-full object-cover" />
               ))}
             </div>
           </div>

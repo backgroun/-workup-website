@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DEFAULT_PEOPLE, type Person } from "@/data/people";
 import MateZone from "@/components/MateZone";
 import type { MateZoneConfig } from "@/data/mate-zone";
+import { ikResize } from "@/lib/image-url";
 
 export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mateZone?: MateZoneConfig }) {
   const people: Person[] = items && items.length ? items : DEFAULT_PEOPLE;
@@ -42,7 +43,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
       <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-[#303236]">
         {person.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={person.image_url} alt={person.job} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={ikResize(person.image_url, 1600, 85)} alt={person.job} loading="eager" fetchPriority="high" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#303236,#101a30)" }} />
         )}
@@ -122,7 +123,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 {person.workMoments.photos.map((url, i) => (
                   <div key={i} className="aspect-[3/4] overflow-hidden bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={ikResize(url, 480)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </div>
                 ))}
                 {person.workMoments.video && (
@@ -167,7 +168,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                     <div className="aspect-square bg-gray-100 overflow-hidden mb-3">
                       {product.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
+                        <img src={ikResize(product.image_url, 480)} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
                       ) : null}
                     </div>
                     <p className="text-[14px] font-semibold text-[#303236] mb-1">{product.name}</p>
@@ -207,7 +208,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
                 {igBarImage && (
                   <div className="w-full sm:w-44 h-44 sm:h-32 flex-shrink-0 overflow-hidden bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={igBarImage} alt={ig.handle} className="w-full h-full object-cover transition-transform" />
+                    <img src={ikResize(igBarImage, 440)} alt={ig.handle} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform" />
                   </div>
                 )}
                 <div className="flex-1 px-5 py-5 sm:py-0 min-w-0">
