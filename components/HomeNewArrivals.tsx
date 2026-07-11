@@ -106,7 +106,7 @@ export default function HomeNewArrivals() {
 
   if (loading) {
     return (
-      <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14">
+      <section className="bg-white pt-10 pb-8 md:pt-12 md:pb-14">
         <div className="px-[15px] md:px-[70px]">
           <div className="h-7 w-52 bg-gray-100 rounded animate-pulse mb-5" />
           <div className="hidden md:flex gap-4">
@@ -128,9 +128,9 @@ export default function HomeNewArrivals() {
   if (!cfg.is_visible || newItems.length === 0) return null;
 
   return (
-    <section className="bg-white pt-6 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
+    <section className="bg-white pt-10 pb-8 md:pt-12 md:pb-14 overflow-x-hidden">
       <div className="px-[15px] md:px-[70px]">
-        <h2 className="text-xl md:text-2xl font-bold text-[#303236] mb-5 tracking-tight">{cfg.title}</h2>
+        <h2 className="text-[19px] md:text-2xl font-bold text-[#303236] mb-5 tracking-tight">{cfg.title}</h2>
 
         {/* 카테고리 탭 — 자동 모드 + 탭 표시 설정일 때만 */}
         {availableTabs.length > 0 && (
