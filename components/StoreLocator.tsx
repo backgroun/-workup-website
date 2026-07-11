@@ -169,6 +169,11 @@ export default function StoreLocator({
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // 리스트 각 항목의 DOM 참조 — 지도에서 매장을 고르면 해당 항목으로 스크롤하기 위함
+  const itemRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  // 지도 클릭으로 선택했을 때만 리스트를 해당 항목으로 스크롤하도록 하는 대기 플래그
+  // (리스트 항목 클릭은 반대로 지도로 스크롤하므로 서로 간섭하지 않게 구분)
+  const pendingListScrollId = useRef<number | null>(null);
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -274,26 +279,33 @@ export default function StoreLocator({
     setSelectedStore(null);
   };
 
-  // 지도에서 매장 핀/카드를 클릭하면 해당 매장이 속한 지역으로 하단 리스트도 필터링
+  // 지도에서 매장 핀/카드를 클릭하면: 해당 지역으로 리스트 필터 + 매장 선택/펼침 +
+  // 그 항목으로 리스트를 스크롤해 지도와 목록이 확실히 연동되도록 한다.
   const selectStoreFromMap = (store: Store) => {
+    trackStoreEvent("list_click", { id: store.id, name: store.name });
     setSelectedStore(store);
-    setMapCenter({ lat: store.lat, lng: store.lng, level: 3 });
+    setExpanded(store.id);
+    setMapCenter({ lat: store.lat, lng: store.lng, level: 5 });
     const { sido, sigungu } = regionOf(store.address);
     if (SIDO_LIST.includes(sido)) {
       setSelectedSido(sido);
       setSelectedSigungu(sigungu);
     }
+    pendingListScrollId.current = store.id;
   };
 
-  // 지도에서 여러 매장이 묶인 클러스터(숫자) 클릭 시 해당 지역으로 리스트 필터링
+  // 지도에서 여러 매장이 묶인 클러스터(숫자) 클릭 시 해당 지역으로 리스트 필터 후
+  // 리스트 영역으로 스크롤해 어떤 지역이 열렸는지 바로 보이게 한다.
   const selectClusterFromMap = (clusterStores: Store[]) => {
     if (clusterStores.length === 0) return;
     const { sido } = regionOf(clusterStores[0].address);
     if (!SIDO_LIST.includes(sido)) return;
     const sigungus = new Set(clusterStores.map((s) => regionOf(s.address).sigungu));
     setSelectedStore(null);
+    setExpanded(null);
     setSelectedSido(sido);
     setSelectedSigungu(sigungus.size === 1 ? [...sigungus][0] : "");
+    setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   };
 
   // 검색어 입력 시 지도도 결과 위치로 이동 — 결과가 1개면 그 매장으로, 여러 개면 평균 위치로
@@ -337,6 +349,18 @@ export default function StoreLocator({
       ? allSorted
       : baseList
   );
+
+  // 지도 클릭으로 매장이 선택되면(대기 플래그 존재) 리스트가 재정렬/필터된 뒤
+  // 해당 항목을 화면 중앙으로 스크롤한다. displayList가 바뀔 때마다 확인.
+  useEffect(() => {
+    const id = pendingListScrollId.current;
+    if (id == null) return;
+    const el = itemRefs.current.get(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      pendingListScrollId.current = null;
+    }
+  }, [displayList, selectedStore]);
 
   return (
     <section id={id} className="bg-[#F5F2ED]">
@@ -613,7 +637,7 @@ export default function StoreLocator({
         </div>
 
         {/* ── 매장 목록 ── */}
-        <div className="flex items-center justify-between mb-3">
+        <div ref={listRef} className="flex items-center justify-between mb-3 scroll-mt-4">
           <p className="text-xs text-gray-400">
             {isSearching
               ? `"${search.trim()}" 검색 결과 ${displayList.length}개`
@@ -639,7 +663,8 @@ export default function StoreLocator({
               return (
                 <div
                   key={store.id}
-                  className={`bg-white overflow-hidden transition-colors ${
+                  ref={(el) => { itemRefs.current.set(store.id, el); }}
+                  className={`bg-white overflow-hidden transition-colors scroll-mt-4 ${
                     isSelected ? "border-2 border-[#303236]" : "border border-gray-200"
                   }`}
                 >
