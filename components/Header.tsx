@@ -159,7 +159,7 @@ export default function Header({
                 className={`p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
                 aria-label="검색"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                 </svg>
@@ -172,12 +172,12 @@ export default function Header({
               className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label="찜 목록"
             >
-              <svg className="w-5 h-5" fill="none" stroke={count > 0 ? "#ff550c" : "currentColor"} viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               {count > 0 && (
-                <span className="absolute inset-0 flex items-center justify-center text-[#ff550c] text-[9px] font-bold leading-none pointer-events-none">
+                <span className="absolute inset-0 flex items-center justify-center text-[#ff550c] text-[10px] font-bold leading-none pointer-events-none">
                   {count}
                 </span>
               )}
@@ -189,7 +189,7 @@ export default function Header({
               className={`relative p-1 hover:text-[#ff550c] transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               aria-label={memberSession ? "마이페이지" : "로그인"}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
               </svg>
