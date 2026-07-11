@@ -10,43 +10,46 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
   return (
     <main>
-      <section className="bg-[#FAFAF8] py-12 min-h-[60vh]">
-        <div className="max-w-3xl mx-auto px-6">
-          <h1 className="text-xl font-bold text-[#303236] mb-8">피팅 리스트</h1>
+      {/* 상단 히어로 — 매장 찾기 페이지와 동일한 스타일(굵은 타이틀 + 설명) */}
+      <div className="bg-white py-16 border-b border-gray-100">
+        <div className="px-[15px] md:px-[70px]">
+          <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">피팅 리스트</h1>
+          {items.length > 0 && (
+            <p className="text-[14px] text-gray-500 leading-relaxed">{c.noticeDesc}</p>
+          )}
+        </div>
+      </div>
+
+      <section className="bg-[#FAFAF8] py-14 md:py-20 min-h-[50vh]">
+        <div className="px-[15px] md:px-[70px]">
 
           {items.length === 0 ? (
-            <div className="text-center py-24">
-              <p className="text-2xl font-bold text-[#303236] mb-3">{c.emptyTitle}</p>
-              <p className="text-sm text-gray-500 mb-8">{c.emptyDesc}</p>
+            <div className="text-center py-24 md:py-32">
+              <p className="text-2xl md:text-3xl font-bold text-[#303236] mb-3">{c.emptyTitle}</p>
+              <p className="text-sm md:text-base text-[#8F8B81] mb-9">{c.emptyDesc}</p>
               <Link
                 href={c.emptyCtaHref}
-                className="inline-block bg-[#303236] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#E5541B] transition-colors"
+                className="inline-block bg-[#303236] text-white text-sm tracking-widest px-9 py-3.5 hover:bg-[#E5541B] transition-colors"
               >
                 {c.emptyCtaLabel}
               </Link>
             </div>
           ) : (
             <>
-              {/* 매장 방문 안내 배너 */}
-              <div className="bg-gray-100 border border-gray-200 px-6 py-5 mb-8">
-                <p className="font-bold text-gray-800 mb-1">{c.noticeTitle}</p>
-                <p className="text-sm text-gray-500 leading-relaxed">{c.noticeDesc}</p>
-              </div>
-
-              {/* 아이템 목록 */}
-              <div className="space-y-3 mb-8">
+              {/* 아이템 그리드 — 화면 폭을 그대로 활용, PC에서 썸네일이 커지도록 열 수를 제한 */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-8 md:gap-y-16 mb-16">
                 {items.map((item) => (
-                  <div key={item.cartId} className="bg-white border border-gray-200 flex items-center gap-4 px-5 py-4">
-                    <Link href={`/products/${item.productId}`} className="flex items-center gap-4 flex-1 min-w-0 group">
+                  <div key={item.cartId} className="group">
+                    <Link href={`/products/${item.productId}`} className="block">
                       {/* 제품 이미지 */}
-                      <div className="w-16 h-16 flex-shrink-0 border border-gray-100 overflow-hidden relative bg-gray-50">
+                      <div className="relative aspect-square overflow-hidden bg-[#f0f0f0]">
                         {item.imageUrl ? (
                           <Image
                             src={item.imageUrl}
                             alt={item.name}
                             fill
-                            className="object-cover transition-transform duration-200"
-                            sizes="64px"
+                            className="object-cover transition-opacity duration-300 group-hover:opacity-90"
+                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
                           />
                         ) : (
                           <div
@@ -54,55 +57,60 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             style={{ backgroundColor: item.colorHex }}
                           />
                         )}
+                        <button
+                          onClick={(e) => { e.preventDefault(); removeItem(item.cartId); }}
+                          aria-label="삭제"
+                          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/80 hover:bg-white transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-[#303236]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-[#303236] leading-tight group-hover:text-[#E5541B] transition-colors">{item.name}</p>
+                      <div className="pt-3.5">
+                        <p className="text-[15px] font-bold text-[#303236] leading-snug group-hover:underline underline-offset-4 decoration-1">{item.name}</p>
                         {item.sku && (
-                          <p className="text-xs text-gray-400 mt-0.5">품번 {item.sku}</p>
+                          <p className="text-xs text-[#8F8B81] mt-1">품번 {item.sku}</p>
                         )}
                         {item.allSizes && item.allSizes.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
                             {item.allSizes.map((s) => (
-                              <span key={s} className="text-[10px] border border-gray-300 text-gray-600 px-1.5 py-0.5 leading-none">
+                              <span key={s} className="text-[11px] border border-gray-300 text-gray-600 px-2 py-0.5 leading-none">
                                 {s}
                               </span>
                             ))}
                           </div>
                         )}
                         {item.allColors && item.allColors.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
-                            {item.allColors.map((c) => (
-                              <span key={c.name} className="flex items-center gap-1">
+                          <div className="flex flex-wrap gap-2 mt-2 items-center">
+                            {item.allColors.map((col) => (
+                              <span key={col.name} className="flex items-center gap-1.5">
                                 <span
                                   className="w-3 h-3 rounded-full border border-gray-200 flex-shrink-0"
-                                  style={{ backgroundColor: c.hex }}
+                                  style={{ backgroundColor: col.hex }}
                                 />
-                                <span className="text-[10px] text-gray-500">{c.name}</span>
+                                <span className="text-[11px] text-[#8F8B81]">{col.name}</span>
                               </span>
                             ))}
                           </div>
                         )}
+                        <p className="text-[15px] font-bold text-[#303236] mt-2.5">{item.price}</p>
                       </div>
                     </Link>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-[#303236] mb-2">{item.price}</p>
-                      <button
-                        onClick={() => removeItem(item.cartId)}
-                        className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        삭제
-                      </button>
-                    </div>
                   </div>
                 ))}
               </div>
 
               {/* 하단 액션 */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
                 <Link
                   href={c.primaryHref}
-                  className="flex-1 text-center bg-[#E5541B] text-white text-sm font-bold tracking-widest py-4 hover:bg-[#d05518] transition-colors"
+                  className="store-cta flex-1 text-center text-sm font-bold tracking-widest px-8 py-4 flex items-center justify-center gap-2"
                 >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                   {c.primaryLabel}
                 </Link>
                 <Link
@@ -115,7 +123,7 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
 
               <button
                 onClick={clearCart}
-                className="mt-4 w-full text-xs text-gray-400 hover:text-red-500 transition-colors py-2"
+                className="mt-5 text-xs text-[#8F8B81] hover:text-red-500 transition-colors"
               >
                 전체 비우기
               </button>
