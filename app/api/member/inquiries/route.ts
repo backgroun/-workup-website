@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase-server";
+import { verifyMemberCookie } from "@/lib/member-session";
 
 const TYPE_LABEL: Record<string, string> = {
   franchise: "가맹·창업 문의",
@@ -18,7 +19,7 @@ function str(v: unknown): string {
 export async function GET() {
   try {
     const store = await cookies();
-    const memberId = store.get("wu-member")?.value;
+    const memberId = verifyMemberCookie(store.get("wu-member")?.value);
     if (!memberId) return NextResponse.json([], { status: 401 });
 
     const sb = createAdminClient();
