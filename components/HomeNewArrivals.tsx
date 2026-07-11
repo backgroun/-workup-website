@@ -217,7 +217,7 @@ export default function HomeNewArrivals() {
                     {productDisplayName(p)}
                   </p>
                   <p className="text-[12px] text-[#8F8B81] line-clamp-1 mb-2.5">{p.tagline}</p>
-                  <p className="text-[14px] text-[#303236]">{p.price}</p>
+                  <p className="text-[14px] text-[#303236]" style={{ fontWeight: 700 }}>{p.price}</p>
                 </div>
               </Link>
             ))}
@@ -261,7 +261,7 @@ export default function HomeNewArrivals() {
                   )}
                   <p className="text-[13px] text-[#303236] leading-snug line-clamp-2 mb-1">{productDisplayName(p)}</p>
                   <p className="text-[11px] text-[#8F8B81] line-clamp-1 mb-1.5">{p.tagline}</p>
-                  <p className="text-[13px] text-[#303236]">{p.price}</p>
+                  <p className="text-[13px] text-[#303236]" style={{ fontWeight: 700 }}>{p.price}</p>
                 </div>
               </Link>
             ))}
