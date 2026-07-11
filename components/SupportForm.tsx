@@ -2,11 +2,85 @@
 import { useState } from "react";
 import { SUPPORT_CATEGORIES } from "@/lib/site-content";
 import { useStores } from "@/lib/useStores";
+import type { Store } from "@/data/stores";
 
 type FormState = { subject: string; name: string; phone: string; message: string; storeId: string; storeName: string };
 
 // 매장 선택이 의미 있는 문의 구분(매장 방문 관련 문의는 담당 매장을 알아야 안내가 정확함).
 const STORE_RELATED_CATEGORIES = new Set(["매장·방문", "교환·반품·AS"]);
+
+const INPUT_CLS = "w-full border border-gray-200 px-4 py-2.5 text-sm text-[#303236] placeholder-gray-300 focus:outline-none focus:border-[#303236] transition-colors bg-white";
+
+// 매장명/지역 검색으로 매장을 찾아 선택 — 매장 수가 많아 드롭다운 대신 검색형 입력 사용
+function StoreSearchInput({
+  value,
+  stores,
+  onChange,
+}: {
+  value: string;
+  stores: Store[];
+  onChange: (id: string, name: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const selected = stores.find((s) => String(s.id) === value);
+  const suggestions = query.trim()
+    ? stores.filter((s) => s.name.includes(query.trim()) || s.address.includes(query.trim())).slice(0, 8)
+    : [];
+
+  if (selected) {
+    return (
+      <div className="flex items-center justify-between px-4 py-2.5 border border-gray-200 bg-gray-50">
+        <div className="min-w-0">
+          <p className="text-sm text-[#303236] truncate">{selected.name}</p>
+          <p className="text-xs text-gray-400 truncate">{selected.address}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange("", "")}
+          className="text-gray-400 hover:text-red-500 text-xs ml-2 flex-shrink-0"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="매장명 또는 지역으로 검색"
+        className={INPUT_CLS}
+      />
+      {open && query.trim() && (
+        <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-lg max-h-56 overflow-y-auto">
+          {suggestions.length > 0 ? (
+            suggestions.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(String(s.id), s.name); setQuery(""); setOpen(false); }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                >
+                  <span className="block text-[#303236] font-medium">{s.name}</span>
+                  <span className="block text-xs text-gray-400 truncate">{s.address}</span>
+                </button>
+              </li>
+            ))
+          ) : (
+            <li className="px-4 py-2 text-sm text-gray-400">검색 결과가 없습니다.</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function SupportForm() {
   const stores = useStores();
@@ -86,22 +160,12 @@ export default function SupportForm() {
 
       {STORE_RELATED_CATEGORIES.has(form.subject) && (
         <div>
-          <label htmlFor="support-store" className="block text-xs text-gray-500 mb-1.5">문의 매장 <span className="text-gray-400">(선택)</span></label>
-          <select
-            id="support-store"
+          <label className="block text-xs text-gray-500 mb-1.5">문의 매장 <span className="text-gray-400">(선택)</span></label>
+          <StoreSearchInput
             value={form.storeId}
-            onChange={(e) => {
-              const id = e.target.value;
-              const store = stores.find((s) => String(s.id) === id);
-              setForm((f) => ({ ...f, storeId: id, storeName: store?.name ?? "" }));
-            }}
-            className={cls}
-          >
-            <option value="">매장을 선택해주세요</option>
-            {stores.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+            stores={stores}
+            onChange={(id, name) => setForm((f) => ({ ...f, storeId: id, storeName: name }))}
+          />
         </div>
       )}
 
