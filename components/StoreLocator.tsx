@@ -672,20 +672,18 @@ export default function StoreLocator({
                           </div>
                         </div>
 
-                        {/* 판매제품 — 오른쪽 여백에 번호 + 제품명만 배치 */}
+                        {/* 판매제품 — 무지 스타일: 얇은 흰 패널·조용한 번호·밑줄 hover */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 bg-[#ebebeb] px-3 py-2">
-                            <p className="text-xs font-semibold text-gray-500 mb-1">스토어 베스트 상품</p>
-                            <ul className="space-y-0.5">
+                          <div className="md:w-56 md:flex-shrink-0 md:mr-4 border border-gray-200 bg-white px-3.5 py-3">
+                            <p className="text-[11px] tracking-wide text-gray-400 mb-2">스토어 베스트 상품</p>
+                            <ul className="space-y-1">
                               {store.products.map((p, i) => (
                                 <li key={p.id}>
                                   <Link
                                     href={`/products/${p.id}`}
-                                    className="flex items-center gap-2 text-xs text-gray-700 hover:text-[#E5541B] transition-colors leading-tight py-0.5"
+                                    className="flex items-center gap-2.5 text-xs text-[#303236] hover:underline underline-offset-2 transition-colors leading-tight py-0.5"
                                   >
-                                    <span className="w-4 h-4 flex items-center justify-center bg-[#303236] text-white text-[10px] font-bold flex-shrink-0">
-                                      {i + 1}
-                                    </span>
+                                    <span className="w-3 flex-shrink-0 text-[11px] text-gray-400 tabular-nums">{i + 1}</span>
                                     <span className="truncate">{p.name}</span>
                                   </Link>
                                 </li>
