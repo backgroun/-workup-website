@@ -565,7 +565,7 @@ export default function StoreLocator({
 
           {/* 선택된 매장 오버레이 */}
           {selectedStore && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-[#4a4d53]/85 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-4">
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-[#4a4d53]/85 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-4">
               {/* PC: 지점명 | 주소 한 줄 / 모바일: 2줄 */}
               <div className="hidden md:flex items-center gap-2 min-w-0">
                 <p className="text-white font-bold text-sm flex-shrink-0">{selectedStore.name}</p>
@@ -672,16 +672,16 @@ export default function StoreLocator({
 
                         {/* 판매제품 — STORE BEST | 제품…  한 줄, 오른쪽 정렬(넘치면 가로 스크롤) */}
                         {store.products && store.products.length > 0 && (
-                          <div className="md:flex-1 md:min-w-0 md:flex md:justify-end">
-                            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 md:pb-0" style={{ scrollbarWidth: "none" }}>
+                          <div className="md:flex-1 md:min-w-0 md:flex md:justify-end md:pr-4">
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" style={{ scrollbarWidth: "none" }}>
                               {/* STORE BEST 라벨 — 박스 컬러 구분(진한 차콜) */}
                               <span className="flex-shrink-0 bg-[#303236] text-white text-[10px] tracking-wider font-semibold px-2 py-1">STORE BEST</span>
-                              <span className="flex-shrink-0 text-gray-300">|</span>
+                              <span className="flex-shrink-0 text-gray-300 mr-0.5">|</span>
                               {store.products.map((p) => (
                                 <Link
                                   key={p.id}
                                   href={`/products/${p.id}`}
-                                  className="flex-shrink-0 text-xs md:text-[13px] text-[#303236] hover:underline underline-offset-2 transition-colors whitespace-nowrap"
+                                  className="flex-shrink-0 border border-gray-300 px-2.5 py-1 text-xs md:text-[13px] text-[#303236] hover:border-[#303236] transition-colors whitespace-nowrap"
                                 >
                                   {p.name}
                                 </Link>
