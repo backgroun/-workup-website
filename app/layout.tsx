@@ -16,6 +16,7 @@ import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
+import DisableRightClick from "@/components/DisableRightClick";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { siteUrl } from "@/lib/site";
@@ -86,6 +87,7 @@ export default async function RootLayout({
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <ScrollToTop />
+        {!isAdmin && <DisableRightClick />}
         {!isAdmin && <PixelManager />}
         <CartProvider>
             {/* BottomNav는 position:fixed 로 화면 최하단 고정. scroll-root는 스크롤 컨테이너 */}
