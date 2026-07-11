@@ -313,7 +313,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           <span className="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] tracking-widest uppercase">WORKUP</span>
         )}
         {product.isNew && (
-          <span className="absolute top-2 left-2 bg-[#E5541B] text-white text-[9px] font-bold px-2 py-0.5 tracking-widest z-10">NEW</span>
+          <span className="absolute top-2 left-2 bg-white/90 text-[#E5541B] text-[10px] tracking-[0.2em] px-2 py-0.5 z-10">NEW</span>
         )}
         <button
           onClick={(e) => { e.preventDefault(); toggleFav(product); }}
@@ -342,7 +342,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           </div>
         )}
         <h3 className={`font-medium text-[#303236] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
-          <Link href={`/products/${product.id}`} className="hover:text-[#E5541B] transition-colors">{productDisplayName(product)}</Link>
+          <Link href={`/products/${product.id}`} className="hover:underline underline-offset-4 decoration-1 transition-colors">{productDisplayName(product)}</Link>
         </h3>
         {product.sku && (
           <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{product.sku}</p>
