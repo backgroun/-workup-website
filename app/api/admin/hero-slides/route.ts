@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 import { logAudit } from "@/lib/audit-server";
@@ -27,6 +28,8 @@ export async function POST(req: Request) {
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 공개 홈이 unstable_cache(tags:["hero_slides"])로 캐싱되므로 저장 즉시 갱신한다.
+  revalidateTag("hero_slides", "max");
   await logAudit({
     action: "create",
     resource: "hero-slides",

@@ -1,57 +1,5 @@
-import { unstable_noStore as noStore } from "next/cache";
-import { createAdminClient } from "@/lib/supabase-server";
+import { getActiveSlides } from "@/lib/hero-server";
 import HeroCarousel from "./HeroCarousel";
-
-type HeroSlide = {
-  id: string;
-  season_text: string;
-  title: string;
-  subtitle: string;
-  btn1_text: string;
-  btn1_link: string;
-  btn1_visible: boolean;
-  btn2_text: string;
-  btn2_link: string;
-  btn2_visible: boolean;
-  pc_image_url: string | null;
-  mobile_image_url: string | null;
-  pc_video_url?: string | null;
-  mobile_video_url?: string | null;
-  pc_image_position?: string | null;
-  mobile_image_position?: string | null;
-  pc_image_scale?: number | null;
-  mobile_image_scale?: number | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  text_layers?: any[] | null;
-  content_x?: number | null;
-  content_y?: number | null;
-  is_visible: boolean;
-  scheduled_start: string | null;
-  scheduled_end: string | null;
-  sort_order: number;
-};
-
-async function getActiveSlides(slideType: string): Promise<HeroSlide[]> {
-  noStore();
-  try {
-    const supabase = createAdminClient();
-    const now = new Date().toISOString();
-    const { data } = await supabase
-      .from("hero_slides")
-      .select("*")
-      .eq("is_visible", true)
-      .eq("slide_type", slideType)
-      .order("sort_order", { ascending: true });
-    if (!data || data.length === 0) return [];
-    return data.filter((s: HeroSlide) => {
-      if (s.scheduled_start && s.scheduled_start > now) return false;
-      if (s.scheduled_end && s.scheduled_end < now) return false;
-      return true;
-    });
-  } catch {
-    return [];
-  }
-}
 
 // slideType: "main"(홈) | "product"(프로덕트 상단). product는 슬라이드가 없으면 아무것도 렌더하지 않음.
 export default async function Hero({ slideType = "main" }: { slideType?: string }) {
