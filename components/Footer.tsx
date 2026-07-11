@@ -165,7 +165,10 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
           {/* 열 3: 고객센터 */}
           <div>
             <p className="text-[12px] text-gray-500 mb-1">고객센터</p>
-            <p className="text-[22px] font-bold text-[#303236] mb-3">{c.cs_phone}</p>
+            <a href={`tel:${c.cs_phone.replace(/[^0-9+]/g, "")}`}
+              className="block text-[22px] font-bold text-[#303236] mb-3 hover:text-[#ff550c] transition-colors">
+              {c.cs_phone}
+            </a>
             <div className="text-[12px] text-gray-500 leading-[1.9]">
               <p>{c.cs_hours_weekday}</p>
               <p>{c.cs_hours_weekend}</p>
@@ -226,7 +229,10 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
 
               <div className="text-[12px] text-gray-500 leading-[1.9]">
                 <p className="font-semibold text-[#303236] text-[13px] mb-1">
-                  고객센터 <span className="font-bold">{c.cs_phone}</span>
+                  고객센터{" "}
+                  <a href={`tel:${c.cs_phone.replace(/[^0-9+]/g, "")}`} className="font-bold hover:text-[#ff550c] transition-colors">
+                    {c.cs_phone}
+                  </a>
                 </p>
                 <p>{c.cs_hours_weekday}</p>
                 <p>{c.cs_hours_weekend}</p>

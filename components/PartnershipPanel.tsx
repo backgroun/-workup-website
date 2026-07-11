@@ -37,9 +37,12 @@ export default function PartnershipPanel({ info }: { info: PartnerInfo }) {
         <p className="tracking-widest uppercase mb-1" style={{ fontSize: st.phone_label.size, color: st.phone_label.color }}>
           {info.phone_label}
         </p>
-        <p className="font-semibold" style={{ fontSize: st.phone.size, color: st.phone.color }}>
-          {info.phone}
-        </p>
+        {info.phone && (
+          <a href={`tel:${info.phone.replace(/[^0-9+]/g, "")}`}
+            className="font-semibold hover:underline underline-offset-2" style={{ fontSize: st.phone.size, color: st.phone.color }}>
+            {info.phone}
+          </a>
+        )}
         <p className="mt-0.5" style={{ fontSize: st.hours.size, color: st.hours.color }}>
           {info.hours}
         </p>
