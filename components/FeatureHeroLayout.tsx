@@ -173,7 +173,7 @@ function WhiteBox({
         </h3>
         <p
           style={{
-            fontSize: "13px",
+            fontSize: "17px",
             color: "#6b7280",
             lineHeight: 1.7,
             marginBottom: "20px",
