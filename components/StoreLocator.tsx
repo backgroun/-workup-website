@@ -506,7 +506,10 @@ export default function StoreLocator({
                   setExpanded(null);
                   setSelectedStore(null);
                   if (next) {
-                    // 전국 매장이 한눈에 보이도록 지도를 축소
+                    // 전국 매장이 한눈에 보이도록 지도를 축소, 지역 필터가 남아있으면
+                    // 리스트가 그 지역으로만 걸러지므로 함께 초기화한다.
+                    setSelectedSido("");
+                    setSelectedSigungu("");
                     setMapCenter({ lat: 36.4, lng: 127.8, level: 13 });
                   } else if (userCoords) {
                     setMapCenter({ lat: userCoords.lat, lng: userCoords.lng, level: 7 });
