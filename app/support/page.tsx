@@ -75,10 +75,6 @@ export default async function SupportPage() {
                     className="inline-flex items-center gap-1.5 border border-[#303236] text-[#303236] text-sm font-semibold px-5 py-2.5 hover:bg-[#303236] hover:text-white transition-colors">
                     매장 찾기
                   </Link>
-                  <Link href="/catalog"
-                    className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm font-semibold px-5 py-2.5 hover:border-[#303236] hover:text-[#303236] transition-colors">
-                    카탈로그
-                  </Link>
                 </div>
               </div>
             </div>
