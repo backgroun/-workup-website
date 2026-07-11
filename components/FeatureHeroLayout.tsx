@@ -161,7 +161,7 @@ function WhiteBox({
         }}
       >
         <h3
-          className="text-[18px] lg:text-[20px] xl:text-[24px] break-keep"
+          className="text-[18px] lg:text-[20px] xl:text-[24px] break-keep tracking-tight"
           style={{
             fontWeight: 500,
             color: "#303236",
