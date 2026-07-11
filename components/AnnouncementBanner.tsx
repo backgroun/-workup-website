@@ -21,67 +21,67 @@ function SmartLink({ href, newTab, className, style, children }: {
   );
 }
 
-// 무드별로 관리자가 지정한 배경색(bg_color) 위에 얹는 옅은 톤 그라데이션.
-// mix-blend-mode는 배경이 아주 어둡거나 채도가 높으면 효과가 거의 사라지므로,
-// 배경 밝기와 무관하게 항상 일정하게 보이는 일반 알파 블렌딩을 사용한다.
-const WEATHER_OVERLAY: Record<WeatherMood, CSSProperties> = {
+// 날씨를 아이콘/문구가 아니라 "탑바 배경 자체"의 색온도·분위기로 추측하게 한다.
+// 2겹 구조:
+//  1) TONE — 전체 폭에 깔리는 어두운 색온도 틴트. 흰 글자의 명도 대비를 지켜야 하므로
+//     배경을 밝게 올리지 않고, 관리자가 정한 어두운 배경색 계열을 유지한 채 색조만 민다.
+//     (맑음=따뜻함 / 밤=네이비 / 흐림=중성 회색 / 비=차가운 블루+빗줄기 결 / 눈=차가운 밝은 톤 / 안개=뿌연 회색)
+//  2) ACCENT — 글자가 없는 가운데 여백에만 얹는 좀 더 또렷한 분위기 광채. 좌우 텍스트와
+//     겹칠 수 있는 좁은 화면(lg 미만)에서는 노출하지 않아 대비 저하를 원천 차단한다.
+const WEATHER_TONE: Record<WeatherMood, CSSProperties> = {
   "clear-day": {
-    backgroundImage: "linear-gradient(135deg, rgba(255,196,102,0.16), rgba(255,196,102,0) 60%)",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(214,150,70,0.16), rgba(150,96,36,0.12))",
   },
   "clear-night": {
-    backgroundImage: "linear-gradient(135deg, rgba(12,18,58,0.32), rgba(12,18,58,0.06))",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(30,42,92,0.5), rgba(12,18,48,0.42))",
   },
   cloudy: {
-    backgroundImage: "linear-gradient(135deg, rgba(190,196,206,0.2), rgba(190,196,206,0.04))",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(176,183,194,0.16), rgba(150,158,170,0.1))",
   },
   rain: {
-    backgroundImage: "linear-gradient(160deg, rgba(90,120,160,0.1), rgba(50,80,125,0.26))",
+    // 빗줄기 결(비스듬한 얇은 선) + 차가운 블루 틴트를 겹친다.
+    backgroundImage:
+      "repeating-linear-gradient(101deg, rgba(214,228,246,0.05) 0px, rgba(214,228,246,0.05) 1px, transparent 1px, transparent 11px), linear-gradient(180deg, rgba(58,84,120,0.34), rgba(26,44,76,0.32))",
   },
   snow: {
-    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06))",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(150,172,206,0.24), rgba(120,142,178,0.16))",
   },
   fog: {
-    backgroundImage: "linear-gradient(135deg, rgba(225,228,232,0.22), rgba(225,228,232,0.06))",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(190,196,205,0.18), rgba(162,170,182,0.12))",
   },
 };
 
-// 톤 그라데이션만으로는 "무슨 날씨인지" 형태가 안 읽혀서, TopbarIcon과 동일한
-// 얇은 선 스타일의 작은 날씨 모티프를 함께 얹는다 — 여전히 장식용(aria-hidden)이며
-// 데스크톱 여백에만 노출해 좁은 화면에서 겹침·혼잡을 피한다.
-const WEATHER_MOTIF_PATHS: Record<WeatherMood, ReactNode> = {
-  "clear-day": (
-    <>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2.5v2M12 19.5v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2.5 12h2M19.5 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-    </>
-  ),
-  "clear-night": <path d="M20.5 14.7A8.2 8.2 0 019.3 3.5a8.2 8.2 0 1011.2 11.2z" />,
-  cloudy: <path d="M6.5 18a4 4 0 01-.5-7.97 5 5 0 019.6-2.03A4 4 0 0118 18H6.5z" />,
-  rain: (
-    <>
-      <path d="M6.5 14a4 4 0 01-.5-7.97 5 5 0 019.6-2.03A4 4 0 0118 14H6.5z" />
-      <path d="M8 17.5l-1 3M12 17.5l-1 3M16 17.5l-1 3" />
-    </>
-  ),
-  snow: <path d="M12 3v18M4.5 7.5l15 9M4.5 16.5l15-9" />,
-  fog: <path d="M3 9h14M6 13h15M3 17h11" />,
+const WEATHER_ACCENT: Record<WeatherMood, CSSProperties> = {
+  "clear-day": {
+    backgroundImage:
+      "radial-gradient(55% 150% at 50% -20%, rgba(255,206,120,0.3), transparent 62%)",
+  },
+  "clear-night": {
+    backgroundImage:
+      "radial-gradient(42% 130% at 50% -25%, rgba(184,198,255,0.18), transparent 58%)",
+  },
+  cloudy: {
+    backgroundImage:
+      "radial-gradient(70% 170% at 50% 0%, rgba(206,212,221,0.14), transparent 66%)",
+  },
+  rain: {
+    backgroundImage:
+      "radial-gradient(60% 150% at 50% -10%, rgba(150,178,214,0.16), transparent 62%)",
+  },
+  snow: {
+    backgroundImage:
+      "radial-gradient(60% 150% at 50% -10%, rgba(226,237,252,0.24), transparent 62%)",
+  },
+  fog: {
+    backgroundImage:
+      "radial-gradient(95% 210% at 50% 50%, rgba(216,221,227,0.16), transparent 72%)",
+  },
 };
-
-function WeatherMotif({ mood, style }: { mood: WeatherMood; style?: CSSProperties }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={style}
-    >
-      {WEATHER_MOTIF_PATHS[mood]}
-    </svg>
-  );
-}
 
 export default function AnnouncementBanner({
   config,
@@ -134,19 +134,17 @@ export default function AnnouncementBanner({
         style={{ backgroundColor: c.bg_color, color: c.text_color }}
       >
         {weatherMood && (
-          <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={WEATHER_OVERLAY[weatherMood]} />
+          <>
+            {/* 전체 폭 색온도 틴트(대비 안전) */}
+            <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={WEATHER_TONE[weatherMood]} />
+            {/* 가운데 여백 분위기 광채(글자와 겹치지 않는 넓은 화면에서만) */}
+            <div aria-hidden="true" className="absolute inset-0 pointer-events-none hidden lg:block" style={WEATHER_ACCENT[weatherMood]} />
+          </>
         )}
         <div className="relative z-10 px-[15px] md:px-[70px] w-full flex items-center justify-between gap-4">
           <SmartLink href={c.left_link || "/"} className="flex items-center gap-1.5 min-w-0 hover:opacity-70 active:opacity-50 active:scale-95 touch-manipulation transition-[opacity,transform]">
             {leftInner}
           </SmartLink>
-
-          {weatherMood && (
-            <div aria-hidden="true" className="hidden lg:flex flex-1 items-center justify-center gap-5 overflow-hidden">
-              <WeatherMotif mood={weatherMood} style={{ width: 18, height: 18, opacity: 0.55 }} />
-              <WeatherMotif mood={weatherMood} style={{ width: 13, height: 13, opacity: 0.35 }} />
-            </div>
-          )}
 
           {c.items.length > 0 && (
             <div className="flex items-center gap-2 md:gap-2.5 flex-shrink-0">
