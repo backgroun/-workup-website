@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_KR } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
@@ -14,7 +14,6 @@ import { getHeaderNavConfig } from "@/lib/header-nav-server";
 import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
-import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -51,20 +50,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+// 공개 사이트 전용 루트 레이아웃(route group). /admin은 app/admin/layout.tsx가 별도 루트
+// 레이아웃(자체 <html><body>)을 갖는다 — 예전처럼 headers()로 경로를 읽어 분기하지 않으므로
+// 이 레이아웃이 쓰이는 모든 공개 페이지는 정적 렌더링/캐싱이 가능해진다.
+export default async function SiteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = (await headers()).get("x-pathname") ?? "";
-  const isAdmin = pathname.startsWith("/admin");
-
-  const [topbar, footer, headerNav, logo, search, studio] = isAdmin
-    ? [null, null, null, null, null, null]
-    : await Promise.all([
-        getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
-        getStudioSettings(),
-      ]);
+  const [topbar, footer, headerNav, logo, search, studio] = await Promise.all([
+    getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
+    getStudioSettings(),
+  ]);
 
   // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
   const visibleNavItems = headerNav?.items.filter((it) => it.isVisible !== false);
@@ -86,26 +83,23 @@ export default async function RootLayout({
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <ScrollToTop />
-        {!isAdmin && <PixelManager />}
+        <PixelManager />
         <CartProvider>
             {/* BottomNav는 position:fixed 로 화면 최하단 고정. scroll-root는 스크롤 컨테이너 */}
-            <div
-              id={isAdmin ? undefined : "scroll-root"}
-              className={isAdmin ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col"}
-            >
-              {!isAdmin && topbar && headerNav && logo && search && (
+            <div id="scroll-root" className="flex-1 min-h-0 flex flex-col">
+              {topbar && headerNav && logo && search && (
                 <>
                   <AnnouncementBanner config={topbar} />
                   <Header navItems={visibleNavItems} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
                 </>
               )}
-              <div className={isAdmin ? "flex-1" : "relative flex-1"}>
+              <div className="relative flex-1">
                 {children}
               </div>
-              {!isAdmin && <SideBanner />}
-              {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
+              <SideBanner />
+              {footer && logo && <Footer config={footer} logo={logo} />}
             </div>
-            {!isAdmin && headerNav && <BottomNav navItems={visibleNavItems} studioEnabled={studio?.enabled ?? true} />}
+            {headerNav && <BottomNav navItems={visibleNavItems} studioEnabled={studio?.enabled ?? true} />}
         </CartProvider>
         {/* Vercel 방문/전환 분석 · Core Web Vitals 측정 (대시보드에서 활성화 필요) */}
         <Analytics />
