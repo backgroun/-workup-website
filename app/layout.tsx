@@ -40,6 +40,12 @@ export const metadata: Metadata = {
     template: "%s | WORKUP",
   },
   description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
+  // 네이버 서치어드바이저 소유 확인용
+  verification: {
+    other: {
+      "naver-site-verification": "88bca7170905aa4f3fb074e92a86d5d48b78f2c2",
+    },
+  },
   // 카톡·SNS·문자 공유 시 노출되는 기본 미리보기 (페이지별 openGraph가 있으면 그것이 우선)
   openGraph: {
     type: "website",
