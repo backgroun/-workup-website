@@ -54,6 +54,14 @@ export const metadata: Metadata = {
     title: "WORKUP — 일하는 사람을 위한 옷",
     description: "현장부터 일상까지. 기능성 워크웨어 브랜드 워크업.",
     url: siteUrl,
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "WORKUP",
+      },
+    ],
   },
 };
 
