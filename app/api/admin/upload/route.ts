@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
-import { getImagekit } from "@/lib/imagekit-server";
+import { uploadToR2, uniqueKey } from "@/lib/r2-server";
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
@@ -16,12 +16,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await getImagekit().files.upload({
-      file,
-      fileName: file.name || "upload.jpg",
-      folder: "/workup",
-      useUniqueFileName: true,
-    });
+    const key = uniqueKey("workup", file.name || "upload.jpg");
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const result = await uploadToR2(key, buffer, file.type || "application/octet-stream");
 
     return NextResponse.json({ url: result.url });
   } catch (e: unknown) {
@@ -31,7 +28,7 @@ export async function POST(req: Request) {
         : e != null && typeof e === "object" && "message" in e
         ? String((e as { message: unknown }).message)
         : JSON.stringify(e);
-    console.error("[upload] imagekit error:", e);
+    console.error("[upload] r2 error:", e);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -270,27 +270,18 @@ export default function AdminMainVisualPage() {
     }
   };
 
-  // 동영상 직접 업로드(브라우저 → ImageKit 직접 업로드) — 대용량 우회
+  // 동영상 직접 업로드(브라우저 → R2 직접 업로드) — 대용량 우회
   const uploadVideo = async (file: File, field: "pc" | "mobile") => {
     if (file.size > 100 * 1024 * 1024) { flash("동영상이 너무 큽니다 (100MB 이하 · 짧고 압축된 영상 권장)", "err"); return; }
     setUploading(field);
     try {
-      const sig = await fetch("/api/admin/imagekit-auth", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "workup/videos" }),
+      const sig = await fetch("/api/admin/r2-upload-url", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folder: "workup/videos", fileName: file.name, contentType: file.type }),
       }).then((r) => r.json());
-      if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)", "err"); setUploading(null); return; }
-      const form = new FormData();
-      form.append("file", file);
-      form.append("fileName", file.name);
-      form.append("publicKey", sig.publicKey);
-      form.append("signature", sig.signature);
-      form.append("expire", String(sig.expire));
-      form.append("token", sig.token);
-      form.append("folder", sig.folder);
-      form.append("useUniqueFileName", "true");
-      const up = await fetch("https://upload.imagekit.io/api/v2/files/upload", { method: "POST", body: form }).then((r) => r.json());
-      if (!up?.url) { flash(`업로드 실패: ${up?.message ?? ""}`, "err"); return; }
-      setEditing((prev) => prev ? { ...prev, [field === "pc" ? "pc_video_url" : "mobile_video_url"]: up.url } : prev);
+      if (!sig?.uploadUrl) { flash("업로드 URL 발급 실패 (로그인 확인)", "err"); setUploading(null); return; }
+      const up = await fetch(sig.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!up.ok) { flash(`업로드 실패: ${up.status}`, "err"); return; }
+      setEditing((prev) => prev ? { ...prev, [field === "pc" ? "pc_video_url" : "mobile_video_url"]: sig.publicUrl } : prev);
     } catch {
       flash("업로드 실패 (네트워크/용량 확인)", "err");
     } finally {

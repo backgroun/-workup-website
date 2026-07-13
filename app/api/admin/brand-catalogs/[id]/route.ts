@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 import { logAudit } from "@/lib/audit-server";
-import { getImagekit } from "@/lib/imagekit-server";
+import { deleteFromR2 } from "@/lib/r2-server";
 
 // 브랜드 카탈로그 수정 (부분 업데이트: 노출 토글·순서 변경 등)
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +27,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   return NextResponse.json(data);
 }
 
-// 브랜드 카탈로그 삭제 (ImageKit 원본 PDF도 함께 정리)
+// 브랜드 카탈로그 삭제 (R2 원본 PDF도 함께 정리)
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
@@ -45,7 +45,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   });
 
   if (row?.pdf_file_id) {
-    try { await getImagekit().files.delete(row.pdf_file_id as string); } catch { /* 자산 정리 실패는 무시 */ }
+    try { await deleteFromR2(row.pdf_file_id as string); } catch { /* 자산 정리 실패는 무시 */ }
   }
   return NextResponse.json({ ok: true });
 }
