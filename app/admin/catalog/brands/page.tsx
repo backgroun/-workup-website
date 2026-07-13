@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { PDFDocument } from "pdf-lib";
-import { EMPTY_BRAND_CATALOG, brandCoverUrl, type BrandCatalog } from "@/data/brandCatalogs";
+import { EMPTY_BRAND_CATALOG, type BrandCatalog } from "@/data/brandCatalogs";
 
 export default function AdminBrandCatalogsPage() {
   const [items, setItems] = useState<BrandCatalog[]>([]);
@@ -56,33 +56,27 @@ export default function AdminBrandCatalogsPage() {
   const set = (key: keyof BrandCatalog, value: string | number | boolean) =>
     setEditing((prev) => (prev ? { ...prev, [key]: value } : prev));
 
-  // 대용량 우회: 브라우저 → ImageKit 직접 업로드(서명). 페이지 수는 ImageKit이 알려주지 않아 브라우저에서 직접 센다.
+  // 대용량 우회: 브라우저 → R2 직접 업로드(presigned URL). 페이지 수는 브라우저에서 직접 센다.
+  // 표지 자동 생성 기능 없음 — 카탈로그 뷰어 기능 자체를 아직 오픈하지 않아 당장은 필요 없음.
   const uploadPdf = async (file: File) => {
     setUploading(true);
     try {
       const [sig, pageCount] = await Promise.all([
-        fetch("/api/admin/imagekit-auth", { method: "POST" }).then((r) => r.json()),
+        fetch("/api/admin/r2-upload-url", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folder: "workup/brands", fileName: file.name, contentType: "application/pdf" }),
+        }).then((r) => r.json()),
         PDFDocument.load(await file.arrayBuffer()).then((doc) => doc.getPageCount()).catch(() => 1),
       ]);
-      if (!sig?.signature) { flash("서명 발급 실패 (로그인 확인)", "err"); return; }
-      const form = new FormData();
-      form.append("file", file);
-      form.append("fileName", file.name);
-      form.append("publicKey", sig.publicKey);
-      form.append("signature", sig.signature);
-      form.append("expire", String(sig.expire));
-      form.append("token", sig.token);
-      form.append("folder", sig.folder);
-      form.append("useUniqueFileName", "true");
-      const up = await fetch("https://upload.imagekit.io/api/v2/files/upload", { method: "POST", body: form }).then((r) => r.json());
-      if (!up?.filePath) { flash("업로드 실패: " + (up?.message ?? ""), "err"); return; }
+      if (!sig?.uploadUrl) { flash("업로드 URL 발급 실패 (로그인 확인)", "err"); return; }
+      const up = await fetch(sig.uploadUrl, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
+      if (!up.ok) { flash(`업로드 실패: ${up.status}`, "err"); return; }
       setEditing((prev) => prev ? {
         ...prev,
-        pdf_public_id: up.filePath,
-        pdf_file_id: up.fileId,
-        pdf_url: up.url,
+        pdf_public_id: sig.key,
+        pdf_file_id: sig.key,
+        pdf_url: sig.publicUrl,
         page_count: pageCount,
-        thumbnail_url: brandCoverUrl(sig.urlEndpoint, up.filePath),
       } : prev);
       flash(`업로드 완료 · ${pageCount}페이지`);
     } catch {
@@ -240,7 +234,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                   <Field label="브랜드명">
                     <input type="text" value={editing.brand_name} onChange={(e) => set("brand_name", e.target.value)} placeholder="예: 무지 / 칼하트 / ○○ 워크웨어" className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                   </Field>
-                  <Field label="PDF 파일" hint="브라우저에서 ImageKit으로 직접 업로드 — 대용량 가능">
+                  <Field label="PDF 파일" hint="브라우저에서 R2로 직접 업로드 — 대용량 가능">
                     <div className="space-y-2">
                       <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
                         className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50 rounded-lg">
@@ -263,7 +257,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs text-center px-2">PDF 업로드 시<br />표지가 표시됩니다</div>}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">표지가 안 보이면 ImageKit 대시보드에서 URL 기반 변환이 켜져 있는지 확인하세요.</p>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">표지 자동 생성 기능은 아직 준비 중입니다 (카탈로그 뷰어 오픈 전).</p>
                 </div>
               </div>
             </div>

@@ -2,11 +2,11 @@
 export type BrandCatalog = {
   id: string;
   brand_name: string;
-  pdf_public_id: string;   // ImageKit filePath (페이지 이미지 생성용)
-  pdf_file_id: string;     // ImageKit fileId (삭제 시 식별용)
+  pdf_public_id: string;   // R2 object key (pdf_file_id와 동일 — 삭제 시 식별용)
+  pdf_file_id: string;     // R2 object key
   pdf_url: string;         // 원본 PDF (대체 보기용)
   page_count: number;
-  thumbnail_url: string;   // 표지 썸네일 (업로드 시 pg-1 으로 생성)
+  thumbnail_url: string;   // 표지 썸네일 (현재 자동 생성 없음 — 카탈로그 뷰어 오픈 전)
   sort_order: number;
   is_visible: boolean;
 };
