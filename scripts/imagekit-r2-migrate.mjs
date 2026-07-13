@@ -83,8 +83,10 @@ async function listAll() {
     });
     const files = Array.isArray(page) ? page : [];
     out.push(...files.filter((f) => f.filePath && f.url));
-    if (files.length < limit) break;
-    skip += limit;
+    // ImageKit이 요청한 limit보다 적은 개수로 응답을 자체적으로 잘라 줄 수 있으므로,
+    // "빈 페이지"를 받을 때까지 계속 진행한다 (skip은 실제 받은 개수만큼만 증가).
+    if (files.length === 0) break;
+    skip += files.length;
   }
   return out;
 }
