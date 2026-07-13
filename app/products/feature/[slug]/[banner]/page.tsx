@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBannerDetail } from "@/lib/editorial-blocks";
+import { ikSrc } from "@/lib/imageSrc";
 
 type Props = { params: Promise<{ slug: string; banner: string }> };
 
@@ -57,7 +58,7 @@ export default async function BannerDetailPage({ params }: Props) {
             >
               {detail.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={detail.imageUrl} alt={detail.title} className="w-full h-full object-cover" />
+                <img src={ikSrc(detail.imageUrl, 1200)} alt={detail.title} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-gray-300 text-6xl font-black select-none">WU</span>
               )}
@@ -81,7 +82,7 @@ export default async function BannerDetailPage({ params }: Props) {
                   {p.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={p.imageUrl}
+                      src={ikSrc(p.imageUrl, 600)}
                       alt={p.name}
                       className="w-full h-full object-contain transition-transform duration-300"
                     />

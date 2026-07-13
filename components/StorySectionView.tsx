@@ -4,6 +4,7 @@ import Link from "next/link";
 import Editable from "@/components/story-edit/Editable";
 import { StoryIcon, ICON_OPTIONS, type IconKey } from "@/components/story-edit/StoryIcons";
 import type { StorySection, SectionBg, SectionEditApi, PartialSection, PhotoItem, ValueItem, FeatureItem } from "@/data/story";
+import { ikSrc } from "@/lib/imageSrc";
 
 // /story 본문 섹션 한 개. 공개 페이지와 위지윅 편집기에서 공용으로 사용(DRY) → 시각 회귀 불가능.
 // edit 이 없으면 순수 렌더(공개), 있으면 클릭 인라인 편집(관리자)이 켜진다.
@@ -49,7 +50,7 @@ function StoryImagePanel({ src, alt }: { src?: string; alt: string }) {
   if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt={alt} className="w-full h-full object-cover object-top" style={{ aspectRatio: IMG_RATIO }} />
+      <img src={ikSrc(src, 1200)} alt={alt} className="w-full h-full object-cover object-top" style={{ aspectRatio: IMG_RATIO }} />
     );
   }
   return (
@@ -190,7 +191,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 <ImgPick onPick={pickInto("image_url")} has={!!section.image_url} className="lg:h-full">
                   {section.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={section.image_url} alt={section.heading || "브랜드 선언"}
+                    <img src={ikSrc(section.image_url, 1200)} alt={section.heading || "브랜드 선언"}
                       className="w-full aspect-[3/2] lg:aspect-auto lg:h-full object-cover object-top" />
                   ) : (
                     <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:h-full overflow-hidden bg-[#303236]">
@@ -367,7 +368,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 <ImgPick onPick={pickInto("image_url")} has={!!section.image_url}>
                   {section.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={section.image_url} alt={section.heading || "창업 스토리"} className="w-full h-full object-cover object-top" style={{ aspectRatio: IMG_RATIO }} />
+                    <img src={ikSrc(section.image_url, 1200)} alt={section.heading || "창업 스토리"} className="w-full h-full object-cover object-top" style={{ aspectRatio: IMG_RATIO }} />
                   ) : (
                     <div className="bg-[#303236] flex flex-col items-center justify-center gap-3" style={{ aspectRatio: IMG_RATIO }}>
                       <svg className="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,7 +459,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 <ImgPick onPick={edit ? () => edit.pickImage((url) => setImg(i, url)) : undefined} has={!!img.url}>
                   {img.url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={img.url} alt={img.alt || ""} className="w-full aspect-square object-cover" />
+                    <img src={ikSrc(img.url, 800)} alt={img.alt || ""} className="w-full aspect-square object-cover" />
                   ) : (
                     <div className="w-full aspect-square bg-gray-100 flex flex-col items-center justify-center gap-1">
                       <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -492,7 +493,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                 <ImgPick onPick={pickInto("image_url")} has={!!section.image_url}>
                   {section.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={section.image_url} alt={section.heading || "문제 제기"} className="w-full h-full object-cover object-top grayscale"
+                    <img src={ikSrc(section.image_url, 1200)} alt={section.heading || "문제 제기"} className="w-full h-full object-cover object-top grayscale"
                       style={{ aspectRatio: IMG_RATIO }} />
                   ) : (
                     <StoryImagePanel src={undefined} alt={section.heading || "문제 제기"} />
@@ -590,7 +591,7 @@ export default function StorySectionView({ section, edit }: { section: StorySect
                   <ImgPick onPick={edit ? () => edit.pickImage((url) => setImg(i, url)) : undefined} has={!!img.url}>
                     {img.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
+                      <img src={ikSrc(img.url, 800)} alt={img.alt || ""} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-[#303236]" />
                     )}

@@ -353,6 +353,20 @@ git push
 - 자동 동기화: `auto-sync: yyyy-MM-dd HH:mm:ss`
 - 수동 커밋: 변경 내용을 한 줄로 요약 (한국어 가능)
 
+## Claude Code 세션(PR 브랜치) Push 빈도 원칙
+
+Vercel은 브랜치에 push될 때마다 Preview 빌드를, main에 머지될 때 Production 빌드를 새로 실행하며 이는 Vercel 사용량(Build CPU Minutes) 과금으로 직결된다.
+
+Claude Code가 PR 브랜치에서 작업할 때:
+
+- 사소한 수정 하나하나마다 즉시 push하지 않는다.
+- 같은 작업 단위(하나의 기능/수정 요청) 안에서는 로컬에 커밋을 쌓아두고, 작업이 끝나거나 사용자가 확인이 필요한 시점에 모아서 한 번에 push한다.
+- 사용자가 중간 결과(Preview URL 등) 확인을 명시적으로 요청한 경우에만 예외적으로 그 시점에 push한다.
+- push 실행 전, 이번에 push될 커밋 목록(각 커밋의 변경 요약)을 사용자에게 정리해서 보여준다.
+- push 완료 후, 실제로 push된 커밋 목록과 결과(브랜치, PR 여부 등)를 다시 한 번 정리해서 알려준다.
+
+이 규칙은 회사/집 PC 간 `auto-sync.ps1` 자동 동기화와는 무관하다 — 그건 사용자 로컬 작업 동기화용이고, 여기서 다루는 건 Claude Code가 만드는 PR 브랜치의 push 빈도다.
+
 ---
 
 # 답변 형식

@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // ImageKit 이미지는 ImageKit 자체 변환으로 직접 서빙(대역폭·Vercel 최적화 비용 절감),
+    // 그 외 소스는 기존 Next 최적화 경로 유지 — lib/imagekit-loader.ts 참고.
+    loader: "custom",
+    loaderFile: "./lib/imagekit-loader.ts",
     // 최신 경량 포맷 우선 (원본 JPG/PNG → AVIF/WebP 자동 변환)
     formats: ["image/avif", "image/webp"],
     // 최적화 이미지 캐시 최소 유지시간 31일.

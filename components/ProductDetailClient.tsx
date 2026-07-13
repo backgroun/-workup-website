@@ -8,6 +8,7 @@ import LoginPromptModal from "@/components/LoginPromptModal";
 import { normalizeProductBanners, type ProductBanner } from "@/lib/product-banners";
 import { useStores } from "@/lib/useStores";
 import { productDisplayName, type Product } from "@/data/products";
+import { ikSrc } from "@/lib/imageSrc";
 
 const SIZES = ["S", "M", "L", "XL", "2XL"];
 
@@ -359,12 +360,12 @@ export default function ProductDetailClient({
             b.link ? (
               <a key={i} href={b.link} target={b.link.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer" className="block overflow-hidden rounded-lg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={b.imageUrl} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
+                <img src={ikSrc(b.imageUrl, 1200)} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
               </a>
             ) : (
               <div key={i} className="overflow-hidden rounded-lg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={b.imageUrl} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
+                <img src={ikSrc(b.imageUrl, 1200)} alt={`상세 배너 ${i + 1}`} className="w-full h-auto block" />
               </div>
             )
           ))}

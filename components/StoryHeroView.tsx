@@ -1,6 +1,7 @@
 "use client";
 import Editable from "@/components/story-edit/Editable";
 import type { StoryHero, HeroEditApi } from "@/data/story";
+import { ikSrc } from "@/lib/imageSrc";
 
 // /story 상단 히어로. 공개 페이지와 위지윅 편집기에서 공용으로 사용(DRY).
 // edit 이 없으면 순수 렌더, 있으면 제목/서브 인라인 편집 + 배경 이미지 클릭 교체.
@@ -13,7 +14,7 @@ export default function StoryHeroView({ hero, edit }: { hero: StoryHero; edit?: 
     >
       {hero.image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={hero.image_url} alt={hero.heading || "WORKUP STORY"} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={ikSrc(hero.image_url, 1920)} alt={hero.heading || "WORKUP STORY"} className="absolute inset-0 w-full h-full object-cover" />
       )}
 
       {/* WU 워터마크 */}

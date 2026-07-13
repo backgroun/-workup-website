@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPrRoom } from "@/lib/pr-room-server";
 import { isHtmlBody } from "@/lib/pr-room";
 import { getFooterConfig } from "@/lib/footer-server";
+import { ikSrc } from "@/lib/imageSrc";
 
 // 본문(에디터 HTML) 렌더용 자식 요소 스타일 — prose 플러그인 없이 임의 변형자로 처리.
 const BODY_PROSE =
@@ -67,7 +68,7 @@ export default async function PrPostDetailPage({ params }: Params) {
         {post.image_url && (
           <div className="mb-8 overflow-hidden rounded-lg bg-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.image_url} alt={post.title} className="w-full h-auto object-contain" />
+            <img src={ikSrc(post.image_url!, 1200)} alt={post.title} className="w-full h-auto object-contain" />
           </div>
         )}
 

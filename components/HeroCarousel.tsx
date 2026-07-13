@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { bgColorWithAlpha } from "@/lib/color";
+import { ikSrc } from "@/lib/imageSrc";
 
 type TextLayer = {
   id: string;
@@ -188,7 +189,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={pcImage}
+                    src={ikSrc(pcImage, 1920)}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover hidden md:block"
                     style={{
@@ -199,7 +200,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={mobileImage || pcImage}
+                    src={ikSrc(mobileImage || pcImage, 800)}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover md:hidden"
                     style={{

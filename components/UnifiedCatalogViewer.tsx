@@ -4,6 +4,7 @@ import Link from "next/link";
 import HTMLFlipBook from "react-pageflip";
 import type { CatalogPage } from "@/data/catalog";
 import CatalogPageView from "./CatalogPageView";
+import { ikSrc } from "@/lib/imageSrc";
 
 export type BrandEntry = { id: string; name: string; cover: string; pages: string[]; pdf_url: string };
 
@@ -59,7 +60,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
     ? workupPages.map((p) => <CatalogPageView key={p.id} page={p} />)
     : (brand?.pages ?? []).map((url, i) => (
         // eslint-disable-next-line @next/next/no-img-element
-        <img key={i} src={url} alt="" className="w-full h-full object-contain bg-[#0d1826]" loading="lazy" decoding="async" />
+        <img key={i} src={ikSrc(url, 1200)} alt="" className="w-full h-full object-contain bg-[#0d1826]" loading="lazy" decoding="async" />
       ));
   const total = pageNodes.length;
   const pdfUrl = isWorkup ? "" : (brand?.pdf_url ?? "");
@@ -205,7 +206,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
               <CoverThumb key={b.id} name={b.name} active={b.id === selectedId} onClick={() => setSelectedId(b.id)}>
                 {b.cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.cover} alt={b.name} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={ikSrc(b.cover, 300)} alt={b.name} className="w-full h-full object-cover" loading="lazy" />
                 ) : <div className="w-full h-full bg-[#303236] flex items-center justify-center text-white/30 text-[9px]">PDF</div>}
               </CoverThumb>
             ))}

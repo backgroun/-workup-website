@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import { productDisplayName, type Product } from "@/data/products";
+import { ikSrc } from "@/lib/imageSrc";
 import {
   DEFAULT_NEW_ARRIVALS,
   normalizeNewArrivals,
@@ -190,7 +191,7 @@ export default function HomeNewArrivals() {
                   style={{ width: "280px", height: "280px" }}
                 >
                   {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name}
+                    <img src={ikSrc(p.imageUrl, 600)} alt={p.name}
                       className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90" />
                   ) : (
                     <span className="text-[#303236]/10 text-6xl font-black select-none">WU</span>
@@ -237,7 +238,7 @@ export default function HomeNewArrivals() {
                   style={{ width: "220px", height: "220px" }}
                 >
                   {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={ikSrc(p.imageUrl, 600)} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-[#303236]/10 text-5xl font-black select-none">WU</span>
                   )}
