@@ -204,7 +204,7 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
       else existing.addEventListener("load", init);
     } else {
       const script = document.createElement("script");
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`;
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`;
       script.onload = init;
       document.head.appendChild(script);
     }
