@@ -185,7 +185,9 @@ async function migrateBrandCatalogs(assetByFilePath) {
   for (const asset of toProcess) {
     try {
       const { newUrl, newKey } = await migrateOne(asset);
-      done.set(asset.filePath, { filePath: asset.filePath, oldUrl: asset.url, newUrl, newKey });
+      // DB에는 ?updatedAt=... 같은 캐시버스팅 쿼리 없이 저장되어 있으므로 매칭용 oldUrl은 쿼리를 제거한다.
+      const oldUrl = asset.url.split("?")[0];
+      done.set(asset.filePath, { filePath: asset.filePath, oldUrl, newUrl, newKey });
       ok++;
       if (ok % 25 === 0) {
         fs.writeFileSync(MAP_PATH, JSON.stringify([...done.values()], null, 2));
