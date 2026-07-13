@@ -131,6 +131,20 @@ function PostViewModal({ item, onClose }: { item: FeedItem; onClose: () => void 
   );
 }
 
+// 작성자 검색 — 목록엔 이름 마지막 글자가 마스킹(예: 신예*)되어 있어 실제 이름 전체(신예림)를
+// 입력해도 찾을 수 있도록, 마스킹되지 않은 앞부분만 일치하면 매치로 본다.
+function authorMatches(storedName: string, query: string): boolean {
+  const n = storedName.trim();
+  const q = query.trim();
+  if (!q) return true;
+  if (n.toLowerCase().includes(q.toLowerCase())) return true;
+  if (n.endsWith("*")) {
+    const visible = n.slice(0, -1);
+    if (visible && q.toLowerCase().startsWith(visible.toLowerCase())) return true;
+  }
+  return false;
+}
+
 const RENDER_STEP = 60; // 스크롤 시 한 번에 더 그리는 개수
 
 export default function InquiryBoard({ type }: { type?: string }) {
@@ -140,6 +154,23 @@ export default function InquiryBoard({ type }: { type?: string }) {
   const [refreshing, setRefreshing] = useState(false);
   const [visible, setVisible] = useState(RENDER_STEP); // 점진 렌더(무한 스크롤)
   const [viewItem, setViewItem] = useState<FeedItem | null>(null); // 비밀글 열람 대상
+
+  // 검색 — 제목/작성자/작성일자. 더미(가짜) 문의는 검색 대상에서 제외하고 실제 접수 건만 찾는다.
+  const [qTitle, setQTitle] = useState("");
+  const [qAuthor, setQAuthor] = useState("");
+  const [qFrom, setQFrom] = useState("");
+  const [qTo, setQTo] = useState("");
+  const searching = !!(qTitle.trim() || qAuthor.trim() || qFrom || qTo);
+
+  const filtered = !searching ? items : items.filter((it) => {
+    if (it.source !== "real") return false;
+    if (qTitle.trim() && !it.content.toLowerCase().includes(qTitle.trim().toLowerCase())) return false;
+    if (qAuthor.trim() && !authorMatches(it.name, qAuthor)) return false;
+    const day = it.created_at.slice(0, 10);
+    if (qFrom && day < qFrom) return false;
+    if (qTo && day > qTo) return false;
+    return true;
+  });
 
   const title = type === "wholesale" ? "워크업 입점/제휴 문의 현황"
     : type === "franchise" ? "워크업 가맹/창업 문의 현황"
@@ -168,9 +199,14 @@ export default function InquiryBoard({ type }: { type?: string }) {
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
-      setVisible((v) => (v < items.length ? Math.min(v + RENDER_STEP, items.length) : v));
+      setVisible((v) => (v < filtered.length ? Math.min(v + RENDER_STEP, filtered.length) : v));
     }
   };
+
+  // 검색 조건이 바뀌면 렌더 개수를 처음부터 다시 센다.
+  useEffect(() => {
+    setVisible(RENDER_STEP);
+  }, [qTitle, qAuthor, qFrom, qTo]);
 
   return (
     <div className="bg-white border border-gray-200 h-full flex flex-col overflow-hidden">
@@ -201,12 +237,39 @@ export default function InquiryBoard({ type }: { type?: string }) {
         <span>제목</span><span className="text-center">작성자</span><span className="text-right">날짜</span>
       </div>
 
+      {/* 검색바 — 제목/작성자/기간(실제 접수 건만 검색) */}
+      <div className="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-gray-100 flex-shrink-0 bg-white">
+        <input
+          type="text" value={qTitle} onChange={(e) => setQTitle(e.target.value)} placeholder="제목 검색"
+          className="min-w-0 flex-1 basis-24 border border-gray-200 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[#303236]"
+        />
+        <input
+          type="text" value={qAuthor} onChange={(e) => setQAuthor(e.target.value)} placeholder="작성자"
+          className="min-w-0 w-24 border border-gray-200 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[#303236]"
+        />
+        <input
+          type="date" value={qFrom} onChange={(e) => setQFrom(e.target.value)} max={qTo || undefined}
+          className="min-w-0 w-[110px] border border-gray-200 rounded px-1.5 py-1 text-[11px] text-gray-500 focus:outline-none focus:border-[#303236]"
+        />
+        <span className="text-gray-300 text-[10px]">~</span>
+        <input
+          type="date" value={qTo} onChange={(e) => setQTo(e.target.value)} min={qFrom || undefined}
+          className="min-w-0 w-[110px] border border-gray-200 rounded px-1.5 py-1 text-[11px] text-gray-500 focus:outline-none focus:border-[#303236]"
+        />
+        {searching && (
+          <button type="button" onClick={() => { setQTitle(""); setQAuthor(""); setQFrom(""); setQTo(""); }}
+            className="text-[11px] text-gray-400 hover:text-[#303236] px-1.5 py-1">초기화</button>
+        )}
+      </div>
+
       {/* 목록 (전체 스크롤 — 바닥 근처에서 점진 로드) */}
       <div className="flex-1 overflow-y-auto" onScroll={onScroll}>
         {!loaded ? (
           <div className="py-12 text-center text-xs text-gray-300">불러오는 중...</div>
+        ) : filtered.length === 0 ? (
+          <div className="py-12 text-center text-xs text-gray-300">검색 결과가 없습니다.</div>
         ) : (
-          items.slice(0, visible).map((it) => {
+          filtered.slice(0, visible).map((it) => {
             const today = isToday(it.created_at);
             return (
               <div
@@ -229,11 +292,6 @@ export default function InquiryBoard({ type }: { type?: string }) {
             );
           })
         )}
-      </div>
-
-      {/* 푸터 */}
-      <div className="px-5 py-3 border-t border-gray-100 text-center flex-shrink-0 bg-gray-50/40">
-        <p className="text-[10px] text-gray-400">문의 주신 순서대로 영업일 기준 2일 이내 연락드립니다.</p>
       </div>
 
       {viewItem && <PostViewModal item={viewItem} onClose={() => setViewItem(null)} />}

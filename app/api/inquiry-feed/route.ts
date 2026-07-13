@@ -51,6 +51,7 @@ export async function GET(req: Request) {
 
     const dummyItems: FeedItem[] = dummies.map((d) => ({
       id: d.id as string, type: d.type as string, name: d.name as string, content: d.content as string, created_at: d.created_at as string,
+      source: "dummy",
     }));
     const realItems: FeedItem[] = reals.map((r) => {
       const p = (r.payload ?? {}) as Record<string, unknown>;
@@ -61,6 +62,7 @@ export async function GET(req: Request) {
         content: feedTitle(p, r.type as string),
         created_at: r.created_at as string,
         locked: !!String(p._pwHash ?? "").trim(), // 비밀번호 설정된 글만 열람 가능
+        source: "real",
       };
     });
 

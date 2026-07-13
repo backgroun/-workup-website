@@ -236,16 +236,11 @@ export default function KakaoMap({ stores, center, selectedStore, userCoords, on
   // 줌 레벨별 마커 계산
   const clusters = zoom >= 10 ? clusterByScreen(positions, 65) : null;
 
-  const handleMouseEnter = () => { document.body.style.overflow = "hidden"; };
-  const handleMouseLeave = () => { document.body.style.overflow = ""; };
-
   return (
     // isolation: isolate → mix-blend-mode가 이 영역 안에서만 적용됨
     <div
       className="relative w-full h-full bg-[#FAFAF8]"
-      style={{ isolation: "isolate" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      style={{ isolation: "isolate", overscrollBehavior: "contain" }}
     >
 
       {/* 지도 타일 — 완전 흑백 대신 채도를 낮춰 은은한 컬러감을 남김 */}
