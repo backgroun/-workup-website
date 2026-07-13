@@ -31,7 +31,7 @@ export default async function SupportPage() {
             <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">{sup.hero_title}</h1>
           )}
           {sup.hero_desc && (
-            <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl whitespace-pre-line">{sup.hero_desc}</p>
+            <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl md:max-w-none md:whitespace-nowrap whitespace-pre-line">{sup.hero_desc}</p>
           )}
         </div>
       </section>
