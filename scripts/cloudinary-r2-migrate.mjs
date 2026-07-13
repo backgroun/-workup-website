@@ -121,10 +121,14 @@ const OTHER_TABLES = [
   "inquiries", "inquiry_dummies", "brand_catalogs",
 ];
 
+// 테이블별 기본키 컬럼명 (대부분 id, site_settings만 section)
+const TABLE_PK = { site_settings: "section" };
+
 async function replaceAcrossTables(urlMap) {
   let coreFailed = false;
   let totalUpdated = 0;
   for (const table of [...CORE_TABLES, ...OTHER_TABLES]) {
+    const pk = TABLE_PK[table] || "id";
     const { data, error } = await sb.from(table).select("*");
     if (error) {
       const missing = /does not exist|schema cache|42P01/i.test(error.message);
@@ -142,8 +146,8 @@ async function replaceAcrossTables(urlMap) {
       if (!touched) continue;
       const next = JSON.parse(json);
       delete next.created_at; delete next.updated_at; // 트리거/기본값에 맡김
-      const { error: upErr } = await sb.from(table).update(next).eq("id", row.id);
-      if (upErr) console.log(`  ✗ ${table}#${row.id}: ${upErr.message}`);
+      const { error: upErr } = await sb.from(table).update(next).eq(pk, row[pk]);
+      if (upErr) console.log(`  ✗ ${table}#${row[pk]}: ${upErr.message}`);
       else changed++;
     }
     if (changed) { console.log(`  · ${table}: ${changed}행 갱신`); totalUpdated += changed; }
