@@ -5,6 +5,7 @@ import { getPrRoom } from "@/lib/pr-room-server";
 import { isHtmlBody } from "@/lib/pr-room";
 import { getFooterConfig } from "@/lib/footer-server";
 import { ikSrc } from "@/lib/imageSrc";
+import NearestStoreCta from "@/components/NearestStoreCta";
 
 // 본문(에디터 HTML) 렌더용 자식 요소 스타일 — prose 플러그인 없이 임의 변형자로 처리.
 const BODY_PROSE =
@@ -43,8 +44,6 @@ export default async function PrPostDetailPage({ params }: Params) {
   const { id } = await params;
   const [post, footer] = await Promise.all([findPost(id), getFooterConfig()]);
   if (!post) notFound();
-
-  const telHref = `tel:${footer.cs_phone.replace(/[^0-9+]/g, "")}`;
 
   return (
     <main className="bg-white">
@@ -96,32 +95,8 @@ export default async function PrPostDetailPage({ params }: Params) {
           </a>
         )}
 
-        {/* ── 오프라인 전환 CTA ── */}
-        <div className="mt-12 border-t border-gray-100 pt-8">
-          <p className="text-[15px] font-bold text-[#303236] mb-1">매장에서 직접 만나보세요</p>
-          <p className="text-[13px] text-gray-500 mb-5">가까운 워크업 매장에서 제품을 체험하고 상담받으실 수 있습니다.</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              href="/store"
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-[#303236] text-white text-sm font-semibold py-3 rounded-lg hover:bg-[#22365c] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              가까운 매장 찾기
-            </Link>
-            <a
-              href={telHref}
-              className="flex-1 inline-flex items-center justify-center gap-2 border border-[#E5541B] text-[#E5541B] text-sm font-semibold py-3 rounded-lg hover:bg-orange-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              전화 문의 {footer.cs_phone}
-            </a>
-          </div>
-        </div>
+        {/* ── 오프라인 전환 CTA (가까운 매장 전화번호 자동 표시) ── */}
+        <NearestStoreCta fallbackPhone={footer.cs_phone} />
       </article>
     </main>
   );
