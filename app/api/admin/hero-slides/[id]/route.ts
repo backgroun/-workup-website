@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 import { logAudit } from "@/lib/audit-server";
@@ -22,6 +23,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     target: data?.title ?? body?.title ?? null,
     targetId: id,
   });
+  revalidateTag("hero_slides", "max");
   return NextResponse.json(data);
 }
 
@@ -37,5 +39,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     resourceLabel: "메인 비주얼",
     targetId: id,
   });
+  revalidateTag("hero_slides", "max");
   return NextResponse.json({ ok: true });
 }

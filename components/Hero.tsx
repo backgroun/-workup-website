@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase-server";
 import HeroCarousel from "./HeroCarousel";
 
@@ -31,27 +31,33 @@ type HeroSlide = {
   sort_order: number;
 };
 
-async function getActiveSlides(slideType: string): Promise<HeroSlide[]> {
-  noStore();
-  try {
-    const supabase = createAdminClient();
-    const now = new Date().toISOString();
-    const { data } = await supabase
-      .from("hero_slides")
-      .select("*")
-      .eq("is_visible", true)
-      .eq("slide_type", slideType)
-      .order("sort_order", { ascending: true });
-    if (!data || data.length === 0) return [];
-    return data.filter((s: HeroSlide) => {
-      if (s.scheduled_start && s.scheduled_start > now) return false;
-      if (s.scheduled_end && s.scheduled_end < now) return false;
-      return true;
-    });
-  } catch {
-    return [];
-  }
-}
+// 홈페이지 최고 트래픽 구간이라 noStore() 대신 unstable_cache로 감싼다.
+// 관리자 저장 시 hero-slides API 의 revalidateTag("hero_slides")로 즉시 갱신되고,
+// 예약 노출(scheduled_start/end) 전환은 최대 120초 지연 내에 반영된다.
+const getActiveSlides = unstable_cache(
+  async (slideType: string): Promise<HeroSlide[]> => {
+    try {
+      const supabase = createAdminClient();
+      const now = new Date().toISOString();
+      const { data } = await supabase
+        .from("hero_slides")
+        .select("*")
+        .eq("is_visible", true)
+        .eq("slide_type", slideType)
+        .order("sort_order", { ascending: true });
+      if (!data || data.length === 0) return [];
+      return data.filter((s: HeroSlide) => {
+        if (s.scheduled_start && s.scheduled_start > now) return false;
+        if (s.scheduled_end && s.scheduled_end < now) return false;
+        return true;
+      });
+    } catch {
+      return [];
+    }
+  },
+  ["hero-slides"],
+  { tags: ["hero_slides"], revalidate: 120 }
+);
 
 // slideType: "main"(홈) | "product"(프로덕트 상단). product는 슬라이드가 없으면 아무것도 렌더하지 않음.
 export default async function Hero({ slideType = "main" }: { slideType?: string }) {

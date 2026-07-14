@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase-server";
 import { maskName, genericContent, type FeedItem } from "@/data/inquiryDummy";
 
@@ -17,13 +17,11 @@ function feedTitle(p: Record<string, unknown>, type: string): string {
 const PAGE = 1000; // Supabase 요청당 최대 반환 행
 const MAX = 5000;  // 보드에 노출할 최대 항목(성능·대역폭 보호)
 
-export async function GET(req: Request) {
-  noStore();
-  try {
+// 방문마다 재조회하지 않도록 30초 캐시 — 동시 방문자간 Supabase 쿼리를 공유해
+// 함수 실행시간·DB egress를 줄인다(새 문의는 최대 30초 지연 반영, 새로고침 버튼으로 즉시 확인 가능).
+const fetchFeed = unstable_cache(
+  async (t: "franchise" | "wholesale" | null) => {
     const supabase = createAdminClient();
-    const { searchParams } = new URL(req.url);
-    const tp = searchParams.get("type");
-    const t = tp === "franchise" || tp === "wholesale" ? tp : null; // 유형 필터(가맹/입점)
 
     // 1000행 캡을 넘겨 전량(최대 MAX)을 페이지로 모은다.
     const fetchAll = async (table: "inquiries" | "inquiry_dummies", cols: string) => {
@@ -70,7 +68,19 @@ export async function GET(req: Request) {
       .sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
       .slice(0, MAX);
 
-    return NextResponse.json({ items, total: (dummyCount ?? 0) + (realCount ?? 0) });
+    return { items, total: (dummyCount ?? 0) + (realCount ?? 0) };
+  },
+  ["inquiry-feed"],
+  { revalidate: 30 }
+);
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const tp = searchParams.get("type");
+    const t = tp === "franchise" || tp === "wholesale" ? tp : null; // 유형 필터(가맹/입점)
+    const result = await fetchFeed(t);
+    return NextResponse.json(result);
   } catch {
     return NextResponse.json({ items: [], total: 0 });
   }

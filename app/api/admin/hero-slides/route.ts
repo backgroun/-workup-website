@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 import { logAudit } from "@/lib/audit-server";
@@ -34,5 +35,6 @@ export async function POST(req: Request) {
     target: data?.title ?? body?.title ?? null,
     targetId: data?.id,
   });
+  revalidateTag("hero_slides", "max");
   return NextResponse.json(data);
 }
