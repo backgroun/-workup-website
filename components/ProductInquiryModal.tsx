@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { Product } from "@/data/products";
 import { ikSrc } from "@/lib/imageSrc";
+import { pushConversionEvent } from "@/lib/track";
 
 // 상품 문의 유형 — 오프라인 방문/상담 유도에 맞춘 항목
 const INQUIRY_TYPES = ["제품 정보 안내", "재고 문의", "사이즈 문의", "매장 방문·픽업 문의", "기타"];
@@ -51,6 +52,11 @@ export default function ProductInquiryModal({
         }),
       });
       if (res.ok) {
+        pushConversionEvent("product_inquiry_submit", {
+          product_id: product.id,
+          product_name: product.name,
+          inquiry_type: inquiryType,
+        });
         alert("문의가 접수되었습니다. 빠른 시일 내 답변드리겠습니다.");
         setTitle(""); setContent("");
         onSubmitted?.();

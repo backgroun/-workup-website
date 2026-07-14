@@ -89,8 +89,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   // 서버에서 전달받은 최신 분류로 시작 → 옛 카테고리가 깜빡이지 않는다 (정적 fallback 제거)
   const [cats, setCats] = useState<CatItem[]>(initialCats);
   const catParam = searchParams.get("cat") || searchParams.get("category");
+  const subParam = searchParams.get("sub") || searchParams.get("subcategory");
   const [activeCategory, setActiveCategory] = useState<string>(catParam ?? "전체");
-  const [activeSubCategory, setActiveSubCategory] = useState<string>("전체");
+  const [activeSubCategory, setActiveSubCategory] = useState<string>(subParam ?? "전체");
   const [sortBy, setSortBy] = useState<SortOption>("신상품순");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
@@ -141,9 +142,26 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       .catch(() => setMemberSession(null));
   }, []);
 
+  // 카테고리·서브카테고리 선택을 주소창 URL(?cat=&sub=)에도 반영 — 배너 등에서 특정 카테고리로 바로 연결하는 링크를 만들 수 있도록.
+  const navigateToCategory = useCallback((cat: string, sub: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("category");
+    params.delete("subcategory");
+    if (cat === "전체") params.delete("cat"); else params.set("cat", cat);
+    if (sub === "전체") params.delete("sub"); else params.set("sub", sub);
+    const qs = params.toString();
+    router.replace(`/products${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [searchParams, router]);
+
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
     setActiveSubCategory("전체");
+    navigateToCategory(cat, "전체");
+  };
+
+  const handleSubCategoryChange = (sub: string) => {
+    setActiveSubCategory(sub);
+    navigateToCategory(activeCategory, sub);
   };
 
   const toggleSeason = (v: string) =>
@@ -369,7 +387,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           <button
             onClick={() => {
               if (activeSubCategory !== "전체") {
-                setActiveSubCategory("전체");
+                handleSubCategoryChange("전체");
               } else {
                 router.back();
               }
@@ -429,7 +447,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             {["전체", ...subCats].map((sub) => (
               <button
                 key={sub}
-                onClick={() => setActiveSubCategory(sub)}
+                onClick={() => handleSubCategoryChange(sub)}
                 className={`flex-shrink-0 text-[13px] whitespace-nowrap transition-colors pb-0.5 ${
                   activeSubCategory === sub
                     ? "font-bold text-[#303236] border-b-2 border-[#303236]"
@@ -591,7 +609,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             {subCats.length > 0 && (
               <div className="flex items-center gap-6 mb-6 flex-wrap">
                 {["전체", ...subCats].map((sub) => (
-                  <button key={sub} onClick={() => setActiveSubCategory(sub)}
+                  <button key={sub} onClick={() => handleSubCategoryChange(sub)}
                     className={`text-[14px] whitespace-nowrap transition-colors pb-0.5 ${
                       activeSubCategory === sub ? "font-bold text-[#303236] border-b-2 border-[#303236]" : "text-gray-400 hover:text-[#303236]"
                     }`}>

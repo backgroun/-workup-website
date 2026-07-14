@@ -43,7 +43,15 @@ export default async function PixelManager() {
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','${gtmId}');
           `}</Script>
-          {/* GTM noscript은 <body> 직후에 위치해야 하나, Next.js Script로 근사 적용 */}
+          {/* 자바스크립트 비활성 환경 대응 — 구글 권장대로 <body> 최상단에 위치 */}
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
         </>
       )}
 
