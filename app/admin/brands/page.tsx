@@ -1,26 +1,30 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
-type Item = { id: number; name: string };
+type Item = { id: number; name: string; name_ko?: string | null };
 
 function Section({
   title,
   desc,
   apiPath,
   addPlaceholder,
+  withAlias,
 }: {
   title: string;
   desc: string;
   apiPath: string;
   addPlaceholder: string;
+  withAlias?: boolean;
 }) {
   const [items, setItems]       = useState<Item[]>([]);
   const [newName, setNewName]   = useState("");
+  const [newNameKo, setNewNameKo] = useState("");
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState("");
   const [editingId, setEditingId]   = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingNameKo, setEditingNameKo] = useState("");
   const inputRef   = useRef<HTMLInputElement>(null);
   const editRef    = useRef<HTMLInputElement>(null);
 
@@ -40,10 +44,10 @@ function Section({
     const r = await fetch(apiPath, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName.trim() }),
+      body: JSON.stringify({ name: newName.trim(), name_ko: withAlias ? newNameKo.trim() : undefined }),
     });
     if (r.ok) {
-      setNewName("");
+      setNewName(""); setNewNameKo("");
       await load();
       inputRef.current?.focus();
     } else {
@@ -56,10 +60,11 @@ function Section({
   const startEdit = (item: Item) => {
     setEditingId(item.id);
     setEditingName(item.name);
+    setEditingNameKo(item.name_ko ?? "");
     setTimeout(() => editRef.current?.focus(), 50);
   };
 
-  const cancelEdit = () => { setEditingId(null); setEditingName(""); };
+  const cancelEdit = () => { setEditingId(null); setEditingName(""); setEditingNameKo(""); };
 
   const handleEdit = async (id: number) => {
     if (!editingName.trim()) return;
@@ -67,7 +72,7 @@ function Section({
     const r = await fetch(apiPath, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, name: editingName.trim() }),
+      body: JSON.stringify({ id, name: editingName.trim(), name_ko: withAlias ? editingNameKo.trim() : undefined }),
     });
     if (r.ok) {
       cancelEdit();
@@ -111,10 +116,18 @@ function Section({
             placeholder={addPlaceholder}
             className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236]"
           />
+          {withAlias && (
+            <input
+              value={newNameKo}
+              onChange={e => setNewNameKo(e.target.value)}
+              placeholder="한글 검색명 (선택, 예: 펜들턴)"
+              className="flex-1 border border-gray-200 px-4 py-2.5 text-[15px] rounded focus:outline-none focus:border-[#303236]"
+            />
+          )}
           <button
             type="submit"
             disabled={saving || !newName.trim()}
-            className="px-5 py-2.5 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] disabled:opacity-50 rounded"
+            className="px-5 py-2.5 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] disabled:opacity-50 rounded whitespace-nowrap"
           >
             {saving ? "추가 중..." : "추가"}
           </button>
@@ -146,6 +159,18 @@ function Section({
                       }}
                       className="flex-1 border border-blue-400 px-3 py-1.5 text-[14px] rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                     />
+                    {withAlias && (
+                      <input
+                        value={editingNameKo}
+                        onChange={e => setEditingNameKo(e.target.value)}
+                        placeholder="한글 검색명"
+                        onKeyDown={e => {
+                          if (e.key === "Enter") handleEdit(item.id);
+                          if (e.key === "Escape") cancelEdit();
+                        }}
+                        className="flex-1 border border-blue-400 px-3 py-1.5 text-[14px] rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                      />
+                    )}
                     <button
                       onClick={() => handleEdit(item.id)}
                       disabled={saving}
@@ -162,7 +187,12 @@ function Section({
                   </>
                 ) : (
                   <>
-                    <span className="flex-1 text-[15px] font-medium text-gray-800">{item.name}</span>
+                    <span className="flex-1 text-[15px] font-medium text-gray-800">
+                      {item.name}
+                      {withAlias && item.name_ko && (
+                        <span className="ml-2 text-[13px] font-normal text-gray-400">{item.name_ko}</span>
+                      )}
+                    </span>
                     <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => startEdit(item)}
@@ -202,6 +232,7 @@ export default function AdminCatalogPage() {
           desc="제품에 표시되는 브랜드 이름"
           apiPath="/api/admin/brands"
           addPlaceholder="브랜드명 입력 (예: WORKUP)"
+          withAlias
         />
         <Section
           title="제조사 관리"

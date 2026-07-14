@@ -13,12 +13,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { name } = await req.json();
+  const { name, name_ko } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "브랜드명을 입력하세요." }, { status: 400 });
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("brands")
-    .insert({ name: name.trim() })
+    .insert({ name: name.trim(), name_ko: name_ko?.trim() || null })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,12 +34,12 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, name } = await req.json();
+  const { id, name, name_ko } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "브랜드명을 입력하세요." }, { status: 400 });
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("brands")
-    .update({ name: name.trim() })
+    .update({ name: name.trim(), name_ko: name_ko?.trim() || null })
     .eq("id", id)
     .select()
     .single();

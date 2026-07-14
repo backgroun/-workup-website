@@ -106,11 +106,27 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const searchQuery = searchParams.get("q") ?? "";
+  // 브랜드명(영문) → 한글 검색명 매핑 — 검색 시 "노스페이스"로도 "NORTH FACE" 상품이 찾아지도록
+  const [brandAliasMap, setBrandAliasMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data) && data.length > 0) setProducts(data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/brands")
+      .then((r) => r.json())
+      .then((data: { name: string; name_ko?: string | null }[]) => {
+        if (!Array.isArray(data)) return;
+        const map: Record<string, string> = {};
+        data.forEach((b) => {
+          if (b.name && b.name_ko) map[b.name.toLowerCase()] = b.name_ko.toLowerCase();
+        });
+        setBrandAliasMap(map);
+      })
       .catch(() => {});
   }, []);
 
@@ -200,10 +216,14 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const cats = getProductCats(p);
+        const brand = (p.brand ?? "").toLowerCase();
+        const brandAlias = brandAliasMap[brand] ?? "";
         return (
           p.name.toLowerCase().includes(q) ||
           cats.some(c => c.main.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q)) ||
-          (p.tagline?.toLowerCase().includes(q) ?? false)
+          (p.tagline?.toLowerCase().includes(q) ?? false) ||
+          brand.includes(q) ||
+          brandAlias.includes(q)
         );
       }
       if (activeCategory !== "전체") {

@@ -125,7 +125,9 @@ export function productDisplayName(p: { name: string; brand?: string; hideBrandP
 // 고객에게 숨기는 상태 — "판매중지"(판매안함)·"진열대기"(노출중지)
 export const HIDDEN_PRODUCT_STATUSES: ReadonlySet<string> = new Set(["판매중지", "진열대기"]);
 // 공개 사이트(목록·검색·홈·관련상품)에 노출 가능한지. status 미지정은 "판매중"으로 간주
-export function isPubliclyVisible(p: { status?: string }): boolean {
+// 상품코드(sku)가 "0"인 경우도 비노출 — 엑셀 임포트 시 빈 셀이 0으로 잘못 채워지는 경우가 있어 데이터 오류로 간주
+export function isPubliclyVisible(p: { status?: string; sku?: string | null }): boolean {
+  if ((p.sku ?? "").trim() === "0") return false;
   return !HIDDEN_PRODUCT_STATUSES.has(p.status ?? "판매중");
 }
 
