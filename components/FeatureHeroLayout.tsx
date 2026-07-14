@@ -325,7 +325,7 @@ export default function FeatureHeroLayout({
 
         <div className="absolute bottom-10 left-8 z-[2] text-white">
           <p className="text-sm mb-2 opacity-80 tracking-wide">{editorial.heroSubtitle}</p>
-          <h1 className="text-3xl font-bold leading-tight">{editorial.title}</h1>
+          <p className="text-3xl font-bold leading-tight">{editorial.title}</p>
         </div>
       </>
     </div>
@@ -371,7 +371,7 @@ export default function FeatureHeroLayout({
     <>
       {/* ── PC 레이아웃 (xl+) ── */}
       <div
-        className="hidden xl:flex xl:items-start bg-white"
+        className="hidden 2xl:flex 2xl:items-start bg-white"
         style={reversed ? { position: "relative", zIndex: 1 } : undefined}
       >
         {reversed ? (
@@ -388,7 +388,7 @@ export default function FeatureHeroLayout({
       </div>
 
       {/* ── 모바일 레이아웃 (< xl) ── */}
-      <div className="xl:hidden">
+      <div className="2xl:hidden">
 
         {/* 히어로 이미지 — 3:4 비율 컨테이너, 이미지+태그가 동일 좌표 공간 */}
         <div
@@ -528,7 +528,7 @@ export default function FeatureHeroLayout({
         {/* 모바일 바텀시트 백드롭 */}
         <div
           aria-hidden="true"
-          className={`fixed inset-0 z-[62] bg-black/50 transition-opacity duration-300 xl:hidden ${
+          className={`fixed inset-0 z-[62] bg-black/50 transition-opacity duration-300 2xl:hidden ${
             sheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           onClick={() => setSheetOpen(false)}
@@ -536,7 +536,7 @@ export default function FeatureHeroLayout({
 
         {/* 모바일 바텀시트 본체 */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-[63] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] max-h-[80vh] flex flex-col transition-transform duration-300 ease-out xl:hidden"
+          className="fixed bottom-0 left-0 right-0 z-[63] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] max-h-[80vh] flex flex-col transition-transform duration-300 ease-out 2xl:hidden"
           style={{ transform: sheetOpen ? "translateY(0)" : "translateY(110%)" }}
           role="dialog"
           aria-modal="true"
