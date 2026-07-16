@@ -159,11 +159,6 @@ export default async function PopupLandingPage({ params }: Props) {
                   )}
                 </div>
                 <p className="text-[13px] md:text-sm text-[#303236] leading-snug mb-1 line-clamp-2">{p.name}</p>
-                {p.price && (
-                  <p className="text-sm md:text-[15px] font-bold text-[#303236]">
-                    {p.price.toLocaleString()}원
-                  </p>
-                )}
               </Link>
             ))}
           </div>

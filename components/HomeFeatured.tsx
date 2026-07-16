@@ -53,8 +53,7 @@ export default function HomeFeatured() {
                   <span className="text-xs text-gray-500">{main.fieldTest}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between">
-                <span className="text-xl font-bold text-[#303236]">{main.price}</span>
+              <div className="flex items-center justify-end">
                 <span className="text-xs text-[#303236] border border-[#303236] px-4 py-2 group-hover:bg-[#303236] group-hover:text-white transition-colors">
                   자세히 보기 →
                 </span>
@@ -82,8 +81,7 @@ export default function HomeFeatured() {
                     {productDisplayName(p)}
                   </h3>
                   <p className="text-xs text-gray-400 italic mb-3 line-clamp-1">"{p.tagline}"</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-base font-bold text-[#303236]">{p.price}</span>
+                  <div className="flex items-center justify-end">
                     <span className="text-[10px] text-gray-400 group-hover:text-[#303236] transition-colors">
                       보기 →
                     </span>

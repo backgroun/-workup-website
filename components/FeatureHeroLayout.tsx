@@ -31,14 +31,13 @@ function SectionTags({ tags }: { tags?: EditorialSectionTag[] }) {
               style={{ transform: hovered === i ? "scale(1.3)" : "scale(1)" }}
             />
           </Link>
-          {hovered === i && (t.name || t.price) && (
+          {hovered === i && t.name && (
             <div
               className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap bg-white shadow-xl px-3 py-2 pointer-events-none ${
                 t.y < 22 ? "top-full mt-1.5" : "bottom-full mb-1.5"
               }`}
             >
-              {t.name && <p className="text-[11px] text-[#303236] font-medium leading-snug">{t.name}</p>}
-              {t.price && <p className="text-[12px] font-bold text-[#303236]">{t.price}</p>}
+              <p className="text-[11px] text-[#303236] font-medium leading-snug">{t.name}</p>
             </div>
           )}
         </div>
@@ -211,9 +210,6 @@ function WhiteBox({
               <p style={{ fontSize: "12px", color: "#303236", lineHeight: 1.3, letterSpacing: "-0.02em", marginBottom: "3px" }}>
                 {item.name}
               </p>
-              <p style={{ fontSize: "13px", fontWeight: "bold", color: "#303236" }}>
-                {item.price}
-              </p>
             </Link>
           ))}
         </div>
@@ -307,8 +303,7 @@ export default function FeatureHeroLayout({
             />
             {hoveredTag === i && (
               <div className="absolute left-8 top-1/2 -translate-y-1/2 bg-white shadow-xl z-20 w-[220px] p-4">
-                <p className="text-[13px] text-[#303236] font-medium mb-0.5 leading-snug">{tag.name}</p>
-                <p className="text-[15px] font-bold text-[#303236] mb-4">{tag.price}</p>
+                <p className="text-[13px] text-[#303236] font-medium mb-4 leading-snug">{tag.name}</p>
                 <Link
                   href={`/products/${tag.productId}`}
                   className="flex items-center justify-between border border-gray-300 px-3 py-2 text-[12px] text-[#303236] hover:bg-gray-50 transition-colors"
@@ -430,7 +425,8 @@ export default function FeatureHeroLayout({
           </div>
         </div>
 
-        {/* 모바일 카드 목록 */}
+        {/* 카드 목록 — 배열(열 수)은 항상 1열 유지, 카드 폭에 상한(480px)을 둬서
+            화면이 넓어져도 사진이 커지지 않고 가운데 정렬되게 함 (PC xl+ 레이아웃은 위에서 별도 처리) */}
         <div
           style={{
             backgroundColor: "#f2f1ed",
@@ -440,11 +436,12 @@ export default function FeatureHeroLayout({
             paddingBottom: "30px",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             gap: "20px",
           }}
         >
           {sections.map((section, i) => (
-            <div key={i} style={{ backgroundColor: "white", overflow: "hidden" }}>
+            <div key={i} style={{ backgroundColor: "white", overflow: "hidden", width: "100%", maxWidth: "480px" }}>
               {section.cardType === "image" ? (
                 <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} />
               ) : (
@@ -508,11 +505,8 @@ export default function FeatureHeroLayout({
                         )}
                       </div>
                       <div>
-                        <p style={{ fontSize: "13px", color: "#303236", lineHeight: 1.5, margin: 0, marginBottom: "3px" }}>
+                        <p style={{ fontSize: "13px", color: "#303236", lineHeight: 1.5, margin: 0 }}>
                           {item.displayName || item.name}
-                        </p>
-                        <p style={{ fontSize: "14px", fontWeight: "bold", color: "#303236", margin: 0 }}>
-                          {item.price}
                         </p>
                       </div>
                     </Link>
@@ -578,8 +572,7 @@ export default function FeatureHeroLayout({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-[#303236] mb-0.5 leading-snug">{tag.name}</p>
-                    <p className="text-[14px] font-bold text-[#303236]">{tag.price}</p>
+                    <p className="text-[13px] text-[#303236] leading-snug">{tag.name}</p>
                   </div>
                   <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

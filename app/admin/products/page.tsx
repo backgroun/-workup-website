@@ -9,7 +9,6 @@ import FilterManagerModal from "@/components/admin/FilterManagerModal";
 
 // 수정 페이지 왕복 시 목록 뷰(페이지/필터/스크롤)를 복원하기 위한 세션 키
 const VIEW_KEY = "admin-products-view";
-const SORTABLE_STATUSES = ["판매중", "예약판매", "품절", "판매중지", "진열대기"];
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 type SearchType = "상품명" | "상품코드" | "브랜드" | "제조사";
@@ -20,12 +19,12 @@ type SortBy = "최종수정순" | "최신순" | "진열순" | "이름순";
 const DISPLAY_ON = ["판매중", "예약판매", "품절"];
 const DISPLAY_OFF = ["판매중지", "진열대기"];
 
-const STATUS_COLOR: Record<string, string> = {
-  판매중:   "bg-emerald-100 text-emerald-700",
-  품절:     "bg-red-100 text-red-600",
-  판매중지: "bg-gray-100 text-gray-500",
-  예약판매: "bg-blue-100 text-blue-600",
-  진열대기: "bg-amber-100 text-amber-600",
+const STATUS_DOT: Record<string, string> = {
+  판매중:   "bg-emerald-500",
+  품절:     "bg-red-500",
+  판매중지: "bg-gray-400",
+  예약판매: "bg-blue-500",
+  진열대기: "bg-amber-500",
 };
 
 function getDateCutoff(preset: DatePreset): Date | null {
@@ -51,8 +50,8 @@ function fmtDate(iso?: string) {
 const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개월", "1년", "전체"];
 const STATUS_OPTIONS = ["전체", "판매중", "품절", "판매중지", "예약판매", "진열대기"];
 const EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
-// 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명·관리는 항상 표시)
-const TOGGLE_COLS = ["카테고리", "가격", "판매 상태", "최종수정"];
+// 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명은 항상 표시)
+const TOGGLE_COLS = ["상태", "브랜드", "품번", "가격", "카테고리", "최종수정"];
 const COL_KEY = "wu-admin-product-cols";
 const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "제조사"];
 
@@ -60,9 +59,6 @@ const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "�
 export default function AdminProductsPage() {
   // ─ 데이터 ────────────────────────────────────────────────────────────────
   const [products, setProducts] = useState<Product[]>([]);
-  // 인라인 수정 시 최신 products 스냅샷을 PUT 하기 위한 ref (경합으로 인한 필드 손실 완화)
-  const productsRef = useRef<Product[]>([]);
-  productsRef.current = products;
   const [loading, setLoading] = useState(true);
   const [tableError, setTableError] = useState(false);
   const [apiErrMsg, setApiErrMsg] = useState("");
@@ -120,6 +116,12 @@ export default function AdminProductsPage() {
     mainCategories.map(n => ({ name: n, subs: subCategoriesByMain[n as keyof typeof subCategoriesByMain] ?? [] }))
   );
 
+  // ─ 브랜드 일괄 변경 모달 ───────────────────────────────────────────
+  const [brandList, setBrandList] = useState<string[]>([]);
+  const [brandModal, setBrandModal] = useState(false);
+  const [brandModalValue, setBrandModalValue] = useState("");
+  const [brandSaving, setBrandSaving] = useState(false);
+
   // ─ 리스트 내 인라인 카테고리 추가 (행별 피커) ───────────────────────────
   const [catRowId, setCatRowId] = useState<string | null>(null);
   const [rowMain, setRowMain]   = useState("");
@@ -145,6 +147,13 @@ export default function AdminProductsPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    fetch("/api/admin/brands")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (Array.isArray(d)) setBrandList(d.map((b: { name: string }) => b.name)); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/site-settings/categories")
@@ -190,21 +199,6 @@ export default function AdminProductsPage() {
     if (sc) sc.scrollTop = pendingScroll.current;
     pendingScroll.current = null;
   }, [loading]);
-
-  // 인라인 수정 — 전체 제품을 PUT (기존 일괄작업과 동일 방식), 낙관적 갱신.
-  const updateProduct = async (id: string, patch: Partial<Product>) => {
-    const target = productsRef.current.find(p => p.id === id);
-    if (!target) return;
-    const updated = { ...target, ...patch };
-    setProducts(prev => prev.map(p => p.id === id ? updated : p));
-    try {
-      const res = await fetch(`/api/admin/products/${id}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated),
-      });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); showMsg(`저장 실패: ${e.error ?? res.status}`); load(); }
-      else showMsg("저장됐습니다.");
-    } catch { showMsg("저장 실패: 네트워크 오류"); load(); }
-  };
 
   const getProductCats = (p: Product): CatEntry[] => {
     const raw = (p as Record<string, unknown>).categories as CatEntry[] | undefined;
@@ -306,6 +300,41 @@ export default function AdminProductsPage() {
     }
   };
 
+  const openBrandModal = () => {
+    setBrandModalValue("");
+    setBrandModal(true);
+  };
+
+  const bulkApplyBrand = async () => {
+    if (!selected.size || !brandModalValue) return;
+    setBrandSaving(true);
+    const results = await Promise.all(
+      products.filter(p => selected.has(p.id)).map(async p => {
+        const res = await fetch(`/api/admin/products/${p.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...p, brand: brandModalValue }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          return { ok: false, id: p.id, msg: err.error ?? `HTTP ${res.status}` };
+        }
+        return { ok: true, id: p.id };
+      })
+    );
+    setBrandSaving(false);
+    const failed = results.filter(r => !r.ok);
+    if (failed.length > 0) {
+      showMsg(`오류: ${failed[0].msg}`);
+    } else {
+      setBrandModal(false);
+      setBrandModalValue("");
+      showMsg(`${selected.size}개 상품 브랜드 → "${brandModalValue}" 변경 완료`);
+      setSelected(new Set());
+      load();
+    }
+  };
+
   // ─ 필터링 & 정렬 ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = [...products];
@@ -396,6 +425,16 @@ export default function AdminProductsPage() {
     setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   };
 
+  // 상단 툴바의 수정 버튼은 단일 선택일 때만 해당 상품의 수정 페이지로 이동
+  const singleSelected = selected.size === 1 ? products.find(p => selected.has(p.id)) : undefined;
+  const goEdit = () => {
+    try {
+      const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}");
+      const sc = document.querySelector("main");
+      sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...prev, scrollTop: sc ? sc.scrollTop : 0 }));
+    } catch { /* noop */ }
+  };
+
   // ─ 일괄 작업 ────────────────────────────────────────────────────────────
   const bulkStatus = async (status: string) => {
     if (!selected.size) return;
@@ -420,7 +459,7 @@ export default function AdminProductsPage() {
     setSelected(new Set()); load();
   };
 
-  const handleDuplicate = async (p: Product) => {
+  const duplicateOne = async (p: Product) => {
     const suffix = Date.now().toString(36).slice(-4);
     const payload = { ...p, id: `${p.id}-copy-${suffix}`, name: `${p.name} (복사본)`, isNew: false };
     const res = await fetch("/api/admin/products", {
@@ -428,8 +467,19 @@ export default function AdminProductsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.ok) { showMsg(`"${p.name}" 복제 완료`); load(); }
-    else { const err = await res.json().catch(() => ({})); showMsg(err.error ?? "복제 실패"); }
+    if (res.ok) return { ok: true };
+    const err = await res.json().catch(() => ({}));
+    return { ok: false, msg: err.error ?? "복제 실패" };
+  };
+
+  const bulkDuplicate = async () => {
+    if (!selected.size) return;
+    const targets = products.filter(p => selected.has(p.id));
+    const results = await Promise.all(targets.map(duplicateOne));
+    const failed = results.filter(r => !r.ok);
+    if (failed.length > 0) showMsg(`오류: ${failed[0].msg}`);
+    else showMsg(`${targets.length}개 복제 완료`);
+    setSelected(new Set()); load();
   };
 
   const applyMainExpose = async () => {
@@ -633,6 +683,21 @@ export default function AdminProductsPage() {
                 </button>
               ))}
               <div className="w-px h-5 bg-gray-300 mx-1" />
+              {singleSelected ? (
+                <Link href={`/admin/products/${singleSelected.id}/edit`} onClick={goEdit}
+                  className="px-3 py-1.5 text-[14px] border border-[#303236] bg-white text-[#303236] hover:bg-[#303236] hover:text-white rounded font-semibold">
+                  수정
+                </Link>
+              ) : (
+                <button disabled title="상품 1개만 선택하면 수정할 수 있습니다."
+                  className="px-3 py-1.5 text-[14px] border border-gray-300 bg-white text-gray-700 opacity-40 cursor-not-allowed rounded font-semibold">
+                  수정
+                </button>
+              )}
+              <button onClick={bulkDuplicate} disabled={!selected.size}
+                className="px-3 py-1.5 text-[14px] border border-blue-200 bg-white text-blue-600 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
+                복제
+              </button>
               <button onClick={bulkDelete} disabled={!selected.size}
                 className="px-3 py-1.5 text-[14px] border border-red-200 bg-white text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
                 삭제
@@ -641,6 +706,10 @@ export default function AdminProductsPage() {
               <button onClick={() => selected.size && openCatModal()} disabled={!selected.size}
                 className="px-3 py-1.5 text-[14px] border border-[#E5541B] bg-white text-[#E5541B] hover:bg-[#E5541B] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
                 카테고리 추가
+              </button>
+              <button onClick={() => selected.size && openBrandModal()} disabled={!selected.size}
+                className="px-3 py-1.5 text-[14px] border border-[#E5541B] bg-white text-[#E5541B] hover:bg-[#E5541B] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
+                브랜드 변경
               </button>
               <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
                 className="px-3 py-1.5 text-[14px] border border-[#303236] bg-white text-[#303236] hover:bg-[#303236] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
@@ -704,17 +773,17 @@ export default function AdminProductsPage() {
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
                       className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
-                  {["상품명", "카테고리", "가격", "판매 상태", "최종수정", "관리"]
+                  {["상태", "브랜드", "상품명", "품번", "가격", "카테고리", "최종수정"]
                     .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
                     .map(h => (
-                      <th key={h} className={`px-5 py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "관리" ? "text-right" : "text-left"}`}>{h}</th>
+                      <th key={h} className={`py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap text-left ${h === "상태" ? "px-3 w-[56px]" : "px-5"}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={3 + TOGGLE_COLS.filter(c => visibleCols[c]).length} className="py-20 text-center text-[15px] text-gray-400">
+                    <td colSpan={2 + TOGGLE_COLS.filter(c => visibleCols[c]).length} className="py-20 text-center text-[15px] text-gray-400">
                       {products.length === 0 ? "등록된 제품이 없습니다. 상단의 '샘플 10개 추가' 또는 '+ 새 제품 추가'로 시작하세요." : "검색 조건에 맞는 제품이 없습니다."}
                     </td>
                   </tr>
@@ -726,10 +795,26 @@ export default function AdminProductsPage() {
                         className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                     </td>
 
-                    {/* 상품명 (인라인 수정 · 한 줄) */}
+                    {/* 상태 — 아이콘만 표시, 좁은 열 (수정은 상단 일괄작업 버튼 이용) */}
+                    {visibleCols["상태"] && (
+                    <td className="px-3 py-3 w-[56px]">
+                      <span title={p.status ?? "판매중"}
+                        className={`inline-block w-2.5 h-2.5 rounded-full ${STATUS_DOT[p.status ?? "판매중"] ?? "bg-gray-300"}`} />
+                    </td>
+                    )}
+
+                    {/* 브랜드 — 컬럼 표시 토글 */}
+                    {visibleCols["브랜드"] && (
+                    <td className="px-5 py-3 whitespace-nowrap text-[13px] text-gray-700 font-semibold">
+                      {p.brand || <span className="text-gray-300 font-normal">-</span>}
+                    </td>
+                    )}
+
+                    {/* 상품명 */}
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="relative w-[44px] h-[44px] flex-shrink-0 rounded-lg overflow-hidden border border-gray-100">
+                        <Link href={`/products/${p.id}`} target="_blank" title="제품페이지 보기"
+                          className="relative w-[44px] h-[44px] flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 block">
                           {p.imageUrl ? (
                             <Image src={p.imageUrl} alt={p.name} fill className="object-cover" sizes="44px" />
                           ) : (
@@ -737,21 +822,29 @@ export default function AdminProductsPage() {
                               <span className="text-gray-300 text-[10px]">없음</span>
                             </div>
                           )}
-                        </div>
+                        </Link>
                         <div className="min-w-0 w-[230px]">
-                          <InlineText
-                            value={p.name}
-                            onSave={(v) => v && updateProduct(p.id, { name: v })}
-                            display={<span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>}
-                            inputClassName="w-full border border-blue-300 rounded px-1.5 py-1 text-[14px] font-semibold text-gray-900 focus:outline-none"
-                          />
-                          <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                            {p.brand && <span className="text-[12px] text-[#303236] font-semibold truncate flex-shrink-0">{p.brand}</span>}
-                            <span className="text-[12px] text-gray-400 font-mono truncate">{p.sku || p.id}</span>
-                          </div>
+                          <span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>
                         </div>
                       </div>
                     </td>
+
+                    {/* 품번 — 컬럼 표시 토글 */}
+                    {visibleCols["품번"] && (
+                    <td className="px-5 py-3 whitespace-nowrap text-[13px] text-gray-400 font-mono">
+                      {p.sku || p.id}
+                    </td>
+                    )}
+
+                    {/* 가격 — 컬럼 표시 토글 */}
+                    {visibleCols["가격"] && (
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      <span className="block text-[14px] font-bold text-gray-800">{p.price || <span className="text-gray-300 font-normal">-</span>}</span>
+                      {p.consumerPrice && (
+                        <p className="text-[12px] text-gray-400 line-through">{p.consumerPrice}</p>
+                      )}
+                    </td>
+                    )}
 
                     {/* 카테고리 (인라인 추가/삭제) — 컬럼 표시 토글 */}
                     {visibleCols["카테고리"] && (
@@ -786,64 +879,12 @@ export default function AdminProductsPage() {
                     </td>
                     )}
 
-                    {/* 가격 (인라인 수정) — 컬럼 표시 토글 */}
-                    {visibleCols["가격"] && (
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <InlineText
-                        value={p.price ?? ""}
-                        onSave={(v) => updateProduct(p.id, { price: v })}
-                        display={<span className="block text-[14px] font-bold text-gray-800">{p.price || <span className="text-gray-300 font-normal">가격 입력</span>}</span>}
-                        inputClassName="w-[110px] border border-blue-300 rounded px-1.5 py-1 text-[14px] font-bold text-gray-800 focus:outline-none"
-                      />
-                      {p.consumerPrice && (
-                        <p className="text-[12px] text-gray-400 line-through">{p.consumerPrice}</p>
-                      )}
-                    </td>
-                    )}
-
-                    {/* 판매 상태 (인라인 수정) — 컬럼 표시 토글 */}
-                    {visibleCols["판매 상태"] && (
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <select
-                        value={p.status ?? "판매중"}
-                        onChange={(e) => updateProduct(p.id, { status: e.target.value as Product["status"] })}
-                        title="클릭하여 상태 변경"
-                        className={`text-[12px] font-bold rounded-full pl-2.5 pr-6 py-1 border-0 cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-blue-300 ${STATUS_COLOR[p.status ?? "판매중"] ?? "bg-gray-100 text-gray-500"}`}
-                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23444' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center" }}
-                      >
-                        {SORTABLE_STATUSES.map((s) => <option key={s} value={s} className="bg-white text-gray-700">{s}</option>)}
-                      </select>
-                    </td>
-                    )}
-
                     {/* 최종수정 — 컬럼 표시 토글 */}
                     {visibleCols["최종수정"] && (
                     <td className="px-5 py-4 whitespace-nowrap text-[13px] text-gray-400">
                       {fmtDate(p.updatedAt ?? p.createdAt)}
                     </td>
                     )}
-
-                    {/* 관리 */}
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Link href={`/admin/products/${p.id}/edit`}
-                          onClick={() => { try { const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}"); const sc = document.querySelector("main"); sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...prev, scrollTop: sc ? sc.scrollTop : 0 })); } catch { /* noop */ } }}
-                          className="text-[14px] font-semibold text-[#303236] border border-[#303236] px-3.5 py-1.5 hover:bg-[#303236] hover:text-white rounded whitespace-nowrap">
-                          수정
-                        </Link>
-                        <button onClick={() => handleDuplicate(p)} title="복제"
-                          className="text-[14px] font-semibold text-blue-600 border border-blue-200 px-3.5 py-1.5 hover:bg-blue-50 rounded whitespace-nowrap">
-                          복제
-                        </button>
-                        <button onClick={() => {
-                          if (!confirm(`"${p.name}"을 삭제하시겠습니까?`)) return;
-                          fetch(`/api/admin/products/${p.id}`, { method: "DELETE" }).then(() => { load(); showMsg("삭제됐습니다."); });
-                        }}
-                          className="text-[14px] font-semibold text-red-500 border border-red-200 px-3.5 py-1.5 hover:bg-red-50 rounded whitespace-nowrap">
-                          삭제
-                        </button>
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -936,6 +977,37 @@ export default function AdminProductsPage() {
         </div>
       )}
 
+      {/* ── 브랜드 일괄 변경 모달 ────────────────────────────────────────── */}
+      {brandModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div className="px-7 py-5 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">브랜드 일괄 변경</h2>
+              <p className="text-[15px] text-gray-400 mt-0.5">선택된 <span className="font-bold text-[#E5541B]">{selected.size}개</span> 상품의 브랜드가 아래 값으로 교체됩니다.</p>
+            </div>
+            <div className="px-7 py-6 space-y-5">
+              <div>
+                <p className="text-[15px] font-semibold text-gray-600 mb-2.5">변경할 브랜드</p>
+                <select value={brandModalValue} onChange={e => setBrandModalValue(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-[14px] bg-white rounded focus:outline-none focus:border-[#303236]">
+                  <option value="">브랜드 선택</option>
+                  {brandList.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <p className="text-[13px] text-gray-400">* 선택된 상품의 기존 브랜드는 여기서 고른 값으로 대체됩니다.</p>
+            </div>
+            <div className="px-7 py-5 border-t border-gray-200 flex gap-3 justify-end">
+              <button onClick={() => { setBrandModal(false); setBrandModalValue(""); }}
+                className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
+              <button onClick={bulkApplyBrand} disabled={!brandModalValue || brandSaving}
+                className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
+                {brandSaving ? "변경 중..." : `${selected.size}개에 적용`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 메인진열 수정 모달 ────────────────────────────────────────────── */}
       {exposeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -991,41 +1063,5 @@ export default function AdminProductsPage() {
       <CatalogManagerModal open={catalogModalOpen} onClose={() => setCatalogModalOpen(false)} />
       <FilterManagerModal open={filterModalOpen} onClose={() => setFilterModalOpen(false)} />
     </div>
-  );
-}
-
-// ── 인라인 텍스트 편집 (클릭 → 입력, Enter/포커스 해제 시 저장, Esc 취소) ──
-function InlineText({ value, onSave, display, inputClassName }: {
-  value: string;
-  onSave: (v: string) => void;
-  display: React.ReactNode;
-  inputClassName?: string;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [v, setV] = useState(value);
-  const skip = useRef(false);
-  useEffect(() => { setV(value); }, [value]);
-
-  if (!editing) {
-    return (
-      <span onClick={() => { setV(value); setEditing(true); }} title="클릭하여 수정"
-        className="cursor-text hover:bg-yellow-50 rounded block w-full">
-        {display}
-      </span>
-    );
-  }
-  return (
-    <input
-      autoFocus
-      value={v}
-      onChange={(e) => setV(e.target.value)}
-      onClick={(e) => e.stopPropagation()}
-      onBlur={() => { setEditing(false); if (!skip.current && v.trim() !== (value ?? "").trim()) onSave(v.trim()); skip.current = false; }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") e.currentTarget.blur();
-        else if (e.key === "Escape") { skip.current = true; setV(value); e.currentTarget.blur(); }
-      }}
-      className={inputClassName}
-    />
   );
 }

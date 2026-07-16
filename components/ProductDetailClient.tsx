@@ -7,7 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 import { normalizeProductBanners, type ProductBanner } from "@/lib/product-banners";
 import { useStores } from "@/lib/useStores";
-import { productDisplayName, type Product } from "@/data/products";
+import { productDisplayName, displaySku, type Product } from "@/data/products";
 import { ikSrc } from "@/lib/imageSrc";
 
 const SIZES = ["S", "M", "L", "XL", "2XL"];
@@ -44,9 +44,8 @@ export default function ProductDetailClient({
   const stores = useStores();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  // 사이즈별 가격 — 선택 사이즈에 지정가가 있으면 그 가격, 없으면 기본 판매가
+  // 사이즈별 가격 — 화면에는 표시하지 않지만 찜(피팅 리스트) 데이터에는 유지
   const sizePriceMap = new Map((product.sizePrices ?? []).filter((sp) => sp.price?.trim()).map((sp) => [sp.size, sp.price]));
-  const hasSizePrices = sizePriceMap.size > 0;
   const displayPrice = (selectedSize && sizePriceMap.get(selectedSize)) || product.price;
   // 회원 로그인 세션 — 피팅 리스트 담기 게이팅용 (null = 비로그인)
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
@@ -207,18 +206,14 @@ export default function ProductDetailClient({
           </div>
         )}
         <h1 className="text-xl md:text-[28px] font-bold text-[#303236] leading-tight mb-2">{productDisplayName(product)}</h1>
-        <p className="text-2xl md:text-3xl font-bold text-[#303236]">{displayPrice}</p>
-        {hasSizePrices && (
-          <p className="text-xs text-gray-400 mt-1">사이즈에 따라 가격이 다릅니다{selectedSize ? "" : " — 사이즈를 선택하면 해당 가격이 표시됩니다"}.</p>
-        )}
-        {(product.brand || product.sku) && (
+        {(product.brand || displaySku(product.sku)) && (
           <div className="flex items-center gap-2.5 flex-wrap mt-3.5">
             {product.brand && (
               <span className="text-[11px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">{product.brand}</span>
             )}
-            {product.sku && (
+            {displaySku(product.sku) && (
               <span className="text-xs text-gray-400 tracking-wider">
-                제품번호 · <span className="text-gray-500">{product.sku}</span>
+                제품번호 · <span className="text-gray-500">{displaySku(product.sku)}</span>
               </span>
             )}
           </div>
@@ -295,7 +290,6 @@ export default function ProductDetailClient({
                   }
                 </div>
                 <p className="text-[11px] text-gray-600 leading-tight truncate">{productDisplayName(rp)}</p>
-                <p className="text-xs font-semibold text-[#303236] mt-0.5">{rp.price}</p>
               </Link>
             ))}
           </div>

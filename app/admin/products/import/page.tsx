@@ -73,6 +73,33 @@ function computeError(r: {
   return miss.length ? `필수 미입력: ${miss.join(", ")}` : undefined;
 }
 
+// 상품코드 중복 검사 — ①업로드 파일 내 중복 ②기존 등록 상품과 중복(같은 상품 수정은 제외)을 합쳐 각 행의 오류 메시지를 다시 계산
+// + 상품명이 같아 내부 상품id(슬러그)가 겹치는 행도 함께 검사 — 같은 id가 한 배치에 두 번 있으면 DB upsert가 실패한다.
+function withErrors<T extends { id: string; sku?: string; _error?: string }>(
+  rows: T[],
+  existingSkuMap: Record<string, string>,
+): T[] {
+  const skuCounts = new Map<string, number>();
+  const idCounts = new Map<string, number>();
+  rows.forEach((r) => {
+    const sku = (r.sku ?? "").trim();
+    if (sku) skuCounts.set(sku, (skuCounts.get(sku) ?? 0) + 1);
+    idCounts.set(r.id, (idCounts.get(r.id) ?? 0) + 1);
+  });
+  return rows.map((r) => {
+    const base = computeError(r);
+    const sku = (r.sku ?? "").trim();
+    let dup: string | undefined;
+    if (sku) {
+      if ((skuCounts.get(sku) ?? 0) > 1) dup = "상품코드 중복(파일 내)";
+      else if (existingSkuMap[sku] && existingSkuMap[sku] !== r.id) dup = "상품코드 중복(기존 상품)";
+    }
+    const nameDup = (idCounts.get(r.id) ?? 0) > 1 ? "상품명 중복(같은 상품으로 인식됨)" : undefined;
+    const parts = [base, dup, nameDup].filter(Boolean);
+    return { ...r, _error: parts.length ? parts.join(" · ") : undefined };
+  });
+}
+
 function parseRow(
   row: Record<string, unknown>,
   idx: number,
@@ -235,12 +262,16 @@ async function downloadTemplate(fallbackCats: CatItem[]) {
 
 type ParsedRow = Partial<Product> & { id: string; _row: number; _error?: string };
 
+const TABLE_HEADERS = ["행", "상태", "상품명*", "상품코드*", "사이즈*", "색상*", "브랜드*", "대분류*", "중분류*", "판매가*", "소비자가", "공급가", "사이즈별가", "오류"];
+
 export default function ProductImportPage() {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; count?: number; error?: string } | null>(null);
   const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
+  // 기존 등록 상품의 상품코드(sku, trim) → id — 엑셀 상품코드가 기존 상품과 중복되는지 검사용
+  const [existingSkuMap, setExistingSkuMap] = useState<Record<string, string>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   // 카테고리 분류 — 관리자 DB 설정에서 로드 (검증 기준을 최신 분류와 일치시킴)
@@ -254,6 +285,24 @@ export default function ProductImportPage() {
       })
       .catch(() => {});
   }, []);
+
+  // 기존 상품 상품코드 목록 — 중복 검사 기준
+  useEffect(() => {
+    fetch("/api/admin/products")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { id: string; sku?: string }[]) => {
+        if (!Array.isArray(data)) return;
+        const map: Record<string, string> = {};
+        data.forEach((p) => { const sku = (p.sku ?? "").trim(); if (sku) map[sku] = p.id; });
+        setExistingSkuMap(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  // 기존 상품코드 목록이 뒤늦게 도착한 경우 대비 — 이미 미리보기 중인 행들도 재검사
+  useEffect(() => {
+    setRows((prev) => (prev.length ? withErrors(prev, existingSkuMap) : prev));
+  }, [existingSkuMap]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -281,7 +330,15 @@ export default function ProductImportPage() {
         headers.forEach((h, i) => { if (h) obj[h] = arr[i] ?? ""; });
         return obj;
       });
-      setRows(json.map((r, i) => parseRow(r, headerIdx + i, cats)));
+      const parsed = withErrors(json.map((r, i) => parseRow(r, headerIdx + i, cats)), existingSkuMap);
+      setRows(parsed);
+
+      // 상품코드·상품명 중복 행이 있으면 표를 훑어보지 않아도 바로 알 수 있도록 오류 팝업으로 안내
+      const dupRows = parsed.filter((r) => r._error?.includes("중복"));
+      if (dupRows.length > 0) {
+        const lines = dupRows.map((r) => `${r._row}행 · ${r.name || "(상품명 없음)"} / ${r.sku} — ${r._error}`);
+        alert(`중복된 행이 ${dupRows.length}개 있어 해당 행은 가져올 수 없습니다.\n\n${lines.join("\n")}\n\n상품코드 또는 상품명을 수정한 뒤 다시 시도해 주세요.`);
+      }
     };
     reader.readAsArrayBuffer(file);
     if (fileRef.current) fileRef.current.value = "";
@@ -290,14 +347,12 @@ export default function ProductImportPage() {
   const validRows = rows.filter((r) => !r._error);
   const errorRows = rows.filter((r) => r._error);
 
-  // 미리보기 셀 직접 수정 → 즉시 재검증
+  // 미리보기 셀 직접 수정 → 즉시 재검증(상품코드 중복 포함 — 다른 행과의 관계도 함께 다시 계산)
   const updateRow = (rowNum: number, patch: Partial<ParsedRow>) => {
-    setRows((prev) => prev.map((r) => {
-      if (r._row !== rowNum) return r;
-      const next = { ...r, ...patch } as ParsedRow;
-      next._error = computeError(next);
-      return next;
-    }));
+    setRows((prev) => withErrors(
+      prev.map((r) => (r._row === rowNum ? ({ ...r, ...patch } as ParsedRow) : r)),
+      existingSkuMap,
+    ));
   };
   // 필수 입력칸 색상 — 비면 빨강, 채워지면 연노랑
   const reqCls = (val: string | undefined) =>
@@ -326,6 +381,7 @@ export default function ProductImportPage() {
   };
 
   const handleImport = async () => {
+    // 오류 행(필수 미입력·상품코드 중복)은 validRows에서 이미 제외되어 있어 정상 행만 가져온다.
     if (validRows.length === 0) return;
     setImporting(true);
     setResult(null);
@@ -358,6 +414,90 @@ export default function ProductImportPage() {
     }
     setImporting(false);
   };
+
+  // 미리보기 테이블 행 렌더링 — 정상 행/오류 행 두 테이블에서 공용으로 사용
+  const renderRows = (list: ParsedRow[]) => list.slice(0, 50).map((row) => (
+    <Fragment key={row._row}>
+      <tr className={row._error ? "bg-red-50/40" : "hover:bg-gray-50"}>
+        <td className="px-3 py-2 text-gray-400 text-xs">{row._row}</td>
+        <td className="px-3 py-2">
+          {row._error ? (
+            <span className="px-2 py-0.5 text-[11px] bg-red-100 text-red-600 font-semibold rounded-full whitespace-nowrap">오류</span>
+          ) : (
+            <span className="px-2 py-0.5 text-[11px] bg-emerald-100 text-emerald-600 font-semibold rounded-full whitespace-nowrap">정상</span>
+          )}
+        </td>
+        <td className="px-2 py-2 min-w-[150px]">
+          <input value={row.name ?? ""} onChange={(e) => updateRow(row._row, { name: e.target.value })} className={reqCls(row.name)} />
+        </td>
+        <td className="px-2 py-2 min-w-[110px]">
+          <input value={row.sku ?? ""} onChange={(e) => updateRow(row._row, { sku: e.target.value })} className={reqCls(row.sku)} />
+        </td>
+        <td className="px-2 py-2 min-w-[120px]">
+          <input list="imp-sizes" value={(row.sizes ?? []).join(";")}
+            onChange={(e) => updateRow(row._row, { sizes: toArr(e.target.value) })}
+            className={reqCls((row.sizes ?? []).join(";"))} placeholder="S;M;L;XL" />
+        </td>
+        <td className="px-2 py-2 min-w-[130px]">
+          <input list="imp-colors" value={(row.colors ?? []).map((c) => c.name).join(";")}
+            onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value) })}
+            className={reqCls((row.colors ?? []).map((c) => c.name).join(";"))} placeholder="블랙;화이트" />
+        </td>
+        <td className="px-2 py-2 min-w-[110px]">
+          <input value={row.brand ?? ""} onChange={(e) => updateRow(row._row, { brand: e.target.value })} className={reqCls(row.brand)} />
+        </td>
+        <td className="px-2 py-2 min-w-[110px]">
+          <input list="imp-cat-main" value={row.category ?? ""}
+            onChange={(e) => updateRow(row._row, { category: e.target.value as Product["category"], subCategory: "" as Product["subCategory"] })}
+            className={reqCls(row.category)} placeholder="선택/입력" />
+        </td>
+        <td className="px-2 py-2 min-w-[110px]">
+          <input list={`imp-cat-sub-${row.category}`} value={row.subCategory ?? ""}
+            onChange={(e) => updateRow(row._row, { subCategory: e.target.value as Product["subCategory"] })}
+            className={reqCls(row.subCategory)} placeholder="선택/입력" />
+        </td>
+        <td className="px-2 py-2 min-w-[100px]">
+          <input inputMode="numeric" value={row.price ?? ""} onChange={(e) => updateRow(row._row, { price: fmtComma(e.target.value) })} className={reqCls(row.price)} />
+        </td>
+        <td className="px-2 py-2 min-w-[100px]">
+          <input inputMode="numeric" value={row.consumerPrice ?? ""} onChange={(e) => updateRow(row._row, { consumerPrice: fmtComma(e.target.value) })} className={optCls} />
+        </td>
+        <td className="px-2 py-2 min-w-[100px]">
+          <input inputMode="numeric" value={row.supplyPrice ?? ""} onChange={(e) => updateRow(row._row, { supplyPrice: fmtComma(e.target.value) })} className={optCls} />
+        </td>
+        <td className="px-3 py-2 text-center">
+          <input type="checkbox" checked={sizePriceOpen.has(row._row)}
+            onChange={(e) => toggleSizePrice(row._row, e.target.checked)}
+            className="w-4 h-4 accent-[#303236] cursor-pointer" title="사이즈별 가격 입력" />
+        </td>
+        <td className="px-3 py-2 text-[11px] text-red-500 min-w-[140px]">{row._error || ""}</td>
+      </tr>
+      {sizePriceOpen.has(row._row) && (
+        <tr className="bg-amber-50/50">
+          <td colSpan={14} className="px-4 py-3">
+            <div className="flex flex-wrap gap-3 items-center">
+              <span className="text-xs font-semibold text-[#303236]">사이즈별 가격</span>
+              {(row.sizes ?? []).length === 0 ? (
+                <span className="text-xs text-gray-400">먼저 사이즈를 입력하세요.</span>
+              ) : (
+                (row.sizes ?? []).map((sz) => (
+                  <label key={sz} className="flex items-center gap-1 text-xs">
+                    <span className="font-semibold text-[#303236] min-w-[34px] text-center">{sz}</span>
+                    <input inputMode="numeric"
+                      value={row.sizePrices?.find((sp) => sp.size === sz)?.price ?? ""}
+                      onChange={(e) => setRowSizePrice(row._row, sz, e.target.value)}
+                      placeholder={row.price || "기본가"}
+                      className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#303236]" />
+                  </label>
+                ))
+              )}
+              <span className="text-[11px] text-gray-400">· 비운 사이즈는 기본 판매가 적용</span>
+            </div>
+          </td>
+        </tr>
+      )}
+    </Fragment>
+  ));
 
   return (
     <div>
@@ -437,124 +577,71 @@ export default function ProductImportPage() {
       {/* 데이터 미리보기 */}
       {rows.length > 0 && (
         <>
+          {/* 카테고리 드롭다운+입력용 datalist (현재 등록 카테고리) — 두 테이블이 공용으로 참조 */}
+          <datalist id="imp-cat-main">{cats.map((c) => <option key={c.name} value={c.name} />)}</datalist>
+          <datalist id="imp-colors">{COLOR_PRESET_NAMES.map((c) => <option key={c} value={c} />)}</datalist>
+          <datalist id="imp-sizes">{["S", "M", "L", "XL", "2XL", "3XL", "4XL"].map((s) => <option key={s} value={s} />)}</datalist>
+          {cats.map((c) => (
+            <datalist key={c.name} id={`imp-cat-sub-${c.name}`}>{c.subs.map((s) => <option key={s} value={s} />)}</datalist>
+          ))}
+
+          {/* 정상 행 — 가져올 수 있음 */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm mb-8">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">미리보기</h2>
-              <p className="text-sm text-gray-400">{rows.length}행 · 처음 50행 표시</p>
+              <h2 className="text-lg font-bold text-gray-900">정상 행 <span className="text-emerald-600">{validRows.length}개</span></h2>
+              <p className="text-sm text-gray-400">가져올 수 있음 · 처음 50행 표시</p>
             </div>
-            {/* 카테고리 드롭다운+입력용 datalist (현재 등록 카테고리) */}
-            <datalist id="imp-cat-main">{cats.map((c) => <option key={c.name} value={c.name} />)}</datalist>
-            <datalist id="imp-colors">{COLOR_PRESET_NAMES.map((c) => <option key={c} value={c} />)}</datalist>
-            <datalist id="imp-sizes">{["S", "M", "L", "XL", "2XL", "3XL", "4XL"].map((s) => <option key={s} value={s} />)}</datalist>
-            {cats.map((c) => (
-              <datalist key={c.name} id={`imp-cat-sub-${c.name}`}>{c.subs.map((s) => <option key={s} value={s} />)}</datalist>
-            ))}
             <div className="px-6 pb-2 text-[11px] text-gray-400">
-              <span className="inline-block w-3 h-3 align-middle bg-amber-50 border border-amber-200 rounded-sm mr-1" /> 필수 입력 ·
-              <span className="inline-block w-3 h-3 align-middle bg-red-50 border border-red-300 rounded-sm mx-1" /> 미입력(저장 불가) · 가격은 숫자만 입력하면 콤마 자동
+              <span className="inline-block w-3 h-3 align-middle bg-amber-50 border border-amber-200 rounded-sm mr-1" /> 필수 입력 · 가격은 숫자만 입력하면 콤마 자동
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    {["행", "상태", "상품명*", "상품코드*", "사이즈*", "색상*", "브랜드*", "대분류*", "중분류*", "판매가*", "소비자가", "공급가", "사이즈별가", "오류"].map((h) => (
-                      <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {rows.slice(0, 50).map((row) => (
-                    <Fragment key={row._row}>
-                    <tr className={row._error ? "bg-red-50/40" : "hover:bg-gray-50"}>
-                      <td className="px-3 py-2 text-gray-400 text-xs">{row._row}</td>
-                      <td className="px-3 py-2">
-                        {row._error ? (
-                          <span className="px-2 py-0.5 text-[11px] bg-red-100 text-red-600 font-semibold rounded-full whitespace-nowrap">오류</span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-[11px] bg-emerald-100 text-emerald-600 font-semibold rounded-full whitespace-nowrap">정상</span>
-                        )}
-                      </td>
-                      <td className="px-2 py-2 min-w-[150px]">
-                        <input value={row.name ?? ""} onChange={(e) => updateRow(row._row, { name: e.target.value })} className={reqCls(row.name)} />
-                      </td>
-                      <td className="px-2 py-2 min-w-[110px]">
-                        <input value={row.sku ?? ""} onChange={(e) => updateRow(row._row, { sku: e.target.value })} className={reqCls(row.sku)} />
-                      </td>
-                      <td className="px-2 py-2 min-w-[120px]">
-                        <input list="imp-sizes" value={(row.sizes ?? []).join(";")}
-                          onChange={(e) => updateRow(row._row, { sizes: toArr(e.target.value) })}
-                          className={reqCls((row.sizes ?? []).join(";"))} placeholder="S;M;L;XL" />
-                      </td>
-                      <td className="px-2 py-2 min-w-[130px]">
-                        <input list="imp-colors" value={(row.colors ?? []).map((c) => c.name).join(";")}
-                          onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value) })}
-                          className={reqCls((row.colors ?? []).map((c) => c.name).join(";"))} placeholder="블랙;화이트" />
-                      </td>
-                      <td className="px-2 py-2 min-w-[110px]">
-                        <input value={row.brand ?? ""} onChange={(e) => updateRow(row._row, { brand: e.target.value })} className={reqCls(row.brand)} />
-                      </td>
-                      <td className="px-2 py-2 min-w-[110px]">
-                        <input list="imp-cat-main" value={row.category ?? ""}
-                          onChange={(e) => updateRow(row._row, { category: e.target.value as Product["category"], subCategory: "" as Product["subCategory"] })}
-                          className={reqCls(row.category)} placeholder="선택/입력" />
-                      </td>
-                      <td className="px-2 py-2 min-w-[110px]">
-                        <input list={`imp-cat-sub-${row.category}`} value={row.subCategory ?? ""}
-                          onChange={(e) => updateRow(row._row, { subCategory: e.target.value as Product["subCategory"] })}
-                          className={reqCls(row.subCategory)} placeholder="선택/입력" />
-                      </td>
-                      <td className="px-2 py-2 min-w-[100px]">
-                        <input inputMode="numeric" value={row.price ?? ""} onChange={(e) => updateRow(row._row, { price: fmtComma(e.target.value) })} className={reqCls(row.price)} />
-                      </td>
-                      <td className="px-2 py-2 min-w-[100px]">
-                        <input inputMode="numeric" value={row.consumerPrice ?? ""} onChange={(e) => updateRow(row._row, { consumerPrice: fmtComma(e.target.value) })} className={optCls} />
-                      </td>
-                      <td className="px-2 py-2 min-w-[100px]">
-                        <input inputMode="numeric" value={row.supplyPrice ?? ""} onChange={(e) => updateRow(row._row, { supplyPrice: fmtComma(e.target.value) })} className={optCls} />
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <input type="checkbox" checked={sizePriceOpen.has(row._row)}
-                          onChange={(e) => toggleSizePrice(row._row, e.target.checked)}
-                          className="w-4 h-4 accent-[#303236] cursor-pointer" title="사이즈별 가격 입력" />
-                      </td>
-                      <td className="px-3 py-2 text-[11px] text-red-500 min-w-[140px]">{row._error || ""}</td>
+            {validRows.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-400">가져올 수 있는 행이 없습니다. 아래 오류 행을 먼저 수정해 주세요.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      {TABLE_HEADERS.map((h) => (
+                        <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">{h}</th>
+                      ))}
                     </tr>
-                    {sizePriceOpen.has(row._row) && (
-                      <tr className="bg-amber-50/50">
-                        <td colSpan={14} className="px-4 py-3">
-                          <div className="flex flex-wrap gap-3 items-center">
-                            <span className="text-xs font-semibold text-[#303236]">사이즈별 가격</span>
-                            {(row.sizes ?? []).length === 0 ? (
-                              <span className="text-xs text-gray-400">먼저 사이즈를 입력하세요.</span>
-                            ) : (
-                              (row.sizes ?? []).map((sz) => (
-                                <label key={sz} className="flex items-center gap-1 text-xs">
-                                  <span className="font-semibold text-[#303236] min-w-[34px] text-center">{sz}</span>
-                                  <input inputMode="numeric"
-                                    value={row.sizePrices?.find((sp) => sp.size === sz)?.price ?? ""}
-                                    onChange={(e) => setRowSizePrice(row._row, sz, e.target.value)}
-                                    placeholder={row.price || "기본가"}
-                                    className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#303236]" />
-                                </label>
-                              ))
-                            )}
-                            <span className="text-[11px] text-gray-400">· 비운 사이즈는 기본 판매가 적용</span>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">{renderRows(validRows)}</tbody>
+                </table>
+              </div>
+            )}
           </div>
+
+          {/* 오류 행 — 제외하고 가져오기 */}
+          {errorRows.length > 0 && (
+            <div className="bg-white border border-red-200 rounded-xl overflow-hidden shadow-sm mb-8">
+              <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-red-600">오류 행 {errorRows.length}개</h2>
+                <p className="text-sm text-red-400">가져오기에서 제외됨 · 처음 50행 표시</p>
+              </div>
+              <div className="px-6 pb-2 pt-3 text-[11px] text-gray-400">
+                <span className="inline-block w-3 h-3 align-middle bg-red-50 border border-red-300 rounded-sm mr-1" /> 미입력·상품코드/상품명 중복 — 값을 고치면 자동으로 정상 행으로 이동합니다.
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      {TABLE_HEADERS.map((h) => (
+                        <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">{renderRows(errorRows)}</tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* 가져오기 버튼 */}
           <div className="flex items-center gap-4">
             <button
               onClick={handleImport}
-              disabled={importing || validRows.length === 0 || errorRows.length > 0}
+              disabled={importing || validRows.length === 0}
               className="px-8 py-3 bg-[#E5541B] text-white text-base font-semibold hover:bg-[#e04500] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
             >
               {importing ? (
@@ -567,8 +654,8 @@ export default function ProductImportPage() {
               )}
             </button>
             {errorRows.length > 0 && (
-              <p className="text-sm text-red-500">
-                필수 항목 미입력 {errorRows.length}행이 있어 가져올 수 없습니다. 빨간 칸을 모두 채워주세요.
+              <p className="text-sm text-gray-500">
+                오류 행 {errorRows.length}개는 제외하고 정상 행 {validRows.length}개만 가져옵니다.
               </p>
             )}
           </div>

@@ -1007,11 +1007,11 @@ function BannerEditor({ banner, label, onChange, products }: {
 
       {/* 섹션 이미지 + 연결상품 탭 — 한 줄 배치 */}
       <div className="flex gap-4 items-start">
-        {/* 좌: 섹션 이미지 — 8:9 비율 (440×495px 실제 노출 비율) */}
+        {/* 좌: 섹션 이미지 — 8:9 비율. 태블릿·PC 등 큰 화면에서도 흐려지지 않도록 실제 노출 크기(440×495px)의 2배 이상 권장 */}
         <div className="flex-shrink-0" style={{ width: "160px" }}>
           <ImageField
             label="섹션 이미지"
-            hint="440 × 495px"
+            hint="880 × 990px 이상 권장"
             value={banner.image_url}
             onChange={(url) => onChange({ image_url: url })}
             compact

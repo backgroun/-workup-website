@@ -8,6 +8,7 @@ import LoginPromptModal from "@/components/LoginPromptModal";
 import {
   products as staticProducts,
   productDisplayName,
+  displaySku,
 } from "@/data/products";
 import {
   DEFAULT_PRODUCT_FILTERS,
@@ -382,10 +383,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         <h3 className={`font-medium text-[#303236] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
           <Link href={`/products/${product.id}`} className="hover:underline underline-offset-4 decoration-1 transition-colors">{productDisplayName(product)}</Link>
         </h3>
-        {product.sku && (
-          <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{product.sku}</p>
+        {displaySku(product.sku) && (
+          <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{displaySku(product.sku)}</p>
         )}
-        <p className={`font-bold text-[#303236] ${mobile ? "text-[13px]" : "text-[14px]"}`}>{product.price}</p>
       </div>
     </div>
   );

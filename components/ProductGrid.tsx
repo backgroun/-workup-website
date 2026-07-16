@@ -101,9 +101,6 @@ export default function ProductGrid({ id, title, subtitle, filter }: Props) {
               <p className="text-sm text-gray-500 leading-relaxed mb-2">
                 {product.description}
               </p>
-              <p className="text-sm font-bold text-[#303236]">
-                {product.price}
-              </p>
             </div>
           ))}
         </div>

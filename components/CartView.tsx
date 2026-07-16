@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import { type WishlistConfig } from "@/lib/wishlist";
+import { displaySku } from "@/data/products";
 
 // 찜(피팅 리스트) 페이지 화면. 문구·CTA는 관리자(피킹리스트 관리)에서 설정한 config로 채운다.
 export default function CartView({ config: c }: { config: WishlistConfig }) {
@@ -90,8 +91,8 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                       </div>
                       <div className="pt-3.5">
                         <p className="text-[15px] font-bold text-[#303236] leading-snug group-hover:underline underline-offset-4 decoration-1">{item.name}</p>
-                        {item.sku && (
-                          <p className="text-xs text-[#8F8B81] mt-1">품번 {item.sku}</p>
+                        {displaySku(item.sku) && (
+                          <p className="text-xs text-[#8F8B81] mt-1">품번 {displaySku(item.sku)}</p>
                         )}
                         {item.allSizes && item.allSizes.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mt-2.5">
@@ -115,7 +116,6 @@ export default function CartView({ config: c }: { config: WishlistConfig }) {
                             ))}
                           </div>
                         )}
-                        <p className="text-[15px] font-bold text-[#303236] mt-2.5">{item.price}</p>
                       </div>
                     </Link>
                   </div>

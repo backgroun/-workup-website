@@ -91,7 +91,6 @@ export default async function BannerDetailPage({ params }: Props) {
                   )}
                 </div>
                 <p className="text-[13px] md:text-sm text-[#303236] leading-snug mb-1 line-clamp-2">{p.displayName}</p>
-                {p.price && <p className="text-sm md:text-[15px] font-bold text-[#303236]">{p.price}</p>}
               </Link>
             ))}
           </div>

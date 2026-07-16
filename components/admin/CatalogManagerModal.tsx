@@ -4,18 +4,20 @@ import { useState, useEffect, useRef } from "react";
 // 브랜드/제조사 관리 팝업 — 제품 목록 페이지에서 바로 열어 CRUD.
 // (기존 /admin/brands 페이지의 Section 로직을 모달용으로 재사용)
 
-type Item = { id: number; name: string };
+type Item = { id: number; name: string; name_ko?: string | null };
 
-function CrudSection({ title, apiPath, addPlaceholder }: {
-  title: string; apiPath: string; addPlaceholder: string;
+function CrudSection({ title, apiPath, addPlaceholder, withAlias }: {
+  title: string; apiPath: string; addPlaceholder: string; withAlias?: boolean;
 }) {
   const [items, setItems] = useState<Item[]>([]);
   const [newName, setNewName] = useState("");
+  const [newNameKo, setNewNameKo] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingNameKo, setEditingNameKo] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const editRef = useRef<HTMLInputElement>(null);
 
@@ -30,17 +32,17 @@ function CrudSection({ title, apiPath, addPlaceholder }: {
     e.preventDefault();
     if (!newName.trim()) return;
     setSaving(true); setError("");
-    const r = await fetch(apiPath, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName.trim() }) });
-    if (r.ok) { setNewName(""); await load(); inputRef.current?.focus(); }
+    const r = await fetch(apiPath, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName.trim(), name_ko: withAlias ? newNameKo.trim() : undefined }) });
+    if (r.ok) { setNewName(""); setNewNameKo(""); await load(); inputRef.current?.focus(); }
     else { const d = await r.json().catch(() => ({})); setError(d.error ?? "오류가 발생했습니다."); }
     setSaving(false);
   };
-  const startEdit = (it: Item) => { setEditingId(it.id); setEditingName(it.name); setTimeout(() => editRef.current?.focus(), 50); };
-  const cancelEdit = () => { setEditingId(null); setEditingName(""); };
+  const startEdit = (it: Item) => { setEditingId(it.id); setEditingName(it.name); setEditingNameKo(it.name_ko ?? ""); setTimeout(() => editRef.current?.focus(), 50); };
+  const cancelEdit = () => { setEditingId(null); setEditingName(""); setEditingNameKo(""); };
   const handleEdit = async (id: number) => {
     if (!editingName.trim()) return;
     setSaving(true);
-    const r = await fetch(apiPath, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, name: editingName.trim() }) });
+    const r = await fetch(apiPath, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, name: editingName.trim(), name_ko: withAlias ? editingNameKo.trim() : undefined }) });
     if (r.ok) { cancelEdit(); await load(); } else { const d = await r.json().catch(() => ({})); setError(d.error ?? "수정 중 오류가 발생했습니다."); }
     setSaving(false);
   };
@@ -61,8 +63,12 @@ function CrudSection({ title, apiPath, addPlaceholder }: {
         <form onSubmit={handleAdd} className="flex gap-2">
           <input ref={inputRef} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={addPlaceholder}
             className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+          {withAlias && (
+            <input value={newNameKo} onChange={(e) => setNewNameKo(e.target.value)} placeholder="한글 검색명 (선택)"
+              className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+          )}
           <button type="submit" disabled={saving || !newName.trim()}
-            className="px-4 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50">
+            className="px-4 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50 whitespace-nowrap">
             {saving ? "…" : "추가"}
           </button>
         </form>
@@ -75,18 +81,30 @@ function CrudSection({ title, apiPath, addPlaceholder }: {
         ) : (
           <ul className="divide-y divide-gray-50">
             {items.map((it) => (
-              <li key={it.id} className="flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 group">
+              <li key={it.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 hover:bg-gray-50 group">
                 {editingId === it.id ? (
                   <>
-                    <input ref={editRef} value={editingName} onChange={(e) => setEditingName(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleEdit(it.id); if (e.key === "Escape") cancelEdit(); }}
-                      className="flex-1 border border-blue-400 px-2.5 py-1.5 text-sm rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
-                    <button onClick={() => handleEdit(it.id)} disabled={saving} className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 disabled:opacity-50">저장</button>
-                    <button onClick={cancelEdit} className="px-2.5 py-1.5 border border-gray-200 text-gray-500 text-xs rounded hover:bg-gray-100">취소</button>
+                    <div className="flex w-full gap-2">
+                      <input ref={editRef} value={editingName} onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleEdit(it.id); if (e.key === "Escape") cancelEdit(); }}
+                        className="min-w-0 flex-1 border border-blue-400 px-2.5 py-1.5 text-sm rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+                      {withAlias && (
+                        <input value={editingNameKo} onChange={(e) => setEditingNameKo(e.target.value)} placeholder="한글 검색명"
+                          onKeyDown={(e) => { if (e.key === "Enter") handleEdit(it.id); if (e.key === "Escape") cancelEdit(); }}
+                          className="min-w-0 flex-1 border border-blue-400 px-2.5 py-1.5 text-sm rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+                      )}
+                    </div>
+                    <div className="flex w-full justify-end gap-2">
+                      <button onClick={() => handleEdit(it.id)} disabled={saving} className="px-2.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 disabled:opacity-50">저장</button>
+                      <button onClick={cancelEdit} className="px-2.5 py-1.5 border border-gray-200 text-gray-500 text-xs rounded hover:bg-gray-100">취소</button>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <span className="flex-1 text-sm font-medium text-gray-800 truncate">{it.name}</span>
+                    <span className="flex-1 text-sm font-medium text-gray-800 truncate">
+                      {it.name}
+                      {withAlias && it.name_ko && <span className="ml-2 font-normal text-gray-400">{it.name_ko}</span>}
+                    </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                       <button onClick={() => startEdit(it)} className="text-xs text-blue-500 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50">수정</button>
                       <button onClick={() => handleDelete(it.id, it.name)} className="text-xs text-red-400 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50">삭제</button>
@@ -117,7 +135,7 @@ export default function CatalogManagerModal({ open, onClose }: { open: boolean; 
           </button>
         </div>
         <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-          <CrudSection title="브랜드 관리" apiPath="/api/admin/brands" addPlaceholder="브랜드명 (예: WORKUP)" />
+          <CrudSection title="브랜드 관리" apiPath="/api/admin/brands" addPlaceholder="브랜드명 (예: WORKUP)" withAlias />
           <CrudSection title="제조사 관리" apiPath="/api/admin/manufacturers" addPlaceholder="제조사명 (예: 워크업코리아)" />
         </div>
       </div>

@@ -105,8 +105,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
   const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);
 
-  // 검색엔진 구조화 데이터(Product) — 온라인 판매 카탈로그가 아니므로 가격/offers는 제외.
-  // 제품명·이미지·브랜드·카테고리로 "지역명+제품명" 검색 이해도를 높인다.
+  // 검색엔진 구조화 데이터(Product). 제품명·이미지·브랜드·카테고리로
+  // "지역명+제품명" 검색 이해도를 높인다.
+  // offers.availability는 InStoreOnly — 온라인 구매가 아닌 매장 방문 유도형
+  // 카탈로그라는 사실을 구글에 정확히 알리기 위한 값 (구매 버튼/결제는 추가하지 않음).
+  const numericPrice = Number((product.price || "").replace(/[^0-9]/g, ""));
   const productLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -121,6 +124,19 @@ export default async function ProductDetailPage({ params }: Props) {
     url: absoluteUrl(`/products/${product.id}`),
     ...(product.manufacturer
       ? { manufacturer: { "@type": "Organization", name: product.manufacturer } }
+      : {}),
+    ...(numericPrice > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: numericPrice,
+            priceCurrency: "KRW",
+            availability: "https://schema.org/InStoreOnly",
+            itemCondition: "https://schema.org/NewCondition",
+            url: absoluteUrl(`/products/${product.id}`),
+            seller: { "@type": "Organization", name: product.brand || "WORKUP" },
+          },
+        }
       : {}),
   };
 
