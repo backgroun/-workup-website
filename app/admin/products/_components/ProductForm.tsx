@@ -750,6 +750,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // ── 상세 설명 블록 ──────────────────────────────────────────────────────────
   // 착용컷 — 등록된 썸네일(대표·추가 이미지)을 착용컷 블록으로 일괄 추가 (중복 제외)
   const addWornCutsFromThumbnails = () => {
+    if (!confirm("등록된 썸네일 이미지들을 착용컷으로 일괄 추가하시겠습니까?\n(취소 후 직접 선택할 수도 있습니다)")) {
+      return;
+    }
     const existing = new Set(form.detailBlocks.map((b) => b.imageUrl).filter(Boolean));
     const imgs = Array.from(new Set([form.imageUrl, ...form.subImages].filter(Boolean)))
       .filter((u) => !existing.has(u));
@@ -757,8 +760,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       alert("추가할 썸네일이 없습니다. 제품 이미지(대표·추가 이미지)를 먼저 등록하거나, 이미 모두 추가된 상태입니다.");
       return;
     }
+    // 착용컷 블록: __added_by_button 마커로 "버튼으로 추가된" 것임을 표시
     const blocks = imgs.map((url, i) => ({
-      id: `block-${Date.now()}-${i}`, type: "착용 컷" as const, content: "", imageUrl: url,
+      id: `block-${Date.now()}-${i}`, type: "착용 컷" as const, content: "__added_by_button", imageUrl: url,
     }));
     set("detailBlocks", [...form.detailBlocks, ...blocks]);
   };
@@ -1107,7 +1111,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       instagramPosts: form.instagramPosts
         .filter((p) => (p.image ?? "").trim() !== "")
         .map((p) => ({ image: p.image.trim(), url: (p.url ?? "").trim() || undefined })),
-      detailBlocks: form.detailBlocks as DetailBlock[],
+      // 착용 컷: content가 비어있는 것들은 저장하지 않음 (자동 추가 방지)
+      detailBlocks: (form.detailBlocks as DetailBlock[]).filter((b) => {
+        if (b.type === "착용 컷" && !b.content?.trim()) return false;
+        return true;
+      }),
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
       featureTags: form.featureTags,
       jobTypes: initial?.jobTypes ?? [],   // 폼에서 편집하지 않는 필드는 기존 값 보존 (덮어쓰기로 인한 손실 방지)

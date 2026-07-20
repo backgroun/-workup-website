@@ -736,8 +736,8 @@ export default function AdminProductsPage() {
                   </button>
                   {colMenuOpen && (
                     <>
-                      <div className="fixed inset-0 z-10" onClick={() => setColMenuOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-gray-200 shadow-lg rounded min-w-[160px] py-2">
+                      <div className="fixed inset-0 z-30" onClick={() => setColMenuOpen(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-40 bg-white border border-gray-200 shadow-lg rounded min-w-[160px] py-2">
                         <p className="px-3 pb-1.5 mb-1 text-[12px] text-gray-400 border-b border-gray-100">표시할 컬럼</p>
                         {TOGGLE_COLS.map(c => (
                           <label key={c} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
@@ -823,8 +823,12 @@ export default function AdminProductsPage() {
                             </div>
                           )}
                         </Link>
-                        <div className="min-w-0 w-[230px]">
+                        <div className="min-w-0 flex-1 flex items-center gap-2">
                           <span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>
+                          <Link href={`/admin/products/${p.id}/edit`}
+                            className="flex-shrink-0 px-2.5 py-1 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors whitespace-nowrap">
+                            수정
+                          </Link>
                         </div>
                       </div>
                     </td>

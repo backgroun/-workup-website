@@ -364,9 +364,9 @@ export default function FeatureHeroLayout({
 
   return (
     <>
-      {/* ── PC 레이아웃 (xl+) ── */}
+      {/* ── PC 레이아웃 (xl+) — 1280px 이상 ── */}
       <div
-        className="hidden 2xl:flex 2xl:items-start bg-white"
+        className="hidden xl:flex xl:items-start bg-white"
         style={reversed ? { position: "relative", zIndex: 1 } : undefined}
       >
         {reversed ? (
@@ -382,8 +382,160 @@ export default function FeatureHeroLayout({
         )}
       </div>
 
-      {/* ── 모바일 레이아웃 (< xl) ── */}
-      <div className="2xl:hidden">
+      {/* ── 태블릿 레이아웃 (md ~ xl) — 768px ~ 1280px ── */}
+      <div className="hidden md:block xl:hidden">
+
+        {/* 히어로 이미지 — 전체 너비 */}
+        <div
+          className="relative w-full overflow-hidden bg-gray-100"
+          style={{ aspectRatio: "3 / 4" }}
+        >
+          {editorial.heroImageUrl && (
+            <img
+              src={ikSrc(editorial.heroImageUrl, 1200)}
+              alt={editorial.title}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60 z-[1]" />
+
+          {tags.map((tag, i) => (
+            <button
+              key={i}
+              className="absolute z-10"
+              style={{
+                left: `${tag.x}%`,
+                top: `${tag.y}%`,
+                transform: "translate(-50%, -50%)",
+                width: "22px",
+                height: "22px",
+                borderRadius: "50%",
+                border: "4px solid rgba(255,255,255,0.92)",
+                backgroundColor: "transparent",
+                boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
+              }}
+              onClick={() => setSheetOpen(true)}
+              aria-label={tag.name}
+            />
+          ))}
+
+          <div className="absolute bottom-[39px] left-4 z-[2] text-white">
+            <p className="mb-1 opacity-80" style={{ fontSize: "12px" }}>{editorial.heroSubtitle}</p>
+            <h1 className="text-[22px] leading-tight tracking-tight" style={{ fontWeight: 700 }}>{editorial.title}</h1>
+          </div>
+        </div>
+
+        {/* 카드 목록 — 2열 */}
+        <div
+          style={{
+            backgroundColor: "#f2f1ed",
+            paddingTop: "30px",
+            paddingLeft: "15px",
+            paddingRight: "15px",
+            paddingBottom: "30px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
+          <div style={{ display: "flex", gap: "20px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <WhiteBox section={sections[0]} colIndex={0} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <WhiteBox section={sections[1] ?? sections[0]} colIndex={1} delayMs={80} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "20px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <WhiteBox section={sections[2] ?? sections[0]} colIndex={2} delayMs={160} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <WhiteBox section={sections[3] ?? sections[1]} colIndex={3} delayMs={240} />
+            </div>
+          </div>
+        </div>
+
+        {/* 바텀시트 백드롭 */}
+        <div
+          aria-hidden="true"
+          className={`fixed inset-0 z-[62] bg-black/50 transition-opacity duration-300 md:hidden ${
+            sheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setSheetOpen(false)}
+        />
+
+        {/* 바텀시트 본체 */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[63] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] max-h-[80vh] flex flex-col transition-transform duration-300 ease-out md:hidden"
+          style={{ transform: sheetOpen ? "translateY(0)" : "translateY(110%)" }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex justify-center pt-3.5 pb-2 flex-shrink-0">
+            <div className="w-9 h-1 bg-gray-300 rounded-full" />
+          </div>
+
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 flex-shrink-0">
+            <h3 className="text-[15px] font-bold text-[#303236]">대표 상품</h3>
+            <button
+              onClick={() => setSheetOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="닫기"
+            >
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="overflow-y-auto flex-1 px-5 pt-4 pb-4">
+            <div className="space-y-4">
+              {tags.map((tag, i) => (
+                <Link
+                  key={i}
+                  href={`/products/${tag.productId}`}
+                  className="flex items-center gap-4"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  <div
+                    className="flex-shrink-0 bg-gray-100 flex items-center justify-center overflow-hidden"
+                    style={{ width: "72px", height: "72px" }}
+                  >
+                    {tag.imageUrl ? (
+                      <img src={ikSrc(tag.imageUrl, 400)} alt={tag.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-gray-300 text-xs font-black">WU</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] text-[#303236] leading-snug">{tag.name}</p>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-5 pb-6 pt-3 flex-shrink-0">
+            <Link
+              href={`/products/feature/${editorial.slug}`}
+              className="flex items-center justify-center gap-2 w-full bg-[#303236] text-white py-4 text-[14px] font-semibold tracking-wide"
+              onClick={() => setSheetOpen(false)}
+            >
+              기획전 바로가기
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 모바일 레이아웃 (< md) — 768px 이하 ── */}
+      <div className="md:hidden">
 
         {/* 히어로 이미지 — 3:4 비율 컨테이너, 이미지+태그가 동일 좌표 공간 */}
         <div
@@ -425,23 +577,21 @@ export default function FeatureHeroLayout({
           </div>
         </div>
 
-        {/* 카드 목록 — 배열(열 수)은 항상 1열 유지, 카드 폭에 상한(480px)을 둬서
-            화면이 넓어져도 사진이 커지지 않고 가운데 정렬되게 함 (PC xl+ 레이아웃은 위에서 별도 처리) */}
+        {/* 카드 목록 — 1열, 4개 카드 모두 노출 */}
         <div
           style={{
             backgroundColor: "#f2f1ed",
             paddingTop: "30px",
-            paddingLeft: "15px",
-            paddingRight: "15px",
+            paddingLeft: "0px",
+            paddingRight: "0px",
             paddingBottom: "30px",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
             gap: "20px",
           }}
         >
           {sections.map((section, i) => (
-            <div key={i} style={{ backgroundColor: "white", overflow: "hidden", width: "100%", maxWidth: "480px" }}>
+            <div key={i} style={{ backgroundColor: "white", overflow: "hidden", width: "100%" }}>
               {section.cardType === "image" ? (
                 <ImageOnlyCard imageUrl={section.imageUrl} link={section.link} title={section.title} />
               ) : (
@@ -522,7 +672,7 @@ export default function FeatureHeroLayout({
         {/* 모바일 바텀시트 백드롭 */}
         <div
           aria-hidden="true"
-          className={`fixed inset-0 z-[62] bg-black/50 transition-opacity duration-300 2xl:hidden ${
+          className={`fixed inset-0 z-[62] bg-black/50 transition-opacity duration-300 md:hidden ${
             sheetOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           onClick={() => setSheetOpen(false)}
@@ -530,7 +680,7 @@ export default function FeatureHeroLayout({
 
         {/* 모바일 바텀시트 본체 */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-[63] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] max-h-[80vh] flex flex-col transition-transform duration-300 ease-out 2xl:hidden"
+          className="fixed bottom-0 left-0 right-0 z-[63] bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] max-h-[80vh] flex flex-col transition-transform duration-300 ease-out md:hidden"
           style={{ transform: sheetOpen ? "translateY(0)" : "translateY(110%)" }}
           role="dialog"
           aria-modal="true"

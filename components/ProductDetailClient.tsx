@@ -191,6 +191,11 @@ export default function ProductDetailClient({
     <>
     <div className="px-6 md:px-10 lg:px-14 py-8 md:py-12 space-y-7">
 
+      {/* 구매 방법 안내 */}
+      <div className="bg-gray-100 px-4 py-3 text-sm text-gray-700 text-center rounded">
+        본 상품은 매장 방문을 통해 구매하실 수 있습니다.
+      </div>
+
       {/* 이름 → 가격 → 브랜드·제품번호 (데스크탑 카테고리는 상단 브레드크럼이 담당) */}
       <div>
         {/* 카테고리 — 모바일 전용 (데스크탑은 상단 브레드크럼에 표시) */}

@@ -13,16 +13,12 @@ import {
 import {
   DEFAULT_PRODUCT_FILTERS,
   normalizeProductFilters,
-  priceInRange,
   type ProductFiltersConfig,
 } from "@/lib/product-filters";
 
 // 카테고리 분류 구조 (관리자 DB 설정과 동일한 형태)
 export type CatItem = { name: string; subs: string[] };
 
-type SortOption = "신상품순" | "낮은 가격순" | "높은 가격순";
-
-const SORT_OPTIONS: SortOption[] = ["신상품순", "낮은 가격순", "높은 가격순"];
 // 제품 데이터의 seasons 값("봄/가을"|"여름"|"겨울")과 일치시켜야 필터가 동작한다.
 const SEASONS = ["봄/가을", "여름", "겨울"];
 
@@ -93,15 +89,12 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const subParam = searchParams.get("sub") || searchParams.get("subcategory");
   const [activeCategory, setActiveCategory] = useState<string>(catParam ?? "전체");
   const [activeSubCategory, setActiveSubCategory] = useState<string>(subParam ?? "전체");
-  const [sortBy, setSortBy] = useState<SortOption>("신상품순");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [seasonOpen, setSeasonOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
   const [filtersCfg, setFiltersCfg] = useState<ProductFiltersConfig>(DEFAULT_PRODUCT_FILTERS);
   const { count, hasProduct, toggleProduct } = useCart();
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
@@ -185,13 +178,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
     setSelectedSeasons((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
   const toggleSize = (v: string) =>
     setSelectedSizes((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
-  const togglePrice = (v: string) =>
-    setSelectedPrices((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
 
   const resetFilters = () => {
     setSelectedSeasons([]);
     setSelectedSizes([]);
-    setSelectedPrices([]);
   };
 
   const resetAll = () => {
@@ -232,13 +222,6 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         if (!cats.some(c => c.main === activeCategory)) return false;
         if (activeSubCategory !== "전체" && !cats.some(c => c.main === activeCategory && c.sub === activeSubCategory)) return false;
       }
-      if (selectedPrices.length > 0) {
-        const ok = selectedPrices.some((label) => {
-          const range = filtersCfg.priceRanges.find((pr) => pr.label === label);
-          return !!range && priceInRange(p.price, range);
-        });
-        if (!ok) return false;
-      }
       if (selectedSizes.length > 0) {
         if (!selectedSizes.some((s) => (p.sizes ?? []).includes(s))) return false;
       }
@@ -248,12 +231,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === "신상품순") return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
-      if (sortBy === "낮은 가격순")
-        return parseInt(a.price.replace(/[^0-9]/g, "")) - parseInt(b.price.replace(/[^0-9]/g, ""));
-      if (sortBy === "높은 가격순")
-        return parseInt(b.price.replace(/[^0-9]/g, "")) - parseInt(a.price.replace(/[^0-9]/g, ""));
-      return 0;
+      if (a.isNew && !b.isNew) return -1;
+      if (!a.isNew && b.isNew) return 1;
+      return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
     });
 
   const currentTitle =
@@ -283,18 +263,6 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 selectedSizes.includes(s) ? "border-[#303236] bg-[#303236] text-white" : "border-gray-200 text-gray-600 hover:border-[#303236]"
               }`}
             >{s}</button>
-          ))}
-        </div>
-      </Accordion>
-
-      <Accordion label="가격" open={priceOpen} onToggle={() => setPriceOpen(!priceOpen)}>
-        <div className="flex flex-col gap-3">
-          {filtersCfg.priceRanges.map((pr) => (
-            <label key={pr.label} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="checkbox" checked={selectedPrices.includes(pr.label)} onChange={() => togglePrice(pr.label)}
-                className="w-[14px] h-[14px] accent-[#303236] flex-shrink-0" />
-              <span className="text-[13px] text-gray-700">{pr.label}</span>
-            </label>
           ))}
         </div>
       </Accordion>
@@ -491,22 +459,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           </div>
         )}
 
-        {/* ── Sort + count/filter + 품절 바 ── */}
+        {/* ── 상품 수 + 필터 바 ── */}
         <div className="px-[15px] pt-3 pb-2 bg-white border-b border-gray-200">
-          {/* 첫 줄: 정렬 버튼 | 상품수 + 필터 */}
-          <div className="flex items-center justify-between mb-2">
-            {/* 정렬 — 버튼 클릭 시 바텀시트 */}
-            <button
-              onClick={() => setSortSheetOpen(true)}
-              className="flex items-center gap-3 border-b border-gray-400 pb-1 flex-shrink-0"
-            >
-              <span className="text-[13px] text-gray-600 whitespace-nowrap">{sortBy}</span>
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 1l5 5 5-5" />
-              </svg>
-            </button>
-
-            {/* 상품 수 + 필터 버튼 */}
+          <div className="flex items-center justify-end">
             <div className="flex items-center gap-3">
               <span className="text-[13px] text-gray-400">
                 <span className="font-medium text-gray-600">{filtered.length}</span>개 상품
@@ -524,33 +479,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
               </button>
             </div>
           </div>
-
-          </div>
+        </div>
 
         </div>
         {/* ── 상단 고정 컨트롤 끝 ── */}
-
-        {/* ── 정렬 바텀시트 ── */}
-        {sortSheetOpen && (
-          <div className="fixed inset-0 z-[150] flex flex-col justify-end md:hidden">
-            <div className="absolute inset-0 bg-black/30" onClick={() => setSortSheetOpen(false)} />
-            <div className="relative bg-white rounded-t-2xl pt-4 pb-8 px-5 shadow-xl">
-              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-              {SORT_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => { setSortBy(opt); setSortSheetOpen(false); }}
-                  className="w-full flex items-center gap-3 py-3.5 border-b border-gray-100 last:border-0"
-                >
-                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${sortBy === opt ? "border-[#303236]" : "border-gray-300"}`}>
-                    {sortBy === opt && <span className="w-2.5 h-2.5 rounded-full bg-[#303236]" />}
-                  </span>
-                  <span className={`text-[14px] ${sortBy === opt ? "font-semibold text-[#303236]" : "text-gray-600"}`}>{opt}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Product grid — 10px gap */}
         <div className="px-[15px] pt-4 pb-10">
@@ -642,33 +574,18 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             {/* ── 콘텐츠 (전체 폭) ── */}
             <div>
 
-                {/* 정렬 + 필터 드롭다운 바 */}
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 gap-4 flex-wrap">
-                  {/* 정렬 */}
-                  <div className="flex items-center gap-5">
-                    {SORT_OPTIONS.map((opt) => (
-                      <button key={opt} onClick={() => setSortBy(opt)}
-                        className={`text-[13px] whitespace-nowrap transition-colors ${
-                          sortBy === opt ? "font-bold text-[#303236]" : "text-gray-400 hover:text-[#303236]"
-                        }`}
-                      >{opt}</button>
-                    ))}
-                  </div>
-
-                  {/* 필터 드롭다운 + 상품 수 */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
-                    <FilterDropdown label="가격" options={filtersCfg.priceRanges.map((pr) => pr.label)} selected={selectedPrices} onToggle={togglePrice} activeCount={selectedPrices.length} />
-                    {(selectedSeasons.length + selectedSizes.length + selectedPrices.length) > 0 && (
-                      <button onClick={resetFilters}
-                        className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2 ml-1">
-                        초기화
-                      </button>
-                    )}
-                    <span className="text-[12px] text-gray-500 ml-2 whitespace-nowrap">
-                      <span className="font-semibold text-[#303236]">{filtered.length}</span>개 상품
-                    </span>
-                  </div>
+                {/* 필터 드롭다운 + 상품 수 */}
+                <div className="flex items-center justify-end mb-6 pb-4 border-b border-gray-200 gap-2">
+                  <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
+                  {selectedSizes.length > 0 && (
+                    <button onClick={resetFilters}
+                      className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2">
+                      초기화
+                    </button>
+                  )}
+                  <span className="text-[12px] text-gray-500 ml-2 whitespace-nowrap">
+                    <span className="font-semibold text-[#303236]">{filtered.length}</span>개 상품
+                  </span>
                 </div>
 
                 {/* 상품 그리드 */}

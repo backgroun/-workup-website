@@ -1,11 +1,10 @@
 "use client";
 import { useState, useRef } from "react";
 
-// 영상 업로드(브라우저 → Cloudinary 직접 업로드) + URL 직접 입력을 합친 관리용 필드.
-// Vercel 서버리스 바디 제한(~4.5MB)을 우회하려고 서명 방식으로 브라우저에서 바로 올린다.
+// 영상 업로드(R2 스토리지) + URL 직접 입력을 합친 관리용 필드.
 // aspectClass: 실제 페이지에 노출되는 비율 그대로 미리보기 (예: "aspect-[3/4]")
 
-const MAX_BYTES = 100 * 1024 * 1024; // 100MB
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB
 
 export default function AdminVideoField({
   value,
@@ -29,41 +28,23 @@ export default function AdminVideoField({
   const upload = async (file: File) => {
     setError("");
     if (file.size > MAX_BYTES) {
-      setError("영상이 너무 큽니다 (100MB 이하 · 짧은 압축본 권장)");
+      setError("영상이 너무 큽니다 (10MB 이하)");
       return;
     }
     setUploading(true);
     try {
-      const sig = await fetch("/api/admin/cloudinary-sign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder }),
-      }).then((r) => r.json());
-
-      if (!sig?.signature) {
-        setError("서명 발급 실패 — 로그인 상태를 확인해 주세요.");
-        return;
-      }
-
       const form = new FormData();
       form.append("file", file);
-      form.append("api_key", sig.apiKey);
-      form.append("timestamp", String(sig.timestamp));
-      form.append("folder", sig.folder);
-      form.append("signature", sig.signature);
-
-      const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, {
-        method: "POST",
-        body: form,
-      }).then((r) => r.json());
-
-      if (up.error) {
-        setError(`업로드 실패: ${up.error.message ?? ""}`);
-        return;
+      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      if (res.ok) {
+        const { url } = await res.json();
+        onChange(url);
+      } else {
+        const e = await res.json().catch(() => ({}));
+        setError("영상 업로드 실패: " + (e.error ?? res.status));
       }
-      onChange(up.secure_url as string);
     } catch {
-      setError("업로드 실패 (네트워크/용량을 확인해 주세요)");
+      setError("업로드 실패 (네트워크를 확인해 주세요)");
     } finally {
       setUploading(false);
     }

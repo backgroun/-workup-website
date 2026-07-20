@@ -9,12 +9,22 @@ import { ikSrc } from "@/lib/imageSrc";
 export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mateZone?: MateZoneConfig }) {
   const people: Person[] = items && items.length ? items : DEFAULT_PEOPLE;
 
+  const [isMount, setIsMount] = useState(false);
   const [current, setCurrent] = useState(0);
   const [listOpen, setListOpen] = useState(false);
 
   const total = people.length;
   const hasMultiple = total > 1;
   const person = people[current] ?? people[0];
+
+  // 페이지 로드 시 랜덤한 사람을 표시
+  useEffect(() => {
+    if (!isMount && total > 0) {
+      const randomIndex = Math.floor(Math.random() * total);
+      setCurrent(randomIndex);
+      setIsMount(true);
+    }
+  }, [isMount, total]);
 
   // 글 전환 시 본문 상단으로 스크롤(블로그처럼 한 편씩 읽는 경험)
   const goTo = (index: number) => {
@@ -117,7 +127,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
               <div>
                 <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">WORK MOMENTS</h3>
-                <p className="text-[13px] text-gray-500 leading-relaxed">현장의 순간들을<br />기록합니다.</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">현장의 순간과<br />일상의 취미까지</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {person.workMoments.photos.map((url, i) => (
@@ -160,7 +170,7 @@ export default function PeopleGrid({ items, mateZone }: { items?: Person[]; mate
             <div className="grid md:grid-cols-[220px_1fr] gap-6 md:gap-10 items-start">
               <div>
                 <h3 className="text-[13px] font-bold tracking-wider text-[#303236] mb-3">WEAR THIS</h3>
-                <p className="text-[13px] text-gray-500 leading-relaxed">실제 현장에서<br />착용한 제품</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">현장과 일상에서<br />착용한 제품</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {person.products.filter((p) => p.name.trim()).slice(0, 3).map((product, i) => (

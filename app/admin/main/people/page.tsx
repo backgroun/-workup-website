@@ -332,7 +332,7 @@ export default function AdminMainPeoplePage() {
                       onChange={setWorkVideo}
                       label="현장 영상 (선택)"
                       aspectClass="aspect-[3/4]"
-                      hint="9:16 세로 · MP4 권장 · 100MB 이하. 업로드 후 “저장”을 눌러야 반영됩니다."
+                      hint={`9:16 세로 · MP4 권장 · 10MB 이하. 업로드 후 '저장'을 눌러야 반영됩니다.`}
                     />
                   </div>
                 </div>
