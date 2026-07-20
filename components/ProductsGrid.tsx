@@ -93,8 +93,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const [seasonOpen, setSeasonOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
+  const [brandOpen, setBrandOpen] = useState(false);
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [filtersCfg, setFiltersCfg] = useState<ProductFiltersConfig>(DEFAULT_PRODUCT_FILTERS);
   const { count, hasProduct, toggleProduct } = useCart();
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
@@ -102,6 +104,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const searchQuery = searchParams.get("q") ?? "";
   // 브랜드명(영문) → 한글 검색명 매핑 — 검색 시 "노스페이스"로도 "NORTH FACE" 상품이 찾아지도록
   const [brandAliasMap, setBrandAliasMap] = useState<Record<string, string>>({});
+  const [brandList, setBrandList] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/products")
@@ -116,10 +119,15 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       .then((data: { name: string; name_ko?: string | null }[]) => {
         if (!Array.isArray(data)) return;
         const map: Record<string, string> = {};
+        const brands: string[] = [];
         data.forEach((b) => {
-          if (b.name && b.name_ko) map[b.name.toLowerCase()] = b.name_ko.toLowerCase();
+          if (b.name) {
+            brands.push(b.name);
+            if (b.name_ko) map[b.name.toLowerCase()] = b.name_ko.toLowerCase();
+          }
         });
         setBrandAliasMap(map);
+        setBrandList(brands);
       })
       .catch(() => {});
   }, []);
@@ -178,10 +186,13 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
     setSelectedSeasons((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
   const toggleSize = (v: string) =>
     setSelectedSizes((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
+  const toggleBrand = (v: string) =>
+    setSelectedBrands((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
 
   const resetFilters = () => {
     setSelectedSeasons([]);
     setSelectedSizes([]);
+    setSelectedBrands([]);
   };
 
   const resetAll = () => {
@@ -225,6 +236,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       if (selectedSizes.length > 0) {
         if (!selectedSizes.some((s) => (p.sizes ?? []).includes(s))) return false;
       }
+      if (selectedBrands.length > 0) {
+        if (!selectedBrands.includes(p.brand ?? "")) return false;
+      }
       if (selectedSeasons.length > 0) {
         if (!selectedSeasons.some((s) => (p.seasons ?? []).some((ps) => ps === s))) return false;
       }
@@ -263,6 +277,18 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 selectedSizes.includes(s) ? "border-[#303236] bg-[#303236] text-white" : "border-gray-200 text-gray-600 hover:border-[#303236]"
               }`}
             >{s}</button>
+          ))}
+        </div>
+      </Accordion>
+
+      <Accordion label="브랜드" open={brandOpen} onToggle={() => setBrandOpen(!brandOpen)}>
+        <div className="flex flex-col gap-3">
+          {brandList.map((b) => (
+            <label key={b} className="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" checked={selectedBrands.includes(b)} onChange={() => toggleBrand(b)}
+                className="w-[14px] h-[14px] accent-[#303236] flex-shrink-0" />
+              <span className="text-[13px] text-gray-700">{b}</span>
+            </label>
           ))}
         </div>
       </Accordion>
@@ -577,7 +603,8 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 {/* 필터 드롭다운 + 상품 수 */}
                 <div className="flex items-center justify-end mb-6 pb-4 border-b border-gray-200 gap-2">
                   <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
-                  {selectedSizes.length > 0 && (
+                  <FilterDropdown label="브랜드" options={brandList} selected={selectedBrands} onToggle={toggleBrand} activeCount={selectedBrands.length} />
+                  {(selectedSizes.length > 0 || selectedBrands.length > 0) && (
                     <button onClick={resetFilters}
                       className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2">
                       초기화
