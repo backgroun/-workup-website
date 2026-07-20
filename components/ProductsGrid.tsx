@@ -94,6 +94,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const [sizeOpen, setSizeOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
   const [brandOpen, setBrandOpen] = useState(false);
+  const [brandExpanded, setBrandExpanded] = useState(false);
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -139,6 +140,18 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       .then((data) => {
         if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
           setCats(data.categories as CatItem[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // 관리자가 선정한 브랜드 — 있으면 그것만 사용, 없으면 전체 사용
+  useEffect(() => {
+    fetch("/api/admin/site-settings/featured-brands")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.featured_brands && Array.isArray(data.featured_brands) && data.featured_brands.length > 0) {
+          setBrandList(data.featured_brands);
         }
       })
       .catch(() => {});
@@ -601,18 +614,75 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             <div>
 
                 {/* 필터 드롭다운 + 상품 수 */}
-                <div className="flex items-center justify-end mb-6 pb-4 border-b border-gray-200 gap-2">
-                  <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
-                  <FilterDropdown label="브랜드" options={brandList} selected={selectedBrands} onToggle={toggleBrand} activeCount={selectedBrands.length} />
-                  {(selectedSizes.length > 0 || selectedBrands.length > 0) && (
-                    <button onClick={resetFilters}
-                      className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2">
-                      초기화
-                    </button>
+                <div className="mb-6 pb-4 border-b border-gray-200">
+                  {/* 사이즈 필터와 브랜드 필터 같은 라인 */}
+                  <div className="flex items-center gap-3 mb-2">
+                    {/* 사이즈 필터 */}
+                    <div className="flex-shrink-0">
+                      <FilterDropdown label="사이즈" options={filtersCfg.sizes} selected={selectedSizes} onToggle={toggleSize} activeCount={selectedSizes.length} />
+                    </div>
+
+                    {/* 스페이서 */}
+                    <div className="flex-1" />
+
+                    {/* 브랜드 필터 - 가로 태그 형태 (오른쪽 끝) */}
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                      {brandList.slice(0, 10).map((brand) => (
+                        <button
+                          key={brand}
+                          onClick={() => toggleBrand(brand)}
+                          className={`px-3 py-1.5 border text-[12px] transition-colors rounded ${
+                            selectedBrands.includes(brand)
+                              ? "bg-[#303236] text-white border-[#303236]"
+                              : "border-gray-200 text-gray-600 hover:border-[#303236]"
+                          }`}
+                        >
+                          {brand}
+                        </button>
+                      ))}
+                      {brandList.length > 10 && (
+                        <button
+                          onClick={() => setBrandExpanded(!brandExpanded)}
+                          className="px-3 py-1.5 border border-gray-200 text-gray-600 text-[12px] hover:border-[#303236] transition-colors rounded flex items-center gap-1 flex-shrink-0"
+                        >
+                          더보기
+                          <svg className={`w-3 h-3 transition-transform ${brandExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      )}
+                      {/* 초기화 + 상품 수 */}
+                      {(selectedSizes.length > 0 || selectedBrands.length > 0) && (
+                        <button onClick={resetFilters}
+                          className="text-[11px] text-gray-400 hover:text-[#E5541B] transition-colors underline underline-offset-2 ml-2">
+                          초기화
+                        </button>
+                      )}
+                      <span className="text-[12px] text-gray-500 ml-2 whitespace-nowrap flex-shrink-0">
+                        <span className="font-semibold text-[#303236]">{filtered.length}</span>개 상품
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 브랜드 드롭다운 - 더보기 클릭 시 표시 */}
+                  {brandExpanded && brandList.length > 10 && (
+                    <div className="grid grid-cols-5 gap-2 mb-4 pt-3 border-t border-gray-100">
+                      {brandList.slice(10).map((brand) => (
+                        <button
+                          key={brand}
+                          onClick={() => toggleBrand(brand)}
+                          className={`px-3 py-1.5 border text-[12px] transition-colors rounded text-center ${
+                            selectedBrands.includes(brand)
+                              ? "bg-[#303236] text-white border-[#303236]"
+                              : "border-gray-200 text-gray-600 hover:border-[#303236]"
+                          }`}
+                        >
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
                   )}
-                  <span className="text-[12px] text-gray-500 ml-2 whitespace-nowrap">
-                    <span className="font-semibold text-[#303236]">{filtered.length}</span>개 상품
-                  </span>
+
                 </div>
 
                 {/* 상품 그리드 */}

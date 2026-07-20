@@ -650,11 +650,48 @@ export default function AdminProductsPage() {
       {/* ── 결과 요약 ─────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1 flex-wrap text-[15px] text-gray-600">
         <span className="font-bold text-[#303236] text-lg">{stats.total}</span><span>건</span>
-        {stats.판매중 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-emerald-600">판매중 <b>{stats.판매중}</b></span></>}
-        {stats.품절 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-red-500">품절 <b>{stats.품절}</b></span></>}
-        {stats.예약판매 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-blue-500">예약판매 <b>{stats.예약판매}</b></span></>}
-        {stats.판매중지 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-gray-400">판매중지 <b>{stats.판매중지}</b></span></>}
-        {stats.진열대기 > 0 && <><span className="mx-2 text-gray-300">|</span><span className="text-amber-500">진열대기 <b>{stats.진열대기}</b></span></>}
+        {stats.판매중 > 0 && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("판매중"); setPage(1); }}
+            className={`cursor-pointer hover:text-emerald-700 transition-colors ${statusFilter === "판매중" ? "font-bold text-emerald-700" : "text-emerald-600"}`}>
+            판매중 <b>{stats.판매중}</b>
+          </button></>
+        )}
+        {stats.품절 > 0 && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("품절"); setPage(1); }}
+            className={`cursor-pointer hover:text-red-600 transition-colors ${statusFilter === "품절" ? "font-bold text-red-600" : "text-red-500"}`}>
+            품절 <b>{stats.품절}</b>
+          </button></>
+        )}
+        {stats.예약판매 > 0 && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("예약판매"); setPage(1); }}
+            className={`cursor-pointer hover:text-blue-600 transition-colors ${statusFilter === "예약판매" ? "font-bold text-blue-600" : "text-blue-500"}`}>
+            예약판매 <b>{stats.예약판매}</b>
+          </button></>
+        )}
+        {stats.판매중지 > 0 && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("판매중지"); setPage(1); }}
+            className={`cursor-pointer hover:text-gray-500 transition-colors ${statusFilter === "판매중지" ? "font-bold text-gray-500" : "text-gray-400"}`}>
+            판매중지 <b>{stats.판매중지}</b>
+          </button></>
+        )}
+        {stats.진열대기 > 0 && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("진열대기"); setPage(1); }}
+            className={`cursor-pointer hover:text-amber-600 transition-colors ${statusFilter === "진열대기" ? "font-bold text-amber-600" : "text-amber-500"}`}>
+            진열대기 <b>{stats.진열대기}</b>
+          </button></>
+        )}
+        {statusFilter !== "전체" && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("전체"); setSortBy("최종수정순"); setPage(1); }}
+            className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors text-[13px] underline">
+            초기화
+          </button></>
+        )}
       </div>
 
       {loading ? (
@@ -711,14 +748,6 @@ export default function AdminProductsPage() {
                 className="px-3 py-1.5 text-[14px] border border-[#E5541B] bg-white text-[#E5541B] hover:bg-[#E5541B] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold">
                 브랜드 변경
               </button>
-              <button onClick={() => selected.size && setExposeModal(true)} disabled={!selected.size}
-                className="px-3 py-1.5 text-[14px] border border-[#303236] bg-white text-[#303236] hover:bg-[#303236] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed rounded">
-                메인진열수정
-              </button>
-              <Link href="/admin/products/main-expose"
-                className="px-3 py-1.5 text-[14px] border border-purple-300 bg-white text-purple-600 hover:bg-purple-50 rounded">
-                메인진열관리
-              </Link>
 
               {/* 우측: 컬럼 표시/숨김 + 정렬 + 페이지수 */}
               <div className="flex items-center gap-2 ml-auto">
@@ -775,9 +804,22 @@ export default function AdminProductsPage() {
                   </th>
                   {["상태", "브랜드", "상품명", "품번", "가격", "카테고리", "최종수정"]
                     .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
-                    .map(h => (
-                      <th key={h} className={`py-4 text-[13px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap text-left ${h === "상태" ? "px-3 w-[56px]" : "px-5"}`}>{h}</th>
-                  ))}
+                    .map(h => {
+                      const handleHeaderClick = () => {
+                        if (h === "최종수정") setSortBy("최종수정순");
+                        else if (h === "상품명") setSortBy("이름순");
+                        setPage(1);
+                      };
+                      const isSortable = ["최종수정", "상품명"].includes(h);
+                      return (
+                        <th key={h}
+                          onClick={handleHeaderClick}
+                          className={`py-4 text-[13px] font-bold uppercase tracking-wide whitespace-nowrap text-left ${h === "상태" ? "px-3 w-[56px]" : "px-5"} ${isSortable ? "cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors" : "text-gray-500"}`}>
+                          {h}
+                          {isSortable && (sortBy === "최종수정순" && h === "최종수정" || sortBy === "이름순" && h === "상품명") && <span className="ml-1">▼</span>}
+                        </th>
+                      );
+                    })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
