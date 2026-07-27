@@ -192,16 +192,6 @@ export default function ProductTabs({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* 상세 이미지 — 원본 비율 그대로 (긴 상세페이지 이미지도 잘리지 않음) */}
-          {(product.subImages ?? []).length > 0 && (
-            <div className="space-y-3 max-w-3xl mx-auto mb-10">
-              {product.subImages!.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={ikSrc(src, 1200)} alt={`${product.name} 상세 ${i + 1}`} className="block w-full h-auto bg-[#f4f4f4]" loading="lazy" />
-              ))}
-            </div>
-          )}
-
           {/* 제품 정보 — 관리자 등록 텍스트 (값 있는 항목만) */}
           {detailInfo.length > 0 && (
             <div className="space-y-5 max-w-3xl mx-auto">

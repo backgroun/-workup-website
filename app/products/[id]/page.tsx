@@ -110,16 +110,20 @@ export default async function ProductDetailPage({ params }: Props) {
   // offers.availability는 InStoreOnly — 온라인 구매가 아닌 매장 방문 유도형
   // 카탈로그라는 사실을 구글에 정확히 알리기 위한 값 (구매 버튼/결제는 추가하지 않음).
   const numericPrice = Number((product.price || "").replace(/[^0-9]/g, ""));
+  const images = [product.imageUrl, ...(product.subImages ?? [])]
+    .map((u) => absoluteUrl(u))
+    .filter(Boolean);
+
   const productLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: productDisplayName(product),
     description: product.metaDesc?.trim() || product.tagline,
-    image: [product.imageUrl, ...(product.subImages ?? [])]
-      .map((u) => absoluteUrl(u))
-      .filter(Boolean),
+    // Google Rich Results 필수 필드: 최소 1개 이미지 URL 필수
+    ...(images.length > 0 ? { image: images } : {}),
     brand: { "@type": "Brand", name: product.brand || "WORKUP" },
-    category: product.category,
+    // category 필드: 필수 (Google 권장). 없으면 기본값 지정
+    ...(product.category ? { category: product.category } : { category: "의류" }),
     sku: product.sku || product.id,
     url: absoluteUrl(`/products/${product.id}`),
     ...(product.manufacturer
@@ -135,6 +139,28 @@ export default async function ProductDetailPage({ params }: Props) {
             itemCondition: "https://schema.org/NewCondition",
             url: absoluteUrl(`/products/${product.id}`),
             seller: { "@type": "Organization", name: product.brand || "WORKUP" },
+            // Google 권장: 반품 정책 (InStoreOnly 카탈로그용 기본 정책)
+            hasMerchantReturnPolicy: {
+              "@type": "MerchantReturnPolicy",
+              applicableCountry: "KR",
+              returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+              merchantReturnDays: 14,
+              returnMethod: "https://schema.org/ReturnInStore",
+            },
+            // Google 권장: 배송 정보 (InStoreOnly 카탈로그용)
+            shippingDetails: {
+              "@type": "ShippingDeliveryTime",
+              shippingDestination: {
+                "@type": "DeliveryAddress",
+                addressCountry: "KR",
+              },
+              shippingLabel: "매장 방문 체험",
+              transitTime: {
+                "@type": "QuantitativeValue",
+                unitCode: "DAY",
+                value: 0,
+              },
+            },
           },
         }
       : {}),

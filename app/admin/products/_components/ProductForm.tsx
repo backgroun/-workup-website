@@ -6,6 +6,8 @@ import type { Product, DetailBlock, MainExpose, Season, SizeGuide, SizeGuideLine
 import { SIZE_NOTE_DEFAULT } from "@/data/products";
 import { parseInstagramUrl } from "@/lib/instagram-feed";
 import { resizeImageToMaxWidth } from "@/lib/imageResize";
+import { extractDominantColors, matchColorToPreset } from "@/lib/colorExtraction";
+import { generateSubThumbnail } from "@/lib/thumbnailGenerator";
 import SizeGuideLinesOverlay from "@/components/SizeGuideLinesOverlay";
 
 // 사이즈 가이드 이미지 기준 폭 — 초과 시 이 폭으로 축소, 이하면 원본 그대로 업로드
@@ -277,10 +279,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [useSizePrices, setUseSizePrices] = useState((initial?.sizePrices?.length ?? 0) > 0); // 사이즈별 가격 사용 체크
   const [uploadingMulti, setUploadingMulti] = useState(false);
   const [uploadError, setUploadError] = useState("");
+
+
   const mainInputRef = useRef<HTMLInputElement>(null);
   const subInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const blockImgRefs = useRef<(HTMLInputElement | null)[]>([]);
   const multiSubInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   // 추가 이미지 드래그 순서 변경
   const [dragSubIdx, setDragSubIdx] = useState<number | null>(null);
@@ -684,21 +689,141 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     return null;
   };
 
+  // 폴더 일괄 업로드: model*/etc*(대표, 첫 번째만) · sub_NN.*(추가) · detail_NN.*(상세) 규칙으로 자동 반영
+  const [uploadingFolder, setUploadingFolder] = useState(false);
+  const [folderUploadResult, setFolderUploadResult] = useState("");
+  const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+
+    setUploadError(""); setFolderUploadResult(""); setUploadingFolder(true);
+    try {
+      const mainCandidates: File[] = [];
+      const subFiles: File[] = [];
+      const detailFiles: File[] = [];
+
+      // 자연 정렬(숫자를 숫자 크기로 비교) — "sub_front1(2).jpg"가 "(10)"보다 앞에 오도록
+      const naturalSort = (a: File, b: File) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+
+      for (const file of files) {
+        const name = file.name;
+        // 파일명 어디든 규칙 텍스트가 포함되어 있으면 매칭 (위치·바로 뒤 숫자 여부 상관없음)
+        if (/model|etc/i.test(name)) {
+          mainCandidates.push(file);
+        } else if (/sub/i.test(name)) {
+          subFiles.push(file);
+        } else if (/detail/i.test(name)) {
+          detailFiles.push(file);
+        }
+      }
+      // model/etc가 여러 개면 파일명 순서상 첫 번째만 대표, 나머지는 추가 이미지로
+      mainCandidates.sort(naturalSort);
+      const mainFile = mainCandidates[0] ?? null;
+      const extraMainFiles = mainCandidates.slice(1);
+
+      subFiles.sort(naturalSort);
+      detailFiles.sort(naturalSort);
+
+      let mainCount = 0, subCount = 0, detailCount = 0;
+
+      if (mainFile) {
+        const url = await uploadFile(mainFile);
+        if (url) { set("imageUrl", url); mainCount = 1; }
+      }
+
+      if (subFiles.length || extraMainFiles.length) {
+        const urls: string[] = [];
+        for (const file of subFiles) {
+          const url = await uploadFile(file);
+          if (url) urls.push(url);
+        }
+        for (const file of extraMainFiles) {
+          if (urls.length >= 9) break;
+          const url = await uploadFile(file);
+          if (url) urls.push(url);
+        }
+        const capped = urls.slice(0, 9);
+        if (capped.length) { set("subImages", capped); subCount = capped.length; }
+      }
+
+      if (detailFiles.length) {
+        const next = [...form.detailBlocks];
+        for (let i = 0; i < detailFiles.length; i++) {
+          const url = await uploadFile(detailFiles[i]);
+          if (!url) continue;
+          if (i < next.length) {
+            // 기존 블록에 이미지만 채워넣기
+            next[i] = { ...next[i], imageUrl: url };
+          } else {
+            // 매칭할 블록이 없으면 새 블록 생성 (내용은 비워둠, 나중에 직접 입력)
+            next.push({ id: `block-${Date.now()}-${i}`, type: "상품 소개", content: "", imageUrl: url });
+          }
+          detailCount++;
+        }
+        set("detailBlocks", next);
+      }
+
+      const unmatched = files.length - (mainFile ? 1 : 0) - subFiles.length - extraMainFiles.length - detailFiles.length;
+      setFolderUploadResult(
+        `대표 ${mainCount}개 · 추가 ${subCount}개 · 상세 ${detailCount}개 업로드 완료` +
+        (unmatched > 0 ? ` (규칙에 안 맞는 파일 ${unmatched}개는 건너뜀)` : "")
+      );
+    } catch (error) {
+      setUploadError(`폴더 업로드 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setUploadingFolder(false);
+    }
+  };
+
   const handleMainFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploadError(""); setUploadingMain(true);
     const url = await uploadFile(file);
     setUploadingMain(false);
-    if (url) set("imageUrl", url);
+    if (url) {
+      set("imageUrl", url);
+
+      // 자동 색상 추출 및 매칭
+      try {
+        const hexColors = await extractDominantColors(url);
+        const matchedColors = hexColors.map(hex => ({
+          name: matchColorToPreset(hex),
+          hex
+        }));
+        // 중복 제거: 기존 colors에 없는 색상만 추가
+        const newColors = [
+          ...form.colors,
+          ...matchedColors.filter(c => !form.colors.some(fc => fc.name === c.name))
+        ];
+        set("colors", newColors);
+      } catch (error) {
+        console.error("색상 추출 실패:", error);
+        // 색상 추출 실패해도 이미지 업로드는 성공했으므로 무시
+      }
+
+    }
     if (mainInputRef.current) mainInputRef.current.value = "";
   };
 
   const handleSubFile = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploadError(""); setUploadingSubIdx(idx);
-    const url = await uploadFile(file);
-    setUploadingSubIdx(null);
-    if (url) { const next = [...form.subImages]; next[idx] = url; set("subImages", next); }
+    try {
+      const url = await uploadFile(file);
+      if (url) {
+        const blob = await generateSubThumbnail(url);
+        const thumbnailFile = new File([blob], `sub-thumb-${Date.now()}.jpg`, { type: "image/jpeg" });
+        const thumbnailUrl = await uploadFile(thumbnailFile);
+        if (thumbnailUrl) {
+          const next = [...form.subImages]; next[idx] = thumbnailUrl; set("subImages", next);
+        }
+      }
+    } catch (error) {
+      setUploadError(`썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setUploadingSubIdx(null);
+    }
     if (subInputRefs.current[idx]) subInputRefs.current[idx]!.value = "";
   };
 
@@ -706,19 +831,37 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const next = [...form.subImages]; next.splice(idx, 1); set("subImages", next);
   };
 
-  // 여러 장 한번에 업로드
+  // 여러 장 한번에 업로드 — 960×960 안에 비율 유지로 맞춰서(확대·크롭 없음) 저장
   const handleMultiSubFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     setUploadError(""); setUploadingMulti(true);
+
     const filled = form.subImages.filter(Boolean);
     const slots = Math.max(0, 9 - filled.length);
     const toUpload = files.slice(0, slots);
+
     const urls: string[] = [];
+
     for (const file of toUpload) {
-      const url = await uploadFile(file);
-      if (url) urls.push(url);
+      try {
+        // 1. 원본 업로드 (썸네일 생성용 소스)
+        const url = await uploadFile(file);
+        if (!url) continue;
+
+        // 2. 960×960 안에 비율 유지로 맞춤
+        const blob = await generateSubThumbnail(url);
+
+        // 3. 생성된 결과를 실제 저장용으로 업로드
+        const thumbnailFile = new File([blob], `sub-thumb-${Date.now()}-${Math.random()}.jpg`, { type: "image/jpeg" });
+        const thumbnailUrl = await uploadFile(thumbnailFile);
+        if (thumbnailUrl) urls.push(thumbnailUrl);
+      } catch (error) {
+        console.error("서브 썸네일 생성 실패:", error);
+        setUploadError(`썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
     }
+
     set("subImages", [...filled, ...urls]);
     setUploadingMulti(false);
     if (multiSubInputRef.current) multiSubInputRef.current.value = "";
@@ -748,25 +891,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleDragEnd = () => { setDragSubIdx(null); setDragOverSubIdx(null); };
 
   // ── 상세 설명 블록 ──────────────────────────────────────────────────────────
-  // 착용컷 — 등록된 썸네일(대표·추가 이미지)을 착용컷 블록으로 일괄 추가 (중복 제외)
-  const addWornCutsFromThumbnails = () => {
-    if (!confirm("등록된 썸네일 이미지들을 착용컷으로 일괄 추가하시겠습니까?\n(취소 후 직접 선택할 수도 있습니다)")) {
-      return;
-    }
-    const existing = new Set(form.detailBlocks.map((b) => b.imageUrl).filter(Boolean));
-    const imgs = Array.from(new Set([form.imageUrl, ...form.subImages].filter(Boolean)))
-      .filter((u) => !existing.has(u));
-    if (imgs.length === 0) {
-      alert("추가할 썸네일이 없습니다. 제품 이미지(대표·추가 이미지)를 먼저 등록하거나, 이미 모두 추가된 상태입니다.");
-      return;
-    }
-    // 착용컷 블록: __added_by_button 마커로 "버튼으로 추가된" 것임을 표시
-    const blocks = imgs.map((url, i) => ({
-      id: `block-${Date.now()}-${i}`, type: "착용 컷" as const, content: "__added_by_button", imageUrl: url,
-    }));
-    set("detailBlocks", [...form.detailBlocks, ...blocks]);
-  };
-
   const updateBlock = (idx: number, key: string, val: string) => {
     const next = form.detailBlocks.map((b, i) => i === idx ? { ...b, [key]: val } : b);
     set("detailBlocks", next);
@@ -1808,6 +1932,30 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <SectionTitle>제품 이미지</SectionTitle>
 
+            {/* ── 폴더 일괄 업로드 ── */}
+            <div className="mb-6 p-3 bg-gray-50 border border-gray-200 rounded">
+              <input
+                ref={folderInputRef}
+                type="file"
+                className="hidden"
+                id="folder-upload"
+                onChange={handleFolderUpload}
+                {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
+              />
+              <label htmlFor="folder-upload"
+                className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
+                  uploadingFolder ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-500 text-gray-700 hover:bg-gray-700 hover:text-white"
+                }`}>
+                {uploadingFolder ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />업로드 중...</> : "폴더에서 일괄 업로드"}
+              </label>
+              <p className="text-[11px] text-gray-500 mt-2">
+                파일명에 model 또는 etc 포함(대표, 여러 개면 첫 번째만) · sub+숫자 포함(추가) · detail+숫자 포함(상세 블록, 등록된 순서에 매칭)
+              </p>
+              {folderUploadResult && (
+                <p className="text-[11px] text-green-700 mt-1 font-medium">{folderUploadResult}</p>
+              )}
+            </div>
+
             {/* ── 대표 이미지 ── */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
@@ -1815,7 +1963,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   대표 이미지 <span className="text-red-400">*</span>
                 </p>
                 <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded font-mono">
-                  960 × 960 px · 1:1 비율 권장 · 최대 5 MB
+                  1600 × 1600 px · 1:1 비율 권장 · 최대 5 MB
                 </span>
               </div>
               <div className="flex gap-4 items-start">
@@ -1944,6 +2092,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   );
                 })}
               </div>
+
             </div>
 
             {uploadError && <p className="text-xs text-red-500 mt-3">{uploadError}</p>}
@@ -2323,12 +2472,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
                   {uploadingBlocksMulti ? <><span className="w-3 h-3 border-2 border-gray-300 border-t-white rounded-full animate-spin" />업로드 중…</> : "+ 여러 장 업로드"}
                 </label>
-                {/* 착용컷 — 등록된 썸네일(대표·추가 이미지) 일괄 추가 */}
-                <button type="button" onClick={addWornCutsFromThumbnails}
-                  title="등록된 썸네일(대표·추가 이미지)을 착용컷으로 일괄 추가합니다"
-                  className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors rounded">
-                  + 착용컷 (썸네일 일괄)
-                </button>
               </div>
             </div>
             <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#303236]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>

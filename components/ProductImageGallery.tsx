@@ -74,6 +74,8 @@ export default function ProductImageGallery({ product }: { product: Product }) {
 
   const noMedia = media.length === 0;
   const active = media[activeIdx];
+  // 대표 이미지(첫 번째)는 #EBEBEB, 추가 이미지는 #FFFFFF 배경
+  const mainAreaBg = activeIdx === 0 ? "#EBEBEB" : "#FFFFFF";
 
   // 메인 영역 렌더 (이미지/영상 공통)
   const renderMain = (sizes: string) => {
@@ -87,7 +89,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
         <video src={active.url} controls playsInline className="absolute inset-0 w-full h-full object-contain bg-black" />
       );
     }
-    return <Image src={active.url} alt={product.name} fill className="object-cover" priority sizes={sizes} />;
+    return <Image src={active.url} alt={product.name} fill className="object-contain" priority sizes={sizes} />;
   };
 
   return (
@@ -106,7 +108,8 @@ export default function ProductImageGallery({ product }: { product: Product }) {
       {/* ── 모바일: 스와이프 캐러셀 ── */}
       <div className="md:hidden">
         <div
-          className="relative w-full aspect-[4/5] bg-[#f4f4f4] overflow-hidden"
+          className="relative w-full aspect-[4/5] overflow-hidden"
+          style={{ backgroundColor: mainAreaBg }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
@@ -188,7 +191,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
         )}
 
         {/* 메인 영역 */}
-        <div className="relative flex-1 bg-[#f4f4f4] overflow-hidden">
+        <div className="relative flex-1 overflow-hidden" style={{ backgroundColor: mainAreaBg }}>
           {noMedia ? (
             <div className={`absolute inset-0 ${product.bg} flex items-center justify-center`}>
               <span className="text-white/20 text-xs tracking-widest uppercase">WORKUP {product.line}</span>
