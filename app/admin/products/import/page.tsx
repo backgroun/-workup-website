@@ -13,14 +13,14 @@ const STATIC_CATS: CatItem[] = staticMainCategories.map((name) => ({ name, subs:
 const COLUMNS = [
   { key: "name",          label: "상품명",         required: true },
   { key: "sku",           label: "상품코드",        required: true },
-  { key: "sizes",         label: "사이즈(;구분)",   required: true },
-  { key: "colors",        label: "색상(;구분)",     required: true },
+  { key: "sizes",         label: "사이즈(;구분)",   required: false },
+  { key: "colors",        label: "색상(;구분)",     required: false },
   { key: "brand",         label: "브랜드",          required: true },
   { key: "category",      label: "대카테고리",       required: true },
   { key: "subCategory",   label: "중카테고리",       required: true },
   { key: "manufacturer",  label: "제조사",          required: false },
   { key: "origin",        label: "원산지",          required: false },
-  { key: "price",         label: "판매가",          required: true },
+  { key: "price",         label: "판매가",          required: false },
   { key: "consumerPrice", label: "소비자가",        required: false },
   { key: "supplyPrice",   label: "공급가",          required: false },
   { key: "status",        label: "판매상태",        required: false },
@@ -56,7 +56,8 @@ function fmtComma(v: string): string {
   return d ? Number(d).toLocaleString("ko-KR") + "원" : "";
 }
 
-// 필수값 검증 — 상품명·상품코드·브랜드·대/중카테고리·판매가. 하나라도 비면 가져오기 차단.
+// 필수값 검증 — 상품명·상품코드·브랜드·대/중카테고리. 하나라도 비면 가져오기 차단.
+// 사이즈·색상·판매가는 선택 입력 — 비어 있어도 등록 후 관리자 화면에서 채울 수 있다.
 function computeError(r: {
   name?: string; sku?: string; brand?: string; price?: string; category?: string; subCategory?: string;
   sizes?: string[]; colors?: { name: string }[];
@@ -67,36 +68,87 @@ function computeError(r: {
   if (!r.brand?.trim()) miss.push("브랜드");
   if (!r.category?.trim()) miss.push("대카테고리");
   if (!r.subCategory?.trim()) miss.push("중카테고리");
-  if (!r.price?.trim()) miss.push("판매가");
-  if (!r.sizes?.length) miss.push("사이즈");
-  if (!r.colors?.length) miss.push("색상");
   return miss.length ? `필수 미입력: ${miss.join(", ")}` : undefined;
+}
+
+// "리뉴얼"/"신상"(신상품)이 붙은 이름은 기존 제품의 오타·재업로드가 아니라 의도적인 별개 신제품 —
+// 유사 상품명 감지에서 제외해 확인 절차 없이 바로 등록되게 한다.
+const RENEWAL_TAGS = ["리뉴얼", "신상품", "신상"];
+function hasRenewalTag(name: string | undefined): boolean {
+  return RENEWAL_TAGS.some((t) => name?.includes(t));
+}
+
+// 두 문자열 사이 편집거리(Levenshtein) — 오타 등으로 인한 "유사 상품명" 감지에 사용
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp: number[] = Array(n + 1).fill(0).map((_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      prev = tmp;
+    }
+  }
+  return dp[n];
 }
 
 // 상품코드 중복 검사 — ①업로드 파일 내 중복 ②기존 등록 상품과 중복(같은 상품 수정은 제외)을 합쳐 각 행의 오류 메시지를 다시 계산
 // + 상품명이 같아 내부 상품id(슬러그)가 겹치는 행도 함께 검사 — 같은 id가 한 배치에 두 번 있으면 DB upsert가 실패한다.
-function withErrors<T extends { id: string; sku?: string; _error?: string }>(
+// + 이미 등록된 상품과 id(슬러그)가 완전히 같으면 절대 덮어쓰지 않도록 오류로 막고,
+//   완전히 같진 않지만 이름이 아주 비슷한 경우("애매한 것")는 확인 전까지 등록을 보류시킨다.
+function withErrors<T extends { id: string; name?: string; sku?: string; _error?: string }>(
   rows: T[],
   existingSkuMap: Record<string, string>,
-): T[] {
+  existingNameMap: Record<string, string>, // id -> 상품명
+): (T & { _similarTo?: string })[] {
+  // 상품코드가 "0"이면 "코드 없음"으로 취급 — 중복 집계·검사에서 제외
   const skuCounts = new Map<string, number>();
   const idCounts = new Map<string, number>();
   rows.forEach((r) => {
     const sku = (r.sku ?? "").trim();
-    if (sku) skuCounts.set(sku, (skuCounts.get(sku) ?? 0) + 1);
+    if (sku && sku !== "0") skuCounts.set(sku, (skuCounts.get(sku) ?? 0) + 1);
     idCounts.set(r.id, (idCounts.get(r.id) ?? 0) + 1);
   });
+  const existingIds = Object.keys(existingNameMap);
+
   return rows.map((r) => {
     const base = computeError(r);
     const sku = (r.sku ?? "").trim();
     let dup: string | undefined;
-    if (sku) {
+    if (sku && sku !== "0") {
       if ((skuCounts.get(sku) ?? 0) > 1) dup = "상품코드 중복(파일 내)";
       else if (existingSkuMap[sku] && existingSkuMap[sku] !== r.id) dup = "상품코드 중복(기존 상품)";
     }
     const nameDup = (idCounts.get(r.id) ?? 0) > 1 ? "상품명 중복(같은 상품으로 인식됨)" : undefined;
-    const parts = [base, dup, nameDup].filter(Boolean);
-    return { ...r, _error: parts.length ? parts.join(" · ") : undefined };
+
+    // 이미 등록된 상품과 완전히 같은 이름(id 동일) → 절대 덮어쓰지 않도록 오류로 차단
+    let existingDup: string | undefined;
+    if (existingNameMap[r.id]) {
+      existingDup = `이미 등록된 상품과 이름이 같음(덮어쓰기 방지로 제외됨): "${existingNameMap[r.id]}"`;
+    }
+
+    const parts = [base, dup, nameDup, existingDup].filter(Boolean);
+
+    // 완전 일치는 아니지만 이름이 아주 비슷한 기존 상품 탐색("애매한 것") — 확인 전까지 등록 보류
+    // 단, "리뉴얼"/"신상" 표기가 붙은 이름은 별개 신제품으로 간주해 이 검사를 건너뛴다.
+    let similarTo: string | undefined;
+    if (!existingDup && !hasRenewalTag(r.name) && r.id && r.id.length >= 3) {
+      for (const eid of existingIds) {
+        if (eid === r.id) continue;
+        const dist = levenshtein(r.id, eid);
+        const closeEnough = dist <= 2 || eid.includes(r.id) || r.id.includes(eid);
+        if (closeEnough && Math.abs(eid.length - r.id.length) <= 4) {
+          similarTo = existingNameMap[eid];
+          break;
+        }
+      }
+    }
+
+    return { ...r, _error: parts.length ? parts.join(" · ") : undefined, _similarTo: similarTo };
   });
 }
 
@@ -188,7 +240,7 @@ async function downloadTemplate(fallbackCats: CatItem[]) {
     price: 39000, consumerPrice: 45000, supplyPrice: 25000, status: "판매중",
   };
   const totalCols = COLUMNS.length;
-  const MAX_ROWS = 200;
+  const MAX_ROWS = 1000;
 
   // 상단 안내 문구 (빨간색, 컬럼 전체 병합)
   const notes = [
@@ -260,9 +312,32 @@ async function downloadTemplate(fallbackCats: CatItem[]) {
   URL.revokeObjectURL(url);
 }
 
-type ParsedRow = Partial<Product> & { id: string; _row: number; _error?: string };
+function nowStamp(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
 
-const TABLE_HEADERS = ["행", "상태", "상품명*", "상품코드*", "사이즈*", "색상*", "브랜드*", "대분류*", "중분류*", "판매가*", "소비자가", "공급가", "사이즈별가", "오류"];
+// 중복 행 목록을 CSV로 자동 다운로드 — 알림창의 긴 텍스트를 일일이 읽는 대신 엑셀에서 바로 확인·정리하도록.
+function downloadDupListCsv(dupRows: { _row: number; name?: string; sku?: string; _error?: string }[]) {
+  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const header = ["행", "상품명", "상품코드", "오류"].map(esc).join(",");
+  const lines = dupRows.map((r) => [r._row, r.name || "(상품명 없음)", r.sku ?? "", r._error ?? ""].map(esc).join(","));
+  const csv = String.fromCharCode(0xfeff) + [header, ...lines].join("\r\n"); // BOM — 엑셀에서 한글 깨짐 방지
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `중복상품목록_${nowStamp()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+type ParsedRow = Partial<Product> & { id: string; _row: number; _error?: string; _similarTo?: string };
+
+const TABLE_HEADERS = ["행", "상태", "상품명*", "상품코드*", "사이즈", "색상", "브랜드*", "대분류*", "중분류*", "판매가", "소비자가", "공급가", "사이즈별가", "오류"];
 
 export default function ProductImportPage() {
   const [rows, setRows] = useState<ParsedRow[]>([]);
@@ -272,6 +347,10 @@ export default function ProductImportPage() {
   const [cats, setCats] = useState<CatItem[]>(STATIC_CATS);
   // 기존 등록 상품의 상품코드(sku, trim) → id — 엑셀 상품코드가 기존 상품과 중복되는지 검사용
   const [existingSkuMap, setExistingSkuMap] = useState<Record<string, string>>({});
+  // 기존 등록 상품의 id(상품명 슬러그) → 상품명 — 이름 중복(덮어쓰기 방지)·유사 상품명 감지 기준
+  const [existingNameMap, setExistingNameMap] = useState<Record<string, string>>({});
+  // "애매한" 유사 상품명 행 중 관리자가 "다른 상품이 맞음"으로 확인한 행 번호
+  const [confirmedRows, setConfirmedRows] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   // 카테고리 분류 — 관리자 DB 설정에서 로드 (검증 기준을 최신 분류와 일치시킴)
@@ -286,23 +365,29 @@ export default function ProductImportPage() {
       .catch(() => {});
   }, []);
 
-  // 기존 상품 상품코드 목록 — 중복 검사 기준
+  // 기존 상품 상품코드·이름(id) 목록 — 중복 검사 기준
   useEffect(() => {
     fetch("/api/admin/products")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: { id: string; sku?: string }[]) => {
+      .then((data: { id: string; name?: string; sku?: string }[]) => {
         if (!Array.isArray(data)) return;
-        const map: Record<string, string> = {};
-        data.forEach((p) => { const sku = (p.sku ?? "").trim(); if (sku) map[sku] = p.id; });
-        setExistingSkuMap(map);
+        const skuMap: Record<string, string> = {};
+        const nameMap: Record<string, string> = {};
+        data.forEach((p) => {
+          const sku = (p.sku ?? "").trim();
+          if (sku) skuMap[sku] = p.id;
+          if (p.id) nameMap[p.id] = p.name ?? p.id;
+        });
+        setExistingSkuMap(skuMap);
+        setExistingNameMap(nameMap);
       })
       .catch(() => {});
   }, []);
 
-  // 기존 상품코드 목록이 뒤늦게 도착한 경우 대비 — 이미 미리보기 중인 행들도 재검사
+  // 기존 상품 목록이 뒤늦게 도착한 경우 대비 — 이미 미리보기 중인 행들도 재검사
   useEffect(() => {
-    setRows((prev) => (prev.length ? withErrors(prev, existingSkuMap) : prev));
-  }, [existingSkuMap]);
+    setRows((prev) => (prev.length ? withErrors(prev, existingSkuMap, existingNameMap) : prev));
+  }, [existingSkuMap, existingNameMap]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -330,28 +415,45 @@ export default function ProductImportPage() {
         headers.forEach((h, i) => { if (h) obj[h] = arr[i] ?? ""; });
         return obj;
       });
-      const parsed = withErrors(json.map((r, i) => parseRow(r, headerIdx + i, cats)), existingSkuMap);
+      const parsed = withErrors(json.map((r, i) => parseRow(r, headerIdx + i, cats)), existingSkuMap, existingNameMap);
       setRows(parsed);
+      setConfirmedRows(new Set());
 
-      // 상품코드·상품명 중복 행이 있으면 표를 훑어보지 않아도 바로 알 수 있도록 오류 팝업으로 안내
+      // 상품코드·상품명 중복 행이 있으면 목록을 CSV 파일로 자동 다운로드해 바로 확인·정리할 수 있게 한다.
       const dupRows = parsed.filter((r) => r._error?.includes("중복"));
       if (dupRows.length > 0) {
-        const lines = dupRows.map((r) => `${r._row}행 · ${r.name || "(상품명 없음)"} / ${r.sku} — ${r._error}`);
-        alert(`중복된 행이 ${dupRows.length}개 있어 해당 행은 가져올 수 없습니다.\n\n${lines.join("\n")}\n\n상품코드 또는 상품명을 수정한 뒤 다시 시도해 주세요.`);
+        downloadDupListCsv(dupRows);
+        alert(`중복된 행이 ${dupRows.length}개 있어 해당 행은 가져올 수 없습니다. 중복 목록을 CSV 파일로 다운로드했습니다.\n\n상품코드 또는 상품명을 수정한 뒤 다시 시도해 주세요.`);
+      }
+      const similarRows = parsed.filter((r) => r._similarTo && !r._error);
+      if (similarRows.length > 0) {
+        const lines = similarRows.map((r) => `${r._row}행 · ${r.name} — 기존 상품 "${r._similarTo}"과(와) 이름이 비슷함`);
+        alert(`이름이 비슷한 기존 상품이 있어 확인이 필요합니다(${similarRows.length}건). 미리보기 표에서 확인 체크 후 가져오기 하세요.\n\n${lines.join("\n")}`);
       }
     };
     reader.readAsArrayBuffer(file);
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const validRows = rows.filter((r) => !r._error);
+  // 유사 상품명("애매한 것")이 있는 행은 관리자가 체크로 확인하기 전까지 가져오기 대상에서 제외
+  const validRows = rows.filter((r) => !r._error && (!r._similarTo || confirmedRows.has(r._row)));
   const errorRows = rows.filter((r) => r._error);
+  const similarUnconfirmedRows = rows.filter((r) => !r._error && r._similarTo && !confirmedRows.has(r._row));
+
+  const toggleConfirmRow = (rowNum: number, on: boolean) => {
+    setConfirmedRows((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(rowNum); else next.delete(rowNum);
+      return next;
+    });
+  };
 
   // 미리보기 셀 직접 수정 → 즉시 재검증(상품코드 중복 포함 — 다른 행과의 관계도 함께 다시 계산)
   const updateRow = (rowNum: number, patch: Partial<ParsedRow>) => {
     setRows((prev) => withErrors(
       prev.map((r) => (r._row === rowNum ? ({ ...r, ...patch } as ParsedRow) : r)),
       existingSkuMap,
+      existingNameMap,
     ));
   };
   // 필수 입력칸 색상 — 비면 빨강, 채워지면 연노랑
@@ -436,12 +538,12 @@ export default function ProductImportPage() {
         <td className="px-2 py-2 min-w-[120px]">
           <input list="imp-sizes" value={(row.sizes ?? []).join(";")}
             onChange={(e) => updateRow(row._row, { sizes: toArr(e.target.value) })}
-            className={reqCls((row.sizes ?? []).join(";"))} placeholder="S;M;L;XL" />
+            className={optCls} placeholder="S;M;L;XL" />
         </td>
         <td className="px-2 py-2 min-w-[130px]">
           <input list="imp-colors" value={(row.colors ?? []).map((c) => c.name).join(";")}
             onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value) })}
-            className={reqCls((row.colors ?? []).map((c) => c.name).join(";"))} placeholder="블랙;화이트" />
+            className={optCls} placeholder="블랙;화이트" />
         </td>
         <td className="px-2 py-2 min-w-[110px]">
           <input value={row.brand ?? ""} onChange={(e) => updateRow(row._row, { brand: e.target.value })} className={reqCls(row.brand)} />
@@ -457,7 +559,7 @@ export default function ProductImportPage() {
             className={reqCls(row.subCategory)} placeholder="선택/입력" />
         </td>
         <td className="px-2 py-2 min-w-[100px]">
-          <input inputMode="numeric" value={row.price ?? ""} onChange={(e) => updateRow(row._row, { price: fmtComma(e.target.value) })} className={reqCls(row.price)} />
+          <input inputMode="numeric" value={row.price ?? ""} onChange={(e) => updateRow(row._row, { price: fmtComma(e.target.value) })} className={optCls} />
         </td>
         <td className="px-2 py-2 min-w-[100px]">
           <input inputMode="numeric" value={row.consumerPrice ?? ""} onChange={(e) => updateRow(row._row, { consumerPrice: fmtComma(e.target.value) })} className={optCls} />
@@ -543,7 +645,7 @@ export default function ProductImportPage() {
           ) : (
             <div>
               <p className="text-lg font-semibold text-gray-700">Excel 파일을 클릭하여 선택</p>
-              <p className="text-sm text-gray-400 mt-1">.xlsx, .xls, .csv 지원 · 최대 500행</p>
+              <p className="text-sm text-gray-400 mt-1">.xlsx, .xls, .csv 지원 · 최대 1000행</p>
             </div>
           )}
         </div>
@@ -559,6 +661,10 @@ export default function ProductImportPage() {
           <div className="flex-1 bg-white border border-emerald-200 rounded-xl px-6 py-5">
             <p className="text-sm text-emerald-600">가져올 수 있음</p>
             <p className="text-3xl font-bold text-emerald-600 mt-1">{validRows.length}</p>
+          </div>
+          <div className={`flex-1 rounded-xl px-6 py-5 ${similarUnconfirmedRows.length > 0 ? "bg-amber-50 border border-amber-200" : "bg-gray-50 border border-gray-200"}`}>
+            <p className={`text-sm ${similarUnconfirmedRows.length > 0 ? "text-amber-600" : "text-gray-400"}`}>확인 필요(유사 상품명)</p>
+            <p className={`text-3xl font-bold mt-1 ${similarUnconfirmedRows.length > 0 ? "text-amber-600" : "text-gray-300"}`}>{similarUnconfirmedRows.length}</p>
           </div>
           <div className={`flex-1 rounded-xl px-6 py-5 ${errorRows.length > 0 ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
             <p className={`text-sm ${errorRows.length > 0 ? "text-red-500" : "text-gray-400"}`}>오류 행</p>
@@ -612,6 +718,36 @@ export default function ProductImportPage() {
             )}
           </div>
 
+          {/* 유사 상품명 — 이미 등록된 상품과 이름이 비슷함, 확인 전까지 가져오기 보류 */}
+          {similarUnconfirmedRows.length > 0 && (
+            <div className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm mb-8">
+              <div className="px-6 py-4 border-b border-amber-100 bg-amber-50">
+                <h2 className="text-lg font-bold text-amber-700">확인 필요 — 유사 상품명 {similarUnconfirmedRows.length}개</h2>
+                <p className="text-sm text-amber-600 mt-1">
+                  이미 등록된 상품과 이름이 비슷합니다. 같은 상품을 잘못 다시 올리는 게 아니라 확실히 다른 상품이라면
+                  체크 후 가져오세요. 체크하지 않으면 가져오기에서 제외됩니다(덮어쓰기 방지).
+                </p>
+              </div>
+              <div className="divide-y divide-amber-50">
+                {similarUnconfirmedRows.map((row) => (
+                  <div key={row._row} className="px-6 py-3 flex items-center gap-4">
+                    <span className="text-xs text-gray-400 w-10 flex-shrink-0">{row._row}행</span>
+                    <div className="flex-1 text-sm">
+                      <span className="font-semibold text-gray-800">{row.name}</span>
+                      <span className="text-gray-400"> ({row.sku})</span>
+                      <span className="text-amber-600"> — 기존 상품 &quot;{row._similarTo}&quot;과(와) 이름이 비슷함</span>
+                    </div>
+                    <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer flex-shrink-0">
+                      <input type="checkbox" checked={confirmedRows.has(row._row)}
+                        onChange={(e) => toggleConfirmRow(row._row, e.target.checked)} />
+                      다른 상품이 맞음(등록 진행)
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* 오류 행 — 제외하고 가져오기 */}
           {errorRows.length > 0 && (
             <div className="bg-white border border-red-200 rounded-xl overflow-hidden shadow-sm mb-8">
@@ -653,9 +789,10 @@ export default function ProductImportPage() {
                 `${validRows.length}개 제품 가져오기`
               )}
             </button>
-            {errorRows.length > 0 && (
+            {(errorRows.length > 0 || similarUnconfirmedRows.length > 0) && (
               <p className="text-sm text-gray-500">
-                오류 행 {errorRows.length}개는 제외하고 정상 행 {validRows.length}개만 가져옵니다.
+                오류 행 {errorRows.length}개
+                {similarUnconfirmedRows.length > 0 && `, 확인 대기 중인 유사 상품명 행 ${similarUnconfirmedRows.length}개`}는 제외하고 {validRows.length}개만 가져옵니다.
               </p>
             )}
           </div>
@@ -682,12 +819,12 @@ export default function ProductImportPage() {
               {[
                 { label: "상품명",         desc: "제품 이름",            req: true,  ex: "스트레치 카고 팬츠" },
                 { label: "상품코드",        desc: "SKU 코드 (필수)",      req: true,  ex: "WU-S001" },
-                { label: "사이즈(;구분)",   desc: "세미콜론으로 여러 사이즈 (필수)",   req: true, ex: "S;M;L;XL;2XL" },
-                { label: "색상(;구분)",     desc: `세미콜론으로 여러 색상 (${COLOR_PRESET_NAMES.join("·")}) (필수)`, req: true, ex: "블랙;화이트;네이비" },
+                { label: "사이즈(;구분)",   desc: "세미콜론으로 여러 사이즈 (선택 — 비우면 등록 후 입력 가능)",   req: false, ex: "S;M;L;XL;2XL" },
+                { label: "색상(;구분)",     desc: `세미콜론으로 여러 색상 (${COLOR_PRESET_NAMES.join("·")}) (선택 — 비우면 등록 후 입력 가능)`, req: false, ex: "블랙;화이트;네이비" },
                 { label: "브랜드",          desc: "브랜드명 (목록에 없으면 자동 생성)", req: true, ex: "WORKUP" },
                 { label: "대카테고리",       desc: `현재 등록: ${cats.map((c) => c.name).join(" / ") || "-"} (미리보기에서 선택/입력)`, req: true, ex: cats[0]?.name ?? "현장" },
                 { label: "중카테고리",       desc: "대분류의 하위 — 미리보기에서 드롭다운 선택 또는 직접 입력", req: true, ex: cats[0]?.subs[0] ?? "하의" },
-                { label: "판매가",          desc: "판매 가격",            req: true,  ex: "39,000원" },
+                { label: "판매가",          desc: "판매 가격 (선택 — 비우면 등록 후 입력 가능)",            req: false,  ex: "39,000원" },
                 { label: "소비자가",         desc: "소비자가",             req: false, ex: "45,000원" },
                 { label: "공급가",          desc: "공급가",               req: false, ex: "25,000원" },
                 { label: "판매상태",         desc: "판매중/품절/판매중지/예약판매/진열대기", req: false, ex: "판매중" },

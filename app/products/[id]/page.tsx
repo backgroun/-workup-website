@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { products as staticProducts, getProductById, productDisplayName, isPubliclyVisible, type Product } from "@/data/products";
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
+import { isAdmin } from "@/lib/admin-auth";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductTabs from "@/components/ProductTabs";
@@ -99,8 +100,10 @@ export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
   const product = await fetchProduct(id);
   if (!product) notFound();
-  // 판매중지·진열대기 상품은 직접 URL 접근도 차단 (고객 노출 금지)
-  if (!isPubliclyVisible(product)) notFound();
+  // 판매중지·진열대기 상품은 고객 노출 금지 — 단, 관리자는 등록 전 미리보기가 필요해 예외로 허용
+  const isPreview = !isPubliclyVisible(product);
+  const admin = isPreview ? await isAdmin() : false;
+  if (isPreview && !admin) notFound();
 
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
   const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);
@@ -168,6 +171,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <main className={`bg-white min-h-screen${isNewLayout ? " pb-20 md:pb-0" : ""}`}>
+      {isPreview && (
+        <div className="bg-amber-400 text-[#303236] text-center text-xs md:text-sm font-bold py-2 px-4 sticky top-0 z-[60]">
+          미리보기 모드 — 이 상품은 &quot;{product.status ?? "진열대기"}&quot; 상태라 고객에게는 보이지 않습니다.
+        </div>
+      )}
       <JsonLd data={productLd} />
 
       {/* 모바일 네비 */}

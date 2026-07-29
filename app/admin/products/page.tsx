@@ -81,19 +81,37 @@ export default function AdminProductsPage() {
   const [searchType, setSearchType]   = useState<SearchType>("상품명");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [applied, setApplied]         = useState<{ type: SearchType; query: string }>({ type: "상품명", query: "" });
-  const [datePreset, setDatePreset]   = useState<DatePreset>(V.datePreset ?? "전체");
-  const [dateStart, setDateStart]     = useState<string>(V.dateStart ?? "");
-  const [dateEnd, setDateEnd]         = useState<string>(V.dateEnd ?? "");
-  const [displayFilter, setDisplayFilter] = useState<DisplayFilter>(V.displayFilter ?? "전체");
-  const [statusFilter, setStatusFilter]   = useState<string>(V.statusFilter ?? "전체");
+  // 서버 렌더링(sessionStorage 접근 불가)과 클라이언트 첫 렌더링 결과가 어긋나 하이드레이션
+  // 에러가 나지 않도록, 초기값은 항상 고정 기본값을 쓰고 sessionStorage 복원은 마운트 후
+  // useEffect에서 처리한다(아래 참조).
+  const [datePreset, setDatePreset]   = useState<DatePreset>("전체");
+  const [dateStart, setDateStart]     = useState<string>("");
+  const [dateEnd, setDateEnd]         = useState<string>("");
+  const [displayFilter, setDisplayFilter] = useState<DisplayFilter>("전체");
+  const [statusFilter, setStatusFilter]   = useState<string>("전체");
+  const [brandFilter, setBrandFilter]     = useState<string>("전체");
 
   // ─ 선택 & 정렬 ─────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy]     = useState<SortBy>(V.sortBy ?? "최종수정순");
+  const [sortBy, setSortBy]     = useState<SortBy>("최종수정순");
   const [catalogModalOpen, setCatalogModalOpen] = useState(false);   // 브랜드/제조사 관리 팝업
   const [filterModalOpen, setFilterModalOpen]   = useState(false);   // 필터 관리 팝업
-  const [perPage, setPerPage]   = useState<number>(V.perPage ?? 20);
-  const [page, setPage]         = useState<number>(Math.max(1, Math.floor(Number(V.page)) || 1));
+  const [perPage, setPerPage]   = useState<number>(20);
+  const [page, setPage]         = useState<number>(1);
+
+  // 마운트 후(클라이언트에서만) sessionStorage에 저장된 이전 뷰 상태를 복원
+  useEffect(() => {
+    if (V.datePreset != null) setDatePreset(V.datePreset);
+    if (V.dateStart != null) setDateStart(V.dateStart);
+    if (V.dateEnd != null) setDateEnd(V.dateEnd);
+    if (V.displayFilter != null) setDisplayFilter(V.displayFilter);
+    if (V.statusFilter != null) setStatusFilter(V.statusFilter);
+    if (V.brandFilter != null) setBrandFilter(V.brandFilter);
+    if (V.sortBy != null) setSortBy(V.sortBy);
+    if (V.perPage != null) setPerPage(V.perPage);
+    if (V.page != null) setPage(Math.max(1, Math.floor(Number(V.page)) || 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [colMenuOpen, setColMenuOpen] = useState(false); // 컬럼 표시/숨김 드롭다운
   const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>(
     Object.fromEntries(TOGGLE_COLS.map(c => [c, true]))
@@ -187,10 +205,10 @@ export default function AdminProductsPage() {
       const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}");
       sessionStorage.setItem(VIEW_KEY, JSON.stringify({
         ...prev, searchType, searchQuery, applied, datePreset, dateStart, dateEnd,
-        displayFilter, statusFilter, sortBy, perPage, page,
+        displayFilter, statusFilter, brandFilter, sortBy, perPage, page,
       }));
     } catch { /* noop */ }
-  }, [searchType, searchQuery, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, sortBy, perPage, page]);
+  }, [searchType, searchQuery, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, sortBy, perPage, page]);
 
   // 로드 완료 후 저장된 스크롤 위치 복원 (1회)
   useEffect(() => {
@@ -372,6 +390,9 @@ export default function AdminProductsPage() {
     // 판매 상태
     if (statusFilter !== "전체") list = list.filter(p => (p.status ?? "판매중") === statusFilter);
 
+    // 브랜드
+    if (brandFilter !== "전체") list = list.filter(p => (p.brand ?? "") === brandFilter);
+
     // 정렬
     list.sort((a, b) => {
       if (sortBy === "이름순") return a.name.localeCompare(b.name);
@@ -381,7 +402,7 @@ export default function AdminProductsPage() {
     });
 
     return list;
-  }, [products, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, sortBy]);
+  }, [products, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, sortBy]);
 
   const stats = useMemo(() => ({
     total:    filtered.length,
@@ -406,9 +427,66 @@ export default function AdminProductsPage() {
     setSearchQuery("");
     setSearchType("상품명");
     setApplied({ type: "상품명", query: "" });
-    setDisplayFilter("전체"); setStatusFilter("전체");
+    setDisplayFilter("전체"); setStatusFilter("전체"); setBrandFilter("전체");
     setDatePreset("전체"); setDateStart(""); setDateEnd("");
     setPage(1); setSelected(new Set());
+  };
+
+  // 현재 필터·정렬 적용된 목록을 엑셀로 다운로드 (Excel 업로드 템플릿과 동일한 열 구성)
+  const handleDownloadExcel = async () => {
+    const XLSX = await import("xlsx");
+    const rows = filtered.map((p) => ({
+      "상품명": p.name,
+      "상품코드": p.sku ?? "",
+      "사이즈(;구분)": (p.sizes ?? []).join(";"),
+      "색상(;구분)": (p.colors ?? []).map((c) => c.name).join(";"),
+      "브랜드": p.brand ?? "",
+      "대카테고리": p.category,
+      "중카테고리": p.subCategory,
+      "제조사": p.manufacturer ?? "",
+      "원산지": p.origin ?? "",
+      "판매가": p.price ?? "",
+      "소비자가": p.consumerPrice ?? "",
+      "공급가": p.supplyPrice ?? "",
+      "판매상태": p.status ?? "판매중",
+      "진열상태": DISPLAY_ON.includes(p.status ?? "판매중") ? "진열함" : "진열안함",
+      "업로드일자": p.createdAt ? p.createdAt.slice(0, 10) : "",
+      "수정일자": (p.updatedAt ?? p.createdAt) ? (p.updatedAt ?? p.createdAt)!.slice(0, 10) : "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "상품목록");
+    const today = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `상품목록_${today}.xlsx`);
+  };
+
+  // 전체 상품 데이터 + 참조된 모든 이미지를 ZIP으로 백업 (필터와 무관하게 전체)
+  const [backingUp, setBackingUp] = useState(false);
+  const handleBackupAll = async () => {
+    if (!confirm("등록된 모든 상품 데이터와 이미지를 ZIP으로 백업합니다. 이미지 수가 많으면 시간이 걸릴 수 있습니다. 계속할까요?")) return;
+    setBackingUp(true);
+    try {
+      const res = await fetch("/api/admin/products/backup");
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "백업 생성에 실패했습니다.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const today = new Date().toISOString().slice(0, 10);
+      a.download = `products-backup-${today}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("백업 생성 중 네트워크 오류가 발생했습니다.");
+    } finally {
+      setBackingUp(false);
+    }
   };
 
   // ─ 체크박스 ────────────────────────────────────────────────────────────
@@ -515,7 +593,7 @@ export default function AdminProductsPage() {
     else showMsg(`오류: ${d.error}`);
   };
 
-  const isFiltered = applied.query || displayFilter !== "전체" || statusFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd;
+  const isFiltered = applied.query || displayFilter !== "전체" || statusFilter !== "전체" || brandFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd;
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -556,6 +634,29 @@ export default function AdminProductsPage() {
             </svg>
             Excel 업로드
           </Link>
+          <button onClick={handleDownloadExcel}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+            </svg>
+            Excel 다운로드
+          </button>
+          <button onClick={handleBackupAll} disabled={backingUp}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:border-[#303236] hover:text-[#303236] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {backingUp ? (
+              <>
+                <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                백업 생성 중...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V19a2 2 0 01-2 2H6a2 2 0 01-2-2v-6M12 3v12m0 0l-4-4m4 4l4-4" />
+                </svg>
+                전체 백업(이미지 포함)
+              </>
+            )}
+          </button>
           <Link href="/admin/products/new"
             className="px-6 py-2.5 text-base bg-[#E5541B] text-white hover:bg-[#e04500] rounded font-bold">
             + 새 제품 추가
@@ -642,6 +743,14 @@ export default function AdminProductsPage() {
             <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
               className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[15px] font-semibold text-gray-600">브랜드</span>
+            <select value={brandFilter} onChange={e => { setBrandFilter(e.target.value); setPage(1); }}
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
+              <option value="전체">전체</option>
+              {brandList.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
         </div>

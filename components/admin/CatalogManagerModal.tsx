@@ -10,6 +10,7 @@ function CrudSection({ title, apiPath, addPlaceholder, withAlias }: {
   title: string; apiPath: string; addPlaceholder: string; withAlias?: boolean;
 }) {
   const [items, setItems] = useState<Item[]>([]);
+  const [search, setSearch] = useState("");
   const [newName, setNewName] = useState("");
   const [newNameKo, setNewNameKo] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,23 +53,37 @@ function CrudSection({ title, apiPath, addPlaceholder, withAlias }: {
     await load();
   };
 
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? items.filter((it) => it.name.toLowerCase().includes(q) || (it.name_ko ?? "").toLowerCase().includes(q))
+    : items;
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden flex flex-col min-h-0">
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-baseline justify-between">
         <h3 className="text-sm font-bold text-gray-900">{title}</h3>
-        <span className="text-xs font-bold text-[#303236]">{items.length}개</span>
+        <span className="text-xs font-bold text-[#303236]">
+          {q ? `${filtered.length} / ${items.length}개` : `${items.length}개`}
+        </span>
       </div>
       <div className="px-4 py-3 border-b border-gray-100">
+        <div className="relative mb-2.5">
+          <svg className="w-3.5 h-3.5 text-gray-300 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`${title.replace("관리", "")} 검색...`}
+            className="w-full border border-gray-200 pl-8 pr-3 py-1.5 text-sm rounded focus:outline-none focus:border-[#303236]" />
+        </div>
         {error && <p className="text-xs text-red-500 mb-1.5">{error}</p>}
-        <form onSubmit={handleAdd} className="flex gap-2">
+        <form onSubmit={handleAdd} className="flex flex-wrap gap-2">
           <input ref={inputRef} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={addPlaceholder}
-            className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+            className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
           {withAlias && (
             <input value={newNameKo} onChange={(e) => setNewNameKo(e.target.value)} placeholder="한글 검색명 (선택)"
-              className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+              className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
           )}
           <button type="submit" disabled={saving || !newName.trim()}
-            className="px-4 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50 whitespace-nowrap">
+            className="flex-shrink-0 px-4 py-2 bg-[#303236] text-white text-sm font-semibold rounded hover:bg-[#243d5e] disabled:opacity-50 whitespace-nowrap">
             {saving ? "…" : "추가"}
           </button>
         </form>
@@ -78,9 +93,11 @@ function CrudSection({ title, apiPath, addPlaceholder, withAlias }: {
           <div className="py-8 text-center text-sm text-gray-400">불러오는 중...</div>
         ) : items.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-400">등록된 항목이 없습니다.</div>
+        ) : filtered.length === 0 ? (
+          <div className="py-10 text-center text-sm text-gray-400">&quot;{search}&quot;에 대한 검색 결과가 없습니다.</div>
         ) : (
           <ul className="divide-y divide-gray-50">
-            {items.map((it) => (
+            {filtered.map((it) => (
               <li key={it.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 hover:bg-gray-50 group">
                 {editingId === it.id ? (
                   <>

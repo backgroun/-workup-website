@@ -331,6 +331,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [brandError, setBrandError] = useState("");
   const [manufacturers, setManufacturers] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string; imageUrl?: string }[]>([]);
+  const [colorUsage, setColorUsage] = useState<Record<string, { hex: string; count: number }>>({});
+  const [colorDropdownOpen, setColorDropdownOpen] = useState(false);
   const [relatedCatFilter, setRelatedCatFilter] = useState("");
   const [relatedSearch, setRelatedSearch] = useState("");
   const [relatedModalOpen, setRelatedModalOpen] = useState(false);
@@ -368,11 +370,20 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       .then((r) => r.ok ? r.json() : [])
       .then((data: unknown) => {
         if (Array.isArray(data)) {
+          const rows = data as { id: string; name: string; category: string; imageUrl?: string; colors?: { name: string; hex: string }[] }[];
           setAllProducts(
-            (data as { id: string; name: string; category: string; imageUrl?: string }[]).map((p) => ({
-              id: p.id, name: p.name, category: p.category, imageUrl: p.imageUrl,
-            }))
+            rows.map((p) => ({ id: p.id, name: p.name, category: p.category, imageUrl: p.imageUrl }))
           );
+          // 그동안 등록된 색상 사용 빈도 집계 (드롭다운에서 자주 쓰는 색상을 위로)
+          const usage: Record<string, { hex: string; count: number }> = {};
+          for (const p of rows) {
+            for (const c of p.colors ?? []) {
+              if (!c?.name) continue;
+              if (usage[c.name]) usage[c.name].count += 1;
+              else usage[c.name] = { hex: c.hex, count: 1 };
+            }
+          }
+          setColorUsage(usage);
         }
       })
       .catch(() => {});
@@ -956,9 +967,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const customSizes = form.sizes.filter((s) => !CLOTHING_SIZE_PRESETS.includes(s));
 
   const addCustomSize = () => {
-    const val = form.customSizeInput.trim();
-    if (!val || form.sizes.includes(val)) { set("customSizeInput", ""); return; }
-    set("sizes", [...form.sizes, val]);
+    // 콤마로 구분해 여러 사이즈를 한 번에 입력 가능 (예: "30,32,34,36,38,40")
+    const values = form.customSizeInput.split(",").map((v) => v.trim()).filter(Boolean);
+    if (values.length === 0) { set("customSizeInput", ""); return; }
+    const newSizes = values.filter((v) => !form.sizes.includes(v));
+    if (newSizes.length > 0) set("sizes", [...form.sizes, ...newSizes]);
     set("customSizeInput", "");
   };
 
@@ -1302,6 +1315,15 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   };
 
   const customColors = form.colors.filter((c) => !COLOR_PRESETS.some((p) => p.name === c.name));
+
+  // 색상 드롭다운 옵션: 기본 프리셋(6개) 제외, 5회 이상 사용된 커스텀 색상만 자주 쓴 순서로 정렬
+  const colorDropdownOptions = (() => {
+    const isBasePreset = (name: string) => COLOR_PRESETS.some((p) => p.name === name);
+    return Object.entries(colorUsage)
+      .filter(([name, u]) => !isBasePreset(name) && u.count >= 5)
+      .map(([name, u]) => ({ name, hex: u.hex, count: u.count }))
+      .sort((a, b) => b.count - a.count);
+  })();
 
   // ─── 렌더 ──────────────────────────────────────────────────────────────────
   return (
@@ -2366,7 +2388,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div className="flex gap-2">
                   <input value={form.customSizeInput} onChange={(e) => set("customSizeInput", e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
-                    placeholder="사이즈 입력 후 Enter 또는 추가"
+                    placeholder="사이즈 입력 후 Enter 또는 추가 (예: 30,32,34,36,38,40)"
                     className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                   <button type="button" onClick={addCustomSize}
                     className="px-3 py-2 bg-[#303236] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
@@ -2434,9 +2456,36 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   );
                 })}
               </div>
+              {colorDropdownOptions.length > 0 && (
+                <div className="relative mb-3">
+                  <button type="button" onClick={() => setColorDropdownOpen((v) => !v)}
+                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded text-sm text-gray-700 hover:border-gray-400 transition-colors">
+                    <span>그 외 자주 쓴 색상 ({colorDropdownOptions.length}개, 5회 이상 사용)</span>
+                    <span className="text-gray-400">{colorDropdownOpen ? "▲" : "▼"}</span>
+                  </button>
+                  {colorDropdownOpen && (
+                    <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                      {colorDropdownOptions.map((opt) => {
+                        const selected = form.colors.some((c) => c.name === opt.name);
+                        return (
+                          <button key={opt.name} type="button" onClick={() => toggleColor(opt)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-gray-50 last:border-0 ${
+                              selected ? "bg-orange-50 font-semibold text-gray-800" : "text-gray-600 hover:bg-gray-50"
+                            }`}>
+                            <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: opt.hex }} />
+                            <span className="flex-1">{opt.name}</span>
+                            <span className="text-[10px] text-gray-400">{opt.count}회</span>
+                            {selected && <span className="text-[#E5541B] font-bold">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="flex gap-2 items-center mt-2">
                 <input value={form.colorName} onChange={(e) => set("colorName", e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomColor(); } }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); addCustomColor(); } }}
                   placeholder="커스텀 색상명 (예: 형광그린)"
                   className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
                 <input type="color" value={form.colorHex} onChange={(e) => set("colorHex", e.target.value)}
