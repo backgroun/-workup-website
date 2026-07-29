@@ -7,6 +7,9 @@ import { createAdminClient } from "@/lib/supabase-server";
 export const metadata: Metadata = {
   title: "PRODUCTS — 제품 | WORKUP",
   description: "워크업이 검증한 기능성 워크웨어. 카테고리별로 찾아보세요.",
+  // 카테고리·검색 등 쿼리스트링 조합(?cat=, ?q= 등)은 전부 이 페이지의 변형일 뿐이므로
+  // 표준 URL을 명시해 구글이 "표준 없는 중복 페이지"로 잘못 판단하지 않게 한다.
+  alternates: { canonical: "/products" },
 };
 
 // 첫 화면부터 최신 분류를 그리도록 서버에서 카테고리를 읽어 전달한다 (옛 카테고리 깜빡임 방지)

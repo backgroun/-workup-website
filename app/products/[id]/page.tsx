@@ -5,6 +5,7 @@ import { products as staticProducts, getProductById, productDisplayName, isPubli
 import { createAdminClient, mapFromDb } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import ProductDetailClient from "@/components/ProductDetailClient";
+import ProductBreadcrumb from "@/components/ProductBreadcrumb";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductTabs from "@/components/ProductTabs";
 import StickyAside from "@/components/StickyAside";
@@ -71,6 +72,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    // 표준 URL 명시 — 같은 상품이 다른 쿼리스트링으로 접근돼도 구글이 이 URL을 정본으로 보게 함
+    alternates: { canonical: `/products/${id}` },
     // 카톡·SNS 공유 시 제품 대표 이미지가 미리보기로 노출되도록 OG 이미지 지정
     openGraph: {
       title,
@@ -107,6 +110,10 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const relatedProducts = await fetchRelatedProducts(product.relatedIds ?? []);
   const isNewLayout = !!(product.keyFeatures && product.keyFeatures.length > 0);
+  // 제품에 카테고리가 여러 개 등록된 경우(멀티 카테고리) 전부 breadcrumb에서 펼쳐볼 수 있도록 전달
+  const productCats: { main: string; sub: string }[] = product.categories?.length
+    ? product.categories
+    : product.category ? [{ main: product.category, sub: product.subCategory ?? "" }] : [];
 
   // 검색엔진 구조화 데이터(Product). 제품명·이미지·브랜드·카테고리로
   // "지역명+제품명" 검색 이해도를 높인다.
@@ -181,29 +188,9 @@ export default async function ProductDetailPage({ params }: Props) {
       {/* 모바일 네비 */}
       <MobileProductNav />
 
-      {/* 데스크탑 브레드크럼 */}
+      {/* 데스크탑 브레드크럼 — 카테고리가 여러 개면 펼쳐서 전부 볼 수 있음 (제품명은 표시하지 않음) */}
       <div className="hidden md:block border-b border-gray-100">
-        <nav className="max-w-screen-2xl mx-auto px-8 py-3 flex items-center gap-2 text-[11px] text-gray-400 tracking-wide overflow-hidden">
-          <Link href="/products" className="hover:text-gray-600 transition-colors whitespace-nowrap">전체 제품</Link>
-          {product.category && (
-            <>
-              <span className="flex-shrink-0">/</span>
-              <Link href={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-gray-600 transition-colors whitespace-nowrap">
-                {product.category}
-              </Link>
-            </>
-          )}
-          {product.subCategory && (
-            <>
-              <span className="flex-shrink-0">/</span>
-              <Link href={`/products?category=${encodeURIComponent(product.category ?? "")}&sub=${encodeURIComponent(product.subCategory)}`} className="hover:text-gray-600 transition-colors whitespace-nowrap">
-                {product.subCategory}
-              </Link>
-            </>
-          )}
-          <span className="flex-shrink-0">/</span>
-          <span className="text-gray-500 truncate">{productDisplayName(product)}</span>
-        </nav>
+        <ProductBreadcrumb cats={productCats} />
       </div>
 
       {/* 갤러리(+데스크탑 상세 탭) 좌측 스크롤 / 정보·배너 우측 고정 */}

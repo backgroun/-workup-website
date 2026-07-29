@@ -102,6 +102,12 @@ body.catalog-page footer {
   #scroll-root .md\:text-\[17px\] { font-size: 18px; }
 }
 
+/* 이미지 무단 저장(드래그해서 데스크톱에 저장) 방지 — 고객 화면(#scroll-root)에만 적용, 관리자 화면은 제외 */
+#scroll-root img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
