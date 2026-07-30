@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import InquiryTabs from "@/components/admin/InquiryTabs";
 import { INQUIRY_STATUS_LABEL, type Inquiry, type InquiryStatus } from "@/data/partnership";
 import { DEFAULT_NOTIFICATIONS, normalizeNotifications, NOTIFY_TYPES, type NotificationConfig, type NotifyType } from "@/lib/site-content";
 
@@ -331,6 +331,7 @@ export default function AdminInquiriesPage() {
 
   return (
     <div>
+      <InquiryTabs />
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">문의 관리</h1>
@@ -338,7 +339,6 @@ export default function AdminInquiriesPage() {
         </div>
         <div className="flex items-center gap-3">
           {toast && <span className="text-sm font-medium text-green-600">{toast}</span>}
-          <Link href="/admin/partnership" className="text-sm font-medium text-blue-600 hover:text-blue-800">가맹·입점 페이지 편집 →</Link>
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import { useAdminUI } from "./admin-ui-context";
 
 /** 우측 본문 상단의 멀티탭 스트립. 열었던 페이지를 탭으로 유지한다. */
 export default function AdminTabBar() {
-  const { tabs, currentHref, selectTab, closeTab } = useAdminUI();
+  const { tabs, currentHref, selectTab, closeTab, closeAllTabs } = useAdminUI();
 
   if (tabs.length === 0) return null;
 
@@ -16,13 +16,13 @@ export default function AdminTabBar() {
             key={tab.href}
             onClick={() => selectTab(tab.href)}
             title={tab.label}
-            className={`group/tab flex items-center my-1.5 pl-3 pr-1.5 rounded-md max-w-[180px] cursor-pointer select-none transition-colors ${
+            className={`group/tab flex items-center mt-1.5 pl-3 pr-1.5 rounded-t-md max-w-[180px] cursor-pointer select-none transition-colors ${
               active
                 ? "bg-[#1d4ed8] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
             }`}
           >
-            <span className="truncate text-[13px] font-medium">{tab.label}</span>
+            <span className={`truncate text-[13px] ${active ? "font-semibold" : "font-medium"}`}>{tab.label}</span>
             <button
               type="button"
               onClick={(e) => {
@@ -41,6 +41,16 @@ export default function AdminTabBar() {
           </div>
         );
       })}
+      <button
+        type="button"
+        onClick={() => {
+          if (confirm("열린 탭을 모두 닫을까요?")) closeAllTabs();
+        }}
+        title="전체 탭 닫기"
+        className="flex items-center gap-1 mt-1.5 mb-1.5 ml-1 px-2.5 flex-shrink-0 rounded-md text-[12px] text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors whitespace-nowrap"
+      >
+        전체닫기
+      </button>
     </div>
   );
 }

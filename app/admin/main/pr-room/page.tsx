@@ -380,9 +380,9 @@ export default function PrRoomManagePage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">PR룸 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900">공지사항 관리</h1>
           <p className="mt-1 text-sm text-gray-500">
-            뉴스·홍보 소식을 이미지형 게시판으로 등록합니다. 공개 페이지:{" "}
+            공지사항을 이미지형 게시판으로 등록합니다. 공개 페이지:{" "}
             <Link href="/pr" target="_blank" className="text-blue-600 hover:underline font-mono">/pr</Link>
           </p>
         </div>

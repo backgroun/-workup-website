@@ -602,9 +602,6 @@ export default function AdminProductsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">제품 관리</h1>
-          <p className="text-base text-gray-400 mt-1">
-            총 <span className="font-bold text-gray-700">{products.length}</span>개 등록
-          </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           {products.length === 0 && !loading && !tableError && (

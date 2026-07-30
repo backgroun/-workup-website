@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import InquiryTabs from "@/components/admin/InquiryTabs";
 import FranchiseGuide from "@/components/FranchiseGuide";
 import AdminImageField from "@/components/admin/AdminImageField";
 import {
@@ -104,6 +105,7 @@ export default function FranchiseGuideEditPage() {
 
   return (
     <div>
+      <InquiryTabs />
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">창업안내 페이지 편집</h1>

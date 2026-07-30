@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import ProductsGrid, { type CatItem } from "@/components/ProductsGrid";
 import Hero from "@/components/Hero";
+import JsonLd from "@/components/JsonLd";
 import { createAdminClient } from "@/lib/supabase-server";
+import { siteUrl, absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "PRODUCTS — 제품 | WORKUP",
@@ -29,10 +31,22 @@ async function getCategories(): Promise<CatItem[]> {
   return [];
 }
 
+// 이 페이지가 개별 상품 판매 페이지가 아니라 카탈로그 열람 페이지임을 구글에 명시.
+// (?cat=, ?q= 등 쿼리스트링 변형은 전부 이 페이지의 뷰일 뿐 — canonical과 함께 "표준 목록 페이지" 신호를 보강)
+const collectionLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "PRODUCTS — 제품 | WORKUP",
+  description: "워크업이 검증한 기능성 워크웨어. 카테고리별로 찾아보세요.",
+  url: absoluteUrl("/products"),
+  isPartOf: { "@type": "WebSite", name: "WORKUP", url: siteUrl },
+};
+
 export default async function ProductsPage() {
   const initialCats = await getCategories();
   return (
     <main>
+      <JsonLd data={collectionLd} />
       {/* 상단 상품 비주얼 슬라이더 (slide_type="product") — 슬라이드가 없으면 표시되지 않음 */}
       <Suspense fallback={null}>
         <Hero slideType="product" />

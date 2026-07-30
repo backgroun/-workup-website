@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import InquiryTabs from "@/components/admin/InquiryTabs";
 
 type Dummy = { id: string; type: string; name: string; content: string; created_at: string };
 
@@ -76,9 +77,10 @@ export default function AdminInquiryBoardPage() {
 
   return (
     <div>
+      <InquiryTabs />
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">더미 리스트 <span className="text-base font-medium text-slate-400">(보여주기용)</span></h1>
-        <p className="text-sm text-gray-500 mt-1">공개 페이지 ‘실시간 문의 현황’을 활발해 보이게 하는 가짜 데이터입니다. 실제 접수 문의는 <a href="/admin/inquiries" className="text-blue-600 hover:text-blue-800">문의 관리</a>에서 확인하세요.</p>
+        <p className="text-sm text-gray-500 mt-1">공개 페이지 ‘실시간 문의 현황’을 활발해 보이게 하는 가짜 데이터입니다. 실제 접수 문의는 문의 관리 탭에서 확인하세요.</p>
       </div>
 
       {msg.text && <div className={`mb-5 px-4 py-3 text-sm rounded-lg font-medium ${msg.type === "err" ? "bg-red-50 border border-red-200 text-red-700" : "bg-green-50 border border-green-200 text-green-700"}`}>{msg.text}</div>}

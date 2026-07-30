@@ -26,10 +26,10 @@ async function findPost(id: string) {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const post = await findPost(id);
-  if (!post) return { title: "PR룸 — WORKUP" };
+  if (!post) return { title: "공지사항 — WORKUP" };
   const desc = post.summary || post.body.slice(0, 120) || "워크업의 새로운 소식";
   return {
-    title: `${post.title} — PR룸 | WORKUP`,
+    title: `${post.title} — 공지사항 | WORKUP`,
     description: desc,
     openGraph: {
       title: post.title,
@@ -53,7 +53,7 @@ export default async function PrPostDetailPage({ params }: Params) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          PR룸 목록
+          공지사항 목록
         </Link>
 
         {/* 헤더 */}

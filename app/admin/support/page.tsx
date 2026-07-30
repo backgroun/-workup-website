@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import InquiryTabs from "@/components/admin/InquiryTabs";
 import { DEFAULT_SUPPORT, normalizeSupport, type SupportConfig } from "@/lib/site-content";
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -120,6 +121,7 @@ export default function SupportEditPage() {
 
   return (
     <div>
+      <InquiryTabs />
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>

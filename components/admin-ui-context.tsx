@@ -12,6 +12,8 @@ export type AdminUIValue = {
   selectTab: (href: string) => void;
   /** 탭 닫기 */
   closeTab: (href: string) => void;
+  /** 전체 탭 닫기 */
+  closeAllTabs: () => void;
   /** 즐겨찾기 href 목록 */
   favorites: string[];
   isFavorite: (href: string) => boolean;

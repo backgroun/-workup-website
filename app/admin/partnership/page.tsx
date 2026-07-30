@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import InquiryTabs from "@/components/admin/InquiryTabs";
 import PartnershipPanel from "@/components/PartnershipPanel";
 import {
   DEFAULT_PARTNERSHIP,
@@ -189,6 +190,7 @@ export default function PartnershipEditPage() {
 
   return (
     <div>
+      <InquiryTabs />
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>

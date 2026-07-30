@@ -24,7 +24,7 @@ export type PrRoomConfig = {
 };
 
 export const DEFAULT_PR_ROOM: PrRoomConfig = {
-  title: "PR룸",
+  title: "공지사항",
   subtitle: "워크업의 새로운 소식과 이야기를 전해드립니다.",
   posts: [],
 };

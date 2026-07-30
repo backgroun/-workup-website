@@ -13,7 +13,7 @@ const DEFAULT_HREFS = [
   "/admin/inquiries",
   "/admin/members",
   "/admin/main/sections",
-  "/admin/analytics",
+  "/admin/analytics/pixels",
 ];
 
 const FALLBACK_ICON = (

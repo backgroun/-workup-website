@@ -76,6 +76,9 @@ export default function ProductImageGallery({ product }: { product: Product }) {
   const active = media[activeIdx];
   // 대표 이미지(첫 번째)는 #EBEBEB, 추가 이미지는 #FFFFFF 배경
   const mainAreaBg = activeIdx === 0 ? "#EBEBEB" : "#FFFFFF";
+  // 의류(상의·하의·아우터)는 착용컷이 프레임을 꽉 채워야 자연스러워 기존 방식(object-cover, 잘림 있음) 유지.
+  // 신발·소품 등 제품 단독 컷만 여백 방지(object-contain)를 적용한다.
+  const isClothing = /상의|하의|아우터/.test(product.subCategory ?? "");
 
   // 메인 영역 렌더 (이미지/영상 공통)
   const renderMain = (sizes: string) => {
@@ -89,7 +92,7 @@ export default function ProductImageGallery({ product }: { product: Product }) {
         <video src={active.url} controls playsInline className="absolute inset-0 w-full h-full object-contain bg-black" />
       );
     }
-    return <Image src={active.url} alt={product.name} fill className="object-contain" priority sizes={sizes} />;
+    return <Image src={active.url} alt={product.name} fill className={isClothing ? "object-cover" : "object-contain"} priority sizes={sizes} />;
   };
 
   return (

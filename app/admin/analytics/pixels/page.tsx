@@ -1,11 +1,23 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 
 interface PixelSetting {
   platform: string;
   pixel_id: string;
   enabled: boolean;
+}
+
+interface Member {
+  id: number;
+  status: "active" | "dormant" | "withdrawn";
+  created_at: string;
+}
+
+function getMonthLabel(offset: number) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - offset);
+  return d.toISOString().slice(0, 7);
 }
 
 interface PlatformConfig {
@@ -92,6 +104,31 @@ export default function PixelSettingsPage() {
   const [msg, setMsg]           = useState("");
   const [tableError, setTableError] = useState(false);
 
+  // 회원가입 현황 (구 마케팅/분석 대시보드에서 이동)
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loadingM, setLoadingM] = useState(true);
+  useEffect(() => {
+    fetch("/api/admin/members")
+      .then((r) => r.json())
+      .then((d) => setMembers(Array.isArray(d) ? d : []))
+      .finally(() => setLoadingM(false));
+  }, []);
+  const memberStats = useMemo(() => {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, i) => getMonthLabel(i)).reverse();
+    const byMonth = months.map((m) => ({
+      month: m,
+      count: members.filter((x) => x.status !== "withdrawn" && x.created_at.slice(0, 7) === m).length,
+    }));
+    const max = Math.max(...byMonth.map((b) => b.count), 1);
+    return {
+      byMonth, max,
+      total: members.filter((m) => m.status !== "withdrawn").length,
+      thisMonth: members.filter((m) => m.status !== "withdrawn" && m.created_at.slice(0, 7) === now.toISOString().slice(0, 7)).length,
+      active: members.filter((m) => m.status === "active").length,
+    };
+  }, [members]);
+
   const showMsg = (t: string) => { setMsg(t); setTimeout(() => setMsg(""), 3000); };
 
   const load = useCallback(async () => {
@@ -148,11 +185,7 @@ export default function PixelSettingsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <Link href="/admin/analytics" className="text-[15px] text-gray-400 hover:text-[#303236]">← 분석 대시보드</Link>
-            <span className="text-gray-200">/</span>
-            <h1 className="text-3xl font-bold text-gray-900">픽셀 / 광고 설정</h1>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">픽셀 / 광고 설정</h1>
           <p className="text-base text-gray-400 mt-1">
             인스타그램, 네이버, 카카오 광고 픽셀을 설정하면 사이트 전체에 자동 적용됩니다.
           </p>
@@ -171,17 +204,49 @@ export default function PixelSettingsPage() {
         </div>
       )}
 
-      {/* 설정 안내 */}
-      <div className="bg-[#303236]/5 border border-[#303236]/20 rounded-xl p-5 flex items-start gap-4">
-        <span className="text-2xl">📌</span>
-        <div>
-          <p className="text-base font-bold text-[#303236] mb-1">권장 설정 순서</p>
-          <ol className="text-[14px] text-gray-600 space-y-0.5 list-decimal list-inside">
-            <li><span className="font-semibold">GTM</span> 설정 → GTM 안에서 나머지 픽셀을 관리하는 방법 (가장 권장)</li>
-            <li>또는 각 픽셀 ID를 직접 입력 → 사이트 레이아웃에 자동 삽입</li>
-            <li>설정 저장 후 <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[12px]">components/PixelManager.tsx</code>가 자동으로 코드를 삽입합니다.</li>
-          </ol>
+      {/* 회원 요약 카드 */}
+      <div className="grid grid-cols-3 gap-5">
+        {[
+          { label: "전체 회원", value: memberStats.total, color: "text-[#303236]" },
+          { label: "이번달 신규", value: memberStats.thisMonth, color: "text-[#E5541B]" },
+          { label: "활성 회원", value: memberStats.active, color: "text-emerald-600" },
+        ].map((s) => (
+          <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-6 text-center">
+            <p className="text-[15px] text-gray-500 font-medium mb-2">{s.label}</p>
+            <p className={`text-4xl font-black ${s.color}`}>{loadingM ? "-" : s.value.toLocaleString()}</p>
+            <p className="text-[13px] text-gray-300 mt-1">명</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 월별 신규 회원 차트 */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-bold text-gray-800">월별 신규 회원 추이</h2>
+          <Link href="/admin/members" className="text-[14px] text-[#303236] hover:underline">회원 관리 →</Link>
         </div>
+        {loadingM ? (
+          <div className="h-40 flex items-center justify-center text-gray-400">불러오는 중...</div>
+        ) : memberStats.byMonth.every((b) => b.count === 0) ? (
+          <div className="h-40 flex items-center justify-center text-gray-400 text-base">
+            가입 회원이 없어 데이터가 없습니다.
+          </div>
+        ) : (
+          <div className="flex items-end gap-4 h-44">
+            {memberStats.byMonth.map(({ month, count }) => (
+              <div key={month} className="flex-1 flex flex-col items-center gap-2">
+                <span className="text-[13px] font-bold text-[#303236]">{count > 0 ? count : ""}</span>
+                <div className="w-full relative">
+                  <div
+                    className="w-full bg-[#303236] rounded-t-md transition-all"
+                    style={{ height: `${Math.max(4, (count / memberStats.max) * 120)}px` }}
+                  />
+                </div>
+                <span className="text-[12px] text-gray-400">{month.slice(5)}월</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 픽셀 카드들 */}
