@@ -15,7 +15,9 @@ export async function POST(req: Request) {
   }
 
   const supabase = createAdminClient();
-  const rows = body.map(mapToDb);
+  // 엑셀 일괄 등록도 정식 스펙을 갖춰서 올라오므로 임시등록 대기 목록에 뜨지 않게 함
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rows = body.map((r: any) => mapToDb({ ...r, registrationStatus: "정식등록" }));
 
   // 같은 id(상품명 슬러그)가 배치 안에 두 번 있으면 upsert가 "ON CONFLICT DO UPDATE ... cannot affect row a second time"로 전체가 실패한다.
   // 클라이언트(엑셀 업로드 미리보기)에서 미리 걸러내지만, 다른 경로로 들어올 경우를 대비해 서버에서도 명확한 오류로 막는다.

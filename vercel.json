@@ -1,4 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)scripts' ':(exclude)supabase' ':(exclude)products-inbox' ':(exclude)*.md' ':(exclude)*.bat' ':(exclude)*.txt'"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)scripts' ':(exclude)supabase' ':(exclude)products-inbox' ':(exclude)*.md' ':(exclude)*.bat' ':(exclude)*.txt'",
+  "crons": [
+    { "path": "/api/cron/notices/open", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/notices/close", "schedule": "0 5 * * *" }
+  ]
 }

@@ -90,6 +90,21 @@ export default function AdminProductsPage() {
   const [displayFilter, setDisplayFilter] = useState<DisplayFilter>("전체");
   const [statusFilter, setStatusFilter]   = useState<string>("전체");
   const [brandFilter, setBrandFilter]     = useState<string>("전체");
+  // 지점 출고 패스에서 빠르게 임시등록된(정식 정보 미입력) 상품만 따로 걸러보기 — 일반 상품과 혼동 방지용
+  const [tempOnlyFilter, setTempOnlyFilter] = useState(false);
+  // products.registration_status 컬럼은 옛 상품에도 잘못 남아있을 수 있어(과거 ALTER TABLE 기본값 이슈),
+  // "진짜 임시등록 상품"은 반드시 출고 패스(notices)에 실제로 쓰인 적 있는 상품으로도 함께 확인한다.
+  const [noticedIds, setNoticedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    fetch("/api/admin/notices/product-ids")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((ids) => setNoticedIds(new Set(Array.isArray(ids) ? ids : [])))
+      .catch(() => {});
+  }, []);
+  const isTempRegistered = useCallback(
+    (p: Product) => p.registrationStatus === "임시등록" && noticedIds.has(p.id),
+    [noticedIds]
+  );
 
   // ─ 선택 & 정렬 ─────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -393,6 +408,9 @@ export default function AdminProductsPage() {
     // 브랜드
     if (brandFilter !== "전체") list = list.filter(p => (p.brand ?? "") === brandFilter);
 
+    // 임시등록만 보기
+    if (tempOnlyFilter) list = list.filter(isTempRegistered);
+
     // 정렬
     list.sort((a, b) => {
       if (sortBy === "이름순") return a.name.localeCompare(b.name);
@@ -402,7 +420,7 @@ export default function AdminProductsPage() {
     });
 
     return list;
-  }, [products, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, sortBy]);
+  }, [products, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, tempOnlyFilter, isTempRegistered, sortBy]);
 
   const stats = useMemo(() => ({
     total:    filtered.length,
@@ -411,7 +429,8 @@ export default function AdminProductsPage() {
     판매중지: filtered.filter(p => p.status === "판매중지").length,
     진열대기: filtered.filter(p => p.status === "진열대기").length,
     예약판매: filtered.filter(p => p.status === "예약판매").length,
-  }), [filtered]);
+    임시등록: filtered.filter(isTempRegistered).length,
+  }), [filtered, isTempRegistered]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated  = filtered.slice((page - 1) * perPage, page * perPage);
@@ -429,6 +448,7 @@ export default function AdminProductsPage() {
     setApplied({ type: "상품명", query: "" });
     setDisplayFilter("전체"); setStatusFilter("전체"); setBrandFilter("전체");
     setDatePreset("전체"); setDateStart(""); setDateEnd("");
+    setTempOnlyFilter(false);
     setPage(1); setSelected(new Set());
   };
 
@@ -593,7 +613,7 @@ export default function AdminProductsPage() {
     else showMsg(`오류: ${d.error}`);
   };
 
-  const isFiltered = applied.query || displayFilter !== "전체" || statusFilter !== "전체" || brandFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd;
+  const isFiltered = applied.query || displayFilter !== "전체" || statusFilter !== "전체" || brandFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd || tempOnlyFilter;
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -791,9 +811,17 @@ export default function AdminProductsPage() {
             진열대기 <b>{stats.진열대기}</b>
           </button></>
         )}
-        {statusFilter !== "전체" && (
+        {stats.임시등록 > 0 && (
           <><span className="mx-2 text-gray-300">|</span>
-          <button onClick={() => { setStatusFilter("전체"); setSortBy("최종수정순"); setPage(1); }}
+          <button onClick={() => { setTempOnlyFilter(v => !v); setPage(1); }}
+            title="지점 출고 패스에서 빠르게 임시등록한 상품 (정식 정보 미입력)"
+            className={`cursor-pointer hover:text-pink-600 transition-colors ${tempOnlyFilter ? "font-bold text-pink-600" : "text-pink-500"}`}>
+            임시등록 <b>{stats.임시등록}</b>
+          </button></>
+        )}
+        {(statusFilter !== "전체" || tempOnlyFilter) && (
+          <><span className="mx-2 text-gray-300">|</span>
+          <button onClick={() => { setStatusFilter("전체"); setTempOnlyFilter(false); setSortBy("최종수정순"); setPage(1); }}
             className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors text-[13px] underline">
             초기화
           </button></>
@@ -936,7 +964,13 @@ export default function AdminProductsPage() {
                     </td>
                   </tr>
                 ) : paginated.map(p => (
-                  <tr key={p.id} className={`transition-colors ${selected.has(p.id) ? "bg-blue-50/60" : "hover:bg-gray-50"}`}>
+                  <tr key={p.id} className={`transition-colors ${
+                    selected.has(p.id)
+                      ? "bg-blue-50/60"
+                      : isTempRegistered(p)
+                      ? "bg-pink-50/70 hover:bg-pink-100/60"
+                      : "hover:bg-gray-50"
+                  }`}>
                     {/* 체크박스 */}
                     <td className="px-4 py-4">
                       <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleOne(p.id)}
@@ -973,6 +1007,14 @@ export default function AdminProductsPage() {
                         </Link>
                         <div className="min-w-0 flex-1 flex items-center gap-2">
                           <span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>
+                          {isTempRegistered(p) && (
+                            <span
+                              title="지점 출고 패스에서 빠르게 임시등록한 상품 — 정식 정보(가격·카테고리 등) 미입력"
+                              className="flex-shrink-0 px-2 py-0.5 text-[11px] font-bold bg-pink-100 text-pink-600 rounded-full whitespace-nowrap"
+                            >
+                              임시등록
+                            </span>
+                          )}
                           <Link href={`/admin/products/${p.id}/edit`}
                             className="flex-shrink-0 px-2.5 py-1 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors whitespace-nowrap">
                             수정

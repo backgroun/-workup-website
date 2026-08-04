@@ -147,6 +147,7 @@ function buildRow(get, { id, name, image_url, sub_images, detail_blocks }) {
     image_url, sub_images, detail_blocks,
     meta_title: get("메타타이틀", "metaTitle") || `${name} | WORKUP`,
     meta_desc: get("메타설명", "metaDesc") || get("한줄소개", "tagline") || null,
+    registration_status: "정식등록", // 엑셀 일괄등록은 정식 스펙을 갖춰서 올라오므로 임시등록 대기 목록에 뜨지 않게 함
   };
 }
 

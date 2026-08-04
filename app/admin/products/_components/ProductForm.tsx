@@ -136,6 +136,7 @@ type FormData = {
   metaDesc: string;
   fieldTest: string;
   isNew: boolean;
+  registrationStatus: "임시등록" | "정식등록";
 };
 
 function toForm(p?: Product): FormData {
@@ -196,6 +197,7 @@ function toForm(p?: Product): FormData {
     metaDesc: p?.metaDesc ?? "",
     fieldTest: p?.fieldTest ?? "",
     isNew: p?.isNew ?? false,
+    registrationStatus: p?.registrationStatus ?? "정식등록",
   };
 }
 
@@ -1301,6 +1303,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       category: primaryCat.main as Product["category"],
       subCategory: primaryCat.sub as Product["subCategory"],
       categories: form.categories,
+      // 임시등록 상품은 이 화면에서 다른 내용을 아무리 수정·저장해도 상태가 저절로 풀리지 않는다.
+      // "정식등록으로 전환" 체크박스를 명시적으로 체크했을 때만 정식등록으로 바뀐다.
+      registrationStatus: form.registrationStatus,
       tagline: form.tagline,
       price: form.price,
       consumerPrice: form.consumerPrice || undefined,
@@ -1397,6 +1402,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     <form onSubmit={handleSubmit} className="w-full">
       {error && (
         <div className="p-4 mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded">{error}</div>
+      )}
+
+      {initial?.registrationStatus === "임시등록" && (
+        <label className="flex items-center gap-2.5 p-4 mb-4 bg-pink-50 border border-pink-200 rounded-lg cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.registrationStatus === "정식등록"}
+            onChange={(e) => set("registrationStatus", e.target.checked ? "정식등록" : "임시등록")}
+            className="w-4 h-4 accent-[#303236]"
+          />
+          <span className="text-sm text-pink-700">
+            <b>임시등록</b> 상태인 상품입니다 — 이 체크박스를 체크하지 않으면 다른 내용을 수정·저장해도
+            임시등록 상태가 그대로 유지됩니다. 정식등록으로 전환하려면 체크한 뒤 저장해 주세요.
+            {form.registrationStatus === "정식등록" && (
+              <span className="block mt-1 font-semibold">✓ 저장하면 정식등록으로 전환됩니다.</span>
+            )}
+          </span>
+        </label>
       )}
 
       {/* ── 상단 저장 버튼 ── */}

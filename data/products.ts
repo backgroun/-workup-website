@@ -98,6 +98,7 @@ export type Product = {
   videoUrl?: string;   // 갤러리 영상 (YouTube·Vimeo 링크 또는 mp4 등 직접 URL)
   instagramPosts?: InstagramMedia[];   // 이 상품 관련 인스타 미디어(이미지+링크) — 상세페이지 노출
   detailBlocks?: DetailBlock[];
+  registrationStatus?: "임시등록" | "정식등록";   // MD 빠른 등록(임시등록) 지원 — 지점 출고 패스 공지에서 사용
   relatedIds?: string[];
   metaTitle?: string;
   metaDesc?: string;

@@ -73,8 +73,11 @@ export default async function RootLayout({
 }>) {
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdmin = pathname.startsWith("/admin");
+  // 지점 출고 패스 공개 페이지(/b/[token])와 관리 화면(/notices)도 관리자 화면과 동일하게
+  // 사이트 헤더·푸터·팝업 없이 단독으로 렌더링한다.
+  const hideChrome = isAdmin || pathname.startsWith("/b/") || pathname.startsWith("/notices");
 
-  const [topbar, footer, headerNav, logo, search, studio] = isAdmin
+  const [topbar, footer, headerNav, logo, search, studio] = hideChrome
     ? [null, null, null, null, null, null]
     : await Promise.all([
         getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
@@ -101,27 +104,27 @@ export default async function RootLayout({
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <ScrollToTop />
-        {!isAdmin && <PixelManager />}
-        {!isAdmin && <ImageProtection />}
+        {!hideChrome && <PixelManager />}
+        {!hideChrome && <ImageProtection />}
         <CartProvider>
             {/* BottomNav는 position:fixed 로 화면 최하단 고정. scroll-root는 스크롤 컨테이너 */}
             <div
-              id={isAdmin ? undefined : "scroll-root"}
-              className={isAdmin ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col"}
+              id={hideChrome ? undefined : "scroll-root"}
+              className={hideChrome ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col"}
             >
-              {!isAdmin && topbar && headerNav && logo && search && (
+              {!hideChrome && topbar && headerNav && logo && search && (
                 <>
                   <AnnouncementBanner config={topbar} />
                   <Header navItems={visibleNavItems} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
                 </>
               )}
-              <div className={isAdmin ? "flex-1" : "relative flex-1"}>
+              <div className={hideChrome ? "flex-1" : "relative flex-1"}>
                 {children}
               </div>
-              {!isAdmin && <SideBanner />}
-              {!isAdmin && footer && logo && <Footer config={footer} logo={logo} />}
+              {!hideChrome && <SideBanner />}
+              {!hideChrome && footer && logo && <Footer config={footer} logo={logo} />}
             </div>
-            {!isAdmin && headerNav && <BottomNav navItems={visibleNavItems} studioEnabled={studio?.enabled ?? true} />}
+            {!hideChrome && headerNav && <BottomNav navItems={visibleNavItems} studioEnabled={studio?.enabled ?? true} />}
         </CartProvider>
         {/* Vercel 방문/전환 분석 · Core Web Vitals 측정 (대시보드에서 활성화 필요) */}
         <Analytics />

@@ -54,6 +54,7 @@ export function mapFromDb(row: any): Product {
     relatedIds: row.related_ids ?? [],
     metaTitle: row.meta_title ?? undefined,
     metaDesc: row.meta_desc ?? undefined,
+    registrationStatus: row.registration_status ?? "정식등록",
     createdAt: row.created_at ?? undefined,
     updatedAt: row.updated_at ?? undefined,
   };
@@ -103,5 +104,6 @@ export function mapToDb(p: Partial<Product>) {
     related_ids: p.relatedIds ?? [],
     meta_title: p.metaTitle ?? null,
     meta_desc: p.metaDesc ?? null,
+    registration_status: p.registrationStatus ?? "임시등록",
   };
 }

@@ -20,6 +20,7 @@ export type AuditEntry = {
   target?: string | null;        // 대상 이름 (예: 제품명)
   targetId?: string | number | null;
   summary?: string;              // 직접 지정. 없으면 자동 생성.
+  actorName?: string;            // 로그인 관리자가 없는 호출(크론 등)에서 "시스템"처럼 직접 지정
 };
 
 export async function logAudit(entry: AuditEntry): Promise<void> {
@@ -33,7 +34,7 @@ export async function logAudit(entry: AuditEntry): Promise<void> {
     const sb = createAdminClient();
     await sb.from("audit_logs").insert([{
       actor_id:       admin ? String(admin.id) : null,
-      actor_name:     admin?.name ?? "알 수 없음",
+      actor_name:     entry.actorName ?? admin?.name ?? "알 수 없음",
       action:         entry.action,
       resource:       entry.resource,
       resource_label: entry.resourceLabel ?? null,
