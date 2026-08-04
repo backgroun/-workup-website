@@ -3,6 +3,7 @@
 // 마감 관리는 개별 공지가 아니라 "오늘 등록된 모든 공지"를 한 번에 여닫는 전사 단위 동작이다.
 import { createAdminClient } from "./supabase-server";
 import { logAudit } from "./audit-server";
+import { sendPushToAllStores } from "./push";
 
 export type NoticeStatus = "대기" | "진행중" | "마감";
 export type PassStatus = "출고" | "패스";
@@ -38,6 +39,10 @@ export async function openTodaysNotices(opts?: { manual?: boolean }) {
       summary: `${opts?.manual ? "수동 전체" : "자동"} 오픈 (${rows.length}건)`,
       actorName: opts?.manual ? undefined : "시스템",
     });
+    await sendPushToAllStores({
+      title: "지점 출고 패스",
+      body: `오늘의 공지 ${rows.length}건이 열렸습니다. 출고·패스 여부를 확인해 주세요.`,
+    }).catch(() => {});
   }
   return rows;
 }

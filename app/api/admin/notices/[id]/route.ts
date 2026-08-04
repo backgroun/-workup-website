@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
+import { sendPushToAllStores } from "@/lib/push";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -90,5 +91,11 @@ export async function PATCH(req: Request, { params }: Params) {
     targetId: id,
     summary,
   });
+  if (patch.status === "진행중") {
+    await sendPushToAllStores({
+      title: "지점 출고 패스",
+      body: "공지가 열렸습니다. 출고·패스 여부를 확인해 주세요.",
+    }).catch(() => {});
+  }
   return NextResponse.json(data);
 }

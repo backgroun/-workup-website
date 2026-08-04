@@ -6,6 +6,7 @@ import TempProductReveal from "./_components/TempProductReveal";
 import VerticalImageStack from "./_components/VerticalImageStack";
 import CloseCountdown from "./_components/CloseCountdown";
 import PassToggle from "./_components/PassToggle";
+import PushSubscribeButton from "./_components/PushSubscribeButton";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -39,6 +40,8 @@ export default async function BranchPassPage({ params }: Props) {
             </span>
           </div>
         </div>
+
+        <PushSubscribeButton token={token} />
 
         {ctx.notices.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 py-16 text-center text-sm text-gray-400">
