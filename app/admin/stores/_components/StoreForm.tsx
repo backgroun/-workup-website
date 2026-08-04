@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 export type StoreFormData = {
   name: string;
+  store_code: string;
   region: string;
   address: string;
   hoursWeekday: string;
@@ -117,7 +118,7 @@ function ProductSearchSlot({
 }
 
 type InitialData = Partial<{
-  name: string; region: string; address: string; hours: string; phone: string;
+  name: string; store_code: string; region: string; address: string; hours: string; phone: string;
   store_type: string; description: string; brands: string[] | string;
   parking: boolean; kakao_channel_url: string; store_url: string;
   is_active: boolean; page_active: boolean; sort_order: number | string; image_urls: string[];
@@ -139,6 +140,7 @@ export default function StoreForm({
     return {
       form: {
         name: d?.name ?? "",
+        store_code: d?.store_code ?? "",
         region: d?.region ?? "",
         address: d?.address ?? "",
         hoursWeekday: parsed.weekday,
@@ -272,6 +274,16 @@ export default function StoreForm({
               onChange={(e) => set("name", e.target.value)}
               placeholder="워크업 포천직영점"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#303236]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">지점코드</label>
+            <input
+              type="text"
+              value={form.store_code}
+              onChange={(e) => set("store_code", e.target.value)}
+              placeholder="WUP001"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#303236]"
             />
           </div>
           <div>

@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     .from("stores")
     .insert({
       name: body.name,
+      store_code: body.store_code || null,
       region: body.region ?? "",
       address: body.address,
       lat,

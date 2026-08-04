@@ -7,6 +7,7 @@ import { partsFromHours } from "@/lib/storeHours";
 type StoreRow = {
   id: number;
   name: string;
+  store_code: string | null;
   region: string;
   address: string;
   lat: number | null;
@@ -66,7 +67,13 @@ export default function AdminStoresPage() {
 
   const filtered = useMemo(() => {
     return stores.filter((s) => {
-      if (search && !s.name.includes(search) && !s.address.includes(search)) return false;
+      if (
+        search &&
+        !s.name.includes(search) &&
+        !s.address.includes(search) &&
+        !(s.store_code ?? "").toLowerCase().includes(search.toLowerCase())
+      )
+        return false;
       if (regionFilter !== "전체" && s.region !== regionFilter) return false;
       if (typeFilter !== "전체" && s.store_type !== typeFilter) return false;
       if (activeFilter === "활성" && !s.is_active) return false;
@@ -337,6 +344,7 @@ export default function AdminStoresPage() {
                   />
                 </th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">ID</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">지점코드</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">매장명</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">지역</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
@@ -350,7 +358,7 @@ export default function AdminStoresPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={11} className="px-5 py-16 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />
                       불러오는 중...
@@ -359,7 +367,7 @@ export default function AdminStoresPage() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={11} className="px-5 py-16 text-center text-gray-400">
                     {stores.length === 0
                       ? <div>
                           <p className="text-base font-medium mb-2">등록된 매장이 없습니다.</p>
@@ -380,6 +388,7 @@ export default function AdminStoresPage() {
                       />
                     </td>
                     <td className="px-5 py-4 text-gray-400 text-xs font-mono">{store.id}</td>
+                    <td className="px-5 py-4 text-gray-600 text-xs font-mono">{store.store_code || "-"}</td>
                     <td className="px-5 py-4">
                       <span className="font-medium text-gray-900">{store.name}</span>
                       <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[240px]">{store.address}</p>

@@ -7,6 +7,7 @@ import VerticalImageStack from "./_components/VerticalImageStack";
 import CloseCountdown from "./_components/CloseCountdown";
 import PassToggle from "./_components/PassToggle";
 import PushSubscribeButton from "./_components/PushSubscribeButton";
+import RefreshButton from "./_components/RefreshButton";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -35,9 +36,12 @@ export default async function BranchPassPage({ params }: Props) {
                 <p className="text-[11px] text-gray-400 mt-0.5">{ctx.store.manager_name}님 반갑습니다</p>
               )}
             </div>
-            <span className="text-xs text-gray-400 font-mono whitespace-nowrap flex-shrink-0 pt-0.5">
-              {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-xs text-gray-400 font-mono whitespace-nowrap">
+                {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })}
+              </span>
+              <RefreshButton />
+            </div>
           </div>
         </div>
 

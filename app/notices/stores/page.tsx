@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import StoreStatusModal from "../_components/StoreStatusModal";
 
 type StoreRow = {
   id: number;
   name: string;
+  store_code: string | null;
   manager_name: string | null;
   pass_link_token: string | null;
 };
@@ -16,6 +18,7 @@ export default function PassLinksPage() {
   const [msg, setMsg] = useState("");
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [previewStoreId, setPreviewStoreId] = useState<number | null>(null);
+  const [showStatus, setShowStatus] = useState(false);
   const previewStore = stores.find((s) => s.id === previewStoreId) ?? null;
 
   const load = () => {
@@ -88,9 +91,18 @@ export default function PassLinksPage() {
   return (
     <>
       <div className="space-y-5 lg:pr-[46vw]">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">지점 링크 관리</h1>
-          <p className="text-sm text-gray-500 mt-1">링크 토큰이 지점코드 역할을 합니다. 유출이 의심되면 즉시 재발급하세요.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">지점 링크 관리</h1>
+            <p className="text-sm text-gray-500 mt-1">링크 토큰이 지점코드 역할을 합니다. 유출이 의심되면 즉시 재발급하세요.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowStatus(true)}
+            className="flex-shrink-0 px-4 py-2 text-sm font-semibold border border-gray-300 rounded-lg text-gray-600 hover:border-[#303236] hover:text-[#303236]"
+          >
+            지점 현황
+          </button>
         </div>
 
         {msg && <div className="px-4 py-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">{msg}</div>}
@@ -115,7 +127,7 @@ export default function PassLinksPage() {
                     key={s.id}
                     className={previewStore?.id === s.id ? "bg-gray-50" : !s.pass_link_token ? "bg-amber-50/60" : undefined}
                   >
-                    <td className="px-5 py-3 text-sm text-gray-500 font-mono">{s.id}</td>
+                    <td className="px-5 py-3 text-sm text-gray-500 font-mono">{s.store_code || "-"}</td>
                     <td className="px-5 py-3 text-sm font-semibold text-gray-900">{s.name}</td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
@@ -217,6 +229,8 @@ export default function PassLinksPage() {
           )}
         </div>
       </div>
+
+      {showStatus && <StoreStatusModal onClose={() => setShowStatus(false)} />}
     </>
   );
 }

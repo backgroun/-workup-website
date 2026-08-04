@@ -7,7 +7,8 @@ import { logAudit } from "@/lib/audit-server";
 // 공개 GET이 막혀선 안 되는 섹션(팝업·기획전·카테고리 등은 클라이언트에서 조회)과 달리,
 // 민감 정보가 담긴 섹션은 관리자만 읽을 수 있게 한다.
 // admin_favorites: 관리자 UI 개인설정(즐겨찾기) — 관리자만 조회.
-const SENSITIVE_SECTIONS = new Set(["notifications", "admin_favorites"]);
+// store_status: 지점 현황(담당자 연락처·이메일 등 개인정보 포함) — 관리자만 조회.
+const SENSITIVE_SECTIONS = new Set(["notifications", "admin_favorites", "store_status"]);
 
 // 감사로그를 남기지 않는 섹션(관리자 UI 개인설정 등 — 로그 노이즈 방지).
 const NO_AUDIT_SECTIONS = new Set(["admin_favorites"]);

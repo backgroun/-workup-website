@@ -47,6 +47,7 @@ export async function PUT(req: Request, { params }: Params) {
     .from("stores")
     .update({
       name: body.name,
+      store_code: body.store_code || null,
       region: body.region ?? "",
       address: body.address,
       lat,
