@@ -55,6 +55,7 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
   const [saving, setSaving] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [draft, setDraft] = useState<StoreStatusRow | null>(null);
+  const [isNewRow, setIsNewRow] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -126,21 +127,51 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
   const startEdit = (idx: number) => {
     setEditIdx(idx);
     setDraft({ ...rows[idx] });
+    setIsNewRow(false);
+  };
+
+  // 새 행은 화면에서만 먼저 추가하고, 실제로는 "저장"을 눌러야 반영된다.
+  // 취소하면 화면에서만 추가됐던 빈 행을 그냥 제거한다.
+  const addRow = () => {
+    const empty: StoreStatusRow = {
+      code: "", name: "", manager: "", contact: "", shipNotice: "", email: "", address: "", openedAt: "",
+    };
+    setRows((prev) => [empty, ...prev]);
+    setEditIdx(0);
+    setDraft({ ...empty });
+    setIsNewRow(true);
   };
 
   const cancelEdit = () => {
+    if (isNewRow && editIdx !== null) {
+      setRows((prev) => prev.filter((_, i) => i !== editIdx));
+    }
     setEditIdx(null);
     setDraft(null);
+    setIsNewRow(false);
   };
 
   const saveEdit = async () => {
     if (editIdx === null || !draft) return;
+    if (!draft.name.trim()) {
+      setError("매장명은 비워둘 수 없습니다.");
+      return;
+    }
     const next = rows.map((r, i) => (i === editIdx ? draft : r));
     const ok = await saveRows(next);
     if (ok) {
-      showInfo("수정했습니다.");
-      cancelEdit();
+      showInfo("저장했습니다.");
+      setEditIdx(null);
+      setDraft(null);
+      setIsNewRow(false);
     }
+  };
+
+  const deleteRow = async (idx: number) => {
+    if (!confirm(`"${rows[idx].name}" 행을 삭제할까요?`)) return;
+    const next = rows.filter((_, i) => i !== idx);
+    const ok = await saveRows(next);
+    if (ok) showInfo("삭제했습니다.");
   };
 
   return (
@@ -158,6 +189,14 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={addRow}
+              disabled={editIdx !== null}
+              className="px-3 py-1.5 text-[13px] font-semibold bg-[#303236] text-white rounded-lg hover:bg-[#1f2124] disabled:opacity-50"
+            >
+              + 지점 추가
+            </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
@@ -254,13 +293,24 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => startEdit(idx)}
-                            className="px-2.5 py-1 text-[12px] font-semibold text-gray-600 border border-gray-200 rounded hover:border-gray-400"
-                          >
-                            수정
-                          </button>
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(idx)}
+                              disabled={editIdx !== null}
+                              className="px-2.5 py-1 text-[12px] font-semibold text-gray-600 border border-gray-200 rounded hover:border-gray-400 disabled:opacity-40"
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteRow(idx)}
+                              disabled={editIdx !== null || saving}
+                              className="px-2.5 py-1 text-[12px] font-semibold text-red-600 border border-red-200 rounded hover:bg-red-50 disabled:opacity-40"
+                            >
+                              삭제
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
