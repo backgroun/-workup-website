@@ -84,11 +84,10 @@ export default function NoticeProductPicker() {
     }
   };
 
-  // ── 새 상품 임시등록 ──
+  // ── 새 상품 임시등록 (대표 썸네일 + 상품명 + 한 줄 설명만 — 나머지는 정식등록 때 채운다) ──
   const [qName, setQName] = useState("");
   const [qTagline, setQTagline] = useState("");
   const [qCover, setQCover] = useState("");
-  const [qDetailImages, setQDetailImages] = useState<string[]>([]);
   const [qSaving, setQSaving] = useState(false);
   const [info, setInfo] = useState("");
   // 상품 생성은 성공했는데 공지 생성만 실패하는 경우, 재시도 시 상품을 또 만들지 않고
@@ -122,14 +121,6 @@ export default function NoticeProductPicker() {
             name: qName.trim(),
             tagline: qTagline.trim(),
             imageUrl: qCover || undefined,
-            // "나머지 사진들"은 갤러리(subImages)가 아니라 상세페이지(detailBlocks)에 그대로 들어가
-            // 정식등록 시 상품 상세 탭의 세로 이미지로 자연스럽게 이어진다.
-            detailBlocks: qDetailImages.map((url, i) => ({
-              id: `d${i + 1}`,
-              type: "상품 소개" as const,
-              content: "",
-              imageUrl: url,
-            })),
             line: "DAILY",
             category: "소품",
             subCategory: "기타",
@@ -188,8 +179,9 @@ export default function NoticeProductPicker() {
             <CoverAndDetailImagesField
               cover={qCover}
               onCoverChange={setQCover}
-              detailImages={qDetailImages}
-              onDetailImagesChange={setQDetailImages}
+              detailImages={[]}
+              onDetailImagesChange={() => {}}
+              showDetail={false}
               onError={setError}
               onInfo={showInfo}
             />
@@ -214,7 +206,7 @@ export default function NoticeProductPicker() {
               {qSaving ? "등록 중..." : "임시등록하고 공지에 추가"}
             </button>
             <p className="text-[12.5px] text-gray-400">
-              임시등록 상품은 실제 사이트(고객 화면)에는 노출되지 않습니다. 가격·카테고리 등 나머지 정보는 정식 등록 화면에서 나중에 채우면 됩니다.
+              임시등록 상품은 실제 사이트(고객 화면)에는 노출되지 않습니다. 상세 사진·가격·카테고리 등 나머지 정보는 정식 등록 화면에서 나중에 채우면 됩니다.
             </p>
           </div>
         </div>

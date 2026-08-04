@@ -15,6 +15,7 @@ export default function CoverAndDetailImagesField({
   onError,
   onInfo,
   showCover = true,
+  showDetail = true,
   detailLabel = "나머지 사진 (상세페이지에 등록)",
   detailHint = "여기 추가한 사진은 상품 상세페이지(세로로 이어지는 상세 이미지)에 그대로 등록됩니다.",
 }: {
@@ -25,6 +26,7 @@ export default function CoverAndDetailImagesField({
   onError: (msg: string) => void;
   onInfo: (msg: string) => void;
   showCover?: boolean;
+  showDetail?: boolean;
   detailLabel?: string;
   detailHint?: string;
 }) {
@@ -106,6 +108,7 @@ export default function CoverAndDetailImagesField({
       </div>
       )}
 
+      {showDetail && (
       <div>
         <label className="block text-sm font-semibold text-gray-600 mb-1.5">{detailLabel}</label>
         <div className="flex flex-wrap gap-2">
@@ -139,6 +142,7 @@ export default function CoverAndDetailImagesField({
         </div>
         <p className="text-[12px] text-gray-400 mt-1.5">{detailHint}</p>
       </div>
+      )}
     </div>
   );
 }
