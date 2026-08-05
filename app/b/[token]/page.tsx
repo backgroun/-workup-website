@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPassContextByToken, getNoticeSchedule } from "@/lib/notices";
 import RefreshButton from "./_components/RefreshButton";
 import NoticeViewToggle, { type NoticeItem } from "./_components/NoticeViewToggle";
+import PassPageShell from "./_components/PassPageShell";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -36,7 +37,7 @@ export default async function BranchPassPage({ params }: Props) {
   }));
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] flex items-start justify-center py-10 px-4">
+    <PassPageShell>
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
           <div className="flex items-start justify-between gap-3">
@@ -57,6 +58,6 @@ export default async function BranchPassPage({ params }: Props) {
 
         <NoticeViewToggle items={items} token={token} closeTime={schedule.closeTime} />
       </div>
-    </main>
+    </PassPageShell>
   );
 }

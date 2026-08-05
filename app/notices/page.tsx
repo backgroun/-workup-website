@@ -1,16 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import type { Product } from "@/data/products";
 import NoticeStatusSelect, { type NoticeStatus } from "./_components/NoticeStatusSelect";
 import NoticeStatusLine from "./_components/NoticeStatusLine";
 import PassEntriesTable from "./_components/PassEntriesTable";
-import QuickEditModal from "./_components/QuickEditModal";
-import NoticeExtraEditModal from "./_components/NoticeExtraEditModal";
 import TempNoticeEditModal from "./_components/TempNoticeEditModal";
 import { useIsPastClose } from "@/lib/hooks/useIsPastClose";
 
 const DEFAULT_CLOSE_TIME = "14:00";
 
+// 공지는 이제 항상 마감패스 전용(products 테이블 미연결)으로만 등록된다.
 type NoticeRow = {
   id: string;
   product_id: string | null;
@@ -23,7 +21,7 @@ type NoticeRow = {
   temp_name: string | null;
   temp_image_url: string | null;
   temp_tagline: string | null;
-  products: { id: string; name: string; registration_status?: string } | null;
+  products: { id: string; name: string } | null;
 };
 
 const STATIC_NAV = [
@@ -56,12 +54,6 @@ export default function NoticesPreviewPage() {
   const [noticesLoading, setNoticesLoading] = useState(true);
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  // 임시등록 상태인 공지 상품을 빠르게 고치는 "공지 수정" — 전체 상품 정보를 담아야 하므로
-  // (products.registration_status 등만으로는 부족) 정식등록 대기와 동일한 소스에서 통째로 가져온다.
-  const [pendingProducts, setPendingProducts] = useState<Product[]>([]);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  // 정식등록 상품 공지는 상품 자체가 아니라 공지에 덧붙는 추가 설명·사진만 수정한다.
-  const [editingNotice, setEditingNotice] = useState<NoticeRow | null>(null);
   // 마감패스 전용(product_id 없음) 공지는 이름·썸네일·설명을 공지에서 직접 수정한다.
   const [editingTempNotice, setEditingTempNotice] = useState<NoticeRow | null>(null);
 
@@ -77,12 +69,6 @@ export default function NoticesPreviewPage() {
       .finally(() => setNoticesLoading(false));
   };
 
-  const loadPendingProducts = () => {
-    fetch("/api/admin/notices/pending-products")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setPendingProducts(Array.isArray(data) ? data : []));
-  };
-
   // 마감 관리에서 설정한 마감 시각 — 자동 마감 크론(하루 1회)이 아직 안 돌았어도
   // 브라우저 시계 기준으로 마감 시각이 지났으면 화면에서 즉시 "마감"임을 알려준다.
   const [closeTime, setCloseTime] = useState(DEFAULT_CLOSE_TIME);
@@ -90,7 +76,6 @@ export default function NoticesPreviewPage() {
 
   useEffect(() => {
     loadNotices();
-    loadPendingProducts();
     fetch("/api/admin/site-settings/notice_schedule")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setCloseTime(data?.closeTime || DEFAULT_CLOSE_TIME));
@@ -228,20 +213,7 @@ export default function NoticesPreviewPage() {
                             }`}
                           >
                             <td className="px-5 py-3 text-sm text-gray-500 font-mono whitespace-nowrap">{fmtNoticeDate(n.notice_date)}</td>
-                            <td className="px-5 py-3 text-sm font-semibold text-gray-900">
-                              <span
-                                className={`mr-2 px-1.5 py-0.5 text-[10px] font-bold rounded whitespace-nowrap ${
-                                  !n.product_id
-                                    ? "bg-orange-100 text-orange-600"
-                                    : n.products?.registration_status === "임시등록"
-                                    ? "bg-pink-100 text-pink-600"
-                                    : "bg-gray-100 text-gray-500"
-                                }`}
-                              >
-                                {!n.product_id ? "마감패스" : n.products?.registration_status === "임시등록" ? "임시등록" : "기등록"}
-                              </span>
-                              {noticeName(n)}
-                            </td>
+                            <td className="px-5 py-3 text-sm font-semibold text-gray-900">{noticeName(n)}</td>
                             <td className="px-5 py-3">
                               <div className="flex items-center gap-2">
                                 <NoticeStatusSelect
@@ -263,14 +235,7 @@ export default function NoticesPreviewPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (!n.product_id) {
-                                      setEditingTempNotice(n);
-                                    } else if (n.products?.registration_status === "임시등록") {
-                                      const product = pendingProducts.find((p) => p.id === n.products?.id);
-                                      if (product) setEditingProduct(product);
-                                    } else {
-                                      setEditingNotice(n);
-                                    }
+                                    setEditingTempNotice(n);
                                   }}
                                   className="px-2.5 py-1.5 text-[12px] font-semibold text-gray-600 border border-gray-300 rounded-lg hover:border-[#303236] hover:text-[#303236]"
                                 >
@@ -327,37 +292,6 @@ export default function NoticesPreviewPage() {
             </div>
           )}
       </div>
-
-      {editingProduct && (
-        <QuickEditModal
-          product={editingProduct}
-          onClose={() => setEditingProduct(null)}
-          onSaved={(updated) => {
-            setPendingProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-            setNotices((prev) =>
-              prev.map((n) =>
-                n.products?.id === updated.id ? { ...n, products: { ...n.products!, name: updated.name } } : n
-              )
-            );
-            setEditingProduct(null);
-          }}
-        />
-      )}
-
-      {editingNotice && (
-        <NoticeExtraEditModal
-          noticeId={editingNotice.id}
-          productName={editingNotice.products?.name}
-          initialExtraImages={editingNotice.extra_images}
-          onClose={() => setEditingNotice(null)}
-          onSaved={({ extra_images }) => {
-            setNotices((prev) =>
-              prev.map((n) => (n.id === editingNotice.id ? { ...n, extra_images } : n))
-            );
-            setEditingNotice(null);
-          }}
-        />
-      )}
 
       {editingTempNotice && (
         <TempNoticeEditModal
