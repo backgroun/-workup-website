@@ -15,13 +15,15 @@ export default function NoticeCard({ item, token, closeTime }: { item: NoticeIte
   return (
     <div className={`rounded-2xl shadow-sm border p-6 ${isClosed ? "bg-gray-100 border-gray-200" : "bg-white border-gray-100"}`}>
       {!closed ? (
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 min-w-0">
-            <CloseCountdown closeTime={closeTime} />
-          </div>
-          <span className={`flex-shrink-0 px-2.5 py-1 text-[12px] font-bold rounded-full ${STATUS_PILL[status]}`}>
+        <div className="flex items-stretch gap-2 mb-3">
+          <div
+            className={`flex-shrink-0 flex items-center justify-center px-4 text-[15px] font-bold rounded-xl ${STATUS_PILL[status]}`}
+          >
             {status}
-          </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <CloseCountdown closeTime={closeTime} noMargin />
+          </div>
         </div>
       ) : (
         <div className="flex justify-end mb-2">

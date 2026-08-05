@@ -105,7 +105,7 @@ export default function PassLinksPage() {
 
   return (
     <>
-      <div className="space-y-5 lg:pr-[46vw]">
+      <div className="space-y-5 lg:pr-[32vw]">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-gray-900">지점 링크 관리</h1>
@@ -197,7 +197,7 @@ export default function PassLinksPage() {
         )}
       </div>
 
-      <div className="fixed top-0 right-0 h-screen w-full sm:w-[46vw] bg-white border-l border-gray-200 shadow-2xl z-40 flex flex-col">
+      <div className="fixed top-0 right-0 h-screen w-full sm:w-[32vw] bg-white border-l border-gray-200 shadow-2xl z-40 flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 gap-3">
           <span className="text-sm font-semibold text-gray-900 truncate">
             {previewStore ? `${previewStore.name} 화면 확인` : "화면 확인"}
