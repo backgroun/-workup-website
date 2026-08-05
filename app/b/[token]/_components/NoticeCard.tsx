@@ -3,7 +3,7 @@ import TempProductReveal from "./TempProductReveal";
 import VerticalImageStack from "./VerticalImageStack";
 import CloseCountdown from "./CloseCountdown";
 import { usePassStatus, STATUS_PILL } from "./usePassStatus";
-import { useIsPastClose } from "./useIsPastClose";
+import { useIsPastClose } from "@/lib/hooks/useIsPastClose";
 import type { NoticeItem } from "./NoticeViewToggle";
 
 // 카드형 한 장 — 상단에 마감 카운트다운 + 현재 상태(출고/패스) 뱃지를 나란히 보여주고,

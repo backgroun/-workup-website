@@ -382,6 +382,22 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+  // ── 단일 메뉴: 지점 출고 패스 (상단 헤더에 있던 바로가기를 좌측 메뉴로 이동) ──
+  {
+    label: "지점 출고 패스",
+    items: [
+      {
+        label: "지점 출고 패스",
+        href: "/notices",
+        newTab: true,
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        ),
+      },
+    ],
+  },
   // ── 마지막. 비활성 기능 (현재 사용하지 않는 기능 모음) ──────────────────────
   {
     label: "비활성 기능",
@@ -437,6 +453,15 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
+/** 새 창(target=_blank)으로 열리는 메뉴임을 알리는 작은 아이콘 — 상단 헤더의 "사이트 미리보기"와 동일한 모양 */
+function ExternalLinkIcon() {
+  return (
+    <svg className="w-3 h-3 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    </svg>
+  );
+}
+
 function StarIcon({ filled }: { filled: boolean }) {
   return filled ? (
     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -475,6 +500,7 @@ function LeafRow({
       >
         <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>{leaf.icon}</span>
         <span className="truncate">{leaf.label}</span>
+        {leaf.newTab && <ExternalLinkIcon />}
       </Link>
       <button
         type="button"
@@ -603,12 +629,15 @@ export default function AdminSidebar() {
               <div key={group.label} className="mb-0.5 px-3">
                 <Link
                   href={only.href}
+                  target={only.newTab ? "_blank" : undefined}
+                  rel={only.newTab ? "noopener noreferrer" : undefined}
                   className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-[14px] font-bold tracking-tight transition-colors ${
                     active ? "bg-[#1d4ed8] text-white shadow-md shadow-blue-900/30" : "text-slate-300 hover:text-white hover:bg-white/8"
                   }`}
                 >
                   <span className={`flex-shrink-0 ${active ? "text-white" : "text-slate-500"}`}>{only.icon}</span>
                   <span>{group.label}</span>
+                  {only.newTab && <ExternalLinkIcon />}
                 </Link>
               </div>
             );

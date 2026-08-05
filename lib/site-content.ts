@@ -63,7 +63,7 @@ export const DEFAULT_FOOTER: FooterConfig = {
   socialLinks: [],
   copyright: "© 2026 (주)트레이딩포스트. All rights reserved.",
   navLinks: [
-    { id: "nav-cs",          label: "고객센터 070-8877-3088", href: "/support" },
+    { id: "nav-cs",          label: "고객센터",      href: "/support" },
     { id: "nav-inquiry",     label: "1:1문의",       href: "/support" },
     { id: "nav-franchise",   label: "가맹·창업문의", href: "/partnership/franchise" },
     { id: "nav-wholesale",   label: "입점·제휴문의", href: "/partnership/wholesale" },

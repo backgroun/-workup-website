@@ -188,7 +188,7 @@ export default function Footer({ config, logo }: { config?: FooterConfig | null;
         <nav className="flex flex-col gap-4 mb-6">
           {c.navLinks.map((item) => (
             <Link key={item.id} href={item.href} className="text-[14px] text-[#303236]">
-              {item.label}
+              {item.id === "nav-cs" ? `${item.label} ${c.cs_phone}` : item.label}
             </Link>
           ))}
         </nav>

@@ -4,7 +4,7 @@ import CloseCountdown from "./CloseCountdown";
 import PassToggle from "./PassToggle";
 import PushSubscribeButton from "./PushSubscribeButton";
 import NoticeCard from "./NoticeCard";
-import { useIsPastClose } from "./useIsPastClose";
+import { useIsPastClose } from "@/lib/hooks/useIsPastClose";
 
 export type NoticeItem = {
   noticeId: string;

@@ -13,6 +13,7 @@ export default function NoticeStatusLine({
   openedAt,
   closedAt,
   onChanged,
+  pastCloseHint,
 }: {
   noticeId: string;
   productName?: string;
@@ -20,6 +21,8 @@ export default function NoticeStatusLine({
   openedAt: string | null;
   closedAt: string | null;
   onChanged: (status: NoticeStatus, data: { opened_at: string | null; closed_at: string | null }) => void;
+  // 마감 관리에서 설정한 마감 시각을 브라우저 시계가 지났는지(자동 마감 크론과 별개, 화면 표시용)
+  pastCloseHint?: boolean;
 }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex items-center gap-3 flex-wrap">
@@ -34,6 +37,11 @@ export default function NoticeStatusLine({
           </>
         )}
       </span>
+      {status === "진행중" && pastCloseHint && (
+        <span className="text-[12px] font-semibold text-amber-600" title="마감 시각이 지났습니다. 자동 마감 처리를 기다리는 중입니다.">
+          마감 시각 경과
+        </span>
+      )}
     </div>
   );
 }

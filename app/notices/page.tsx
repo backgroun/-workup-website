@@ -7,6 +7,9 @@ import PassEntriesTable from "./_components/PassEntriesTable";
 import QuickEditModal from "./_components/QuickEditModal";
 import NoticeExtraEditModal from "./_components/NoticeExtraEditModal";
 import TempNoticeEditModal from "./_components/TempNoticeEditModal";
+import { useIsPastClose } from "@/lib/hooks/useIsPastClose";
+
+const DEFAULT_CLOSE_TIME = "14:00";
 
 type NoticeRow = {
   id: string;
@@ -80,9 +83,17 @@ export default function NoticesPreviewPage() {
       .then((data) => setPendingProducts(Array.isArray(data) ? data : []));
   };
 
+  // 마감 관리에서 설정한 마감 시각 — 자동 마감 크론(하루 1회)이 아직 안 돌았어도
+  // 브라우저 시계 기준으로 마감 시각이 지났으면 화면에서 즉시 "마감"임을 알려준다.
+  const [closeTime, setCloseTime] = useState(DEFAULT_CLOSE_TIME);
+  const isPastClose = useIsPastClose(closeTime);
+
   useEffect(() => {
     loadNotices();
     loadPendingProducts();
+    fetch("/api/admin/site-settings/notice_schedule")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setCloseTime(data?.closeTime || DEFAULT_CLOSE_TIME));
   }, []);
 
   const handleDelete = async (id: string, name?: string) => {
@@ -232,13 +243,20 @@ export default function NoticesPreviewPage() {
                               {noticeName(n)}
                             </td>
                             <td className="px-5 py-3">
-                              <NoticeStatusSelect
-                                noticeId={n.id}
-                                status={n.status}
-                                onChanged={(status, data) =>
-                                  setNotices((prev) => prev.map((x) => (x.id === n.id ? { ...x, status, ...data } : x)))
-                                }
-                              />
+                              <div className="flex items-center gap-2">
+                                <NoticeStatusSelect
+                                  noticeId={n.id}
+                                  status={n.status}
+                                  onChanged={(status, data) =>
+                                    setNotices((prev) => prev.map((x) => (x.id === n.id ? { ...x, status, ...data } : x)))
+                                  }
+                                />
+                                {n.status === "진행중" && isPastClose && (
+                                  <span className="text-[11px] font-semibold text-amber-600 whitespace-nowrap" title="마감 시각이 지났습니다. 자동 마감 처리를 기다리는 중입니다.">
+                                    마감 시각 경과
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-5 py-3 text-right whitespace-nowrap">
                               <div className="inline-flex gap-2">
@@ -286,6 +304,7 @@ export default function NoticesPreviewPage() {
                           status={selectedNotice.status}
                           openedAt={selectedNotice.opened_at}
                           closedAt={selectedNotice.closed_at}
+                          pastCloseHint={isPastClose}
                           onChanged={(status, data) =>
                             setNotices((prev) => prev.map((n) => (n.id === selectedNotice.id ? { ...n, status, ...data } : n)))
                           }

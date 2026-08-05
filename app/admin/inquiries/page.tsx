@@ -68,6 +68,7 @@ function InquiryRow({ q, selected, onToggleSelect, onStatus, onChangeType, onDel
   useEffect(() => { setDraft(existing); }, [existing]);
 
   const name = q.payload.name || q.payload.manager || "-";
+  const subject = q.payload.subject ? String(q.payload.subject) : null;
   const email = Object.entries(q.payload).find(([k, v]) => !k.startsWith("_") && EMAIL_RE.test(String(v)))?.[1];
   const extras = Object.entries(q.payload).filter(([k, v]) => !k.startsWith("_") && !HIDE_FIELDS.has(k) && String(v).trim());
   const save = async () => { setSaving(true); try { await onSaveReply(q.id, draft); } finally { setSaving(false); } };
@@ -81,6 +82,7 @@ function InquiryRow({ q, selected, onToggleSelect, onStatus, onChangeType, onDel
         <span className="text-sm text-slate-700 truncate">{name}</span>
         <span className="text-sm text-slate-800 truncate flex items-center gap-1.5">
           {q.payload._reply && <span className="text-emerald-600 text-[11px] flex-shrink-0">✓답변</span>}
+          {subject && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 flex-shrink-0">{subject}</span>}
           <span className="truncate">{getTitle(q)}</span>
         </span>
         <div className="flex items-center gap-1.5 justify-end">
