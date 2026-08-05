@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/admin-auth";
 import { logAudit } from "@/lib/audit-server";
+import { hashPassword } from "@/lib/password";
 
 export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,14 +40,21 @@ export async function POST(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
+    if (!body.email?.trim() || !body.name?.trim() || !body.password) {
+      return NextResponse.json({ error: "이름, 이메일, 비밀번호는 필수입니다." }, { status: 400 });
+    }
+    if (body.password.length < 8) {
+      return NextResponse.json({ error: "비밀번호는 8자 이상이어야 합니다." }, { status: 400 });
+    }
     const sb = createAdminClient();
     const { data, error } = await sb.from("members").insert([{
-      email:  body.email,
-      name:   body.name,
+      email:  body.email.trim().toLowerCase(),
+      name:   body.name.trim(),
       phone:  body.phone  ?? null,
       memo:   body.memo   ?? null,
       grade:  body.grade  ?? "일반회원",
       status: "active",
+      password_hash: hashPassword(body.password),
     }]).select().single();
     if (error) throw error;
     await logAudit({
