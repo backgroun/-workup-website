@@ -4,6 +4,7 @@ import CloseCountdown from "./CloseCountdown";
 import PassToggle from "./PassToggle";
 import PushSubscribeButton from "./PushSubscribeButton";
 import NoticeCard from "./NoticeCard";
+import { useIsPastClose } from "./useIsPastClose";
 
 export type NoticeItem = {
   noticeId: string;
@@ -33,6 +34,8 @@ export default function NoticeViewToggle({
   closeTime: string;
 }) {
   const [view, setView] = useState<ViewMode>("card");
+  // 마감 크론이 아직 안 돌았어도 브라우저 시계로 마감 시각이 지났으면 즉시 마감 취급.
+  const isPastClose = useIsPastClose(closeTime);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -76,21 +79,24 @@ export default function NoticeViewToggle({
         </div>
       ) : view === "list" ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
-          {items.map((item) => (
-            <div key={item.noticeId} className="px-4 py-3">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <p className="text-[13.5px] font-semibold text-gray-900 truncate">{item.productName}</p>
-                {item.status === "진행중" && <CloseCountdown closeTime={closeTime} compact />}
+          {items.map((item) => {
+            const effectiveStatus = item.status === "진행중" && isPastClose ? "마감" : item.status;
+            return (
+              <div key={item.noticeId} className="px-4 py-3">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <p className="text-[13.5px] font-semibold text-gray-900 truncate">{item.productName}</p>
+                  {effectiveStatus === "진행중" && <CloseCountdown closeTime={closeTime} compact />}
+                </div>
+                <PassToggle
+                  token={token}
+                  noticeId={item.noticeId}
+                  noticeStatus={effectiveStatus}
+                  initialStatus={item.passStatus}
+                  initialUpdatedAt={item.updatedAt}
+                />
               </div>
-              <PassToggle
-                token={token}
-                noticeId={item.noticeId}
-                noticeStatus={item.status}
-                initialStatus={item.passStatus}
-                initialUpdatedAt={item.updatedAt}
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-4">

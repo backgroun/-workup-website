@@ -63,7 +63,7 @@ export const DEFAULT_FOOTER: FooterConfig = {
   socialLinks: [],
   copyright: "© 2026 (주)트레이딩포스트. All rights reserved.",
   navLinks: [
-    { id: "nav-cs",          label: "고객센터",      href: "/support" },
+    { id: "nav-cs",          label: "고객센터 070-8877-3088", href: "/support" },
     { id: "nav-inquiry",     label: "1:1문의",       href: "/support" },
     { id: "nav-franchise",   label: "가맹·창업문의", href: "/partnership/franchise" },
     { id: "nav-wholesale",   label: "입점·제휴문의", href: "/partnership/wholesale" },
@@ -159,9 +159,9 @@ export type SupportConfig = {
 };
 
 export const DEFAULT_SUPPORT: SupportConfig = {
-  hero_eyebrow: "CUSTOMER CENTER",
-  hero_title: "고객센터 · 1:1 문의",
-  hero_desc: "제품·사이즈부터 매장 방문, 교환/반품까지 — 궁금하신 점을 남겨 주시면 담당자가 빠르게 도와드립니다.",
+  hero_eyebrow: "",
+  hero_title: "고객센터",
+  hero_desc: "제품 문의, 매장 방문, 교환/반품까지 — 궁금하신 사항을 남겨 주시면 담당자가 도와드립니다.",
   guide_image_url: "",
   intro_title: "무엇을 도와드릴까요?",
   intro_desc: "제품·사이즈, 매장 방문, 교환/반품 등 궁금하신 점을 남겨 주세요.",

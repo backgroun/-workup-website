@@ -21,23 +21,24 @@ export default async function SupportPage() {
 
   return (
     <main>
-      {/* 히어로 */}
-      <section className="bg-[#FAFAF8] pt-16 md:pt-20 pb-2">
-        <div className="max-w-6xl mx-auto px-6">
-          {sup.hero_eyebrow && (
-            <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">{sup.hero_eyebrow}</p>
-          )}
-          {sup.hero_title && (
-            <h1 className="text-[32px] md:text-[42px] font-bold text-[#303236] leading-tight mb-4">{sup.hero_title}</h1>
-          )}
-          {sup.hero_desc && (
-            <p className="text-[14px] text-gray-500 leading-relaxed max-w-xl md:max-w-none md:whitespace-nowrap whitespace-pre-line">{sup.hero_desc}</p>
-          )}
+      <section className="bg-[#FAFAF8]">
+        {/* ── 페이지 타이틀 (store 페이지와 동일한 흰 배경 타이틀 박스) ── */}
+        <div className="bg-white pt-10 pb-3 md:pt-12 md:pb-6 border-b border-gray-100">
+          <div className="max-w-6xl mx-auto px-6">
+            {sup.hero_eyebrow && (
+              <p className="text-xs tracking-widest text-[#E5541B] uppercase mb-3">{sup.hero_eyebrow}</p>
+            )}
+            {sup.hero_title && (
+              <h1 className="text-[26px] md:text-[42px] font-[700] md:font-[500] text-[#303236] leading-tight mb-3">{sup.hero_title}</h1>
+            )}
+            {sup.hero_desc && (
+              <p className="text-[13px] md:text-[17px] text-gray-500 leading-relaxed whitespace-pre-line">{sup.hero_desc}</p>
+            )}
+          </div>
         </div>
-      </section>
 
-      <div className="bg-[#FAFAF8] pb-12 md:pb-16 pt-8 md:pt-10">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="pb-12 md:pb-16 pt-8 md:pt-10">
+          <div className="max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-6 lg:items-stretch">
 
             {/* 좌: 안내 이미지 + 고객센터 정보 */}
@@ -99,6 +100,7 @@ export default async function SupportPage() {
           </div>
         </div>
       </div>
+      </section>
     </main>
   );
 }

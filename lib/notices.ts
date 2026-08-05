@@ -176,7 +176,16 @@ export async function getPassContextByToken(token: string): Promise<PassContext 
   return { store, notices };
 }
 
+// "HH:MM"(KST 벽시계 기준)이 이미 지났는지 — 서버가 UTC로 돌아도 정확히 비교되도록 +09:00을 명시한다.
+function isPastKstTime(hhmm: string): boolean {
+  const todayKst = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+  const closeInstant = new Date(`${todayKst}T${hhmm}:00+09:00`);
+  return Date.now() > closeInstant.getTime();
+}
+
 // 지점의 패스 상태 변경 — 마감 후에는 절대 허용하지 않는다(서버측 강제).
+// notice.status만 믿으면 안 된다: 14:00 마감 크론이 아직 안 돌았을 때도(지연·실패 등)
+// 실제 시계가 마감 시각을 지났으면 거부해야 한다.
 export async function setPassStatus(noticeId: string, storeId: number, status: PassStatus) {
   const sb = createAdminClient();
   const { data: notice, error: noticeErr } = await sb
@@ -186,6 +195,9 @@ export async function setPassStatus(noticeId: string, storeId: number, status: P
     .maybeSingle();
   if (noticeErr || !notice) throw new Error("공지를 찾을 수 없습니다.");
   if (notice.status !== "진행중") throw new Error("마감된 공지는 수정할 수 없습니다.");
+
+  const schedule = await getNoticeSchedule();
+  if (isPastKstTime(schedule.closeTime)) throw new Error("마감된 공지는 수정할 수 없습니다.");
 
   const { data, error } = await sb
     .from("pass_entries")

@@ -3,14 +3,18 @@ import TempProductReveal from "./TempProductReveal";
 import VerticalImageStack from "./VerticalImageStack";
 import CloseCountdown from "./CloseCountdown";
 import { usePassStatus, STATUS_PILL } from "./usePassStatus";
+import { useIsPastClose } from "./useIsPastClose";
 import type { NoticeItem } from "./NoticeViewToggle";
 
 // 카드형 한 장 — 상단에 마감 카운트다운 + 현재 상태(출고/패스) 뱃지를 나란히 보여주고,
 // 하단엔 단일 토글 버튼 하나로만 조작한다(두 버튼을 나란히 두면 헷갈린다는 피드백 반영).
 export default function NoticeCard({ item, token, closeTime }: { item: NoticeItem; token: string; closeTime: string }) {
   const { status, updatedAt, saving, error, toggle } = usePassStatus(token, item.noticeId, item.passStatus, item.updatedAt);
-  const isClosed = item.status === "마감";
-  const closed = item.status !== "진행중";
+  // 마감 크론이 아직 안 돌아 item.status가 "진행중"으로 남아있어도, 브라우저 시계로 마감 시각이
+  // 지났으면 화면에서 즉시 마감 처리한다(패스 버튼 자체를 숨김). 실제 저장은 서버가 다시 검증.
+  const isPastClose = useIsPastClose(closeTime);
+  const isClosed = item.status === "마감" || (item.status === "진행중" && isPastClose);
+  const closed = item.status !== "진행중" || isPastClose;
 
   return (
     <div className={`rounded-2xl shadow-sm border p-6 ${isClosed ? "bg-gray-100 border-gray-200" : "bg-white border-gray-100"}`}>
