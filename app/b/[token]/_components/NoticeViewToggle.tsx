@@ -1,0 +1,104 @@
+"use client";
+import { useEffect, useState } from "react";
+import CloseCountdown from "./CloseCountdown";
+import PassToggle from "./PassToggle";
+import PushSubscribeButton from "./PushSubscribeButton";
+import NoticeCard from "./NoticeCard";
+
+export type NoticeItem = {
+  noticeId: string;
+  status: "대기" | "진행중" | "마감";
+  productName: string;
+  images: string[];
+  // 서버에서 DOMPurify로 이미 살균된 HTML 문자열 — 렌더링 시점(여기)에서만 dangerouslySetInnerHTML로 표시한다.
+  taglineHtml: string | null;
+  descriptionHtml: string | null;
+  extraImages: string[];
+  passStatus: "출고" | "패스";
+  updatedAt: string | null;
+};
+
+type ViewMode = "card" | "list";
+const STORAGE_KEY = "branchPassViewMode";
+
+// 카드형(사진 포함, 지금까지의 기본 화면)과 텍스트 목록형(상품명+패스 버튼만) 두 가지 보기.
+// 마지막으로 고른 보기 방식은 기기에 저장해 다음 방문에도 유지한다.
+export default function NoticeViewToggle({
+  items,
+  token,
+  closeTime,
+}: {
+  items: NoticeItem[];
+  token: string;
+  closeTime: string;
+}) {
+  const [view, setView] = useState<ViewMode>("card");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "card" || saved === "list") setView(saved);
+  }, []);
+
+  const changeView = (next: ViewMode) => {
+    setView(next);
+    localStorage.setItem(STORAGE_KEY, next);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <PushSubscribeButton token={token} />
+        <div className="flex items-center gap-0.5 p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => changeView("card")}
+            className={`px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-colors ${
+              view === "card" ? "bg-white text-[#303236] shadow-sm" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            카드형
+          </button>
+          <button
+            type="button"
+            onClick={() => changeView("list")}
+            className={`px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-colors ${
+              view === "list" ? "bg-white text-[#303236] shadow-sm" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            목록형
+          </button>
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 py-16 text-center text-sm text-gray-400">
+          오늘 등록된 공지가 없습니다.
+        </div>
+      ) : view === "list" ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
+          {items.map((item) => (
+            <div key={item.noticeId} className="px-4 py-3">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-[13.5px] font-semibold text-gray-900 truncate">{item.productName}</p>
+                {item.status === "진행중" && <CloseCountdown closeTime={closeTime} compact />}
+              </div>
+              <PassToggle
+                token={token}
+                noticeId={item.noticeId}
+                noticeStatus={item.status}
+                initialStatus={item.passStatus}
+                initialUpdatedAt={item.updatedAt}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((item) => (
+            <NoticeCard key={item.noticeId} item={item} token={token} closeTime={closeTime} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

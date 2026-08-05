@@ -88,7 +88,7 @@ export default function AdminStoresPage() {
     const target = filtered.length === stores.length ? stores : filtered;
     if (target.length === 0) return;
     const header = [
-      "ID", "매장명", "지역", "주소", "전화번호",
+      "ID", "지점코드", "매장명", "지역", "주소", "전화번호",
       "평일시작", "평일종료", "주말시작", "주말종료",
       "매장유형", "취급브랜드(;구분)", "주차여부", "매장소개",
       "카카오채널URL", "스토어URL", "활성여부", "정렬순서",
@@ -97,6 +97,7 @@ export default function AdminStoresPage() {
       const t = partsFromHours(s.hours ?? "");
       return [
         s.id,
+        s.store_code ?? "",
         s.name,
         s.region ?? "",
         s.address,
@@ -116,7 +117,7 @@ export default function AdminStoresPage() {
       ];
     });
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
-    ws["!cols"] = header.map((_, i) => ({ wch: i === 1 ? 24 : i === 3 ? 40 : i === 12 ? 30 : 14 }));
+    ws["!cols"] = header.map((_, i) => ({ wch: i === 2 ? 24 : i === 4 ? 40 : i === 13 ? 30 : 14 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "매장목록");
     const today = new Date().toISOString().slice(0, 10);
@@ -332,10 +333,10 @@ export default function AdminStoresPage() {
       {/* 테이블 */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-[13px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-5 py-3.5 text-left w-10">
+                <th className="px-3 py-2.5 text-left w-10">
                   <input
                     type="checkbox"
                     checked={allFilteredSelected}
@@ -343,16 +344,16 @@ export default function AdminStoresPage() {
                     className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
                   />
                 </th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">ID</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">지점코드</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">매장명</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">지역</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">전화</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상태</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">스토어 페이지</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">상세보기</th>
-                <th className="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">관리</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">관리</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">ID</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">지점코드</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">매장명</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">지역</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">유형</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">전화</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">상태</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">스토어 페이지</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">상세보기</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -379,7 +380,7 @@ export default function AdminStoresPage() {
               ) : (
                 filtered.map((store) => (
                   <tr key={store.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4">
+                    <td className="px-3 py-2.5">
                       <input
                         type="checkbox"
                         checked={selected.has(store.id)}
@@ -387,64 +388,64 @@ export default function AdminStoresPage() {
                         className="w-4 h-4 rounded border-gray-300 accent-[#303236]"
                       />
                     </td>
-                    <td className="px-5 py-4 text-gray-400 text-xs font-mono">{store.id}</td>
-                    <td className="px-5 py-4 text-gray-600 text-xs font-mono">{store.store_code || "-"}</td>
-                    <td className="px-5 py-4">
-                      <span className="font-medium text-gray-900">{store.name}</span>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[240px]">{store.address}</p>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600">{store.region || "-"}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${TYPE_COLOR[store.store_type] ?? "bg-gray-100 text-gray-600"}`}>
-                        {store.store_type || "직영점"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600 font-mono text-xs">{store.phone || "-"}</td>
-                    <td className="px-5 py-4">
-                      <button
-                        onClick={() => toggleActive(store)}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-full cursor-pointer transition-colors ${store.is_active ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                      >
-                        {store.is_active ? "활성" : "비활성"}
-                      </button>
-                    </td>
-                    <td className="px-5 py-4">
-                      <button
-                        onClick={() => togglePageActive(store)}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-full cursor-pointer transition-colors ${store.page_active ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                      >
-                        {store.page_active ? "노출" : "비노출"}
-                      </button>
-                    </td>
-                    <td className="px-5 py-4">
-                      {store.page_active ? (
-                        <Link
-                          href={`/store/${store.id}`}
-                          target="_blank"
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          공개 페이지 ↗
-                        </Link>
-                      ) : (
-                        <span className="text-xs text-gray-300">페이지 비노출</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-1.5 whitespace-nowrap">
                         <Link
                           href={`/admin/stores/${store.id}/edit`}
-                          className="px-3 py-1.5 text-xs font-semibold text-[#303236] border border-[#303236] rounded hover:bg-[#303236] hover:text-white transition-colors"
+                          className="px-2 py-1 text-[11px] font-semibold text-[#303236] border border-[#303236] rounded hover:bg-[#303236] hover:text-white transition-colors"
                         >
                           수정
                         </Link>
                         <button
                           onClick={() => handleDelete(store.id, store.name)}
                           disabled={deleting === store.id}
-                          className="px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-300 rounded hover:bg-red-600 hover:text-white transition-colors disabled:opacity-50"
+                          className="px-2 py-1 text-[11px] font-semibold text-red-600 border border-red-300 rounded hover:bg-red-600 hover:text-white transition-colors disabled:opacity-50"
                         >
                           삭제
                         </button>
                       </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-400 text-[11px] font-mono">{store.id}</td>
+                    <td className="px-3 py-2.5 text-gray-600 text-[11px] font-mono">{store.store_code || "-"}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="font-medium text-gray-900">{store.name}</span>
+                      <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[200px]">{store.address}</p>
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-600">{store.region || "-"}</td>
+                    <td className="px-3 py-2.5">
+                      <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full ${TYPE_COLOR[store.store_type] ?? "bg-gray-100 text-gray-600"}`}>
+                        {store.store_type || "직영점"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-600 font-mono text-[11px]">{store.phone || "-"}</td>
+                    <td className="px-3 py-2.5">
+                      <button
+                        onClick={() => toggleActive(store)}
+                        className={`px-2 py-0.5 text-[11px] font-semibold rounded-full cursor-pointer transition-colors ${store.is_active ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                      >
+                        {store.is_active ? "활성" : "비활성"}
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <button
+                        onClick={() => togglePageActive(store)}
+                        className={`px-2 py-0.5 text-[11px] font-semibold rounded-full cursor-pointer transition-colors ${store.page_active ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                      >
+                        {store.page_active ? "노출" : "비노출"}
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {store.page_active ? (
+                        <Link
+                          href={`/store/${store.id}`}
+                          target="_blank"
+                          className="text-[11px] text-blue-600 hover:underline"
+                        >
+                          공개 페이지 ↗
+                        </Link>
+                      ) : (
+                        <span className="text-[11px] text-gray-300">페이지 비노출</span>
+                      )}
                     </td>
                   </tr>
                 ))

@@ -1,22 +1,35 @@
 "use client";
 import { useState } from "react";
+import DescriptionField from "./DescriptionField";
 import CoverAndDetailImagesField from "./CoverAndDetailImagesField";
 
-// 정식등록 상품 공지 전용 "공지 수정" — 상품 자체(이름·기본 사진 등)는 건드리지 않고,
-// 이 공지에 한해 대표 사진 아래에 덧붙는 추가 사진만 고친다.
-export default function NoticeExtraEditModal({
+// 마감패스 전용(product_id 없음) 공지 수정 — products 테이블과 무관하게 공지(notices)에
+// 직접 저장된 이름·썸네일·설명 + 추가 사진을 한 화면에서 고친다.
+export default function TempNoticeEditModal({
   noticeId,
-  productName,
+  initialName,
+  initialImageUrl,
+  initialTagline,
   initialExtraImages,
   onClose,
   onSaved,
 }: {
   noticeId: string;
-  productName?: string;
+  initialName: string;
+  initialImageUrl: string | null;
+  initialTagline: string | null;
   initialExtraImages: string[];
   onClose: () => void;
-  onSaved: (data: { extra_images: string[] }) => void;
+  onSaved: (data: {
+    temp_name: string;
+    temp_image_url: string | null;
+    temp_tagline: string | null;
+    extra_images: string[];
+  }) => void;
 }) {
+  const [name, setName] = useState(initialName);
+  const [cover, setCover] = useState(initialImageUrl ?? "");
+  const [tagline, setTagline] = useState(initialTagline ?? "");
   const [extraImages, setExtraImages] = useState<string[]>(initialExtraImages);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -28,20 +41,34 @@ export default function NoticeExtraEditModal({
   };
 
   const save = async () => {
+    if (!name.trim()) {
+      setError("상품명을 입력해 주세요.");
+      return;
+    }
     setError("");
     setSaving(true);
     try {
       const res = await fetch(`/api/admin/notices/${noticeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ extra_images: extraImages }),
+        body: JSON.stringify({
+          temp_name: name.trim(),
+          temp_image_url: cover || null,
+          temp_tagline: tagline.trim() || null,
+          extra_images: extraImages,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "저장에 실패했습니다.");
         return;
       }
-      onSaved({ extra_images: data.extra_images ?? [] });
+      onSaved({
+        temp_name: data.temp_name,
+        temp_image_url: data.temp_image_url ?? null,
+        temp_tagline: data.temp_tagline ?? null,
+        extra_images: data.extra_images ?? [],
+      });
     } catch {
       setError("네트워크 오류로 저장에 실패했습니다.");
     } finally {
@@ -56,9 +83,7 @@ export default function NoticeExtraEditModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white z-10 rounded-t-2xl">
-          <span className="font-bold text-[16px] text-gray-900">
-            공지 수정{productName ? ` — ${productName}` : ""}
-          </span>
+          <span className="font-bold text-[16px] text-gray-900">공지 수정</span>
           <button
             type="button"
             onClick={onClose}
@@ -78,13 +103,37 @@ export default function NoticeExtraEditModal({
           )}
 
           <CoverAndDetailImagesField
+            cover={cover}
+            onCoverChange={setCover}
+            detailImages={[]}
+            onDetailImagesChange={() => {}}
+            showDetail={false}
+            onError={setError}
+            onInfo={showInfo}
+            coverSize={140}
+          />
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품명</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품설명</label>
+            <DescriptionField value={tagline} onChange={setTagline} />
+          </div>
+
+          <CoverAndDetailImagesField
             showCover={false}
             cover=""
             onCoverChange={() => {}}
             detailImages={extraImages}
             onDetailImagesChange={setExtraImages}
             detailLabel="추가 사진 (선택)"
-            detailHint="여기 추가한 사진은 이 공지에서 대표 사진 아래에 함께 노출됩니다. (상품 자체 정보는 변경되지 않습니다)"
+            detailHint="여기 추가한 사진은 이 공지에서 대표 사진 아래에 함께 노출됩니다."
             onError={setError}
             onInfo={showInfo}
           />

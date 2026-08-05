@@ -79,13 +79,14 @@ export type NoticeCard = {
     extraImages: string[];
   };
   product: {
-    id: string;
+    // 실제 상품(products 테이블) 연결이 있으면 그 id, 마감패스 전용(공지에만 존재)이면 null.
+    id: string | null;
     name: string;
     tagline: string | null;
     image_url: string | null;
-    // 임시등록의 "나머지 사진"은 상세페이지(detail_blocks)에 등록되는 형태로 저장된다.
+    // 임시등록의 "나머지 사진"은 상세페이지(detail_blocks)에 등록되는 형태로 저장된다. 마감패스 전용은 항상 빈 배열.
     detail_image_urls: string[];
-    registration_status: string;
+    isTempOnly: boolean;
   } | null;
   passStatus: PassStatus;
   updatedAt: string | null;
@@ -115,18 +116,17 @@ export async function getPassContextByToken(token: string): Promise<PassContext 
   const today = new Date().toISOString().slice(0, 10);
   const { data: noticeRows } = await sb
     .from("notices")
-    .select("id, status, notice_date, product_id, description, extra_images")
+    .select("id, status, notice_date, product_id, description, extra_images, temp_name, temp_image_url, temp_tagline")
     .or(`status.eq.진행중,and(status.eq.마감,notice_date.eq.${today})`)
     .order("created_at", { ascending: true });
 
   const noticeList = noticeRows ?? [];
   if (!noticeList.length) return { store, notices: [] };
 
-  const productIds = [...new Set(noticeList.map((n) => n.product_id))];
-  const { data: products } = await sb
-    .from("products")
-    .select("id, name, tagline, image_url, detail_blocks, registration_status")
-    .in("id", productIds);
+  const productIds = [...new Set(noticeList.map((n) => n.product_id).filter((id): id is string => Boolean(id)))];
+  const { data: products } = productIds.length
+    ? await sb.from("products").select("id, name, tagline, image_url, detail_blocks").in("id", productIds)
+    : { data: [] as { id: string; name: string; tagline: string | null; image_url: string | null; detail_blocks: unknown }[] };
   const productById = new Map((products ?? []).map((p) => [p.id, p]));
 
   const noticeIds = noticeList.map((n) => n.id);
@@ -139,7 +139,26 @@ export async function getPassContextByToken(token: string): Promise<PassContext 
 
   const notices: NoticeCard[] = noticeList.map((n) => {
     const entry = entryByNotice.get(n.id);
-    const p = productById.get(n.product_id);
+    const p = n.product_id ? productById.get(n.product_id) : undefined;
+    const product: NoticeCard["product"] = p
+      ? {
+          id: p.id,
+          name: p.name,
+          tagline: p.tagline,
+          image_url: p.image_url,
+          detail_image_urls: ((p.detail_blocks ?? []) as { imageUrl?: string }[])
+            .map((b) => b.imageUrl)
+            .filter((u): u is string => Boolean(u)),
+          isTempOnly: false,
+        }
+      : {
+          id: null,
+          name: n.temp_name ?? "상품 정보 없음",
+          tagline: n.temp_tagline,
+          image_url: n.temp_image_url,
+          detail_image_urls: [],
+          isTempOnly: true,
+        };
     return {
       notice: {
         id: n.id,
@@ -148,18 +167,7 @@ export async function getPassContextByToken(token: string): Promise<PassContext 
         description: n.description ?? null,
         extraImages: (n.extra_images ?? []) as string[],
       },
-      product: p
-        ? {
-            id: p.id,
-            name: p.name,
-            tagline: p.tagline,
-            image_url: p.image_url,
-            detail_image_urls: ((p.detail_blocks ?? []) as { imageUrl?: string }[])
-              .map((b) => b.imageUrl)
-              .filter((u): u is string => Boolean(u)),
-            registration_status: p.registration_status ?? "정식등록",
-          }
-        : null,
+      product,
       passStatus: (entry?.status as PassStatus) ?? "출고",
       updatedAt: entry?.updated_at ?? null,
     };

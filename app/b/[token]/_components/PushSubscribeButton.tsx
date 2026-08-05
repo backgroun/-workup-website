@@ -85,25 +85,25 @@ export default function PushSubscribeButton({ token }: { token: string }) {
   if (!supported) return null;
 
   return (
-    <div className="mb-4">
+    <div className="flex-shrink-0">
       {subscribed ? (
         <button
           onClick={unsubscribe}
           disabled={busy}
-          className="w-full px-4 py-2.5 text-[13px] font-semibold text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50"
+          className="px-2.5 py-1.5 text-[12px] font-semibold text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
         >
-          🔔 알림 켜짐 (끄려면 탭)
+          🔔 알림 켜짐
         </button>
       ) : (
         <button
           onClick={subscribe}
           disabled={busy}
-          className="w-full px-4 py-2.5 text-[13px] font-bold text-white bg-[#303236] rounded-xl hover:bg-[#1f2124] disabled:opacity-50"
+          className="px-2.5 py-1.5 text-[12px] font-bold text-white bg-[#303236] rounded-lg hover:bg-[#1f2124] disabled:opacity-50 whitespace-nowrap"
         >
-          {busy ? "설정 중..." : "🔔 공지 알림 받기"}
+          {busy ? "설정 중..." : "🔔 알림받기"}
         </button>
       )}
-      {error && <p className="mt-1.5 text-[12px] text-red-500 text-center">{error}</p>}
+      {error && <p className="mt-1 text-[11px] text-red-500 max-w-[160px]">{error}</p>}
     </div>
   );
 }

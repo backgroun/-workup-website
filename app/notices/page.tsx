@@ -6,15 +6,20 @@ import NoticeStatusLine from "./_components/NoticeStatusLine";
 import PassEntriesTable from "./_components/PassEntriesTable";
 import QuickEditModal from "./_components/QuickEditModal";
 import NoticeExtraEditModal from "./_components/NoticeExtraEditModal";
+import TempNoticeEditModal from "./_components/TempNoticeEditModal";
 
 type NoticeRow = {
   id: string;
+  product_id: string | null;
   notice_date: string;
   status: NoticeStatus;
   opened_at: string | null;
   closed_at: string | null;
   description: string | null;
   extra_images: string[];
+  temp_name: string | null;
+  temp_image_url: string | null;
+  temp_tagline: string | null;
   products: { id: string; name: string; registration_status?: string } | null;
 };
 
@@ -22,9 +27,8 @@ const STATIC_NAV = [
   { key: "new", label: "공지 상품 선택", src: "/notices/new?embed=1" },
   { key: "detail", label: "마감 패스 현황", src: null as string | null },
   { key: "deadline", label: "마감 관리", src: "/notices/deadline?embed=1" },
-  { key: "pending", label: "정식등록 대기", src: "/notices/pending?embed=1" },
-  { key: "stats", label: "통계", src: "/notices/stats?embed=1" },
   { key: "stores", label: "지점 링크 관리", src: "/notices/stores?embed=1" },
+  { key: "stats", label: "통계", src: "/notices/stats?embed=1" },
 ];
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -35,6 +39,11 @@ function fmtNoticeDate(iso: string): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yy}-${mm}-${dd}(${WEEKDAYS[d.getDay()]})`;
+}
+
+// 정식 상품(products) 공지든 마감패스 전용(temp_name) 공지든 상관없이 표시용 이름 하나로.
+function noticeName(n: NoticeRow): string {
+  return n.products?.name ?? n.temp_name ?? "상품 정보 없음";
 }
 
 export default function NoticesPreviewPage() {
@@ -50,6 +59,8 @@ export default function NoticesPreviewPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   // 정식등록 상품 공지는 상품 자체가 아니라 공지에 덧붙는 추가 설명·사진만 수정한다.
   const [editingNotice, setEditingNotice] = useState<NoticeRow | null>(null);
+  // 마감패스 전용(product_id 없음) 공지는 이름·썸네일·설명을 공지에서 직접 수정한다.
+  const [editingTempNotice, setEditingTempNotice] = useState<NoticeRow | null>(null);
 
   const loadNotices = () => {
     setNoticesLoading(true);
@@ -121,7 +132,7 @@ export default function NoticesPreviewPage() {
           for (const r of data as { store_name: string; status: string; updated_at: string | null }[]) {
             allRows.push({
               "공지일자": excelDate,
-              "상품명": n.products?.name ?? "상품 정보 없음",
+              "상품명": noticeName(n),
               "지점명": r.store_name,
               "상태": r.status,
               "변경 시각": r.updated_at ? new Date(r.updated_at).toLocaleString("ko-KR") : "",
@@ -140,13 +151,6 @@ export default function NoticesPreviewPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">화면 모아보기</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          실제 데이터가 그대로 반영된 관리자 화면을 한 곳에서 넘겨보며 검토할 수 있습니다.
-        </p>
-      </div>
-
       <div className="flex gap-5">
           <nav className="w-48 flex-shrink-0 space-y-1">
             {STATIC_NAV.map((n) => (
@@ -216,14 +220,16 @@ export default function NoticesPreviewPage() {
                             <td className="px-5 py-3 text-sm font-semibold text-gray-900">
                               <span
                                 className={`mr-2 px-1.5 py-0.5 text-[10px] font-bold rounded whitespace-nowrap ${
-                                  n.products?.registration_status === "임시등록"
+                                  !n.product_id
+                                    ? "bg-orange-100 text-orange-600"
+                                    : n.products?.registration_status === "임시등록"
                                     ? "bg-pink-100 text-pink-600"
                                     : "bg-gray-100 text-gray-500"
                                 }`}
                               >
-                                {n.products?.registration_status === "임시등록" ? "임시등록" : "기등록"}
+                                {!n.product_id ? "마감패스" : n.products?.registration_status === "임시등록" ? "임시등록" : "기등록"}
                               </span>
-                              {n.products?.name ?? "상품 정보 없음"}
+                              {noticeName(n)}
                             </td>
                             <td className="px-5 py-3">
                               <NoticeStatusSelect
@@ -239,7 +245,9 @@ export default function NoticesPreviewPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (n.products?.registration_status === "임시등록") {
+                                    if (!n.product_id) {
+                                      setEditingTempNotice(n);
+                                    } else if (n.products?.registration_status === "임시등록") {
                                       const product = pendingProducts.find((p) => p.id === n.products?.id);
                                       if (product) setEditingProduct(product);
                                     } else {
@@ -253,7 +261,7 @@ export default function NoticesPreviewPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDelete(n.id, n.products?.name);
+                                    handleDelete(n.id, noticeName(n));
                                   }}
                                   disabled={deletingId === n.id || n.status !== "마감"}
                                   title={n.status !== "마감" ? "마감된 공지만 삭제할 수 있습니다." : undefined}
@@ -274,7 +282,7 @@ export default function NoticesPreviewPage() {
                       <>
                         <NoticeStatusLine
                           noticeId={selectedNotice.id}
-                          productName={selectedNotice.products?.name}
+                          productName={noticeName(selectedNotice)}
                           status={selectedNotice.status}
                           openedAt={selectedNotice.opened_at}
                           closedAt={selectedNotice.closed_at}
@@ -321,14 +329,28 @@ export default function NoticesPreviewPage() {
         <NoticeExtraEditModal
           noticeId={editingNotice.id}
           productName={editingNotice.products?.name}
-          initialDescription={editingNotice.description}
           initialExtraImages={editingNotice.extra_images}
           onClose={() => setEditingNotice(null)}
-          onSaved={({ description, extra_images }) => {
+          onSaved={({ extra_images }) => {
             setNotices((prev) =>
-              prev.map((n) => (n.id === editingNotice.id ? { ...n, description, extra_images } : n))
+              prev.map((n) => (n.id === editingNotice.id ? { ...n, extra_images } : n))
             );
             setEditingNotice(null);
+          }}
+        />
+      )}
+
+      {editingTempNotice && (
+        <TempNoticeEditModal
+          noticeId={editingTempNotice.id}
+          initialName={editingTempNotice.temp_name ?? ""}
+          initialImageUrl={editingTempNotice.temp_image_url}
+          initialTagline={editingTempNotice.temp_tagline}
+          initialExtraImages={editingTempNotice.extra_images}
+          onClose={() => setEditingTempNotice(null)}
+          onSaved={(data) => {
+            setNotices((prev) => prev.map((n) => (n.id === editingTempNotice.id ? { ...n, ...data } : n)));
+            setEditingTempNotice(null);
           }}
         />
       )}

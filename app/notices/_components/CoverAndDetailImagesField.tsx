@@ -18,6 +18,9 @@ export default function CoverAndDetailImagesField({
   showDetail = true,
   detailLabel = "나머지 사진 (상세페이지에 등록)",
   detailHint = "여기 추가한 사진은 상품 상세페이지(세로로 이어지는 상세 이미지)에 그대로 등록됩니다.",
+  coverSize = 96,
+  coverHint = "목록·지점 화면에 대표로 보이는 사진입니다.",
+  coverButtonPosition = "side",
 }: {
   cover: string;
   onCoverChange: (url: string) => void;
@@ -29,6 +32,12 @@ export default function CoverAndDetailImagesField({
   showDetail?: boolean;
   detailLabel?: string;
   detailHint?: string;
+  // 대표 썸네일 미리보기 한 변 크기(px) — 가로 배치 등 더 크게 보여주고 싶을 때 조절.
+  coverSize?: number;
+  // 빈 문자열을 넘기면 안내 문구를 생략한다.
+  coverHint?: string;
+  // "side": 썸네일 옆에 버튼, "below": 썸네일 아래에 버튼(세로 배치일 때).
+  coverButtonPosition?: "side" | "below";
 }) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingDetail, setUploadingDetail] = useState(false);
@@ -79,10 +88,13 @@ export default function CoverAndDetailImagesField({
       {showCover && (
       <div>
         <label className="block text-sm font-semibold text-gray-600 mb-1.5">대표 썸네일</label>
-        <div className="flex items-center gap-3">
-          <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0">
+        <div className={coverButtonPosition === "below" ? "inline-flex flex-col items-center gap-2" : "flex items-center gap-3"}>
+          <div
+            className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0"
+            style={{ width: coverSize, height: coverSize }}
+          >
             {cover ? (
-              <Image src={cover} alt="" fill className="object-cover" sizes="96px" />
+              <Image src={cover} alt="" fill className="object-cover" sizes={`${coverSize}px`} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-300 text-[11px] text-center px-1">
                 이미지 없음
@@ -104,7 +116,7 @@ export default function CoverAndDetailImagesField({
             />
           </label>
         </div>
-        <p className="text-[12px] text-gray-400 mt-1.5">목록·지점 화면에 대표로 보이는 사진입니다.</p>
+        {coverHint && <p className="text-[12px] text-gray-400 mt-1.5">{coverHint}</p>}
       </div>
       )}
 

@@ -12,6 +12,9 @@ type NoticeDetail = {
   status: "대기" | "진행중" | "마감";
   opened_at: string | null;
   closed_at: string | null;
+  temp_name: string | null;
+  temp_image_url: string | null;
+  temp_tagline: string | null;
   products: { id: string; name: string; image_url: string | null; tagline: string | null; registration_status: string } | null;
 };
 
@@ -41,27 +44,30 @@ export default function NoticeDetailPage() {
   if (!notice) return <div className="py-20 text-center text-sm text-gray-400">공지를 찾을 수 없습니다.</div>;
 
   const product = notice.products;
+  const name = product?.name ?? notice.temp_name ?? "상품 정보 없음";
+  const imageUrl = product?.image_url ?? notice.temp_image_url;
+  const tagline = product?.tagline ?? notice.temp_tagline;
 
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-4">
         <div className="relative w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-          {product?.image_url ? (
-            <Image src={product.image_url} alt={product.name} fill className="object-cover" sizes="64px" />
+          {imageUrl ? (
+            <Image src={imageUrl} alt={name} fill className="object-cover" sizes="64px" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">없음</div>
           )}
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">{product?.name ?? "상품 정보 없음"}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{name}</h1>
           <div className="text-sm text-gray-500 mt-0.5 flex flex-wrap items-baseline gap-x-1">
             <span>{notice.notice_date} 공지</span>
-            {product?.tagline && (
+            {tagline && (
               <>
                 <span>·</span>
                 <span
                   className="[&_p]:m-0 [&_p]:inline"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.tagline) }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(tagline) }}
                 />
               </>
             )}
@@ -71,7 +77,7 @@ export default function NoticeDetailPage() {
 
       <NoticeStatusLine
         noticeId={notice.id}
-        productName={product?.name}
+        productName={name}
         status={notice.status}
         openedAt={notice.opened_at}
         closedAt={notice.closed_at}

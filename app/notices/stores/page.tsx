@@ -19,7 +19,22 @@ export default function PassLinksPage() {
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [previewStoreId, setPreviewStoreId] = useState<number | null>(null);
   const [showStatus, setShowStatus] = useState(false);
+  const [search, setSearch] = useState("");
   const previewStore = stores.find((s) => s.id === previewStoreId) ?? null;
+
+  // 지점코드순 정렬(코드 없는 매장은 맨 뒤) + 지점명/지점코드 검색.
+  const filteredStores = stores
+    .filter((s) => {
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      return s.name.toLowerCase().includes(q) || (s.store_code ?? "").toLowerCase().includes(q);
+    })
+    .sort((a, b) => {
+      if (!a.store_code && !b.store_code) return 0;
+      if (!a.store_code) return 1;
+      if (!b.store_code) return -1;
+      return a.store_code.localeCompare(b.store_code, undefined, { numeric: true });
+    });
 
   const load = () => {
     setLoading(true);
@@ -107,6 +122,13 @@ export default function PassLinksPage() {
 
         {msg && <div className="px-4 py-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">{msg}</div>}
 
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="지점명 또는 지점코드 검색"
+          className="w-full max-w-sm border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
+        />
+
         {loading ? (
           <div className="py-20 text-center text-sm text-gray-400">불러오는 중...</div>
         ) : (
@@ -122,7 +144,7 @@ export default function PassLinksPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {stores.map((s) => (
+                {filteredStores.map((s) => (
                   <tr
                     key={s.id}
                     className={previewStore?.id === s.id ? "bg-gray-50" : !s.pass_link_token ? "bg-amber-50/60" : undefined}

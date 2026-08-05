@@ -2,17 +2,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import type { Product } from "@/data/products";
+import DOMPurify from "isomorphic-dompurify";
 import DescriptionField from "./DescriptionField";
 import CoverAndDetailImagesField from "./CoverAndDetailImagesField";
 
-function slugify(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^\w\s가-힣]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[가-힣]/g, (c) => c.charCodeAt(0).toString(16));
-}
+// 지점 출고 패스에서 빠르게 등록한 "마감패스 전용" 상품 — products 테이블(사이트 카탈로그)과 무관하게
+// 공지(notices)에 이름/썸네일/설명을 직접 저장한다. 나중에 진짜 상품으로 옮기는 기능은 별도 작업.
+type TempProductEntry = {
+  temp_name: string;
+  temp_image_url: string | null;
+  temp_tagline: string | null;
+};
 
 export default function NoticeProductPicker() {
   const router = useRouter();
@@ -23,50 +23,54 @@ export default function NoticeProductPicker() {
   const goToNotice = (id: string) => router.push(`/notices/${id}${embed ? "?embed=1" : ""}`);
 
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const showInfo = (text: string) => {
+    setInfo(text);
+    setTimeout(() => setInfo(""), 4000);
+  };
 
-  // ── 기존 상품에서 선택 (정식등록되어 실제 노출 중인 상품만 — 임시등록/진열대기는 제외) ──
-  const [products, setProducts] = useState<Product[]>([]);
+  // ── 기존 상품에서 선택 (지점 출고 패스로 이전에 등록했던 마감패스 전용 상품만) ──
+  const [existing, setExisting] = useState<TempProductEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [creatingId, setCreatingId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [creatingName, setCreatingName] = useState<string | null>(null);
+  const [expandedName, setExpandedName] = useState<string | null>(null);
   const [extraDesc, setExtraDesc] = useState("");
   const [extraImages, setExtraImages] = useState<string[]>([]);
+  // 목록엔 이름만 보이고, 눌러보면(미리보기) 사진·설명까지 확인할 수 있다.
+  const [previewEntry, setPreviewEntry] = useState<TempProductEntry | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/products")
+    fetch("/api/admin/notices/existing-temp-products")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .then((data) => setExisting(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = products.filter(
-      (p) => (p.registrationStatus ?? "정식등록") === "정식등록" && p.status !== "진열대기"
-    );
-    if (q) list = list.filter((p) => p.name.toLowerCase().includes(q));
-    return [...list]
-      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
-      .slice(0, 30);
-  }, [products, query]);
+    if (!q) return existing.slice(0, 30);
+    return existing.filter((p) => p.temp_name.toLowerCase().includes(q)).slice(0, 30);
+  }, [existing, query]);
 
-  const openNoticeForm = (productId: string) => {
-    setExpandedId((prev) => (prev === productId ? null : productId));
+  const openNoticeForm = (name: string) => {
+    setExpandedName((prev) => (prev === name ? null : name));
     setExtraDesc("");
     setExtraImages([]);
     setError("");
   };
 
-  const createNotice = async (productId: string) => {
+  const createNoticeFromExisting = async (entry: TempProductEntry) => {
     setError("");
-    setCreatingId(productId);
+    setCreatingName(entry.temp_name);
     try {
       const res = await fetch("/api/admin/notices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product_id: productId,
+          temp_name: entry.temp_name,
+          temp_image_url: entry.temp_image_url,
+          temp_tagline: entry.temp_tagline,
           description: extraDesc.trim() || undefined,
           extra_images: extraImages,
         }),
@@ -80,77 +84,39 @@ export default function NoticeProductPicker() {
     } catch {
       setError("네트워크 오류로 공지 생성에 실패했습니다.");
     } finally {
-      setCreatingId(null);
+      setCreatingName(null);
     }
   };
 
-  // ── 새 상품 임시등록 (대표 썸네일 + 상품명 + 한 줄 설명만 — 나머지는 정식등록 때 채운다) ──
+  // ── 새 상품 임시등록 (대표 썸네일 + 상품명 + 상품설명만 — products 테이블에는 만들지 않는다) ──
   const [qName, setQName] = useState("");
   const [qTagline, setQTagline] = useState("");
   const [qCover, setQCover] = useState("");
   const [qSaving, setQSaving] = useState(false);
-  const [info, setInfo] = useState("");
-  // 상품 생성은 성공했는데 공지 생성만 실패하는 경우, 재시도 시 상품을 또 만들지 않고
-  // 이미 만들어진 상품으로 공지만 다시 시도한다 (중복 상품 생성 방지).
-  const [createdProduct, setCreatedProduct] = useState<{ id: string; name: string } | null>(null);
-
-  const showInfo = (text: string) => {
-    setInfo(text);
-    setTimeout(() => setInfo(""), 4000);
-  };
 
   const quickRegisterAndNotice = async () => {
-    if (!createdProduct && !qName.trim()) {
+    if (!qName.trim()) {
       setError("상품명을 입력해 주세요.");
       return;
     }
     setError("");
     setQSaving(true);
     try {
-      let product = createdProduct;
-      if (!product) {
-        // 같은 상품명으로 재시도해도 충돌하지 않도록 매번 고유한 접미사를 붙인다
-        // (products.id가 PK라 slugify(name)만 쓰면 "duplicate key" 오류가 났었다).
-        const suffix = Date.now().toString(36).slice(-5);
-        const id = `${slugify(qName) || "product"}-${suffix}`;
-        const productRes = await fetch("/api/admin/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id,
-            name: qName.trim(),
-            tagline: qTagline.trim(),
-            imageUrl: qCover || undefined,
-            line: "DAILY",
-            category: "소품",
-            subCategory: "기타",
-            registrationStatus: "임시등록",
-            // 임시등록은 지점 출고 패스 내부용 — 정식등록 전까지 실제 사이트(고객)에는 노출되지 않아야 한다.
-            status: "진열대기",
-          }),
-        });
-        const created = await productRes.json();
-        if (!productRes.ok) {
-          setError(created.error ?? "임시등록에 실패했습니다.");
-          return;
-        }
-        // 상품 생성은 성공했으므로, 아래 공지 생성이 실패하더라도 재시도 시 상품을 또 만들지 않는다.
-        product = { id: created.id, name: created.name };
-        setCreatedProduct(product);
-      }
-
-      const noticeRes = await fetch("/api/admin/notices", {
+      const res = await fetch("/api/admin/notices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: product.id, product_name: product.name }),
+        body: JSON.stringify({
+          temp_name: qName.trim(),
+          temp_image_url: qCover || null,
+          temp_tagline: qTagline.trim() || null,
+        }),
       });
-      const notice = await noticeRes.json();
-      if (!noticeRes.ok) {
-        setError(`상품은 등록됐지만 공지 생성에 실패했습니다: ${notice.error ?? "알 수 없는 오류"} (다시 시도하면 상품을 새로 만들지 않고 공지만 다시 생성합니다.)`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "공지 생성에 실패했습니다.");
         return;
       }
-      setCreatedProduct(null);
-      goToNotice(notice.id);
+      goToNotice(data.id);
     } catch {
       setError("네트워크 오류가 발생했습니다.");
     } finally {
@@ -169,50 +135,53 @@ export default function NoticeProductPicker() {
 
       <div className="flex gap-5 items-start">
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold text-gray-700 mb-3">새 상품 임시등록</h2>
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
-            {createdProduct && (
-              <div className="px-4 py-3 bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-lg">
-                &quot;{createdProduct.name}&quot; 상품은 이미 등록되어 있습니다. 아래 버튼을 다시 누르면 상품을 새로 만들지 않고 공지만 다시 생성합니다.
-              </div>
-            )}
-            <CoverAndDetailImagesField
-              cover={qCover}
-              onCoverChange={setQCover}
-              detailImages={[]}
-              onDetailImagesChange={() => {}}
-              showDetail={false}
-              onError={setError}
-              onInfo={showInfo}
-            />
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품명</label>
-              <input
-                value={qName}
-                onChange={(e) => setQName(e.target.value)}
-                placeholder="예: 린넨 셔츠 자켓"
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-1.5">한 줄 설명</label>
-              <DescriptionField value={qTagline} onChange={setQTagline} />
-            </div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-gray-800">공지 상품 등록</h2>
             <button
               onClick={quickRegisterAndNotice}
               disabled={qSaving}
               className="px-6 py-2.5 text-sm font-bold bg-[#E5541B] text-white rounded-lg hover:bg-[#e04500] disabled:opacity-50"
             >
-              {qSaving ? "등록 중..." : "임시등록하고 공지에 추가"}
+              {qSaving ? "등록 중..." : "공지용으로 등록"}
             </button>
-            <p className="text-[12.5px] text-gray-400">
-              임시등록 상품은 실제 사이트(고객 화면)에는 노출되지 않습니다. 상세 사진·가격·카테고리 등 나머지 정보는 정식 등록 화면에서 나중에 채우면 됩니다.
-            </p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
+            <div className="flex gap-5 items-start flex-wrap">
+              <div className="flex-shrink-0">
+                <CoverAndDetailImagesField
+                  cover={qCover}
+                  onCoverChange={setQCover}
+                  detailImages={[]}
+                  onDetailImagesChange={() => {}}
+                  showDetail={false}
+                  onError={setError}
+                  onInfo={showInfo}
+                  coverSize={220}
+                  coverHint=""
+                  coverButtonPosition="below"
+                />
+              </div>
+              <div className="flex-1 min-w-[200px] space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품명</label>
+                  <input
+                    value={qName}
+                    onChange={(e) => setQName(e.target.value)}
+                    placeholder="예: 린넨 셔츠 자켓"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품설명</label>
+                  <DescriptionField value={qTagline} onChange={setQTagline} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold text-gray-700 mb-3">기존 상품에서 선택</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-3">공지 상품에서 선택</h2>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
             <div className="p-4 border-b border-gray-100">
               <input
@@ -221,43 +190,47 @@ export default function NoticeProductPicker() {
                 placeholder="상품명 검색"
                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
               />
+              <p className="text-[12px] text-gray-400 mt-1.5">지점 출고 패스로 등록했던 상품만 표시됩니다.</p>
             </div>
             <div className="max-h-[65vh] overflow-y-auto">
               {loading ? (
                 <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
               ) : filtered.length === 0 ? (
                 <div className="py-16 text-center text-sm text-gray-400">
-                  등록된 상품이 없습니다. &quot;새 상품 임시등록&quot;으로 추가해 주세요.
+                  등록된 상품이 없습니다. &quot;공지 상품 등록&quot;으로 추가해 주세요.
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
                   {filtered.map((p) => (
-                    <div key={p.id}>
+                    <div key={p.temp_name}>
                       <div className="flex items-center gap-4 px-4 py-3">
-                        <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
-                          {p.imageUrl ? (
-                            <Image src={p.imageUrl} alt={p.name} fill className="object-cover" sizes="48px" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">없음</div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[14px] text-gray-900 truncate">{p.name}</p>
-                          <p className="text-[12.5px] text-gray-400 truncate">{p.tagline || "설명 없음"}</p>
-                        </div>
                         <button
-                          onClick={() => openNoticeForm(p.id)}
+                          type="button"
+                          onClick={() => setPreviewEntry(p)}
+                          className="flex items-center gap-4 flex-1 min-w-0 text-left"
+                        >
+                          <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                            {p.temp_image_url ? (
+                              <Image src={p.temp_image_url} alt={p.temp_name} fill className="object-cover" sizes="48px" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">없음</div>
+                            )}
+                          </div>
+                          <p className="font-semibold text-[14px] text-gray-900 truncate min-w-0">{p.temp_name}</p>
+                        </button>
+                        <button
+                          onClick={() => openNoticeForm(p.temp_name)}
                           className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                            expandedId === p.id
+                            expandedName === p.temp_name
                               ? "bg-gray-100 text-gray-600"
                               : "bg-[#303236] text-white hover:bg-[#1f2124]"
                           }`}
                         >
-                          {expandedId === p.id ? "접기" : "이 상품으로 공지"}
+                          {expandedName === p.temp_name ? "접기" : "이 상품으로 공지"}
                         </button>
                       </div>
 
-                      {expandedId === p.id && (
+                      {expandedName === p.temp_name && (
                         <div className="px-4 pb-4 pt-1 bg-gray-50/70 space-y-3">
                           <div>
                             <label className="block text-sm font-semibold text-gray-600 mb-1.5">
@@ -272,16 +245,16 @@ export default function NoticeProductPicker() {
                             detailImages={extraImages}
                             onDetailImagesChange={setExtraImages}
                             detailLabel="추가 사진 (선택)"
-                            detailHint="여기 추가한 사진은 이 공지에서 대표 사진 아래에 함께 노출됩니다. (상품 자체 정보는 변경되지 않습니다)"
+                            detailHint="여기 추가한 사진은 이 공지에서 대표 사진 아래에 함께 노출됩니다."
                             onError={setError}
                             onInfo={showInfo}
                           />
                           <button
-                            onClick={() => createNotice(p.id)}
-                            disabled={creatingId === p.id}
+                            onClick={() => createNoticeFromExisting(p)}
+                            disabled={creatingName === p.temp_name}
                             className="px-6 py-2.5 text-sm font-bold bg-[#E5541B] text-white rounded-lg hover:bg-[#e04500] disabled:opacity-50"
                           >
-                            {creatingId === p.id ? "등록 중..." : "공지 등록"}
+                            {creatingName === p.temp_name ? "등록 중..." : "공지 등록"}
                           </button>
                         </div>
                       )}
@@ -293,6 +266,45 @@ export default function NoticeProductPicker() {
           </div>
         </div>
       </div>
+
+      {previewEntry && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setPreviewEntry(null)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full aspect-square bg-gray-50">
+              {previewEntry.temp_image_url ? (
+                <Image src={previewEntry.temp_image_url} alt={previewEntry.temp_name} fill className="object-cover" sizes="400px" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">이미지 없음</div>
+              )}
+              <button
+                type="button"
+                onClick={() => setPreviewEntry(null)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white text-xl leading-none flex items-center justify-center hover:bg-black/70"
+                aria-label="닫기"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-5">
+              <h3 className="font-bold text-[16px] text-gray-900 mb-2">{previewEntry.temp_name}</h3>
+              {previewEntry.temp_tagline ? (
+                <div
+                  className="text-[13px] text-gray-600 [&_p]:m-0"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewEntry.temp_tagline) }}
+                />
+              ) : (
+                <p className="text-[13px] text-gray-400">등록된 설명이 없습니다.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: Params) {
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("notices")
-    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, products(id, name, image_url, tagline, registration_status)")
+    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, temp_name, temp_image_url, temp_tagline, products(id, name, image_url, tagline, registration_status)")
     .eq("id", id)
     .single();
   if (error || !data) {
@@ -66,7 +66,14 @@ export async function PATCH(req: Request, { params }: Params) {
       return NextResponse.json({ error: "유효하지 않은 상태입니다." }, { status: 400 });
     }
     patch.status = status;
-    if (status === "진행중") patch.opened_at = new Date().toISOString();
+    if (status === "진행중") {
+      patch.opened_at = new Date().toISOString();
+      // 대기 등록 후 며칠 지나 오픈하는 경우, 공지일자를 등록일이 아니라 실제 오픈일로 맞춘다.
+      const { data: existing } = await sb.from("notices").select("status").eq("id", id).maybeSingle();
+      if (existing?.status === "대기") {
+        patch.notice_date = new Date().toISOString().slice(0, 10);
+      }
+    }
     if (status === "마감") patch.closed_at = new Date().toISOString();
     summary = `수동 상태 변경 → ${status}`;
   }
@@ -77,6 +84,19 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.extra_images !== undefined) {
     patch.extra_images = Array.isArray(body.extra_images) ? body.extra_images : [];
     summary = summary || "공지 추가 설명·사진 수정";
+  }
+  // 마감패스 전용(product_id 없음) 공지의 이름·썸네일·설명 수정.
+  if (body.temp_name !== undefined) {
+    patch.temp_name = body.temp_name || null;
+    summary = summary || "마감패스 상품 정보 수정";
+  }
+  if (body.temp_image_url !== undefined) {
+    patch.temp_image_url = body.temp_image_url || null;
+    summary = summary || "마감패스 상품 정보 수정";
+  }
+  if (body.temp_tagline !== undefined) {
+    patch.temp_tagline = body.temp_tagline || null;
+    summary = summary || "마감패스 상품 정보 수정";
   }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "수정할 내용이 없습니다." }, { status: 400 });

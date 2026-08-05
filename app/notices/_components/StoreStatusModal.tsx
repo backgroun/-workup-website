@@ -2,34 +2,52 @@
 import { useEffect, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 
-// 매장 DB(stores)에는 없는 운영 참고 정보(담당자·연락처·이메일 등) — site_settings(store_status)에 저장.
-// 엑셀 재업로드로 통째로 갱신하거나, 표에서 행 단위로 직접 수정할 수 있다.
-type StoreStatusRow = {
-  code: string;
-  name: string;
+// 코드·매장명·주소는 항상 스토어관리(stores 테이블)를 그대로 보여준다 — 이 화면에서 수정 불가,
+// 매장 추가/삭제도 스토어관리에서만. 담당자·연락처·출고안내번호·이메일·오픈일은 stores에 없는
+// 운영 참고 정보라 site_settings(store_status)에 store_id로 매칭해 별도 저장한다.
+type Supplementary = {
   manager: string;
   contact: string;
   shipNotice: string;
   email: string;
-  address: string;
   openedAt: string;
 };
+type SavedRow = Supplementary & { storeId: number; code?: string; name?: string };
+type StoreLite = { id: number; name: string; store_code: string | null; address: string | null };
+type MergedRow = Supplementary & { storeId: number; code: string; name: string; address: string };
 
-type StoreStatusConfig = { rows: StoreStatusRow[]; updatedAt: string | null };
-
-const COLUMNS: { key: keyof StoreStatusRow; label: string }[] = [
-  { key: "code", label: "코드" },
-  { key: "name", label: "매장명" },
+const SUPPLEMENTARY_COLUMNS: { key: keyof Supplementary; label: string }[] = [
   { key: "manager", label: "담당자" },
   { key: "contact", label: "연락처" },
   { key: "shipNotice", label: "출고안내번호" },
   { key: "email", label: "이메일" },
-  { key: "address", label: "주소" },
   { key: "openedAt", label: "오픈일" },
 ];
 
-// 엑셀 헤더(아이디매칭/매장명/담당자/연락처/출고안내번호/이메일/주소/오픈일)를 내부 필드로 매핑.
-function parseExcelRows(file: ArrayBuffer): StoreStatusRow[] {
+function buildMerged(stores: StoreLite[], saved: SavedRow[]): MergedRow[] {
+  const byStoreId = new Map(saved.filter((r) => r.storeId != null).map((r) => [r.storeId, r]));
+  const byCode = new Map(saved.filter((r) => r.code).map((r) => [r.code as string, r]));
+  const byName = new Map(saved.filter((r) => r.name).map((r) => [r.name as string, r]));
+  return stores.map((s) => {
+    const match = byStoreId.get(s.id) ?? (s.store_code ? byCode.get(s.store_code) : undefined) ?? byName.get(s.name);
+    return {
+      storeId: s.id,
+      code: s.store_code ?? "",
+      name: s.name,
+      address: s.address ?? "",
+      manager: match?.manager ?? "",
+      contact: match?.contact ?? "",
+      shipNotice: match?.shipNotice ?? "",
+      email: match?.email ?? "",
+      openedAt: match?.openedAt ?? "",
+    };
+  });
+}
+
+type ExcelSupplementaryRow = Supplementary & { code: string; name: string };
+
+// 엑셀 헤더(아이디매칭/매장명/담당자/연락처/출고안내번호/이메일/오픈일) — 이름·코드는 매칭용으로만 쓰고 저장하지 않는다.
+function parseExcelRows(file: ArrayBuffer): ExcelSupplementaryRow[] {
   const wb = XLSX.read(file, { type: "array" });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
@@ -41,21 +59,19 @@ function parseExcelRows(file: ArrayBuffer): StoreStatusRow[] {
       contact: String(r["연락처"] ?? "").trim(),
       shipNotice: String(r["출고안내번호"] ?? "").trim(),
       email: String(r["이메일"] ?? "").trim(),
-      address: String(r["주소"] ?? "").trim(),
       openedAt: String(r["오픈일"] ?? "").trim(),
     }))
     .filter((r) => r.name);
 }
 
 export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
-  const [rows, setRows] = useState<StoreStatusRow[]>([]);
+  const [merged, setMerged] = useState<MergedRow[]>([]);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [editIdx, setEditIdx] = useState<number | null>(null);
-  const [draft, setDraft] = useState<StoreStatusRow | null>(null);
-  const [isNewRow, setIsNewRow] = useState(false);
+  const [editStoreId, setEditStoreId] = useState<number | null>(null);
+  const [draft, setDraft] = useState<Supplementary | null>(null);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -67,34 +83,44 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
 
   const load = () => {
     setLoading(true);
-    fetch("/api/admin/site-settings/store_status")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: StoreStatusConfig | null) => {
-        setRows(data?.rows ?? []);
-        setUpdatedAt(data?.updatedAt ?? null);
+    Promise.all([
+      fetch("/api/admin/stores").then((r) => (r.ok ? r.json() : [])),
+      fetch("/api/admin/site-settings/store_status").then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([stores, config]: [StoreLite[], { rows: SavedRow[]; updatedAt: string | null } | null]) => {
+        setMerged(buildMerged(Array.isArray(stores) ? stores : [], config?.rows ?? []));
+        setUpdatedAt(config?.updatedAt ?? null);
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
 
-  const saveRows = async (next: StoreStatusRow[]) => {
+  const persist = async (next: MergedRow[]) => {
     setSaving(true);
     setError("");
     try {
-      const config: StoreStatusConfig = { rows: next, updatedAt: new Date().toISOString() };
+      const rows: SavedRow[] = next.map((r) => ({
+        storeId: r.storeId,
+        manager: r.manager,
+        contact: r.contact,
+        shipNotice: r.shipNotice,
+        email: r.email,
+        openedAt: r.openedAt,
+      }));
+      const newUpdatedAt = new Date().toISOString();
       const res = await fetch("/api/admin/site-settings/store_status", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ rows, updatedAt: newUpdatedAt }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         setError(d.error ?? "저장에 실패했습니다.");
         return false;
       }
-      setRows(next);
-      setUpdatedAt(config.updatedAt);
+      setMerged(next);
+      setUpdatedAt(newUpdatedAt);
       return true;
     } catch {
       setError("네트워크 오류로 저장에 실패했습니다.");
@@ -114,9 +140,21 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
         setError("엑셀에서 읽은 행이 없습니다. 양식을 확인해 주세요.");
         return;
       }
-      if (!confirm(`엑셀 ${parsed.length}개 행으로 지점 현황 전체를 덮어씁니다. 계속할까요?`)) return;
-      const ok = await saveRows(parsed);
-      if (ok) showInfo(`${parsed.length}개 행을 반영했습니다.`);
+      const byCode = new Map(parsed.filter((p) => p.code).map((p) => [p.code, p]));
+      const byName = new Map(parsed.map((p) => [p.name, p]));
+      let matchedCount = 0;
+      const next = merged.map((r) => {
+        const match = (r.code && byCode.get(r.code)) ?? byName.get(r.name);
+        if (!match) return r;
+        matchedCount++;
+        return { ...r, manager: match.manager, contact: match.contact, shipNotice: match.shipNotice, email: match.email, openedAt: match.openedAt };
+      });
+      const unmatched = parsed.length - matchedCount;
+      if (!confirm(`엑셀 ${parsed.length}개 행 중 ${matchedCount}개 매장이 매칭됩니다${unmatched > 0 ? ` (매칭 안 됨 ${unmatched}개)` : ""}. 담당자·연락처 등 참고 정보를 덮어쓸까요?`)) {
+        return;
+      }
+      const ok = await persist(next);
+      if (ok) showInfo(`${matchedCount}개 매장의 참고 정보를 반영했습니다.`);
     } catch {
       setError("엑셀 파일을 읽는 중 오류가 발생했습니다.");
     } finally {
@@ -124,54 +162,25 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const startEdit = (idx: number) => {
-    setEditIdx(idx);
-    setDraft({ ...rows[idx] });
-    setIsNewRow(false);
-  };
-
-  // 새 행은 화면에서만 먼저 추가하고, 실제로는 "저장"을 눌러야 반영된다.
-  // 취소하면 화면에서만 추가됐던 빈 행을 그냥 제거한다.
-  const addRow = () => {
-    const empty: StoreStatusRow = {
-      code: "", name: "", manager: "", contact: "", shipNotice: "", email: "", address: "", openedAt: "",
-    };
-    setRows((prev) => [empty, ...prev]);
-    setEditIdx(0);
-    setDraft({ ...empty });
-    setIsNewRow(true);
+  const startEdit = (row: MergedRow) => {
+    setEditStoreId(row.storeId);
+    setDraft({ manager: row.manager, contact: row.contact, shipNotice: row.shipNotice, email: row.email, openedAt: row.openedAt });
   };
 
   const cancelEdit = () => {
-    if (isNewRow && editIdx !== null) {
-      setRows((prev) => prev.filter((_, i) => i !== editIdx));
-    }
-    setEditIdx(null);
+    setEditStoreId(null);
     setDraft(null);
-    setIsNewRow(false);
   };
 
   const saveEdit = async () => {
-    if (editIdx === null || !draft) return;
-    if (!draft.name.trim()) {
-      setError("매장명은 비워둘 수 없습니다.");
-      return;
-    }
-    const next = rows.map((r, i) => (i === editIdx ? draft : r));
-    const ok = await saveRows(next);
+    if (editStoreId === null || !draft) return;
+    const next = merged.map((r) => (r.storeId === editStoreId ? { ...r, ...draft } : r));
+    const ok = await persist(next);
     if (ok) {
       showInfo("저장했습니다.");
-      setEditIdx(null);
+      setEditStoreId(null);
       setDraft(null);
-      setIsNewRow(false);
     }
-  };
-
-  const deleteRow = async (idx: number) => {
-    if (!confirm(`"${rows[idx].name}" 행을 삭제할까요?`)) return;
-    const next = rows.filter((_, i) => i !== idx);
-    const ok = await saveRows(next);
-    if (ok) showInfo("삭제했습니다.");
   };
 
   return (
@@ -184,19 +193,11 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
           <div>
             <span className="font-bold text-[16px] text-gray-900">지점 현황</span>
             <p className="text-xs text-gray-400 mt-0.5">
-              매장 DB에 없는 담당자·연락처·이메일 등 참고 정보 (관리자 전용)
+              코드·매장명·주소는 스토어관리와 동기화됩니다. 담당자·연락처·이메일 등만 여기서 관리하세요.
               {updatedAt && ` · 마지막 업데이트 ${new Date(updatedAt).toLocaleString("ko-KR")}`}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              type="button"
-              onClick={addRow}
-              disabled={editIdx !== null}
-              className="px-3 py-1.5 text-[13px] font-semibold bg-[#303236] text-white rounded-lg hover:bg-[#1f2124] disabled:opacity-50"
-            >
-              + 지점 추가
-            </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
@@ -237,82 +238,76 @@ export default function StoreStatusModal({ onClose }: { onClose: () => void }) {
         <div className="flex-1 overflow-auto p-5">
           {loading ? (
             <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
-          ) : rows.length === 0 ? (
-            <div className="py-16 text-center text-sm text-gray-400">
-              아직 데이터가 없습니다. &quot;엑셀 업로드&quot;로 지점 현황을 등록해 주세요.
-            </div>
+          ) : merged.length === 0 ? (
+            <div className="py-16 text-center text-sm text-gray-400">스토어관리에 등록된 매장이 없습니다.</div>
           ) : (
-            <table className="w-full text-sm border border-gray-100 rounded-lg overflow-hidden">
+            <table className="w-full text-[12px] border border-gray-100 rounded-lg overflow-hidden">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {COLUMNS.map((c) => (
-                    <th key={c.key} className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">
+                  <th className="sticky left-0 bg-gray-50 px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap z-10">
+                    관리
+                  </th>
+                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">코드</th>
+                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">매장명</th>
+                  {SUPPLEMENTARY_COLUMNS.map((c) => (
+                    <th key={c.key} className="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">
                       {c.label}
                     </th>
                   ))}
-                  <th className="px-3 py-2.5" />
+                  <th className="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase whitespace-nowrap">주소</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {rows.map((r, idx) => {
-                  const isEditing = editIdx === idx;
+                {merged.map((r) => {
+                  const isEditing = editStoreId === r.storeId;
                   return (
-                    <tr key={r.code || idx} className={isEditing ? "bg-amber-50/60" : "hover:bg-gray-50"}>
-                      {COLUMNS.map((c) => (
-                        <td key={c.key} className="px-3 py-2 whitespace-nowrap">
-                          {isEditing ? (
-                            <input
-                              value={draft?.[c.key] ?? ""}
-                              onChange={(e) => setDraft((d) => (d ? { ...d, [c.key]: e.target.value } : d))}
-                              className="w-full min-w-[90px] border border-gray-200 rounded px-2 py-1 text-[13px] focus:outline-none focus:border-[#303236]"
-                            />
-                          ) : (
-                            <span className={c.key === "code" ? "font-mono text-gray-500" : "text-gray-700"}>
-                              {r[c.key] || "-"}
-                            </span>
-                          )}
-                        </td>
-                      ))}
-                      <td className="px-3 py-2 text-right whitespace-nowrap">
+                    <tr key={r.storeId} className={isEditing ? "bg-amber-50/60" : "hover:bg-gray-50"}>
+                      <td className={`sticky left-0 px-2 py-1.5 whitespace-nowrap ${isEditing ? "bg-amber-50/60" : "bg-white"}`}>
                         {isEditing ? (
-                          <div className="flex items-center gap-1.5 justify-end">
+                          <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={saveEdit}
                               disabled={saving}
-                              className="px-2.5 py-1 text-[12px] font-semibold bg-[#303236] text-white rounded hover:bg-[#1f2124] disabled:opacity-50"
+                              className="px-2 py-1 text-[11px] font-semibold bg-[#303236] text-white rounded hover:bg-[#1f2124] disabled:opacity-50"
                             >
                               저장
                             </button>
                             <button
                               type="button"
                               onClick={cancelEdit}
-                              className="px-2.5 py-1 text-[12px] font-semibold text-gray-500 border border-gray-200 rounded hover:bg-gray-50"
+                              className="px-2 py-1 text-[11px] font-semibold text-gray-500 border border-gray-200 rounded hover:bg-gray-50"
                             >
                               취소
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 justify-end">
-                            <button
-                              type="button"
-                              onClick={() => startEdit(idx)}
-                              disabled={editIdx !== null}
-                              className="px-2.5 py-1 text-[12px] font-semibold text-gray-600 border border-gray-200 rounded hover:border-gray-400 disabled:opacity-40"
-                            >
-                              수정
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteRow(idx)}
-                              disabled={editIdx !== null || saving}
-                              className="px-2.5 py-1 text-[12px] font-semibold text-red-600 border border-red-200 rounded hover:bg-red-50 disabled:opacity-40"
-                            >
-                              삭제
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(r)}
+                            disabled={editStoreId !== null}
+                            className="px-2 py-1 text-[11px] font-semibold text-gray-600 border border-gray-200 rounded hover:border-gray-400 disabled:opacity-40"
+                          >
+                            수정
+                          </button>
                         )}
                       </td>
+                      <td className="px-2 py-1.5 whitespace-nowrap font-mono text-gray-500">{r.code || "-"}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap text-gray-900 font-semibold">{r.name}</td>
+                      {SUPPLEMENTARY_COLUMNS.map((c) => (
+                        <td key={c.key} className="px-2 py-1.5 whitespace-nowrap">
+                          {isEditing ? (
+                            <input
+                              value={draft?.[c.key] ?? ""}
+                              onChange={(e) => setDraft((d) => (d ? { ...d, [c.key]: e.target.value } : d))}
+                              className="w-full min-w-[80px] border border-gray-200 rounded px-1.5 py-1 text-[12px] focus:outline-none focus:border-[#303236]"
+                            />
+                          ) : (
+                            <span className="text-gray-700">{r[c.key] || "-"}</span>
+                          )}
+                        </td>
+                      ))}
+                      <td className="px-2 py-1.5 whitespace-nowrap text-gray-500">{r.address || "-"}</td>
                     </tr>
                   );
                 })}
