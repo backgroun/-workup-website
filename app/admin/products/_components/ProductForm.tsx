@@ -6,7 +6,6 @@ import type { Product, DetailBlock, MainExpose, Season, SizeGuide, SizeGuideLine
 import { SIZE_NOTE_DEFAULT } from "@/data/products";
 import { parseInstagramUrl } from "@/lib/instagram-feed";
 import { resizeImageToMaxWidth } from "@/lib/imageResize";
-import { extractDominantColors, matchColorToPreset } from "@/lib/colorExtraction";
 import { generateSubThumbnail } from "@/lib/thumbnailGenerator";
 import SizeGuideLinesOverlay from "@/components/SizeGuideLinesOverlay";
 
@@ -863,25 +862,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     setUploadingMain(false);
     if (url) {
       set("imageUrl", url);
-
-      // 자동 색상 추출 및 매칭
-      try {
-        const hexColors = await extractDominantColors(url);
-        const matchedColors = hexColors.map(hex => ({
-          name: matchColorToPreset(hex),
-          hex
-        }));
-        // 중복 제거: 기존 colors에 없는 색상만 추가
-        const newColors = [
-          ...form.colors,
-          ...matchedColors.filter(c => !form.colors.some(fc => fc.name === c.name))
-        ];
-        set("colors", newColors);
-      } catch (error) {
-        console.error("색상 추출 실패:", error);
-        // 색상 추출 실패해도 이미지 업로드는 성공했으므로 무시
-      }
-
     }
     if (mainInputRef.current) mainInputRef.current.value = "";
   };

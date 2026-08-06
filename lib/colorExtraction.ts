@@ -1,25 +1,5 @@
 // 이미지에서 주요 색상 추출 (Canvas 기반 dominant color algorithm)
-
-// 프리셋 색상 정의 (ProductForm.tsx와 동일)
-const COLOR_PRESETS = [
-  { name: "블랙", hex: "#1C1C1C" },
-  { name: "화이트", hex: "#F0F0F0" },
-  { name: "네이비", hex: "#303236" },
-  { name: "그레이", hex: "#7A7A7A" },
-  { name: "베이지", hex: "#C9B99A" },
-  { name: "카키", hex: "#4A5240" },
-];
-
-// HEX 문자열을 RGB 객체로 변환
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return { r: 0, g: 0, b: 0 };
-  return {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16),
-  };
-}
+// 썸네일 생성기(thumbnailGenerator.ts)의 배경색 추정에 쓰인다.
 
 // RGB 객체를 HEX 문자열로 변환
 function rgbToHex(r: number, g: number, b: number): string {
@@ -27,17 +7,6 @@ function rgbToHex(r: number, g: number, b: number): string {
     const hex = x.toString(16);
     return hex.length === 1 ? `0${hex}` : hex;
   }).join("")}`.toUpperCase();
-}
-
-// 두 RGB 색상 사이의 거리 계산 (유클리드 거리)
-function colorDistance(
-  rgb1: { r: number; g: number; b: number },
-  rgb2: { r: number; g: number; b: number }
-): number {
-  const dr = rgb1.r - rgb2.r;
-  const dg = rgb1.g - rgb2.g;
-  const db = rgb1.b - rgb2.b;
-  return Math.sqrt(dr * dr + dg * dg + db * db);
 }
 
 // 이미지 URL에서 주요 색상 추출
@@ -131,24 +100,4 @@ export async function extractDominantColors(
 
     img.src = actualImageUrl;
   });
-}
-
-// HEX 색상을 가장 가까운 프리셋 색상명으로 매칭
-export function matchColorToPreset(hex: string): string {
-  const targetRgb = hexToRgb(hex);
-
-  let closestPreset = COLOR_PRESETS[0];
-  let minDistance = Infinity;
-
-  for (const preset of COLOR_PRESETS) {
-    const presetRgb = hexToRgb(preset.hex);
-    const distance = colorDistance(targetRgb, presetRgb);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      closestPreset = preset;
-    }
-  }
-
-  return closestPreset.name;
 }
