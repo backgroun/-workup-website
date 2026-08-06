@@ -12,6 +12,10 @@ import SizeGuideLinesOverlay from "@/components/SizeGuideLinesOverlay";
 // 사이즈 가이드 이미지 기준 폭 — 초과 시 이 폭으로 축소, 이하면 원본 그대로 업로드
 const SIZE_GUIDE_MAX_WIDTH = 800;
 
+// 업로드 에러를 어느 섹션 근처에 표시할지 구분하는 태그 — 폼이 길어서 에러가
+// 엉뚱한(예: 상세 설명에서 난 에러가 추가 이미지 밑에 뜨는) 위치에 나오는 걸 방지한다.
+type UploadZone = "main" | "sub" | "detail" | "sizeGuide" | "instagram" | "folder";
+
 // 숫자·범위(예: 88-92) 값에 "cm" 단위 붙임. 빈 값·비숫자·이미 cm면 원본 그대로.
 function appendCmUnit(v: string): string {
   const t = (v ?? "").trim();
@@ -279,7 +283,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [bulkRowInput, setBulkRowInput] = useState("");  // 사이즈 가이드 행 일괄 추가 입력
   const [useSizePrices, setUseSizePrices] = useState((initial?.sizePrices?.length ?? 0) > 0); // 사이즈별 가격 사용 체크
   const [uploadingMulti, setUploadingMulti] = useState(false);
-  const [uploadError, setUploadError] = useState("");
+  // 업로드 에러는 발생 지점(zone) 근처에 보여줘야 하므로, 어느 섹션에서 난 에러인지 함께 저장한다.
+  const [uploadError, setUploadError] = useState<{ zone: UploadZone; message: string } | null>(null);
 
 
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -693,9 +698,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // ── 이미지 업로드 ──────────────────────────────────────────────────────────
   // 4MB를 넘는 이미지는 자동 압축(화질 저하로 이미지가 깨져 보이는 원인이었음) 대신
   // 업로더가 직접 용량을 줄여서 다시 올리도록 즉시 안내한다.
-  const uploadFile = async (file: File): Promise<string | null> => {
+  const uploadFile = async (file: File, zone: UploadZone): Promise<string | null> => {
     if (file.size > 4 * 1024 * 1024) {
-      setUploadError(`이미지 용량을 줄여주세요. "${file.name}"이(가) 4MB를 초과합니다.`);
+      setUploadError({ zone, message: `이미지 용량을 줄여주세요. "${file.name}"이(가) 4MB를 초과합니다.` });
       return null;
     }
 
@@ -719,11 +724,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     try { data = raw ? JSON.parse(raw) : {}; } catch { /* JSON이 아니면 아래에서 raw를 그대로 안내 */ }
     if (res.ok && data.url) return data.url;
     const detail = data.error ?? (raw ? raw.slice(0, 200) : `HTTP ${res.status}`);
-    setUploadError(
-      res.status === 413
-        ? `파일 용량이 너무 큽니다(413). "${file.name}" 크기를 줄여서 다시 시도해주세요.`
-        : `업로드 실패: ${detail}`
-    );
+    setUploadError({
+      zone,
+      message:
+        res.status === 413
+          ? `파일 용량이 너무 큽니다(413). "${file.name}" 크기를 줄여서 다시 시도해주세요.`
+          : `업로드 실패: ${detail}`,
+    });
     return null;
   };
 
@@ -735,7 +742,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     e.target.value = "";
     if (!files.length) return;
 
-    setUploadError(""); setFolderUploadResult(""); setUploadingFolder(true);
+    setUploadError(null); setFolderUploadResult(""); setUploadingFolder(true);
     try {
       const mainCandidates: File[] = [];
       const subFiles: File[] = [];
@@ -766,19 +773,19 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       let mainCount = 0, subCount = 0, detailCount = 0;
 
       if (mainFile) {
-        const url = await uploadFile(mainFile);
+        const url = await uploadFile(mainFile, "main");
         if (url) { set("imageUrl", url); mainCount = 1; }
       }
 
       if (subFiles.length || extraMainFiles.length) {
         const urls: string[] = [];
         for (const file of subFiles) {
-          const url = await uploadFile(file);
+          const url = await uploadFile(file, "sub");
           if (url) urls.push(url);
         }
         for (const file of extraMainFiles) {
           if (urls.length >= 9) break;
-          const url = await uploadFile(file);
+          const url = await uploadFile(file, "sub");
           if (url) urls.push(url);
         }
         const capped = urls.slice(0, 9);
@@ -788,7 +795,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       if (detailFiles.length) {
         const next = [...form.detailBlocks];
         for (let i = 0; i < detailFiles.length; i++) {
-          const url = await uploadFile(detailFiles[i]);
+          const url = await uploadFile(detailFiles[i], "detail");
           if (!url) continue;
           if (i < next.length) {
             // 기존 블록에 이미지만 채워넣기
@@ -808,7 +815,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
         (unmatched > 0 ? ` (규칙에 안 맞는 파일 ${unmatched}개는 건너뜀)` : "")
       );
     } catch (error) {
-      setUploadError(`폴더 업로드 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setUploadError({ zone: "folder", message: `폴더 업로드 실패: ${error instanceof Error ? error.message : "Unknown error"}` });
     } finally {
       setUploadingFolder(false);
     }
@@ -816,8 +823,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   const handleMainFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingMain(true);
-    const url = await uploadFile(file);
+    setUploadError(null); setUploadingMain(true);
+    const url = await uploadFile(file, "main");
     setUploadingMain(false);
     if (url) {
       set("imageUrl", url);
@@ -827,19 +834,19 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   const handleSubFile = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingSubIdx(idx);
+    setUploadError(null); setUploadingSubIdx(idx);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, "sub");
       if (url) {
         const blob = await generateSubThumbnail(url);
         const thumbnailFile = new File([blob], `sub-thumb-${Date.now()}.jpg`, { type: "image/jpeg" });
-        const thumbnailUrl = await uploadFile(thumbnailFile);
+        const thumbnailUrl = await uploadFile(thumbnailFile, "sub");
         if (thumbnailUrl) {
           const next = [...form.subImages]; next[idx] = thumbnailUrl; set("subImages", next);
         }
       }
     } catch (error) {
-      setUploadError(`썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setUploadError({ zone: "sub", message: `썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}` });
     } finally {
       setUploadingSubIdx(null);
     }
@@ -854,7 +861,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const handleMultiSubFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setUploadError(""); setUploadingMulti(true);
+    setUploadError(null); setUploadingMulti(true);
 
     const filled = form.subImages.filter(Boolean);
     const slots = Math.max(0, 9 - filled.length);
@@ -865,7 +872,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     for (const file of toUpload) {
       try {
         // 1. 원본 업로드 (썸네일 생성용 소스)
-        const url = await uploadFile(file);
+        const url = await uploadFile(file, "sub");
         if (!url) continue;
 
         // 2. 960×960 안에 비율 유지로 맞춤
@@ -873,11 +880,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
         // 3. 생성된 결과를 실제 저장용으로 업로드
         const thumbnailFile = new File([blob], `sub-thumb-${Date.now()}-${Math.random()}.jpg`, { type: "image/jpeg" });
-        const thumbnailUrl = await uploadFile(thumbnailFile);
+        const thumbnailUrl = await uploadFile(thumbnailFile, "sub");
         if (thumbnailUrl) urls.push(thumbnailUrl);
       } catch (error) {
         console.error("서브 썸네일 생성 실패:", error);
-        setUploadError(`썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}`);
+        setUploadError({ zone: "sub", message: `썸네일 생성 실패: ${error instanceof Error ? error.message : "Unknown error"}` });
       }
     }
 
@@ -921,8 +928,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   const handleBlockImgFile = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingBlockIdx(idx);
-    const url = await uploadFile(file);
+    setUploadError(null); setUploadingBlockIdx(idx);
+    const url = await uploadFile(file, "detail");
     setUploadingBlockIdx(null);
     if (url) updateBlock(idx, "imageUrl", url);
     if (blockImgRefs.current[idx]) blockImgRefs.current[idx]!.value = "";
@@ -933,9 +940,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (!files.length) return;
-    setUploadError(""); setUploadingBlocksMulti(true);
+    setUploadError(null); setUploadingBlocksMulti(true);
     const urls: string[] = [];
-    for (const file of files) { const url = await uploadFile(file); if (url) urls.push(url); }
+    for (const file of files) { const url = await uploadFile(file, "detail"); if (url) urls.push(url); }
     const blocks = urls.map((url, i) => ({ id: `block-${Date.now()}-${i}`, type: "상품 소개" as const, content: "", imageUrl: url }));
     if (blocks.length) set("detailBlocks", [...form.detailBlocks, ...blocks]);
     setUploadingBlocksMulti(false);
@@ -1116,10 +1123,10 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   };
   const handleSizeGuideFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingSizeGuide(true);
+    setUploadError(null); setUploadingSizeGuide(true);
     // 기준 폭 초과 시 축소, 이하면 원본 그대로
     const r = await resizeImageToMaxWidth(file, SIZE_GUIDE_MAX_WIDTH);
-    const url = await uploadFile(r.file);
+    const url = await uploadFile(r.file, "sizeGuide");
     setUploadingSizeGuide(false);
     if (url) { setSG({ image: url }); setSgImageResized(r.resized); }
     e.target.value = "";
@@ -1128,9 +1135,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // 측정 위치 안내 도식(어깨·가슴·총장 등) — 표/이미지 위에 노출
   const handleSizeDiagramFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingSizeDiagram(true);
+    setUploadError(null); setUploadingSizeDiagram(true);
     const r = await resizeImageToMaxWidth(file, SIZE_GUIDE_MAX_WIDTH);
-    const url = await uploadFile(r.file);
+    const url = await uploadFile(r.file, "sizeGuide");
     setUploadingSizeDiagram(false);
     if (url) { setSG({ guideImage: url }); setSgDiagramResized(r.resized); }
     e.target.value = "";
@@ -1165,8 +1172,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   };
   const handleIgImage = async (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
     const file = e.target.files?.[0]; if (!file) return;
-    setUploadError(""); setUploadingIgIdx(i);
-    const url = await uploadFile(file);
+    setUploadError(null); setUploadingIgIdx(i);
+    const url = await uploadFile(file, "instagram");
     setUploadingIgIdx(null);
     if (url) igSetImage(i, url);
     e.target.value = "";
@@ -1472,6 +1479,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               <span className="text-[11px] text-gray-400 ml-1">상하세트는 상의·하의를 따로 추가하세요</span>
             </div>
 
+            {uploadError?.zone === "sizeGuide" && <p className="text-xs text-red-500 mb-2">{uploadError.message}</p>}
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">사이즈 가이드</h2>
@@ -2005,6 +2013,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               {folderUploadResult && (
                 <p className="text-[11px] text-green-700 mt-1 font-medium">{folderUploadResult}</p>
               )}
+              {uploadError?.zone === "folder" && <p className="text-xs text-red-500 mt-1">{uploadError.message}</p>}
             </div>
 
             {/* ── 대표 이미지 ── */}
@@ -2017,6 +2026,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   1600 × 1600 px · 1:1 비율 권장 · 최대 4 MB
                 </span>
               </div>
+              {uploadError?.zone === "main" && <p className="text-xs text-red-500 mb-2">{uploadError.message}</p>}
               <div className="flex gap-4 items-start">
                 <div className="flex-shrink-0">
                   {form.imageUrl ? (
@@ -2146,7 +2156,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
             </div>
 
-            {uploadError && <p className="text-xs text-red-500 mt-3">{uploadError}</p>}
+            {uploadError?.zone === "sub" && <p className="text-xs text-red-500 mt-3">{uploadError.message}</p>}
 
             {/* ── 동영상 (선택) ── */}
             <div className="mt-5 pt-5 border-t border-gray-100">
@@ -2552,6 +2562,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </label>
               </div>
             </div>
+            {uploadError?.zone === "detail" && <p className="text-xs text-red-500 mb-2">{uploadError.message}</p>}
             <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#303236]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {form.detailBlocks.map((block, idx) => (
@@ -2634,6 +2645,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
               이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#303236] underline">인스타 피드 설정 ↗</a>에서.
             </p>
+            {uploadError?.zone === "instagram" && <p className="text-xs text-red-500 mb-3">{uploadError.message}</p>}
 
             {form.instagramPosts.length === 0 ? (
               <p className="text-xs text-gray-400">등록된 항목이 없습니다. <b>+ 항목 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
