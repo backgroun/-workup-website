@@ -39,7 +39,7 @@ export default function DatePickerButton({ selectedDate, todayKst }: { selectedD
         {open && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-full mt-1.5 z-20 animate-[fadeIn_0.12s_ease-out]">
+            <div className="absolute left-0 top-full mt-1.5 z-20 animate-[fadeIn_0.12s_ease-out]">
               <MiniCalendar selectedDate={selectedDate} todayKst={todayKst} onSelect={handleSelect} />
             </div>
           </>

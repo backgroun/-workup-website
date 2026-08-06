@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, useCallback } from "react";
 
-type PassRow = { store_id: number; store_name: string; status: "출고" | "패스"; updated_at: string | null };
+type PassRow = { store_id: number; store_name: string; store_code: string | null; status: "출고" | "패스"; updated_at: string | null };
 
 function fmtTime(iso: string | null) {
   if (!iso) return "—";
@@ -48,6 +48,7 @@ export default function PassEntriesTable({ noticeId, noticeDate }: { noticeId: s
   const downloadExcel = async () => {
     const XLSX = await import("xlsx");
     const sheetRows = rows.map((r) => ({
+      "지점코드": r.store_code ?? "",
       "지점명": r.store_name,
       "상태": r.status,
       "변경 시각": r.updated_at ? new Date(r.updated_at).toLocaleString("ko-KR") : "",
