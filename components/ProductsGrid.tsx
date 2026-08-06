@@ -260,7 +260,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
     .sort((a, b) => {
       if (a.isNew && !b.isNew) return -1;
       if (!a.isNew && b.isNew) return 1;
-      return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+      // 최종 수정(updatedAt)이 최근인 상품이 위로 — 값이 없는 옛 데이터는 생성일로 대체.
+      const aTime = a.updatedAt ?? a.createdAt ?? "";
+      const bTime = b.updatedAt ?? b.createdAt ?? "";
+      return bTime.localeCompare(aTime);
     });
 
   const currentTitle =

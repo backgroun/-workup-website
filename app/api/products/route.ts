@@ -22,8 +22,10 @@ export async function GET() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true })
+        // 최종 수정(updated_at)이 최근인 상품이 가장 위로 — id는 동시각 동점 시 페이지네이션이
+        // 흔들리지 않도록 하는 안정적인 최종 기준일 뿐, 실제 정렬 의미는 없다.
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error) break;
       if (!data || data.length === 0) break;
