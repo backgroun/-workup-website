@@ -691,52 +691,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   };
 
   // ── 이미지 업로드 ──────────────────────────────────────────────────────────
-  // 4MB를 넘는 이미지는 캔버스로 리사이즈+재인코딩해 용량을 줄인다.
-  // (긴 변 2000px 캡 → JPEG 품질을 단계적으로 낮추고, 그래도 크면 크기를 더 줄여 재시도)
-  // 디코딩 실패(HEIC 등 브라우저 미지원 포맷) 시 원본을 그대로 반환하고, 이후 크기 체크에서 안내한다.
-  const compressImageFile = async (file: File, targetBytes = 3.8 * 1024 * 1024): Promise<File> => {
-    if (!file.type.startsWith("image/")) return file;
-    try {
-      const bitmap = await createImageBitmap(file);
-      const maxEdge = 2000;
-      const longEdge = Math.max(bitmap.width, bitmap.height);
-      let scale = longEdge > maxEdge ? maxEdge / longEdge : 1;
-
-      for (let attempt = 0; attempt < 6; attempt++) {
-        const w = Math.max(1, Math.round(bitmap.width * scale));
-        const h = Math.max(1, Math.round(bitmap.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return file;
-        ctx.drawImage(bitmap, 0, 0, w, h);
-
-        const quality = Math.max(0.5, 0.85 - attempt * 0.15);
-        const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-        if (!blob) return file;
-
-        if (blob.size <= targetBytes || attempt === 5) {
-          const stem = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
-          return new File([blob], `${stem}.jpg`, { type: "image/jpeg" });
-        }
-        scale *= 0.85; // 다음 시도는 더 작은 해상도로
-      }
-      return file;
-    } catch {
-      return file;
-    }
-  };
-
+  // 4MB를 넘는 이미지는 자동 압축(화질 저하로 이미지가 깨져 보이는 원인이었음) 대신
+  // 업로더가 직접 용량을 줄여서 다시 올리도록 즉시 안내한다.
   const uploadFile = async (file: File): Promise<string | null> => {
-    // Vercel Serverless Function 요청 바디 한도(4.5MB, 플랫폼 고정값)를 넘으면
-    // 서버가 JSON이 아닌 413 텍스트를 반환하므로, 우선 자동 압축을 시도한다.
-    let workingFile = file;
-    if (workingFile.size > 4 * 1024 * 1024) {
-      workingFile = await compressImageFile(workingFile);
-    }
-    if (workingFile.size > 4 * 1024 * 1024) {
-      setUploadError(`파일 용량이 너무 큽니다. "${file.name}"을(를) 4MB 이하로 줄여서 다시 시도해주세요.`);
+    if (file.size > 4 * 1024 * 1024) {
+      setUploadError(`이미지 용량을 줄여주세요. "${file.name}"이(가) 4MB를 초과합니다.`);
       return null;
     }
 
@@ -744,11 +703,11 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     // req.formData() 파싱이 "Failed to parse body as FormData"로 실패하는 문제가 있어
     // (멀티파트 Content-Disposition 헤더 인코딩 이슈), 업로드 직전 안전한 파일명으로 바꿔서 전송한다
     // (내용은 동일, 이름만 대체 — 한글만 걸러서는 부족해 공백·괄호 등도 함께 차단).
-    const ext = (workingFile.name.match(/\.[a-zA-Z0-9]+$/)?.[0]) || "";
-    const safeName = /^[a-zA-Z0-9._-]+$/.test(workingFile.name)
-      ? workingFile.name
+    const ext = (file.name.match(/\.[a-zA-Z0-9]+$/)?.[0]) || "";
+    const safeName = /^[a-zA-Z0-9._-]+$/.test(file.name)
+      ? file.name
       : `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-    const safeFile = safeName === workingFile.name ? workingFile : new File([workingFile], safeName, { type: workingFile.type });
+    const safeFile = safeName === file.name ? file : new File([file], safeName, { type: file.type });
 
     const fd = new FormData();
     fd.append("file", safeFile);
