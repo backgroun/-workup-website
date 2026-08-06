@@ -27,20 +27,9 @@ export default function RefreshButton() {
         type="button"
         onClick={() => startTransition(() => router.refresh())}
         disabled={pending}
-        aria-label="새로고침"
-        className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-[#303236] disabled:opacity-50 transition-colors"
+        className="px-4 py-2 rounded-lg text-[13.5px] font-bold whitespace-nowrap border-2 border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white disabled:opacity-50 transition-colors"
       >
-        <svg
-          className={`w-[18px] h-[18px] ${pending ? "animate-spin" : ""}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21 12a9 9 0 10-2.6 6.4M21 12v-5M21 12h-5" />
-        </svg>
+        {pending ? "새로고침 중..." : "새로고침"}
       </button>
       {showToast && (
         <div className="absolute top-full right-0 mt-1.5 px-2.5 py-1.5 bg-[#303236] text-white text-[11.5px] font-semibold rounded-lg whitespace-nowrap shadow-lg z-20">

@@ -97,9 +97,9 @@ export type PassContext = {
   notices: NoticeCard[];
 };
 
-// 토큰 → 지점 → 오늘 등록된 모든 공지(여러 상품을 동시에 공지한 경우 전부)를 한 번에 조회.
-// 지점 인증은 이 토큰 매칭이 전부다 — 별도 로그인 없음 (오패스 방지 = 토큰을 아는 것 자체가 지점 인증).
-export async function getPassContextByToken(token: string): Promise<PassContext | null> {
+// 토큰 → 지점 → 공지 조회. date를 주면 그 날짜에 등록된 공지(과거 이력 포함)를 그대로 보여주고,
+// 주지 않으면 기본("오늘" 실시간) 동작이다. 지점 인증은 토큰 매칭이 전부다(별도 로그인 없음).
+export async function getPassContextByToken(token: string, date?: string): Promise<PassContext | null> {
   const sb = createAdminClient();
 
   const { data: store, error: storeErr } = await sb
@@ -110,15 +110,24 @@ export async function getPassContextByToken(token: string): Promise<PassContext 
     .maybeSingle();
   if (storeErr || !store) return null;
 
-  // "진행중"인 공지는 날짜와 무관하게 보여준다(마감 처리가 하루를 넘겨 늦어지는 경우 누락 방지).
-  // "마감"된 공지는 오늘 것만 보여준다(오늘 마감된 상품임을 알림). "대기" 상태는 아직 오픈 전이므로
-  // 지점 화면에 아예 노출하지 않는다.
-  const today = new Date().toISOString().slice(0, 10);
-  const { data: noticeRows } = await sb
+  // KST 벽시계 기준 "오늘" — 서버가 UTC로 돌아도 자정 근처에서 어긋나지 않도록.
+  const todayKst = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+
+  let query = sb
     .from("notices")
     .select("id, status, notice_date, product_id, description, extra_images, temp_name, temp_image_url, temp_tagline")
-    .or(`status.eq.진행중,and(status.eq.마감,notice_date.eq.${today})`)
     .order("created_at", { ascending: true });
+
+  if (date) {
+    // 캘린더로 특정 날짜를 선택한 경우 — 그날 등록된 공지를 상태와 무관하게 그대로 보여준다(이력 조회).
+    query = query.eq("notice_date", date);
+  } else {
+    // 기본(실시간) 화면 — "진행중"인 공지는 날짜와 무관하게 보여준다(마감 처리가 하루를 넘겨 늦어지는
+    // 경우 누락 방지). "마감"된 공지는 오늘 것만 보여준다. "대기" 상태는 아직 오픈 전이므로 노출하지 않는다.
+    query = query.or(`status.eq.진행중,and(status.eq.마감,notice_date.eq.${todayKst})`);
+  }
+
+  const { data: noticeRows } = await query;
 
   const noticeList = noticeRows ?? [];
   if (!noticeList.length) return { store, notices: [] };

@@ -28,23 +28,33 @@ export default function NoticeViewToggle({
   items,
   token,
   closeTime,
+  emptyMessage = "오늘 등록된 공지가 없습니다.",
+  isHistorical = false,
 }: {
   items: NoticeItem[];
   token: string;
   closeTime: string;
+  emptyMessage?: string;
+  // 오늘이 아닌 지난 날짜 조회 화면 — 기본 보기를 목록형으로 강제한다(오늘 화면의 저장된 설정과 무관).
+  isHistorical?: boolean;
 }) {
   const [view, setView] = useState<ViewMode>("card");
   // 마감 크론이 아직 안 돌았어도 브라우저 시계로 마감 시각이 지났으면 즉시 마감 취급.
   const isPastClose = useIsPastClose(closeTime);
 
   useEffect(() => {
+    if (isHistorical) {
+      setView("list");
+      return;
+    }
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "card" || saved === "list") setView(saved);
-  }, []);
+    setView(saved === "card" || saved === "list" ? saved : "card");
+  }, [isHistorical]);
 
   const changeView = (next: ViewMode) => {
     setView(next);
-    localStorage.setItem(STORAGE_KEY, next);
+    // 지난 날짜 조회 중 토글은 일시적인 선택일 뿐, 오늘 화면의 기본값에는 저장하지 않는다.
+    if (!isHistorical) localStorage.setItem(STORAGE_KEY, next);
   };
 
   return (
@@ -75,7 +85,7 @@ export default function NoticeViewToggle({
 
       {items.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 py-16 text-center text-sm text-gray-400">
-          오늘 등록된 공지가 없습니다.
+          {emptyMessage}
         </div>
       ) : view === "list" ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
