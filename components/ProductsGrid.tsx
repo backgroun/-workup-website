@@ -492,12 +492,12 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
         {/* Search banner */}
         {searchQuery && (
-          <div className="mx-[15px] mt-3 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#E5541B] px-4 py-2.5">
-            <p className="text-[12px] text-[#303236]">
-              <span className="font-bold">"{searchQuery}"</span>
-              <span className="text-gray-400 ml-1">{filtered.length}개</span>
+          <div className="mx-[15px] mt-3 pb-3 border-b border-gray-100 flex items-center justify-between gap-3">
+            <p className="text-[14px] text-[#303236]">
+              <span className="font-bold">&apos;{searchQuery}&apos;</span>의 검색결과
+              <span className="text-[11px] text-gray-400 font-normal ml-1.5">{filtered.length}개</span>
             </p>
-            <button onClick={() => router.push("/products")} className="text-[11px] text-gray-400">✕</button>
+            <button onClick={() => router.push("/products")} className="text-[11px] text-gray-400">초기화</button>
           </div>
         )}
 
@@ -573,13 +573,13 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           <div className="px-[70px]">
 
             {searchQuery && (
-              <div className="mb-6 flex items-center justify-between gap-3 bg-amber-50 border-l-4 border-[#E5541B] px-4 py-3">
-                <p className="text-[13px] text-[#303236]">
-                  <span className="font-bold">"{searchQuery}"</span> 검색 결과
-                  <span className="text-gray-400 ml-2">{filtered.length}개</span>
+              <div className="mb-6 pb-4 border-b border-gray-100 flex items-center justify-between gap-3">
+                <p className="text-[17px] text-[#303236]">
+                  <span className="font-bold">&apos;{searchQuery}&apos;</span>의 검색결과
+                  <span className="text-[13px] text-gray-400 font-normal ml-2">{filtered.length}개</span>
                 </p>
-                <button onClick={() => router.push("/products")} className="text-xs text-gray-400 hover:text-[#303236] transition-colors">
-                  검색 초기화 ✕
+                <button onClick={() => router.push("/products")} className="text-[12px] text-gray-400 hover:text-[#303236] transition-colors">
+                  검색 초기화
                 </button>
               </div>
             )}

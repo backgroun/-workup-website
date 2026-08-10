@@ -61,6 +61,23 @@ const SIZE_TEMPLATES: { label: string; sizes: string[] }[] = [
   { label: "허리인치 (28–38)", sizes: ["28", "30", "32", "34", "36", "38"] },
   { label: "ONE SIZE", sizes: ["ONE SIZE"] },
 ];
+// 의류 사이즈 표준 순서 — 클릭·입력 순서와 무관하게 항상 이 순서로 정렬한다.
+const CLOTHING_SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
+// 인식된 의류 사이즈(S~6XL)는 표준 순서로, 신발·허리인치 등 그 외 값은 기존 순서를 그대로 유지한다
+// (숫자 사이즈까지 이 규칙에 끌려오면 신발 사이즈 템플릿이 깨지므로 대소문자만 무시하고 매칭).
+function sortSizes(sizes: string[]): string[] {
+  const rankOf = (s: string) => {
+    const i = CLOTHING_SIZE_ORDER.indexOf(s.trim().toUpperCase());
+    return i === -1 ? null : i;
+  };
+  return [...sizes].sort((a, b) => {
+    const ra = rankOf(a), rb = rankOf(b);
+    if (ra !== null && rb !== null) return ra - rb;
+    if (ra !== null) return -1;
+    if (rb !== null) return 1;
+    return 0;
+  });
+}
 const COLOR_PRESETS = [
   { name: "블랙",   hex: "#1C1C1C" },
   { name: "화이트", hex: "#F0F0F0" },
@@ -180,7 +197,7 @@ function toForm(p?: Product): FormData {
     jobSites: p?.jobSites ?? [],
     customJobSite: "",
     mainExpose: p?.mainExpose ?? (p?.isNew ? ["신상품"] : []),
-    sizes: (p?.sizes ?? DEFAULT_SIZES),
+    sizes: sortSizes(p?.sizes ?? DEFAULT_SIZES),
     sizePrices: (p?.sizePrices ?? []).map((sp) => ({ size: sp.size, price: sp.price })),
     // 안내 문구는 기본 문구로 미리 채운다(기존 상품 포함). note가 명시적으로 ""이면(사용자가 지운 것) 그대로 유지
     // 사이즈 가이드 목록 — 신규(sizeGuides) 우선, 레거시 단일(sizeGuide) 수용, 없으면 기본 1개
@@ -967,7 +984,8 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   // ── 태그 토글 ──────────────────────────────────────────────────────────────
   const toggleArr = (key: "featureTags" | "jobSites" | "mainExpose" | "seasons" | "sizes", val: string) => {
     const arr = form[key] as string[];
-    set(key, arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
+    const next = arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
+    set(key, key === "sizes" ? sortSizes(next) : next);
   };
 
   const addCustomTag = (key: "featureTags" | "jobSites", inputKey: "customFeatureTag" | "customJobSite") => {
@@ -986,7 +1004,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const values = form.customSizeInput.split(",").map((v) => v.trim()).filter(Boolean);
     if (values.length === 0) { set("customSizeInput", ""); return; }
     const newSizes = values.filter((v) => !form.sizes.includes(v));
-    if (newSizes.length > 0) set("sizes", [...form.sizes, ...newSizes]);
+    if (newSizes.length > 0) set("sizes", sortSizes([...form.sizes, ...newSizes]));
     set("customSizeInput", "");
   };
 
@@ -2418,7 +2436,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
                   {SIZE_TEMPLATES.map((t) => (
-                    <button key={t.label} type="button" onClick={() => set("sizes", [...t.sizes])}
+                    <button key={t.label} type="button" onClick={() => set("sizes", sortSizes(t.sizes))}
                       className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#303236] hover:text-[#303236] transition-colors">
                       {t.label}
                     </button>
@@ -2437,7 +2455,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     {customSizes.map((size) => (
                       <div key={size} className="flex items-center gap-1.5 border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs rounded">
                         {size}
-                        <button type="button" onClick={() => set("sizes", form.sizes.filter((s) => s !== size))}
+                        <button type="button" onClick={() => set("sizes", sortSizes(form.sizes.filter((s) => s !== size)))}
                           className="text-gray-400 hover:text-red-500">×</button>
                       </div>
                     ))}
@@ -2507,7 +2525,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                       {colorDropdownOptions.map((opt) => {
                         const selected = form.colors.some((c) => c.name === opt.name);
                         return (
-                          <button key={opt.name} type="button" onClick={() => toggleColor(opt)}
+                          <button key={opt.name} type="button" onClick={() => { toggleColor(opt); setColorDropdownOpen(false); }}
                             className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-gray-50 last:border-0 ${
                               selected ? "bg-orange-50 font-semibold text-gray-800" : "text-gray-600 hover:bg-gray-50"
                             }`}>

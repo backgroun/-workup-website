@@ -26,15 +26,17 @@ const COLUMNS = [
   { key: "status",        label: "판매상태",        required: false },
 ];
 
-// 색상명 → hex (제품 폼 프리셋과 동일). 미지정 색은 기본 네이비.
+// 색상명 → hex (제품 폼 프리셋과 동일). 프리셋 6개 외의 색상명은 기존 등록 상품에서
+// 같은 이름으로 실제 쓰인 hex(usageMap)를 우선 찾고, 그마저 없으면 기본 네이비로 대체한다
+// (프리셋 미지정 + 처음 보는 색상명은 이름만으로 정확한 hex를 알 방법이 없음).
 const COLOR_HEX: Record<string, string> = {
   "블랙": "#1C1C1C", "화이트": "#F0F0F0", "네이비": "#303236",
   "그레이": "#7A7A7A", "베이지": "#C9B99A", "카키": "#4A5240",
 };
 const COLOR_PRESET_NAMES = Object.keys(COLOR_HEX);
-function parseColors(val: unknown): { name: string; hex: string }[] {
+function parseColors(val: unknown, usageMap: Record<string, string> = {}): { name: string; hex: string }[] {
   return String(val ?? "").split(";").map((s) => s.trim()).filter(Boolean)
-    .map((name) => ({ name, hex: COLOR_HEX[name] ?? "#303236" }));
+    .map((name) => ({ name, hex: COLOR_HEX[name] ?? usageMap[name] ?? "#303236" }));
 }
 
 function slugify(name: string) {
@@ -48,6 +50,23 @@ function slugify(name: string) {
 function toArr(val: unknown): string[] {
   if (!val) return [];
   return String(val).split(";").map((s) => s.trim()).filter(Boolean);
+}
+
+// 의류 사이즈 표준 순서(제품 폼과 동일) — 엑셀에 어떤 순서로 적혀 있어도 항상 이 순서로 정렬한다.
+// 신발·허리인치 등 인식 못 하는 값은 원래 순서를 그대로 유지한다.
+const CLOTHING_SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
+function sortSizes(sizes: string[]): string[] {
+  const rankOf = (s: string) => {
+    const i = CLOTHING_SIZE_ORDER.indexOf(s.trim().toUpperCase());
+    return i === -1 ? null : i;
+  };
+  return [...sizes].sort((a, b) => {
+    const ra = rankOf(a), rb = rankOf(b);
+    if (ra !== null && rb !== null) return ra - rb;
+    if (ra !== null) return -1;
+    if (rb !== null) return 1;
+    return 0;
+  });
 }
 
 // 가격 콤마 자동 포맷 — 숫자만 추출 후 천단위 콤마 + "원"
@@ -156,6 +175,7 @@ function parseRow(
   row: Record<string, unknown>,
   idx: number,
   cats: CatItem[],
+  colorUsageMap: Record<string, string> = {},
 ): Partial<Product> & { id: string; _row: number; _error?: string } {
   const mainNames = cats.map((c) => c.name);
   const subsByMain: Record<string, string[]> = Object.fromEntries(cats.map((c) => [c.name, c.subs]));
@@ -171,8 +191,8 @@ function parseRow(
   const supplyPrice = fmtComma(String(row["공급가"] ?? row["supplyPrice"] ?? ""));
   const category = String(row["대카테고리"] ?? row["category"] ?? defaultMain).trim() as Product["category"];
   const subCategory = String(row["중카테고리"] ?? row["subCategory"] ?? defaultSub).trim() as Product["subCategory"];
-  const sizes = toArr(row["사이즈(;구분)"] ?? row["sizes"]);
-  const colors = parseColors(row["색상(;구분)"] ?? row["colors"]);
+  const sizes = sortSizes(toArr(row["사이즈(;구분)"] ?? row["sizes"]));
+  const colors = parseColors(row["색상(;구분)"] ?? row["colors"], colorUsageMap);
 
   const id = slugify(name) || `product-${Date.now()}-${idx}`;
 
@@ -349,6 +369,9 @@ export default function ProductImportPage() {
   const [existingSkuMap, setExistingSkuMap] = useState<Record<string, string>>({});
   // 기존 등록 상품의 id(상품명 슬러그) → 상품명 — 이름 중복(덮어쓰기 방지)·유사 상품명 감지 기준
   const [existingNameMap, setExistingNameMap] = useState<Record<string, string>>({});
+  // 기존 등록 상품에서 실제 쓰인 색상명 → hex — 엑셀 색상명이 프리셋 6개 밖이어도
+  // 이미 다른 상품에 등록된 적 있는 색이면 그 hex를 그대로 써서 컬러칩이 검정으로 뭉개지지 않게 한다.
+  const [colorUsageMap, setColorUsageMap] = useState<Record<string, string>>({});
   // "애매한" 유사 상품명 행 중 관리자가 "다른 상품이 맞음"으로 확인한 행 번호
   const [confirmedRows, setConfirmedRows] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
@@ -369,17 +392,36 @@ export default function ProductImportPage() {
   useEffect(() => {
     fetch("/api/admin/products")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: { id: string; name?: string; sku?: string }[]) => {
+      .then((data: { id: string; name?: string; sku?: string; colors?: { name: string; hex: string }[] }[]) => {
         if (!Array.isArray(data)) return;
         const skuMap: Record<string, string> = {};
         const nameMap: Record<string, string> = {};
+        // 색상명별 hex 빈도 집계 — 같은 이름에 여러 hex가 섞여 있을 수 있다
+        // (과거 이 기능 버그로 잘못 들어간 #303236과 실제 색이 함께 존재).
+        const colorCounts: Record<string, Record<string, number>> = {};
         data.forEach((p) => {
           const sku = (p.sku ?? "").trim();
           if (sku) skuMap[sku] = p.id;
           if (p.id) nameMap[p.id] = p.name ?? p.id;
+          for (const c of p.colors ?? []) {
+            if (!c?.name || !c.hex) continue;
+            const hexes = (colorCounts[c.name] ??= {});
+            hexes[c.hex] = (hexes[c.hex] ?? 0) + 1;
+          }
         });
+        // 이름별로 가장 많이 쓰인 hex를 대표값으로 — 단 #303236(기본 대체값이라 실제 색이 아닐 가능성이
+        // 높음)은 다른 후보가 있으면 제외하고, 그 이름에 그 값밖에 없을 때만 마지막 수단으로 채택한다.
+        const colorMap: Record<string, string> = {};
+        for (const [name, hexes] of Object.entries(colorCounts)) {
+          const entries = Object.entries(hexes);
+          const real = entries.filter(([hex]) => hex !== "#303236");
+          const pool = real.length ? real : entries;
+          pool.sort((a, b) => b[1] - a[1]);
+          colorMap[name] = pool[0][0];
+        }
         setExistingSkuMap(skuMap);
         setExistingNameMap(nameMap);
+        setColorUsageMap(colorMap);
       })
       .catch(() => {});
   }, []);
@@ -415,7 +457,7 @@ export default function ProductImportPage() {
         headers.forEach((h, i) => { if (h) obj[h] = arr[i] ?? ""; });
         return obj;
       });
-      const parsed = withErrors(json.map((r, i) => parseRow(r, headerIdx + i, cats)), existingSkuMap, existingNameMap);
+      const parsed = withErrors(json.map((r, i) => parseRow(r, headerIdx + i, cats, colorUsageMap)), existingSkuMap, existingNameMap);
       setRows(parsed);
       setConfirmedRows(new Set());
 
@@ -537,12 +579,12 @@ export default function ProductImportPage() {
         </td>
         <td className="px-2 py-2 min-w-[120px]">
           <input list="imp-sizes" value={(row.sizes ?? []).join(";")}
-            onChange={(e) => updateRow(row._row, { sizes: toArr(e.target.value) })}
+            onChange={(e) => updateRow(row._row, { sizes: sortSizes(toArr(e.target.value)) })}
             className={optCls} placeholder="S;M;L;XL" />
         </td>
         <td className="px-2 py-2 min-w-[130px]">
           <input list="imp-colors" value={(row.colors ?? []).map((c) => c.name).join(";")}
-            onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value) })}
+            onChange={(e) => updateRow(row._row, { colors: parseColors(e.target.value, colorUsageMap) })}
             className={optCls} placeholder="블랙;화이트" />
         </td>
         <td className="px-2 py-2 min-w-[110px]">
