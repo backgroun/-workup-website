@@ -372,15 +372,18 @@ export default function AdminProductsPage() {
   const filtered = useMemo(() => {
     let list = [...products];
 
-    // 검색
+    // 검색 — 띄어쓰기로 여러 단어를 입력하면, 순서·연속 여부와 무관하게 모든 단어가
+    // 어딘가에 포함되어 있으면 찾는다(기존엔 입력한 문자열 전체가 한 번에 이어져 있어야만 매치됐음).
     if (applied.query) {
-      const q = applied.query.toLowerCase();
+      const tokens = applied.query.toLowerCase().split(/\s+/).filter(Boolean);
       list = list.filter((p) => {
-        if (applied.type === "상품명")   return p.name.toLowerCase().includes(q);
-        if (applied.type === "상품코드") return (p.sku ?? "").toLowerCase().includes(q);
-        if (applied.type === "브랜드")   return (p.brand ?? "").toLowerCase().includes(q);
-        if (applied.type === "제조사")   return (p.manufacturer ?? "").toLowerCase().includes(q);
-        return true;
+        const field =
+          applied.type === "상품명"   ? p.name :
+          applied.type === "상품코드" ? (p.sku ?? "") :
+          applied.type === "브랜드"   ? (p.brand ?? "") :
+          applied.type === "제조사"   ? (p.manufacturer ?? "") : "";
+        const hay = field.toLowerCase();
+        return tokens.every((t) => hay.includes(t));
       });
     }
 

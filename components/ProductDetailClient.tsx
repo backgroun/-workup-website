@@ -10,8 +10,6 @@ import { useStores } from "@/lib/useStores";
 import { productDisplayName, displaySku, type Product } from "@/data/products";
 import { ikSrc } from "@/lib/imageSrc";
 
-const SIZES = ["S", "M", "L", "XL", "2XL"];
-
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -265,21 +263,25 @@ export default function ProductDetailClient({
         </div>
       )}
 
-      {/* 사이즈 */}
-      <div>
-        <div className="flex gap-2 flex-wrap">
-          {(product.sizes && product.sizes.length > 0 ? product.sizes : SIZES).map((s) => (
-            <button key={s} onClick={() => setSelectedSize(s)}
-              className={`min-w-[48px] h-10 px-3 text-sm border transition-colors ${
-                selectedSize === s
-                  ? "bg-[#303236] text-white border-[#303236]"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-[#303236] hover:text-[#303236]"
-              }`}>
-              {s}
-            </button>
-          ))}
+      {/* 사이즈 — 관리자가 사이즈를 비워두면(단일 사이즈 상품 등) 선택기를 아예 표시하지 않는다.
+          예전엔 비어 있으면 하드코딩된 기본 사이즈(S~2XL)로 대체해, 관리자가 사이즈를 지워도
+          엉뚱한 사이즈가 그대로 노출되는 문제가 있었다. */}
+      {product.sizes && product.sizes.length > 0 && (
+        <div>
+          <div className="flex gap-2 flex-wrap">
+            {product.sizes.map((s) => (
+              <button key={s} onClick={() => setSelectedSize(s)}
+                className={`min-w-[48px] h-10 px-3 text-sm border transition-colors ${
+                  selectedSize === s
+                    ? "bg-[#303236] text-white border-[#303236]"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#303236] hover:text-[#303236]"
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 연관 상품 */}
       {relatedProducts.length > 0 && (

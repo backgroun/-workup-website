@@ -229,17 +229,21 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const filtered = products
     .filter((p) => {
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        // 띄어쓰기로 여러 단어를 입력하면, 순서·연속 여부와 무관하게 모든 단어가 상품명·카테고리·
+        // 소개·브랜드 중 어딘가에 흩어져 있어도 찾는다(기존엔 입력 문자열 전체가 한 번에 이어져 있어야 매치됐음).
+        const tokens = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
         const cats = getProductCats(p);
         const brand = (p.brand ?? "").toLowerCase();
         const brandAlias = brandAliasMap[brand] ?? "";
-        return (
-          p.name.toLowerCase().includes(q) ||
-          cats.some(c => c.main.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q)) ||
-          (p.tagline?.toLowerCase().includes(q) ?? false) ||
-          brand.includes(q) ||
-          brandAlias.includes(q)
-        );
+        const haystack = [
+          p.name.toLowerCase(),
+          p.tagline?.toLowerCase() ?? "",
+          brand,
+          brandAlias,
+          ...cats.map((c) => c.main.toLowerCase()),
+          ...cats.map((c) => c.sub.toLowerCase()),
+        ].join(" ");
+        return tokens.every((t) => haystack.includes(t));
       }
       if (activeCategory !== "전체") {
         const cats = getProductCats(p);
