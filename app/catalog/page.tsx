@@ -56,7 +56,7 @@ export default async function CatalogPage() {
 // 등록된 카탈로그가 없을 때 — 빈 화면 대신 매장/제품으로 안내(오프라인 전환 유지).
 function CatalogEmpty() {
   return (
-    <div className="bg-[#0d1826] flex flex-col items-center justify-center text-center px-6" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+    <div className="bg-[#0d1826] flex flex-col items-center justify-center text-center px-6" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - var(--wu-header-h, 97px))" }}>
       <p className="text-[10px] tracking-[0.3em] text-[#E5541B] uppercase mb-4">Catalog</p>
       <h1 className="text-2xl md:text-3xl font-bold text-white leading-snug mb-3">카탈로그를 준비하고 있습니다</h1>
       <p className="text-sm text-gray-400 leading-relaxed mb-8">새 카탈로그가 곧 공개됩니다.<br />그동안 제품과 가까운 매장을 먼저 둘러보세요.</p>

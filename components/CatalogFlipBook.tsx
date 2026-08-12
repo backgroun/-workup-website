@@ -34,11 +34,13 @@ export default function CatalogFlipBook({ pages }: { pages: CatalogPage[] }) {
     const update = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      // header = 탑바(가변, 0=꺼짐) + 56px 헤더 / bottom nav controls ≈ 68px
+      // header = 탑바(가변, 0=꺼짐) + 헤더(로고 행 + 검색 행, 가변) / bottom nav controls ≈ 68px
       const NAV_H = 68;
       const tbRaw = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--wu-topbar-h"), 10);
       const topbarH = Number.isFinite(tbRaw) ? tbRaw : 36; // 0(꺼짐)도 보존, 파싱 실패만 36 폴백
-      const HEADER_H = topbarH + 56;
+      const hRaw = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--wu-header-h"), 10);
+      const headerH = Number.isFinite(hRaw) ? hRaw : 97; // Header.tsx가 실측해 공개하는 값, 파싱 실패만 97 폴백
+      const HEADER_H = topbarH + headerH;
       const availH = vh - HEADER_H - NAV_H;
 
       if (vw < 768) {
@@ -64,14 +66,14 @@ export default function CatalogFlipBook({ pages }: { pages: CatalogPage[] }) {
 
   if (!mounted || pageW === 0) {
     return (
-      <div className="flex items-center justify-center bg-[#0d1826]" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+      <div className="flex items-center justify-center bg-[#0d1826]" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - var(--wu-header-h, 97px))" }}>
         <p className="text-gray-600 text-xs tracking-widest">LOADING...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#0d1826] flex flex-col items-center" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+    <div className="bg-[#0d1826] flex flex-col items-center" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - var(--wu-header-h, 97px))" }}>
       {/* 플립북 — 가용 공간을 채움 */}
       <div className="flex-1 flex items-center justify-center w-full overflow-hidden">
         <Book

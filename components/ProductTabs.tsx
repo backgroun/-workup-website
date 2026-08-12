@@ -133,12 +133,13 @@ export default function ProductTabs({ product }: { product: Product }) {
     `flex-1 py-4 text-[15px] md:text-[17px] transition-colors relative ${
       active === t ? "text-[#303236]" : "text-gray-400 hover:text-[#303236]"
     }`;
-  const sectionClass = "scroll-mt-[108px] md:scroll-mt-[150px] px-5 md:px-12 py-10 md:py-14";
+  // scroll-mt = 상단 고정 요소(모바일: MobileProductNav / 데스크탑: 헤더) 높이 + 탭 바 자체 높이(약 58px)
+  const sectionClass = "scroll-mt-[108px] md:scroll-mt-[calc(var(--wu-header-h,64px)+58px)] px-5 md:px-12 py-10 md:py-14";
 
   return (
     <div className="border-t border-gray-100">
-      {/* 탭 바 (sticky) — 모바일: 상단바(h-12) 아래 / 데스크탑: 헤더 아래 */}
-      <div className="sticky z-30 bg-white border-b border-gray-200 top-12 md:top-[92px]">
+      {/* 탭 바 (sticky) — 모바일: MobileProductNav(h-12, 탑바 항상 0) 아래 / 데스크탑: 헤더 실측 높이(--wu-header-h) 아래 */}
+      <div className="sticky z-30 bg-white border-b border-gray-200 top-12 md:top-[var(--wu-header-h,64px)]">
         <div className="flex max-w-screen-xl mx-auto">
           {TABS.map((t) => (
             <button key={t} type="button" onClick={() => goTo(t)} className={tabClass(t)}>

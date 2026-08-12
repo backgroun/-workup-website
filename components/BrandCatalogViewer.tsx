@@ -63,7 +63,7 @@ export default function BrandCatalogViewer({ brands }: { brands: BrandViewModel[
   const total = selected.pages.length;
 
   return (
-    <div className="flex flex-col md:flex-row bg-[#0d1826]" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px)" }}>
+    <div className="flex flex-col md:flex-row bg-[#0d1826]" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - var(--wu-header-h, 97px))" }}>
       {/* 브랜드 목록 (데스크탑 좌측 / 모바일 상단 가로 스크롤) */}
       <aside className="flex-shrink-0 md:w-[190px] border-b md:border-b-0 md:border-r border-white/10 overflow-x-auto md:overflow-y-auto">
         <div className="flex md:flex-col gap-2 p-3">

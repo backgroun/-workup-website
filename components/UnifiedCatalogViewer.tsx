@@ -68,7 +68,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
   const showSidebar = brands.length > 0;
 
   return (
-    <div className="bg-[#0d1826] flex flex-col overflow-hidden" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - 56px - var(--wu-bottom-nav-h, 0px))" }}>
+    <div className="bg-[#0d1826] flex flex-col overflow-hidden" style={{ height: "calc(100vh - var(--wu-topbar-h, 36px) - var(--wu-header-h, 97px) - var(--wu-bottom-nav-h, 0px))" }}>
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
       {/* 메인 뷰어 */}
       <div className="flex-1 min-w-0 min-h-0 flex flex-col order-1">
