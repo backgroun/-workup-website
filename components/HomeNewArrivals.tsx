@@ -35,6 +35,10 @@ export default function HomeNewArrivals() {
   const [shuffleSeed, setShuffleSeed] = useState(0);
   useEffect(() => { setShuffleSeed(Math.floor(Math.random() * 1_000_000) + 1); }, []);
   const pcRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
+  // 가로 리스트를 천천히 자동 스크롤 — 마우스 오버(PC)·터치 중(모바일)에는 멈춘다.
+  const [pcAutoPaused, setPcAutoPaused] = useState(false);
+  const [mobileAutoPaused, setMobileAutoPaused] = useState(false);
   const router = useRouter();
   const { hasProduct, toggleProduct } = useCart();
   const [memberSession, setMemberSession] = useState<{ name: string; grade: string } | null>(null);
@@ -105,6 +109,27 @@ export default function HomeNewArrivals() {
   const scroll = (dir: "left" | "right") =>
     pcRef.current?.scrollBy({ left: dir === "right" ? 300 : -300, behavior: "smooth" });
 
+  // 가로 리스트 천천히 자동 스크롤 — 끝에 닿으면 처음으로. 오버·터치 중엔 멈춰서 사용자 조작과 부딪히지 않게.
+  useEffect(() => {
+    if (newItems.length === 0) return;
+    const SPEED = 0.4; // px/frame — 느린 속도
+    let rafId: number;
+    const step = () => {
+      for (const { el, paused } of [
+        { el: pcRef.current, paused: pcAutoPaused },
+        { el: mobileRef.current, paused: mobileAutoPaused },
+      ]) {
+        if (!el || paused) continue;
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        if (maxScroll <= 0) continue;
+        el.scrollLeft = el.scrollLeft >= maxScroll - 1 ? 0 : el.scrollLeft + SPEED;
+      }
+      rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [newItems.length, pcAutoPaused, mobileAutoPaused]);
+
   if (loading) {
     return (
       <section className="bg-white pt-10 pb-8 md:pt-12 md:pb-14">
@@ -156,7 +181,11 @@ export default function HomeNewArrivals() {
         )}
 
         {/* PC 가로 스크롤 캐러셀 — 화살표는 마우스 오버 시에만 표시되는 반투명 흰 원형 버튼(작은 chevron), 이미지 위에 오버레이 */}
-        <div className="hidden md:block relative group/nav -mr-[70px]">
+        <div
+          className="hidden md:block relative group/nav -mr-[70px]"
+          onMouseEnter={() => setPcAutoPaused(true)}
+          onMouseLeave={() => setPcAutoPaused(false)}
+        >
           {showLeft && (
             <button
               onClick={() => scroll("left")}
@@ -227,6 +256,9 @@ export default function HomeNewArrivals() {
         {/* 모바일 가로 캐러셀 */}
         <div className="md:hidden">
           <div
+            ref={mobileRef}
+            onTouchStart={() => setMobileAutoPaused(true)}
+            onTouchEnd={() => setTimeout(() => setMobileAutoPaused(false), 1500)}
             className="flex gap-3 overflow-x-auto pb-1 -mx-[15px] px-[15px]"
             style={{ scrollbarWidth: "none" }}
           >
