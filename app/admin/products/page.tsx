@@ -51,7 +51,7 @@ const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개�
 const STATUS_OPTIONS = ["전체", "판매중", "품절", "판매중지", "예약판매", "진열대기"];
 const EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
 // 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명은 항상 표시)
-const TOGGLE_COLS = ["상태", "브랜드", "품번", "가격", "카테고리", "최종수정"];
+const TOGGLE_COLS = ["상태", "브랜드", "품번", "가격", "카테고리", "색상", "사이즈", "최종수정"];
 const COL_KEY = "wu-admin-product-cols";
 const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "제조사"];
 
@@ -159,6 +159,45 @@ export default function AdminProductsPage() {
   const [catRowId, setCatRowId] = useState<string | null>(null);
   const [rowMain, setRowMain]   = useState("");
   const [rowSub, setRowSub]     = useState("");
+
+  // ─ 상품명 옆 "수정" 버튼 → 간단 수정 팝업 (전체 수정 페이지 대신 이름·가격·상태만 빠르게) ──
+  const [quickEditTarget, setQuickEditTarget] = useState<Product | null>(null);
+  const [quickEditName, setQuickEditName] = useState("");
+  const [quickEditPrice, setQuickEditPrice] = useState("");
+  const [quickEditStatus, setQuickEditStatus] = useState("판매중");
+  const [quickEditSaving, setQuickEditSaving] = useState(false);
+
+  const openQuickEdit = (p: Product) => {
+    setQuickEditTarget(p);
+    setQuickEditName(p.name);
+    setQuickEditPrice(p.price ?? "");
+    setQuickEditStatus(p.status ?? "판매중");
+  };
+  const closeQuickEdit = () => setQuickEditTarget(null);
+
+  const saveQuickEdit = async () => {
+    if (!quickEditTarget) return;
+    setQuickEditSaving(true);
+    try {
+      const res = await fetch(`/api/admin/products/${quickEditTarget.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...quickEditTarget, name: quickEditName, price: quickEditPrice, status: quickEditStatus }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        showMsg(`저장 실패: ${e.error ?? res.status}`);
+      } else {
+        showMsg("저장됐습니다.");
+        closeQuickEdit();
+        load();
+      }
+    } catch {
+      showMsg("저장 실패: 네트워크 오류");
+    } finally {
+      setQuickEditSaving(false);
+    }
+  };
 
   // ─ 로드 ────────────────────────────────────────────────────────────────
   const showMsg = (text: string) => { setMsg(text); setTimeout(() => setMsg(""), 3000); };
@@ -848,8 +887,6 @@ export default function AdminProductsPage() {
               {[
                 { label: "진열함",   action: () => bulkStatus("판매중") },
                 { label: "진열안함", action: () => bulkStatus("판매중지") },
-                { label: "판매함",   action: () => bulkStatus("판매중") },
-                { label: "판매안함", action: () => bulkStatus("판매중지") },
               ].map(btn => (
                 <button key={btn.label} onClick={btn.action} disabled={!selected.size}
                   className="px-3 py-1.5 text-[14px] border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed rounded">
@@ -939,7 +976,7 @@ export default function AdminProductsPage() {
                     <input type="checkbox" checked={allSel} onChange={toggleAll}
                       className="w-[18px] h-[18px] accent-[#303236] cursor-pointer" />
                   </th>
-                  {["상태", "브랜드", "상품명", "품번", "가격", "카테고리", "최종수정"]
+                  {["상태", "브랜드", "상품명", "품번", "가격", "카테고리", "색상", "사이즈", "최종수정"]
                     .filter(h => !TOGGLE_COLS.includes(h) || visibleCols[h])
                     .map(h => {
                       const handleHeaderClick = () => {
@@ -1018,10 +1055,10 @@ export default function AdminProductsPage() {
                               임시등록
                             </span>
                           )}
-                          <Link href={`/admin/products/${p.id}/edit`}
+                          <button type="button" onClick={() => openQuickEdit(p)}
                             className="flex-shrink-0 px-2.5 py-1 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors whitespace-nowrap">
                             수정
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </td>
@@ -1073,6 +1110,37 @@ export default function AdminProductsPage() {
                             className="inline-flex items-center justify-center w-5 h-5 text-[14px] leading-none text-gray-400 border border-dashed border-gray-300 rounded hover:border-[#303236] hover:text-[#303236]">+</button>
                         )}
                       </div>
+                    </td>
+                    )}
+
+                    {/* 색상 — 컬럼 표시 토글 */}
+                    {visibleCols["색상"] && (
+                    <td className="px-5 py-3">
+                      {p.colors && p.colors.length > 0 ? (
+                        <div className="flex items-center gap-1 flex-wrap max-w-[140px]">
+                          {p.colors.slice(0, 6).map((c, i) => (
+                            <span key={`${c.name}-${i}`} title={c.name}
+                              className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0"
+                              style={{ backgroundColor: c.hex }} />
+                          ))}
+                          {p.colors.length > 6 && (
+                            <span className="text-[11px] text-gray-400">+{p.colors.length - 6}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-300 text-[13px]">-</span>
+                      )}
+                    </td>
+                    )}
+
+                    {/* 사이즈 — 컬럼 표시 토글 */}
+                    {visibleCols["사이즈"] && (
+                    <td className="px-5 py-3 max-w-[160px]">
+                      {p.sizes && p.sizes.length > 0 ? (
+                        <span className="text-[12px] text-gray-500">{p.sizes.join(", ")}</span>
+                      ) : (
+                        <span className="text-gray-300 text-[13px]">-</span>
+                      )}
                     </td>
                     )}
 
@@ -1250,6 +1318,50 @@ export default function AdminProductsPage() {
               <button onClick={applyMainExpose} disabled={!exposeTarget.size || exposeSaving}
                 className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
                 {exposeSaving ? "적용 중..." : `${selected.size}개에 적용`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 간단 수정 팝업 (상품명 옆 "수정" 버튼) ──────────────────────────── */}
+      {quickEditTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeQuickEdit}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="px-7 py-5 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">간단 수정</h2>
+              <p className="text-[13px] text-gray-400 mt-0.5">이미지·카테고리 등 나머지 항목은 전체 수정 페이지에서 변경하세요.</p>
+            </div>
+            <div className="px-7 py-6 space-y-5">
+              <div>
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">상품명</label>
+                <input value={quickEditName} onChange={(e) => setQuickEditName(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+              </div>
+              <div>
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">판매가</label>
+                <input value={quickEditPrice} onChange={(e) => setQuickEditPrice(e.target.value)}
+                  inputMode="numeric" placeholder="예: 39,000원"
+                  className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+              </div>
+              <div>
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">상태</label>
+                <select value={quickEditStatus} onChange={(e) => setQuickEditStatus(e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm bg-white rounded focus:outline-none focus:border-[#303236]">
+                  {STATUS_OPTIONS.filter((s) => s !== "전체").map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <Link href={`/admin/products/${quickEditTarget.id}/edit`} onClick={closeQuickEdit}
+                className="text-xs text-[#303236] underline underline-offset-2 hover:text-[#E5541B] inline-block">
+                전체 수정 페이지 열기 ↗
+              </Link>
+            </div>
+            <div className="px-7 py-5 border-t border-gray-200 flex gap-3 justify-end">
+              <button onClick={closeQuickEdit}
+                className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
+              <button onClick={saveQuickEdit} disabled={quickEditSaving || !quickEditName.trim()}
+                className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
+                {quickEditSaving ? "저장 중..." : "저장"}
               </button>
             </div>
           </div>
