@@ -8,7 +8,6 @@ import LoginPromptModal from "@/components/LoginPromptModal";
 import {
   products as staticProducts,
   productDisplayName,
-  displaySku,
 } from "@/data/products";
 import {
   DEFAULT_PRODUCT_FILTERS,
@@ -95,6 +94,8 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const [priceOpen, setPriceOpen] = useState(false);
   const [brandOpen, setBrandOpen] = useState(false);
   const [brandExpanded, setBrandExpanded] = useState(false);
+  // 브랜드 필터 목록 표시 언어 — 한글명이 등록된 브랜드만 전환되고, 없는 브랜드는 원래 이름 그대로 노출된다.
+  const [brandDisplayKo, setBrandDisplayKo] = useState(false);
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -105,7 +106,12 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   const searchQuery = searchParams.get("q") ?? "";
   // 브랜드명(영문) → 한글 검색명 매핑 — 검색 시 "노스페이스"로도 "NORTH FACE" 상품이 찾아지도록
   const [brandAliasMap, setBrandAliasMap] = useState<Record<string, string>>({});
+  // 브랜드 필터 표시용 — 검색 매칭용 brandAliasMap과 달리 원래 대소문자를 그대로 보존한다.
+  const [brandKoMap, setBrandKoMap] = useState<Record<string, string>>({});
   const [brandList, setBrandList] = useState<string[]>([]);
+  // 목록을 한 번에 다 그리면(200개+) 초기 로딩이 무거워져서, "더보기"로 점진적으로 늘려 보여준다.
+  const PAGE_SIZE = 40;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     fetch("/api/products")
@@ -120,15 +126,20 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       .then((data: { name: string; name_ko?: string | null }[]) => {
         if (!Array.isArray(data)) return;
         const map: Record<string, string> = {};
+        const koMap: Record<string, string> = {};
         const brands: string[] = [];
         data.forEach((b) => {
           if (b.name) {
             brands.push(b.name);
-            if (b.name_ko) map[b.name.toLowerCase()] = b.name_ko.toLowerCase();
+            if (b.name_ko) {
+              map[b.name.toLowerCase()] = b.name_ko.toLowerCase();
+              koMap[b.name] = b.name_ko;
+            }
           }
         });
         setBrandAliasMap(map);
-        setBrandList(brands);
+        setBrandKoMap(koMap);
+        setBrandList(brands.sort((a, b) => a.localeCompare(b, "ko")));
       })
       .catch(() => {});
   }, []);
@@ -174,10 +185,13 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
   }, []);
 
   // 카테고리·서브카테고리 선택을 주소창 URL(?cat=&sub=)에도 반영 — 배너 등에서 특정 카테고리로 바로 연결하는 링크를 만들 수 있도록.
+  // 검색 결과를 보던 중 다른 카테고리를 누르면 검색(q)은 해제한다 — 안 그러면 검색어가 남아
+  // 카테고리를 눌러도 화면이 그대로(검색 결과만 계속 필터링)인 것처럼 보이는 문제가 있었다.
   const navigateToCategory = useCallback((cat: string, sub: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("category");
     params.delete("subcategory");
+    params.delete("q");
     if (cat === "전체") params.delete("cat"); else params.set("cat", cat);
     if (sub === "전체") params.delete("sub"); else params.set("sub", sub);
     const qs = params.toString();
@@ -201,6 +215,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
     setSelectedSizes((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
   const toggleBrand = (v: string) =>
     setSelectedBrands((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
+
+  // 한글명이 등록된 브랜드만 전환 표시하고, 없는 브랜드는 원래 이름 그대로 보여준다.
+  const brandLabel = (b: string) => (brandDisplayKo && brandKoMap[b]) || b;
 
   const resetFilters = () => {
     setSelectedSeasons([]);
@@ -228,6 +245,9 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
   const filtered = products
     .filter((p) => {
+      // 검색어·카테고리·사이즈·브랜드·시즌 조건을 전부 AND로 검사한다 — 예전엔 검색어가 있으면
+      // 그 즉시 검색 결과만으로 판단하고 나머지 필터(사이즈 등)를 건너뛰어서, 필터 칩은 선택된
+      // 채로 보이는데 실제로는 적용 안 되는 문제가 있었다.
       if (searchQuery) {
         // 띄어쓰기로 여러 단어를 입력하면, 순서·연속 여부와 무관하게 모든 단어가 상품명·카테고리·
         // 소개·브랜드 중 어딘가에 흩어져 있어도 찾는다(기존엔 입력 문자열 전체가 한 번에 이어져 있어야 매치됐음).
@@ -243,7 +263,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           ...cats.map((c) => c.main.toLowerCase()),
           ...cats.map((c) => c.sub.toLowerCase()),
         ].join(" ");
-        return tokens.every((t) => haystack.includes(t));
+        if (!tokens.every((t) => haystack.includes(t))) return false;
       }
       if (activeCategory !== "전체") {
         const cats = getProductCats(p);
@@ -269,6 +289,16 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       const bTime = b.updatedAt ?? b.createdAt ?? "";
       return bTime.localeCompare(aTime);
     });
+
+  // 검색어·카테고리·필터가 바뀌면 노출 개수를 다시 초기값으로 되돌린다(다른 조건으로 바꿨는데
+  // 이전 필터에서 늘려둔 개수가 그대로 남아 목록이 뒤죽박죽 보이는 것 방지).
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [searchQuery, activeCategory, activeSubCategory, selectedSizes, selectedBrands, selectedSeasons]);
+
+  const visibleProducts = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+  const showMore = () => setVisibleCount((v) => Math.min(v + PAGE_SIZE, filtered.length));
 
   const currentTitle =
     activeSubCategory !== "전체"
@@ -302,12 +332,22 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       </Accordion>
 
       <Accordion label="브랜드" open={brandOpen} onToggle={() => setBrandOpen(!brandOpen)}>
+        <div className="flex justify-end mb-2.5">
+          <button
+            type="button"
+            onClick={() => setBrandDisplayKo((v) => !v)}
+            aria-label="브랜드명 한/영 전환"
+            className="text-[11px] text-[#303236] hover:text-[#E5541B] border border-[#303236] hover:border-[#E5541B] rounded px-2 py-1 transition-colors"
+          >
+            {brandDisplayKo ? "A" : "가"} · {brandDisplayKo ? "영문으로" : "한글로"}
+          </button>
+        </div>
         <div className="flex flex-col gap-3">
           {brandList.map((b) => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer">
               <input type="checkbox" checked={selectedBrands.includes(b)} onChange={() => toggleBrand(b)}
                 className="w-[14px] h-[14px] accent-[#303236] flex-shrink-0" />
-              <span className="text-[13px] text-gray-700">{b}</span>
+              <span className="text-[13px] text-gray-700">{brandLabel(b)}</span>
             </label>
           ))}
         </div>
@@ -388,8 +428,10 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
       <div className={mobile ? "pt-2.5" : "pt-3"}>
         {product.colors?.length > 0 && (
           <div className="flex items-center gap-1.5 mb-1.5">
-            {product.colors.slice(0, 5).map((c) => (
-              <div key={c.name} className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0"
+            {/* 색상명이 데이터상 중복될 수 있어(예: "네이비"가 두 번 등록) 이름만으로는 key가 겹칠 수 있다 —
+                인덱스를 함께 써서 React key 경고·중복 렌더링을 방지한다. */}
+            {product.colors.slice(0, 5).map((c, i) => (
+              <div key={`${c.name}-${i}`} className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0"
                 style={{ backgroundColor: c.hex }} title={c.name} />
             ))}
           </div>
@@ -397,9 +439,6 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
         <h3 className={`font-medium text-[#303236] leading-snug ${mobile ? "text-[12px]" : "text-[13px]"}`}>
           <Link href={`/products/${product.id}`} className="hover:underline underline-offset-4 decoration-1 transition-colors">{productDisplayName(product)}</Link>
         </h3>
-        {displaySku(product.sku) && (
-          <p className={`text-gray-400 tracking-wider mt-0.5 mb-1 ${mobile ? "text-[9px]" : "text-[10px]"}`}>{displaySku(product.sku)}</p>
-        )}
       </div>
     </div>
   );
@@ -535,11 +574,21 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
           {filtered.length === 0 ? (
             <div className="py-20 text-center text-sm text-gray-400">해당 카테고리의 제품이 없습니다.</div>
           ) : (
-            <div className="flex flex-wrap gap-[10px]">
-              {filtered.map((product) => (
-                <ProductCard key={product.id} product={product} mobile />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-wrap gap-[10px]">
+                {visibleProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} mobile />
+                ))}
+              </div>
+              {hasMore && (
+                <button
+                  onClick={showMore}
+                  className="w-full mt-5 py-3 border border-gray-300 text-[13px] font-semibold text-gray-600 hover:border-[#303236] hover:text-[#303236] transition-colors"
+                >
+                  더보기 ({visibleCount} / {filtered.length})
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -634,6 +683,15 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
 
                     {/* 브랜드 필터 - 가로 태그 형태 (오른쪽 끝) */}
                     <div className="flex items-center gap-2 flex-wrap justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setBrandDisplayKo((v) => !v)}
+                        aria-label="브랜드명 한/영 전환"
+                        title={brandDisplayKo ? "영문으로 보기" : "한글로 보기"}
+                        className="px-2 py-1.5 border border-[#303236] text-[#303236] text-[11px] font-bold hover:border-[#E5541B] hover:text-[#E5541B] transition-colors rounded flex-shrink-0"
+                      >
+                        {brandDisplayKo ? "A" : "가"}
+                      </button>
                       {brandList.slice(0, 10).map((brand) => (
                         <button
                           key={brand}
@@ -644,7 +702,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                               : "border-gray-200 text-gray-600 hover:border-[#303236]"
                           }`}
                         >
-                          {brand}
+                          {brandLabel(brand)}
                         </button>
                       ))}
                       {brandList.length > 10 && (
@@ -684,7 +742,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                               : "border-gray-200 text-gray-600 hover:border-[#303236]"
                           }`}
                         >
-                          {brand}
+                          {brandLabel(brand)}
                         </button>
                       ))}
                     </div>
@@ -696,11 +754,23 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                 {filtered.length === 0 ? (
                   <div className="py-24 text-center text-sm text-gray-400">해당 카테고리의 제품이 없습니다.</div>
                 ) : (
-                  <div className="grid grid-cols-3 xl:grid-cols-4 gap-5">
-                    {filtered.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-3 xl:grid-cols-4 gap-5">
+                      {visibleProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                    {hasMore && (
+                      <div className="flex justify-center mt-8">
+                        <button
+                          onClick={showMore}
+                          className="px-8 py-3 border border-gray-300 text-sm font-semibold text-gray-600 hover:border-[#303236] hover:text-[#303236] transition-colors"
+                        >
+                          더보기 ({visibleCount} / {filtered.length})
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
           </div>

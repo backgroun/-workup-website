@@ -191,7 +191,7 @@ export default function ProductDetailClient({
 
       {/* 구매 방법 안내 */}
       <div className="bg-gray-100 px-4 py-3 text-sm text-gray-700 text-center rounded">
-        본 상품은 매장 방문을 통해 구매하실 수 있습니다.
+        본 상품은 매장 방문을 통해 구매할 수 있습니다.
       </div>
 
       {/* 이름 → 가격 → 브랜드·제품번호 (데스크탑 카테고리는 상단 브레드크럼이 담당) */}
@@ -250,8 +250,8 @@ export default function ProductDetailClient({
       {product.colors.length > 0 && (
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            {product.colors.map((c) => (
-              <button key={c.name} onClick={() => setSelectedColor(c)} title={c.name}
+            {product.colors.map((c, i) => (
+              <button key={`${c.name}-${i}`} onClick={() => setSelectedColor(c)} title={c.name}
                 className={`w-7 h-7 rounded-full transition-all ${
                   selectedColor?.name === c.name ? "border-[3px] border-[#ebebeb] scale-110" : "border-2 border-transparent ring-1 ring-gray-200 hover:ring-gray-400"
                 }`}
@@ -346,12 +346,13 @@ export default function ProductDetailClient({
           </button>
         </div>
 
-        {/* 피팅 리스트 안내 — 버튼 바로 아래 */}
-        <div className="bg-gray-50 px-4 py-4 border-l-2 border-gray-200">
-          <p className="text-xs font-semibold text-[#303236] mb-1">피팅 리스트란?</p>
-          <p className="text-xs text-gray-500 leading-relaxed">원하는 제품을 담아두고 매장 방문 시 직원에게 보여주세요.</p>
-          <Link href="/cart" className="text-xs text-[#E5541B] font-semibold mt-2 inline-block hover:underline">피팅 리스트 보기 →</Link>
-        </div>
+        {/* 피팅 리스트 안내 — 버튼 바로 아래, 한 줄로 간략히 */}
+        <Link
+          href="/cart"
+          className="block bg-gray-50 px-3 py-2 border-l-2 border-gray-200 text-[11px] text-gray-500 hover:text-[#E5541B] transition-colors truncate"
+        >
+          <span className="text-[#E5541B]">♥</span> 피팅 리스트 : 원하는 제품을 담아두고 매장 방문 시 활용해 보세요.
+        </Link>
       </div>
 
       {/* 가까운 매장 찾기 하단 배너 (관리자 설정) */}

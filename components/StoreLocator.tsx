@@ -165,6 +165,9 @@ export default function StoreLocator({
   const [expanded, setExpanded] = useState<number | null>(null);
   const [selectedSido, setSelectedSido] = useState("");
   const [selectedSigungu, setSelectedSigungu] = useState("");
+  // 매장 목록을 한 번에 다 그리면(150개+) 무겁고 스크롤이 길어져서, "더보기"로 점진적으로 늘려 보여준다.
+  const STORE_PAGE_SIZE = 30;
+  const [visibleStoreCount, setVisibleStoreCount] = useState(STORE_PAGE_SIZE);
 
   // 지도 중심 (선택된 매장 or 기본값) — level은 카카오맵 기준 (작을수록 확대)
   const [mapCenter, setMapCenter] = useState({ lat: 37.3205, lng: 127.0423, level: 9 });
@@ -382,17 +385,27 @@ export default function StoreLocator({
       : baseList
   );
 
+  // 검색어·지역·전체보기 여부가 바뀌면 노출 개수를 초기값으로 되돌린다.
+  useEffect(() => {
+    setVisibleStoreCount(STORE_PAGE_SIZE);
+  }, [search, selectedSido, selectedSigungu, showAll]);
+
   // 지도 클릭으로 매장이 선택되면(대기 플래그 존재) 리스트가 재정렬/필터된 뒤
-  // 해당 항목을 화면 중앙으로 스크롤한다. displayList가 바뀔 때마다 확인.
+  // 해당 항목을 화면 중앙으로 스크롤한다. 아직 "더보기"로 안 펼쳐진 뒤쪽 순번이면 먼저 펼친다.
   useEffect(() => {
     const id = pendingListScrollId.current;
     if (id == null) return;
+    const idx = displayList.findIndex((s) => s.id === id);
+    if (idx >= visibleStoreCount) {
+      setVisibleStoreCount(idx + 1);
+      return; // 리렌더 후 이 effect가 다시 돌면서 스크롤을 마저 처리한다.
+    }
     const el = itemRefs.current.get(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       pendingListScrollId.current = null;
     }
-  }, [displayList, selectedStore]);
+  }, [displayList, selectedStore, visibleStoreCount]);
 
   // 검색 초기화 — 검색어·지역필터·전체보기 상태 초기화 후 지도 복귀
   const resetSearch = () => {
@@ -596,7 +609,7 @@ export default function StoreLocator({
           {displayList.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
           ) : (
-            displayList.map((store, index) => {
+            displayList.slice(0, visibleStoreCount).map((store, index) => {
               const isOpen = expanded === store.id;
               const hasStorePage = store.pageActive !== false;
               const isSelected = selectedStore?.id === store.id;
@@ -733,6 +746,14 @@ export default function StoreLocator({
                 </div>
               );
             })
+          )}
+          {visibleStoreCount < displayList.length && (
+            <button
+              onClick={() => setVisibleStoreCount((v) => Math.min(v + STORE_PAGE_SIZE, displayList.length))}
+              className="w-full py-3 border border-gray-300 text-[13px] font-semibold text-gray-600 hover:border-[#303236] hover:text-[#303236] transition-colors"
+            >
+              더보기 ({visibleStoreCount} / {displayList.length})
+            </button>
           )}
         </div>
 

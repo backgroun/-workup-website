@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import ProductsGrid, { type CatItem } from "@/components/ProductsGrid";
 import Hero from "@/components/Hero";
 import JsonLd from "@/components/JsonLd";
@@ -48,12 +47,8 @@ export default async function ProductsPage() {
     <main>
       <JsonLd data={collectionLd} />
       {/* 상단 상품 비주얼 슬라이더 (slide_type="product") — 슬라이드가 없으면 표시되지 않음 */}
-      <Suspense fallback={null}>
-        <Hero slideType="product" />
-      </Suspense>
-      <Suspense fallback={<div className="py-24 text-center text-sm text-gray-400">로딩 중...</div>}>
-        <ProductsGrid initialCats={initialCats} />
-      </Suspense>
+      <Hero slideType="product" />
+      <ProductsGrid initialCats={initialCats} />
     </main>
   );
 }

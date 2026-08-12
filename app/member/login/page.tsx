@@ -1,5 +1,5 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -130,9 +130,5 @@ function LoginContent() {
 }
 
 export default function MemberLoginPage() {
-  return (
-    <Suspense>
-      <LoginContent />
-    </Suspense>
-  );
+  return <LoginContent />;
 }

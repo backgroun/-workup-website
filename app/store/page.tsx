@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import StoreLocator from "@/components/StoreLocator";
 import { getPublicStores } from "@/lib/publicStores";
 import { getSiteSection } from "@/lib/site-settings";
@@ -18,9 +17,7 @@ export default async function StorePage() {
   const header = normalizeStorePage(headerCfg);
   return (
     <main>
-      <Suspense>
-        <StoreLocator stores={stores} header={header} />
-      </Suspense>
+      <StoreLocator stores={stores} header={header} />
     </main>
   );
 }
