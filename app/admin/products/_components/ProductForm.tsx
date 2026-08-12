@@ -88,16 +88,6 @@ const COLOR_PRESETS = [
 ];
 const DEFAULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
 
-const PROMPT_TYPES = [
-  { key: "대표반신컷", label: "대표 반신컷" },
-  { key: "전신컷",    label: "전신컷" },
-  { key: "측면컷",    label: "측면컷" },
-  { key: "후면컷",    label: "후면컷" },
-  { key: "누끼컷",    label: "누끼컷" },
-  { key: "원단컷",    label: "원단컷" },
-] as const;
-type PromptTypeKey = typeof PROMPT_TYPES[number]["key"];
-
 type CategoryEntry = { main: string; sub: string };
 
 function slugify(name: string) {
@@ -288,6 +278,15 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [uploadingSizeGuide, setUploadingSizeGuide] = useState(false);
   const [uploadingSizeDiagram, setUploadingSizeDiagram] = useState(false);
   const [activeGuideIdx, setActiveGuideIdx] = useState(0);   // 편집 중인 사이즈 가이드 인덱스
+  // 등록 화면을 짧게 유지하기 위해 기본 접힘으로 시작하는 섹션들
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [relatedOpen, setRelatedOpen] = useState(false);
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [detailInfoOpen, setDetailInfoOpen] = useState(false);
+  const [instagramFeedOpen, setInstagramFeedOpen] = useState(false);
+  const [folderHelpOpen, setFolderHelpOpen] = useState(false); // 폴더 일괄 업로드 규칙 안내 ? 아이콘
+  const [videoHelpOpen, setVideoHelpOpen] = useState(false); // 동영상 URL 안내 ? 아이콘
+  const [detailBlocksHelpOpen, setDetailBlocksHelpOpen] = useState(false); // 상세 설명 안내 ? 아이콘
   // 사이즈 가이드 이미지 크기 표시 (표시용 · onLoad로 실제 픽셀 읽음) + 방금 업로드 시 축소 여부
   const [sgImageDim, setSgImageDim] = useState<{ w: number; h: number } | null>(null);
   const [sgImageResized, setSgImageResized] = useState(false);
@@ -298,7 +297,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [ocrProgress, setOcrProgress] = useState(0);
   const [bulkColInput, setBulkColInput] = useState("");  // 사이즈 가이드 열 일괄 추가 입력
   const [bulkRowInput, setBulkRowInput] = useState("");  // 사이즈 가이드 행 일괄 추가 입력
-  const [useSizePrices, setUseSizePrices] = useState((initial?.sizePrices?.length ?? 0) > 0); // 사이즈별 가격 사용 체크
   const [uploadingMulti, setUploadingMulti] = useState(false);
   // 업로드 에러는 발생 지점(zone) 근처에 보여줘야 하므로, 어느 섹션에서 난 에러인지 함께 저장한다.
   const [uploadError, setUploadError] = useState<{ zone: UploadZone; message: string } | null>(null);
@@ -332,19 +330,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [pickerMain, setPickerMain] = useState<string>(DEFAULT_CAT_LIST[0].name);
   const [pickerSub, setPickerSub] = useState<string>("");
 
-  // AI 이미지 프롬프트
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [showAiPrompt, setShowAiPrompt] = useState(false);
-  const [promptPanelOpen, setPromptPanelOpen] = useState(false); // AI 이미지 생성 프롬프트 — 기본 접힘
-  const [promptCopied, setPromptCopied] = useState(false);
-  const [promptType, setPromptType] = useState<PromptTypeKey>("대표반신컷");
-  const [promptClothingType, setPromptClothingType] = useState<"작업복" | "일상복">("작업복");
-  const [promptSeason, setPromptSeason] = useState<string>("");
-  const [promptModelAge, setPromptModelAge] = useState<string>("");
-  const [promptWornFocus, setPromptWornFocus] = useState<string>("기본");
-  const [promptExtras, setPromptExtras] = useState<string[]>([]);
-  const [promptCustomInput, setPromptCustomInput] = useState<string>("");
-
   // 외부 데이터
   const [brands, setBrands] = useState<string[]>([]);
   // 브랜드 즉시 추가 팝업
@@ -352,7 +337,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
   const [newBrandName, setNewBrandName] = useState("");
   const [brandSaving, setBrandSaving] = useState(false);
   const [brandError, setBrandError] = useState("");
-  const [manufacturers, setManufacturers] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState<{ id: string; name: string; category: string; imageUrl?: string }[]>([]);
   const [colorUsage, setColorUsage] = useState<Record<string, { hex: string; count: number }>>({});
   const [colorDropdownOpen, setColorDropdownOpen] = useState(false);
@@ -379,13 +363,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
       .then((r) => r.ok ? r.json() : [])
       .then((data: unknown) => {
         if (Array.isArray(data)) setBrands(data.map((b: { name: string }) => b.name));
-      })
-      .catch(() => {});
-
-    fetch("/api/admin/manufacturers")
-      .then((r) => r.ok ? r.json() : [])
-      .then((data: unknown) => {
-        if (Array.isArray(data)) setManufacturers(data.map((m: { name: string }) => m.name));
       })
       .catch(() => {});
 
@@ -437,265 +414,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     const featList = form.features.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 2);
     set("metaTitle", form.name ? `${form.name} | WORKUP 작업복` : "");
     set("metaDesc", featList.length > 0 ? `${form.tagline} ${featList.join(", ")}.` : form.tagline);
-  };
-
-  // ── AI 이미지 프롬프트 생성 ────────────────────────────────────────────────
-  const generateAIPrompt = () => {
-    const name     = form.name    || "[제품명]";
-    const tagline  = form.tagline || "";
-    const features = form.features.split("\n").map((s) => s.trim()).filter(Boolean);
-    const catLabel = form.categories[0]
-      ? `${form.categories[0].main} / ${form.categories[0].sub}`
-      : promptClothingType;
-
-    // 하의(바지)인지 자동 감지 — 대표반신컷을 하반신 중심으로 전환하기 위함
-    const catSub = form.categories[0]?.sub ?? "";
-    const isBottom = /하의|팬츠|바지|슬랙스|쇼츠|반바지|조거/.test(`${catSub} ${name}`);
-
-    const clothingEng = promptClothingType === "일상복"
-      ? "Korean casual everyday wear"
-      : "Korean functional workwear";
-
-    const SEASON_ENG: Record<string, string> = {
-      "봄":   "spring transitional weather — light layering, mild-temperature styling",
-      "여름": "midsummer heat — lightweight, breathable, sweat-wicking styling",
-      "가을": "autumn transitional weather — light layering, mild-temperature styling",
-      "겨울": "deep winter cold — warm, insulated, wind-resistant layered styling",
-      "전천후": "all-season, year-round versatility",
-    };
-    const seasonContext = promptSeason ? SEASON_ENG[promptSeason] : "";
-
-    // 추가 옵션 → 영문 매핑 (성별·인종 / 무드 분리)
-    const DESCRIPTOR: Record<string, string> = {
-      "남성": "male", "여성": "female",
-      "한국인": "Korean", "서양인": "Western",
-    };
-    const MOOD: Record<string, string> = {
-      "캐주얼": "relaxed, approachable casual mood",
-      "프로페셔널": "confident, professional working mood",
-    };
-    const descriptors = promptExtras.filter((e) => e in DESCRIPTOR).map((e) => DESCRIPTOR[e]);
-    const moods       = promptExtras.filter((e) => e in MOOD).map((e) => MOOD[e]);
-    const customExtras = promptExtras.filter((e) => !(e in DESCRIPTOR) && !(e in MOOD));
-    const ageEng      = promptModelAge ? `in their ${promptModelAge.replace("대", "")}s` : "";
-
-    const needsModel = !["누끼컷", "원단컷"].includes(promptType);
-
-    const modelSubject = (descriptors.length || ageEng)
-      ? [descriptors.join(" "), "model", ageEng].filter(Boolean).join(" ").replace(/\s+/g, " ").trim()
-      : "natural, authentic real-worker-type model";
-    const moodLine = [...moods, ...customExtras].join(", ");
-
-    // ── 배경 (썸네일 통일 — 항상 #EDEDED 단색) ──
-    const background =
-      "STRICT plain solid #EDEDED light-gray seamless studio backdrop ONLY. The ENTIRE background must be one flat #EDEDED color — absolutely NO scenery, NO environment, NO location, NO real-world setting, NO props, NO furniture, NO gradients, NO patterns, NO texture, NO cast shadows on the backdrop. This is a strict e-commerce thumbnail rule — the background color must stay identical across every product.";
-
-    // ── 샷별 구도 · 카메라/렌즈 · 라이팅 ──
-    const SHOT: Record<PromptTypeKey, { compose: string; camera: string; light: string; kor: string }> = {
-      "대표반신컷": {
-        compose:
-          "Half-body representative crop — waist-up for tops, mid-thigh-up for bottoms. " +
-          "FIXED, REPEATABLE SCALE — frame the model identically every single time: the shoulders span ~48–56% of the image width, and the body is cropped at the hip / upper-thigh line. The subject must FILL the frame at this exact scale — do NOT zoom out, do NOT render the model small or distant, do NOT leave wide empty margins. " +
-          "Natural front-facing or slight 3/4 diagonal pose. Do NOT use for full sets or dresses.",
-        camera: "Full-frame mirrorless, 85mm f/5.6 portrait lens, eye-level — tack-sharp on the garment fabric",
-        light:  "Large octabox key light at 45°, white fill card opposite, subtle rim light for clean subject separation — even, true-to-color commercial lighting",
-        kor: "대표 반신컷 — 상의=상체/하의=하체 중심 · [고정] 어깨너비 화면 48~56%·엉덩이선 크롭(매번 같은 크기로 프레임 채움, 작게 금지) · 85mm 인물렌즈 · 45° 옥타박스 키라이트",
-      },
-      "전신컷": {
-        compose:
-          "Full body, head-to-toe, every part visible. Subject height occupies ~75–82% of the 930px vertical frame, vertically centered. " +
-          "Comfortable breathing room above the head and below the feet (do not crop tight to the top), balanced left-right margins.",
-        camera: "Full-frame mirrorless, 50mm f/8 from slightly below eye-level to elongate the silhouette, sharp front-to-back",
-        light:  "Two tall softboxes for even head-to-toe illumination, soft fill, gentle floor falloff",
-        kor: "전신컷 — 머리~발끝 전체 · 세로 75~82% · 50mm · 상하 여백 여유 · 좌우 균형",
-      },
-      "측면컷": {
-        compose:
-          "Exact 90° side profile. Clearly reveals the side silhouette, side seams and lateral lines. Arms and legs relaxed, no product detail hidden.",
-        camera: "Full-frame mirrorless, 85mm f/5.6, perfectly perpendicular side angle",
-        light:  "Key light from the front-side to model the silhouette and side seams, soft fill to retain shadow detail",
-        kor: "측면컷 — 정확한 90° 측면 · 옆라인/사이드심 강조 · 85mm",
-      },
-      "후면컷": {
-        compose:
-          "Direct rear view, back panel squarely facing camera, full rear visible. Back design and fit clearly shown. " +
-          "Hair tied up or swept aside — never covering the back. No detail obscured by pose.",
-        camera: "Full-frame mirrorless, 85mm f/5.6, centered on the back panel",
-        light:  "Even back-panel illumination, soft fill, subtle rim light for shoulder-edge separation",
-        kor: "후면컷 — 등이 카메라 정면 · 뒷면 디자인/핏 강조 · 머리·포즈로 가리지 않음",
-      },
-      "누끼컷": {
-        compose:
-          "Product only — NO model, NO visible mannequin. Invisible/ghost-mannequin look for garments so the 3D shape and fit read naturally. " +
-          "Centered, front-facing with a slight angle, full product with even comfortable margins.",
-        camera: "100mm product lens, f/11, tethered studio capture, dead-centered",
-        light:  "Two-softbox even cross-lighting, soft and near-shadowless, true product color — e-commerce listing standard",
-        kor: "누끼컷 — 모델 없음 · 고스트(투명)마네킹 · 정면 중앙 · 100mm f/11 · 균일 무그림자 라이팅",
-      },
-      "원단컷": {
-        compose:
-          "Extreme macro close-up of the fabric surface — NO model, NO mannequin. Emphasize weave structure, texture and tactile surface relief. " +
-          "Show stitching, seam finishing and construction crisply. Never alter true material color or texture.",
-        camera: "100mm macro lens, f/8, focus-stacked for edge-to-edge sharpness",
-        light:  "Low raking side light grazing the surface to reveal weave relief, thread dimensionality and stitch detail",
-        kor: "원단컷 — 모델 없음 · 매크로 클로즈업 · 조직감/봉제 디테일 · 100mm 매크로 · 측면 그레이징 라이트",
-      },
-    };
-    const shot = SHOT[promptType];
-
-    // ── 착용 부위 (장갑·모자·안전용품 등 — 착용컷이 해당 신체 부위에 집중) ──
-    const WORN_FOCUS: Record<string, { eng: string; head: boolean; kor: string }> = {
-      "손·장갑": {
-        eng: "Tight close-up of both hands and forearms WEARING the gloves — hands naturally posed (relaxed, or lightly gripping a tool / handle). The gloves fill ~60–70% of the frame; every finger, seam, grip pad and cuff fully visible; anatomically correct hands.",
-        head: false,
-        kor: "착용 부위: 손·장갑 — 양손/팔뚝 클로즈업 · 장갑 화면 60~70% · 손가락 정확",
-      },
-      "머리·모자": {
-        eng: "Head-and-shoulders portrait WEARING the cap / hat — face clearly visible, the hat correctly fitted on the head, slight front-3/4 angle. Hat and upper face fill the frame.",
-        head: true,
-        kor: "착용 부위: 머리·모자 — 얼굴+어깨 포트레이트 · 모자가 머리에 명확",
-      },
-      "발·신발/양말": {
-        eng: "Lower legs and feet WEARING the shoes / socks — calf-down crop, feet planted naturally. The footwear is the clear focal point, filling ~50–60% of the frame.",
-        head: false,
-        kor: "착용 부위: 발·신발/양말 — 종아리~발 크롭 · 신발/양말이 초점",
-      },
-      "허리·벨트": {
-        eng: "Waist and hip area WEARING the belt — mid-torso crop (lower chest to upper thigh). The belt and buckle at the waistline are the clear, sharp focal point.",
-        head: false,
-        kor: "착용 부위: 허리·벨트 — 허리/골반 크롭 · 벨트 버클이 초점",
-      },
-      "상체·조끼/가방": {
-        eng: "Upper body WEARING the safety vest / CARRYING the bag — half-body crop. The vest or bag is the clear hero on the torso / shoulder, worn naturally.",
-        head: true,
-        kor: "착용 부위: 상체·조끼/가방 — 반신 크롭 · 조끼/가방이 초점",
-      },
-      "얼굴·고글/마스크": {
-        eng: "Face WEARING the protective goggles / mask / eyewear — head-and-shoulders, the protective gear correctly worn on the face, sharp focus on the gear.",
-        head: true,
-        kor: "착용 부위: 얼굴·고글/마스크 — 얼굴+어깨 · 보호장비가 얼굴에 명확",
-      },
-    };
-    const ANGLE_NOTE: Record<PromptTypeKey, string> = {
-      "대표반신컷": "front-facing or slight 3/4 angle",
-      "전신컷": "front-facing, slightly wider view",
-      "측면컷": "exact 90° side-profile angle",
-      "후면컷": "rear / from-behind angle",
-      "누끼컷": "", "원단컷": "",
-    };
-    const wornFocus = needsModel ? WORN_FOCUS[promptWornFocus] : undefined;
-    const accessoryMode = !!wornFocus;
-    // 하의 + 대표반신컷 → 상반신이 아니라 하반신(다리·바지) 중심으로 전환
-    const bottomHalfBody = !wornFocus && isBottom && promptType === "대표반신컷";
-    const headInFrame = wornFocus ? wornFocus.head : !bottomHalfBody;
-    const composeText = wornFocus
-      ? `${wornFocus.eng} Shown from a ${ANGLE_NOTE[promptType]}. The worn item is the hero of the shot — fill the frame with it, never render it small or distant.`
-      : bottomHalfBody
-      ? "Lower-body representative crop for PANTS / BOTTOMS — frame from the waist / hip DOWN to mid-calf, with the trousers filling ~60–70% of the frame as the clear hero. The pants and legs are the subject, NOT the upper body — crop above the waist so the torso and head stay out of frame. FIXED, REPEATABLE SCALE every time: pants fill the frame, do not zoom out, do not switch to an upper-body / torso shot. Natural standing pose with a slight stance to show the leg line and taper."
-      : shot.compose;
-    const cameraText = wornFocus
-      ? "Full-frame mirrorless, 90mm at close focusing distance, f/5.6 — tack-sharp on the worn item with gentle background falloff"
-      : bottomHalfBody
-      ? "Full-frame mirrorless, 85mm f/5.6, framed low on the lower body — tack-sharp on the trouser fabric, seams and taper"
-      : shot.camera;
-
-    // ── 모델·스타일링 블록 (착용컷 전용) ──
-    const MODEL_BLOCK = needsModel
-      ? `\n\n[MODEL & STYLING]\n` +
-        `- ${modelSubject}\n` +
-        (moodLine ? `- Mood / styling: ${moodLine}\n` : "") +
-        `- Natural commercial fashion-editorial style — believable, never runway-exaggerated\n` +
-        `- Anatomically correct proportions; natural finger positions, realistic joint angles (wrists/elbows/knees/ankles never warped)\n` +
-        `- Relaxed stance, weight on one leg, loose shoulders, subtle authentic expression / gentle natural smile\n` +
-        `- Natural gaze, appears unaware of the camera\n` +
-        `- Realistic fine skin texture — no over-retouching, no plastic skin, no unrealistic proportions\n` +
-        `- Hands fully visible and anatomically correct`
-      : (customExtras.length ? `\n\n[ADDITIONAL NOTES]\n- ${customExtras.join(", ")}` : "");
-
-    // ── 헤드룸 / 여백 (착용컷 전용 · 머리가 화면에 있을 때만 — 썸네일에서 답답하지 않게) ──
-    const HEADROOM_BLOCK = (needsModel && headInFrame)
-      ? `\n[FRAMING & HEADROOM — identical scale every time]\n` +
-        `- Small, consistent headroom: the top of the head sits ~8–12% down from the top edge — never touching the top, but do NOT add excessive empty space\n` +
-        `- The model must FILL the frame at the SAME size every time — centered, with only modest, even side margins\n` +
-        `- Do NOT zoom out, do NOT render the subject small, distant, or surrounded by large empty areas — consistency of subject scale is critical\n`
-      : "";
-
-    // ── 긍정 프롬프트 ──
-    const POSITIVE =
-      `[GENERATION DIRECTIVE]\n` +
-      `Generate ONE single photorealistic image only. No collage, grid, card-news, or multi-panel composition.` +
-      ` The background MUST be a plain solid #EDEDED studio backdrop — NEVER a real-world scene, room, or outdoor/worksite environment.` +
-      `\n\n` +
-      `[SUBJECT]\n` +
-      `- ${clothingEng}: "${name}" (${catLabel})` + (tagline ? ` — "${tagline}"` : "") + `\n` +
-      (features.length > 0 ? `- Signature features to preserve: ${features.slice(0, 4).join(", ")}\n` : "") +
-      (seasonContext ? `- Season styling: ${seasonContext}\n` : "") +
-      `\n[COMPOSITION — ${promptType}${accessoryMode ? " · " + promptWornFocus : bottomHalfBody ? " · 하의" : ""}]\n- ${composeText}\n` +
-      HEADROOM_BLOCK +
-      `\n[CAMERA & LENS]\n- ${cameraText}\n` +
-      `\n[LIGHTING]\n- ${shot.light}` +
-      MODEL_BLOCK +
-      `\n\n[BACKGROUND]\n- ${background}\n` +
-      `\n[COLOR & FIDELITY]\n` +
-      `- Neutral 5500K white balance, color-accurate and true-to-life — no color cast, no over-saturation\n` +
-      `- Preserve the EXACT product colors, logos, prints, embroidery, stitching and construction — zero shape distortion\n` +
-      `\n[OUTPUT]\n` +
-      `- 1:1 aspect ratio, 960 × 930 px, high-resolution photorealistic commercial apparel photography, tack-sharp product detail`;
-
-    // ── 네거티브 프롬프트 (샷 유형별 분기) ──
-    const NEG_COMMON =
-      "text, typography, captions, watermark, signature, brand logo overlay, " +
-      "collage, grid, split-screen, multi-panel, card-news layout, border, frame, " +
-      "distorted product shape, warped proportions, wrong colors, color cast, oversaturated, " +
-      "blurry, low-resolution, jpeg artifacts, noise, cropped product";
-    const NEG_MODEL_ANATOMY =
-      ", deformed hands, extra fingers, missing fingers, fused fingers, extra limbs, " +
-      "mutated anatomy, unnatural joints, twisted wrists, plastic skin, waxy skin, over-retouched, uncanny face";
-    const NEG_MODEL_FRAMING = bottomHalfBody
-      ? ", upper-body-focused, torso-dominant, shoulders-focused, jacket or top as main subject, pants cropped out, pants too small, legs cut off at thigh, face close-up, head close-up"
-      : ", head touching top edge, cropped head, cut-off head, cramped framing, no headroom, subject too large, oversized subject, zoomed-in too tight, " +
-        "subject too small, distant subject, zoomed out, wide shot, tiny figure, excessive empty space, inconsistent scale, full body when half-body requested";
-    const NEG_PRODUCT =
-      ", visible mannequin, mannequin seams, visible hanger, floating fabric, human model, body parts, hands";
-    // 배경 통일(#EDEDED) 강제 — 환경/배경 요소 차단
-    const NEG_BACKGROUND =
-      ", background scenery, environment, on-location background, outdoor scene, indoor scene, room, worksite background, " +
-      "construction site, factory, warehouse, street, nature, wall, props, furniture, plants, " +
-      "bokeh background, depth-of-field background, blurred background, gradient background, textured background, shadows cast on the backdrop";
-    const NEGATIVE =
-      `\n\n[NEGATIVE PROMPT]\n` + NEG_COMMON + (needsModel ? NEG_MODEL_ANATOMY + NEG_MODEL_FRAMING : NEG_PRODUCT) + NEG_BACKGROUND;
-
-    // ── Midjourney 파라미터 (참고) ──
-    const MJ_PARAMS =
-      `\n\n[MIDJOURNEY PARAMS · 참고] --ar 1:1 --style raw --q 2 --v 6.1` +
-      (needsModel ? "" : " --no people");
-
-    // ── 한글 참고 ──
-    const korRef =
-      `\n\n── 한글 참고 (위 영문 프롬프트를 AI 도구에 입력) ──\n` +
-      `제품명: ${name}\n` +
-      (tagline ? `한줄 소개: ${tagline}\n` : "") +
-      (features.length > 0 ? `주요 특징: ${features.slice(0, 4).join(" / ")}\n` : "") +
-      `카테고리: ${catLabel} · 의류유형: ${promptClothingType}` +
-      (promptSeason ? ` · 시즌: ${promptSeason}` : "") +
-      (needsModel && promptModelAge ? ` · 모델: ${promptModelAge}` : "") + `\n` +
-      (promptExtras.length > 0 ? `추가 옵션: ${promptExtras.join(", ")}\n` : "") +
-      `배경: #EDEDED 단색 스튜디오 · 비율 1:1 · 960×930px\n` +
-      (wornFocus ? wornFocus.kor : bottomHalfBody ? "대표 반신컷(하의) — 허리~종아리 하반신 중심 · 바지가 화면 60~70% · 상체·머리는 프레임 밖 · 85mm" : shot.kor);
-
-    setAiPrompt(POSITIVE + NEGATIVE + MJ_PARAMS + korRef);
-    setShowAiPrompt(true);
-    setPromptCopied(false);
-  };
-
-  const copyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(aiPrompt);
-      setPromptCopied(true);
-      setTimeout(() => setPromptCopied(false), 2000);
-    } catch {
-      // fallback
-    }
   };
 
   // ── 카테고리 다중 선택 ─────────────────────────────────────────────────────
@@ -1008,13 +726,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
     set("customSizeInput", "");
   };
 
-  // ── 사이즈별 가격 ──────────────────────────────────────────────────────────
-  const sizePriceOf = (size: string) => form.sizePrices.find((sp) => sp.size === size)?.price ?? "";
-  const setSizePrice = (size: string, price: string) => {
-    const others = form.sizePrices.filter((sp) => sp.size !== size);
-    set("sizePrices", price.trim() ? [...others, { size, price: price.trim() }] : others);
-  };
-
   // ── 사이즈 가이드 (여러 개 가능: 상하세트 등) ──────────────────────────────
   const sizeGuides = form.sizeGuides.length > 0 ? form.sizeGuides : [{ ...SIZE_GUIDE_DEFAULT }];
   const gIdx = Math.min(activeGuideIdx, sizeGuides.length - 1);   // 현재 편집 중인 가이드
@@ -1199,9 +910,16 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
   // ── 색상 ──────────────────────────────────────────────────────────────────
   const toggleColor = (preset: { name: string; hex: string }) => {
-    const exists = form.colors.some((c) => c.name === preset.name);
-    if (exists) {
-      set("colors", form.colors.filter((c) => c.name !== preset.name));
+    const existing = form.colors.find((c) => c.name === preset.name);
+    if (existing) {
+      if (existing.hex.toLowerCase() === preset.hex.toLowerCase()) {
+        // 이미 같은 색상 — 다시 클릭하면 해제
+        set("colors", form.colors.filter((c) => c.name !== preset.name));
+      } else {
+        // 이름은 같지만 색상값이 다름 — 엑셀 등록 시 기본값(예: 검정)으로 잘못 들어간 경우가 많아
+        // 해제 대신 올바른 색상값으로 바로 교체한다.
+        set("colors", form.colors.map((c) => (c.name === preset.name ? { ...c, hex: preset.hex } : c)));
+      }
     } else {
       set("colors", [...form.colors, { name: preset.name, hex: preset.hex }]);
     }
@@ -1400,11 +1118,18 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           <section className="bg-white border border-gray-200 p-7 rounded-xl">
             <SectionTitle>기본 정보</SectionTitle>
             <div className="space-y-5">
-              <Field label="상품명" required>
-                <input required value={form.name}
-                  onChange={(e) => { set("name", e.target.value); if (!isEdit) set("id", slugify(e.target.value)); }}
-                  className={INPUT_CLS} placeholder="예: 스트레치 카고 팬츠" />
-              </Field>
+              {/* 상품명 · 판매가 */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="상품명" required>
+                  <input required value={form.name}
+                    onChange={(e) => { set("name", e.target.value); if (!isEdit) set("id", slugify(e.target.value)); }}
+                    className={INPUT_CLS} placeholder="예: 스트레치 카고 팬츠" />
+                </Field>
+                <Field label="판매가" required>
+                  <input required value={form.price} onChange={(e) => set("price", formatPrice(e.target.value))}
+                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 39,000원" />
+                </Field>
+              </div>
 
               {/* 상품코드 · 제품 ID */}
               <div className="grid grid-cols-2 gap-5">
@@ -1418,68 +1143,45 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </Field>
               </div>
 
-              {/* 브랜드 · 제조사 · 원산지 */}
-              <div className="grid grid-cols-3 gap-5">
-                <div>
-                  {/* 라벨 행: 브랜드 + 작은 추가/관리 버튼 (셀렉트는 아래 전체 폭) */}
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <label className="text-xs font-medium text-gray-500">브랜드</label>
-                    <button type="button"
-                      onClick={() => { setNewBrandName(""); setBrandError(""); setBrandModalOpen(true); }}
-                      className="text-[10px] font-semibold text-[#303236] border border-[#303236] rounded px-1.5 py-0.5 leading-none hover:bg-[#303236] hover:text-white transition-colors">
-                      + 추가
-                    </button>
-                    <a href="/admin/brands" target="_blank" rel="noopener" className="text-[10px] text-gray-400 hover:text-[#303236]">관리 ↗</a>
-                  </div>
-                  <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={SELECT_CLS}>
-                    <option value="">선택 안 함</option>
-                    {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-                    {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
-                  </select>
-                  <label className="flex items-center gap-1.5 mt-2 cursor-pointer w-fit">
-                    <input type="checkbox" checked={!form.hideBrandPrefix}
-                      onChange={(e) => set("hideBrandPrefix", !e.target.checked)}
-                      className="accent-[#303236] w-3.5 h-3.5" />
-                    <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#303236]">[브랜드]</b> 표시</span>
-                  </label>
+              {/* 브랜드 */}
+              <div>
+                {/* 라벨 행: 브랜드 + 작은 추가/관리 버튼 (셀렉트는 아래 전체 폭) */}
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <label className="text-xs font-medium text-gray-500">브랜드</label>
+                  <button type="button"
+                    onClick={() => { setNewBrandName(""); setBrandError(""); setBrandModalOpen(true); }}
+                    className="text-[10px] font-semibold text-[#303236] border border-[#303236] rounded px-1.5 py-0.5 leading-none hover:bg-[#303236] hover:text-white transition-colors">
+                    + 추가
+                  </button>
+                  <a href="/admin/brands" target="_blank" rel="noopener" className="text-[10px] text-gray-400 hover:text-[#303236]">관리 ↗</a>
                 </div>
-                <Field label="제조사">
-                  <div className="flex gap-2 items-center">
-                    <select value={form.manufacturer} onChange={(e) => set("manufacturer", e.target.value)} className={`${SELECT_CLS} flex-1`}>
-                      <option value="">선택 안 함</option>
-                      {manufacturers.map((m) => <option key={m} value={m}>{m}</option>)}
-                      {form.manufacturer && !manufacturers.includes(form.manufacturer) && <option value={form.manufacturer}>{form.manufacturer}</option>}
-                    </select>
-                    <a href="/admin/manufacturers" target="_blank" rel="noopener" className="text-xs text-[#303236] hover:underline whitespace-nowrap shrink-0">관리 ↗</a>
-                  </div>
-                </Field>
-                <Field label="원산지">
-                  <input value={form.origin} onChange={(e) => set("origin", e.target.value)}
-                    className={INPUT_CLS} placeholder="예: 대한민국" />
-                </Field>
-              </div>
-
-              {/* 판매가 · 소비자가 · 공급가 */}
-              <div className="grid grid-cols-3 gap-5">
-                <Field label="판매가" required>
-                  <input required value={form.price} onChange={(e) => set("price", formatPrice(e.target.value))}
-                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 39,000원" />
-                </Field>
-                <Field label="소비자가">
-                  <input value={form.consumerPrice} onChange={(e) => set("consumerPrice", formatPrice(e.target.value))}
-                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 45,000원" />
-                </Field>
-                <Field label="공급가">
-                  <input value={form.supplyPrice} onChange={(e) => set("supplyPrice", formatPrice(e.target.value))}
-                    inputMode="numeric" className={INPUT_CLS} placeholder="예: 25,000원" />
-                </Field>
+                <select value={form.brand} onChange={(e) => set("brand", e.target.value)} className={SELECT_CLS}>
+                  <option value="">선택 안 함</option>
+                  {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+                  {form.brand && !brands.includes(form.brand) && <option value={form.brand}>{form.brand}</option>}
+                </select>
+                <label className="flex items-center gap-1.5 mt-2 cursor-pointer w-fit">
+                  <input type="checkbox" checked={!form.hideBrandPrefix}
+                    onChange={(e) => set("hideBrandPrefix", !e.target.checked)}
+                    className="accent-[#303236] w-3.5 h-3.5" />
+                  <span className="text-[11px] text-gray-500">제품명 앞에 <b className="text-[#303236]">[브랜드]</b> 표시</span>
+                </label>
               </div>
 
             </div>
           </section>
 
-          {/* ── 사이즈 가이드 (사이즈 및 소재 탭) ── */}
+          {/* ── 사이즈 가이드 (사이즈 및 소재 탭) — 기본 접힘 ── */}
           <section className="bg-white border border-gray-200 p-7 rounded-xl">
+            <button type="button" onClick={() => setSizeGuideOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 text-left">
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">사이즈 가이드</h2>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${sizeGuideOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {sizeGuideOpen && (
+            <div className="mt-4">
             {/* 가이드 선택 탭 — 상하세트 등 여러 개(상의/하의…) 등록 */}
             <div className="flex items-center gap-1.5 flex-wrap mb-4">
               {sizeGuides.map((g, i) => (
@@ -1500,7 +1202,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             {uploadError?.zone === "sizeGuide" && <p className="text-xs text-red-500 mb-2">{uploadError.message}</p>}
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">사이즈 가이드</h2>
                 <input value={sg.label ?? ""} onChange={(e) => sgSetLabel(e.target.value)}
                   placeholder="라벨 (예: 상의 / 하의)"
                   className="w-32 border border-gray-200 px-2 py-1 text-xs rounded focus:outline-none focus:border-[#303236]" />
@@ -1721,6 +1422,132 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </div>
               </div>
             )}
+            </div>
+            )}
+          </section>
+
+          {/* ── 세부정보 (텍스트) — 기본 접힘 ── */}
+          <section className="bg-white border border-gray-200 p-6 rounded-xl">
+            <button type="button" onClick={() => setDetailInfoOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 text-left">
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">세부정보</h2>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${detailInfoOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {detailInfoOpen && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-end mb-5 gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={diLoadDefaults}
+                    className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#303236] hover:text-[#303236] rounded transition-colors">기본 항목 불러오기</button>
+                  <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
+                    className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
+                  <button type="button" onClick={diAdd}
+                    className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
+                </div>
+              </div>
+              {form.detailInfo.length === 0 ? (
+                <p className="text-xs text-gray-400">&quot;기본 항목 불러오기&quot;로 품명·소재·색상·제조국 등 기본 라벨을 채우거나 &quot;+ 항목 추가&quot;로 직접 추가하세요. 값이 빈 항목은 노출되지 않습니다.</p>
+              ) : (
+                <div className="space-y-2">
+                  {form.detailInfo.map((it, i) => (
+                    <div key={i} className="flex gap-2 items-start">
+                      <input value={it.label} onChange={(e) => diSet(i, "label", e.target.value)} placeholder="항목명 (예: 소재)"
+                        className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] font-medium" />
+                      <textarea value={it.value} onChange={(e) => diSet(i, "value", e.target.value)} rows={1} placeholder="내용"
+                        className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] resize-y" />
+                      <button type="button" onClick={() => diRemove(i)}
+                        className="flex-shrink-0 w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            )}
+          </section>
+
+          {/* ── 인스타 피드 (이 상품 관련 이미지/영상) — 기본 접힘 ── */}
+          <section className="bg-white border border-gray-200 p-6 rounded-xl">
+            <button type="button" onClick={() => setInstagramFeedOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 text-left">
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">인스타 피드</h2>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${instagramFeedOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {instagramFeedOpen && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-end mb-2 gap-2 flex-wrap">
+              <button type="button" onClick={igAdd}
+                className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
+              이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#303236] underline">인스타 피드 설정 ↗</a>에서.
+            </p>
+            {uploadError?.zone === "instagram" && <p className="text-xs text-red-500 mb-3">{uploadError.message}</p>}
+
+            {form.instagramPosts.length === 0 ? (
+              <p className="text-xs text-gray-400">등록된 항목이 없습니다. <b>+ 항목 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
+            ) : (
+              <div className="space-y-3">
+                {form.instagramPosts.map((item, i) => {
+                  const parsed = item.url ? parseInstagramUrl(item.url) : null;
+                  const isVideo = parsed?.type === "reel" || parsed?.type === "tv";
+                  return (
+                    <div key={i} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
+                      <div className="flex flex-col items-center gap-1 pt-1">
+                        <button type="button" onClick={() => igMove(i, -1)} disabled={i === 0}
+                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▲</button>
+                        <span className="text-[11px] text-gray-400 font-mono">{i + 1}</span>
+                        <button type="button" onClick={() => igMove(i, 1)} disabled={i === form.instagramPosts.length - 1}
+                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
+                      </div>
+
+                      {/* 이미지 업로드/미리보기 (9:16 세로 — 실제 노출 비율) */}
+                      <div className="w-[90px] h-[160px] flex-shrink-0 relative">
+                        {item.image ? (
+                          <div className="relative w-full h-full rounded overflow-hidden border border-gray-100 bg-[#fafafa]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.image} alt={`인스타 ${i + 1}`} className="w-full h-full object-cover" />
+                            {isVideo && <span className="absolute top-1 right-1 text-white drop-shadow"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>}
+                            <button type="button" onClick={() => igSetImage(i, "")}
+                              className="absolute bottom-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-[11px] leading-none">×</button>
+                          </div>
+                        ) : (
+                          <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors text-center">
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIgImage(e, i)} disabled={uploadingIgIdx === i} />
+                            <span className="text-[11px] leading-tight px-1">{uploadingIgIdx === i ? "업로드 중…" : "＋ 이미지"}</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {/* 인스타 링크(선택) */}
+                      <div className="flex-1 min-w-0">
+                        <label className="block text-[11px] text-gray-500 mb-1">인스타 링크 <span className="text-gray-300">(선택 · 클릭 시 이동)</span></label>
+                        <input value={item.url ?? ""} onChange={(e) => igSetUrl(i, e.target.value)}
+                          placeholder="https://www.instagram.com/p/XXXXXXXX/"
+                          className={`w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none ${
+                            (item.url ?? "").trim() === "" ? "border-gray-200 focus:border-[#303236]"
+                              : parsed ? "border-green-300 focus:border-green-500 bg-green-50/40"
+                              : "border-red-300 focus:border-red-500 bg-red-50/40"
+                          }`} />
+                        <p className="text-[11px] mt-1">
+                          {(item.url ?? "").trim() === "" ? <span className="text-gray-400">비워두면 클릭 이동 없이 이미지만 노출됩니다.</span>
+                            : parsed ? <span className="text-green-600">✓ 인식됨 ({parsed.type}){isVideo ? " · 영상 ▶" : ""}</span>
+                            : <span className="text-red-500">✕ 올바른 인스타 게시물 URL이 아닙니다.</span>}
+                        </p>
+                      </div>
+
+                      <button type="button" onClick={() => igRemove(i)} title="삭제"
+                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            </div>
+            )}
           </section>
 
           {/* ── 카테고리 (최상단 박스) ── */}
@@ -1844,40 +1671,52 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           </section>
 
 
-          {/* ── 5. 연관 상품 ── */}
+          {/* ── 5. 연관 상품 — 기본 접힘 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">연관 상품</h2>
-              <button type="button" onClick={() => setRelatedModalOpen(true)}
-                className="px-3 py-1.5 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">
-                + 연관 상품 추가
-              </button>
-            </div>
-            {form.relatedIds.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {form.relatedIds.map((id) => {
-                  const p = allProducts.find((ap) => ap.id === id);
-                  return (
-                    <span key={id} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-[#303236] text-white rounded">
-                      <span className="w-5 h-5 bg-white/20 rounded overflow-hidden flex-shrink-0">
-                        {p?.imageUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.imageUrl} alt={p?.name ?? ""} className="w-full h-full object-cover" />
-                        )}
-                      </span>
-                      {p?.name ?? id}
-                      <button type="button" onClick={() => toggleRelated(id)} className="hover:opacity-70">×</button>
-                    </span>
-                  );
-                })}
+            <button type="button" onClick={() => setRelatedOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 text-left">
+              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">
+                연관 상품{form.relatedIds.length > 0 ? ` (${form.relatedIds.length})` : ""}
+              </h2>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${relatedOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {relatedOpen && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-end mb-4">
+                <button type="button" onClick={() => setRelatedModalOpen(true)}
+                  className="px-3 py-1.5 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">
+                  + 연관 상품 추가
+                </button>
               </div>
-            ) : (
-              <p className="text-xs text-gray-400">아직 선택된 연관 상품이 없습니다. &quot;+ 연관 상품 추가&quot; 버튼으로 선택하세요.</p>
+              {form.relatedIds.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {form.relatedIds.map((id) => {
+                    const p = allProducts.find((ap) => ap.id === id);
+                    return (
+                      <span key={id} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-[#303236] text-white rounded">
+                        <span className="w-5 h-5 bg-white/20 rounded overflow-hidden flex-shrink-0">
+                          {p?.imageUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.imageUrl} alt={p?.name ?? ""} className="w-full h-full object-cover" />
+                          )}
+                        </span>
+                        {p?.name ?? id}
+                        <button type="button" onClick={() => toggleRelated(id)} className="hover:opacity-70">×</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">아직 선택된 연관 상품이 없습니다. &quot;+ 연관 상품 추가&quot; 버튼으로 선택하세요.</p>
+              )}
+              <p className="text-xs text-gray-400 mt-3">
+                {form.relatedIds.length > 0 ? `${form.relatedIds.length}개 선택됨 · ` : ""}
+                제품 상세 페이지에 연관 상품으로 표시됩니다.
+              </p>
+            </div>
             )}
-            <p className="text-xs text-gray-400 mt-3">
-              {form.relatedIds.length > 0 ? `${form.relatedIds.length}개 선택됨 · ` : ""}
-              제품 상세 페이지에 연관 상품으로 표시됩니다.
-            </p>
           </section>
 
           {/* 연관 상품 선택 모달 — 카테고리별 + 검색 */}
@@ -1960,39 +1799,49 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             </div>
           )}
 
-          {/* ── 6. SEO ── */}
+          {/* ── 6. SEO — 기본 접힘 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-5">
+            <button type="button" onClick={() => setSeoOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 text-left">
               <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">SEO</h2>
-              <button type="button" onClick={autoGenSeo}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors rounded">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                자동 생성
-              </button>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${seoOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {seoOpen && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-end mb-5">
+                <button type="button" onClick={autoGenSeo}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white transition-colors rounded">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  자동 생성
+                </button>
+              </div>
+              <div className="space-y-4">
+                <Field label="메타 타이틀" hint="권장 60자 이내.">
+                  <input value={form.metaTitle} onChange={(e) => set("metaTitle", e.target.value)}
+                    className={INPUT_CLS} placeholder="예: 스트레치 카고 팬츠 | WORKUP 작업복" />
+                  <div className="flex justify-end">
+                    <span className={`text-xs mt-0.5 ${form.metaTitle.length > 60 ? "text-red-400" : "text-gray-400"}`}>
+                      {form.metaTitle.length} / 60
+                    </span>
+                  </div>
+                </Field>
+                <Field label="메타 설명" hint="권장 80~160자.">
+                  <textarea value={form.metaDesc} onChange={(e) => set("metaDesc", e.target.value)}
+                    rows={3} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] resize-none rounded"
+                    placeholder="예: 현장 작업자를 위한 스트레치 카고 팬츠. 11개 포켓, 무릎 이중 보강..." />
+                  <div className="flex justify-end">
+                    <span className={`text-xs ${form.metaDesc.length > 160 ? "text-red-400" : form.metaDesc.length < 80 && form.metaDesc.length > 0 ? "text-amber-400" : "text-gray-400"}`}>
+                      {form.metaDesc.length} / 160
+                    </span>
+                  </div>
+                </Field>
+              </div>
             </div>
-            <div className="space-y-4">
-              <Field label="메타 타이틀" hint="권장 60자 이내.">
-                <input value={form.metaTitle} onChange={(e) => set("metaTitle", e.target.value)}
-                  className={INPUT_CLS} placeholder="예: 스트레치 카고 팬츠 | WORKUP 작업복" />
-                <div className="flex justify-end">
-                  <span className={`text-xs mt-0.5 ${form.metaTitle.length > 60 ? "text-red-400" : "text-gray-400"}`}>
-                    {form.metaTitle.length} / 60
-                  </span>
-                </div>
-              </Field>
-              <Field label="메타 설명" hint="권장 80~160자.">
-                <textarea value={form.metaDesc} onChange={(e) => set("metaDesc", e.target.value)}
-                  rows={3} className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] resize-none rounded"
-                  placeholder="예: 현장 작업자를 위한 스트레치 카고 팬츠. 11개 포켓, 무릎 이중 보강..." />
-                <div className="flex justify-end">
-                  <span className={`text-xs ${form.metaDesc.length > 160 ? "text-red-400" : form.metaDesc.length < 80 && form.metaDesc.length > 0 ? "text-amber-400" : "text-gray-400"}`}>
-                    {form.metaDesc.length} / 160
-                  </span>
-                </div>
-              </Field>
-            </div>
+            )}
           </section>
 
           {/* ── 하단 저장 버튼 ── */}
@@ -2008,31 +1857,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 이미지 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <SectionTitle>제품 이미지</SectionTitle>
-
-            {/* ── 폴더 일괄 업로드 ── */}
-            <div className="mb-6 p-3 bg-gray-50 border border-gray-200 rounded">
-              <input
-                ref={folderInputRef}
-                type="file"
-                className="hidden"
-                id="folder-upload"
-                onChange={handleFolderUpload}
-                {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
-              />
-              <label htmlFor="folder-upload"
-                className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
-                  uploadingFolder ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-500 text-gray-700 hover:bg-gray-700 hover:text-white"
-                }`}>
-                {uploadingFolder ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />업로드 중...</> : "폴더에서 일괄 업로드"}
-              </label>
-              <p className="text-[11px] text-gray-500 mt-2">
-                파일명에 model 또는 etc 포함(대표, 여러 개면 첫 번째만) · sub+숫자 포함(추가) · detail+숫자 포함(상세 블록, 등록된 순서에 매칭)
-              </p>
-              {folderUploadResult && (
-                <p className="text-[11px] text-green-700 mt-1 font-medium">{folderUploadResult}</p>
-              )}
-              {uploadError?.zone === "folder" && <p className="text-xs text-red-500 mt-1">{uploadError.message}</p>}
-            </div>
 
             {/* ── 대표 이미지 ── */}
             <div className="mb-6">
@@ -2060,13 +1884,47 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                   )}
                 </div>
                 <div className="flex-1 space-y-2">
-                  <input ref={mainInputRef} type="file" accept="image/*" onChange={handleMainFile} className="hidden" id="main-img-r" />
-                  <label htmlFor="main-img-r"
-                    className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
-                      uploadingMain ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
-                    }`}>
-                    {uploadingMain ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</> : "이미지 업로드"}
-                  </label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <input ref={mainInputRef} type="file" accept="image/*" onChange={handleMainFile} className="hidden" id="main-img-r" />
+                    <label htmlFor="main-img-r"
+                      className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
+                        uploadingMain ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
+                      }`}>
+                      {uploadingMain ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</> : "이미지 업로드"}
+                    </label>
+
+                    <input
+                      ref={folderInputRef}
+                      type="file"
+                      className="hidden"
+                      id="folder-upload"
+                      onChange={handleFolderUpload}
+                      {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
+                    />
+                    <label htmlFor="folder-upload"
+                      className={`inline-flex items-center gap-2 px-4 py-2 border text-sm cursor-pointer transition-colors rounded ${
+                        uploadingFolder ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
+                      }`}>
+                      {uploadingFolder ? <><span className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />업로드 중...</> : "폴더에서 일괄 업로드"}
+                    </label>
+
+                    <div className="relative">
+                      <button type="button" onClick={() => setFolderHelpOpen((v) => !v)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-400 text-[11px] font-bold hover:border-[#303236] hover:text-[#303236] transition-colors"
+                        aria-label="폴더 일괄 업로드 규칙 안내">?</button>
+                      {folderHelpOpen && (
+                        <div className="absolute z-20 top-full left-0 mt-1.5 w-64 bg-white border border-gray-200 rounded shadow-lg p-3">
+                          <p className="text-[11px] text-gray-500 leading-relaxed">
+                            파일명에 model 또는 etc 포함(대표, 여러 개면 첫 번째만) · sub+숫자 포함(추가) · detail+숫자 포함(상세 블록, 등록된 순서에 매칭)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {folderUploadResult && (
+                    <p className="text-[11px] text-green-700 font-medium">{folderUploadResult}</p>
+                  )}
+                  {uploadError?.zone === "folder" && <p className="text-xs text-red-500">{uploadError.message}</p>}
                   <input type="url" value={form.imageUrl} onChange={(e) => set("imageUrl", e.target.value)}
                     placeholder="또는 URL 직접 입력 (https://...)"
                     className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-[#303236] rounded" />
@@ -2076,43 +1934,41 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
 
             {/* ── 추가 이미지 ── */}
             <div>
-              {/* 헤더 */}
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-700">추가 이미지</p>
-                <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded font-mono">
+              {/* 헤더 — 타이틀 옆에 여러 장 한번에 선택 버튼 배치 */}
+              <div className="flex items-center gap-2 flex-wrap justify-between mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-xs font-semibold text-gray-700">추가 이미지</p>
+                  <input
+                    ref={multiSubInputRef}
+                    type="file" accept="image/*" multiple
+                    onChange={handleMultiSubFiles}
+                    className="hidden" id="multi-sub-img"
+                    disabled={form.subImages.filter(Boolean).length >= 9}
+                  />
+                  <label htmlFor="multi-sub-img"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs transition-colors rounded cursor-pointer ${
+                      uploadingMulti || form.subImages.filter(Boolean).length >= 9
+                        ? "border-gray-200 text-gray-400 cursor-not-allowed pointer-events-none"
+                        : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
+                    }`}>
+                    {uploadingMulti ? (
+                      <><span className="w-3 h-3 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        여러 장 한번에 선택
+                      </>
+                    )}
+                  </label>
+                  <span className="text-[11px] text-gray-400">
+                    {form.subImages.filter(Boolean).length} / 9장
+                    {form.subImages.filter(Boolean).length > 0 && " · 이미지를 드래그해 순서 변경"}
+                  </span>
+                </div>
+                <span className="text-[11px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded font-mono whitespace-nowrap">
                   960 × 960 px · 최대 9장 · 4 MB/장
-                </span>
-              </div>
-
-              {/* 여러 장 한번에 선택 */}
-              <div className="flex items-center gap-2 mb-3">
-                <input
-                  ref={multiSubInputRef}
-                  type="file" accept="image/*" multiple
-                  onChange={handleMultiSubFiles}
-                  className="hidden" id="multi-sub-img"
-                  disabled={form.subImages.filter(Boolean).length >= 9}
-                />
-                <label htmlFor="multi-sub-img"
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs transition-colors rounded cursor-pointer ${
-                    uploadingMulti || form.subImages.filter(Boolean).length >= 9
-                      ? "border-gray-200 text-gray-400 cursor-not-allowed pointer-events-none"
-                      : "border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white"
-                  }`}>
-                  {uploadingMulti ? (
-                    <><span className="w-3 h-3 border-2 border-gray-300 border-t-[#303236] rounded-full animate-spin" />업로드 중...</>
-                  ) : (
-                    <>
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      여러 장 한번에 선택
-                    </>
-                  )}
-                </label>
-                <span className="text-[11px] text-gray-400">
-                  {form.subImages.filter(Boolean).length} / 9장
-                  {form.subImages.filter(Boolean).length > 0 && " · 이미지를 드래그해 순서 변경"}
                 </span>
               </div>
 
@@ -2179,229 +2035,28 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             {/* ── 동영상 (선택) ── */}
             <div className="mt-5 pt-5 border-t border-gray-100">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-700">동영상 URL (선택)</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-semibold text-gray-700">동영상 URL (선택)</p>
+                  <div className="relative">
+                    <button type="button" onClick={() => setVideoHelpOpen((v) => !v)}
+                      className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-400 text-[11px] font-bold hover:border-[#303236] hover:text-[#303236] transition-colors"
+                      aria-label="동영상 URL 안내">?</button>
+                    {videoHelpOpen && (
+                      <div className="absolute z-20 top-full left-0 mt-1.5 w-64 bg-white border border-gray-200 rounded shadow-lg p-3">
+                        <p className="text-[11px] text-gray-500 leading-relaxed">
+                          등록하면 상세 갤러리 썸네일 맨 뒤에 <b className="text-[#303236]">▶ 영상</b>이 추가됩니다. (YouTube·Vimeo는 자동 임베드, mp4 등 직접 링크는 플레이어로 재생)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <span className="text-[11px] text-gray-400">YouTube · Vimeo · mp4 링크</span>
               </div>
               <input type="url" value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)}
                 placeholder="예: https://youtu.be/abc123 또는 https://….mp4"
                 className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
-              <p className="text-[11px] text-gray-400 mt-1.5">등록하면 상세 갤러리 썸네일 맨 뒤에 <b className="text-[#303236]">▶ 영상</b>이 추가됩니다. (YouTube·Vimeo는 자동 임베드, mp4 등 직접 링크는 플레이어로 재생)</p>
             </div>
 
-            {/* ── AI 이미지 생성 프롬프트 ── */}
-            <div className="mt-5 pt-5 border-t border-gray-100">
-              <button type="button" onClick={() => setPromptPanelOpen((v) => !v)}
-                className="w-full flex items-center justify-between gap-2 text-left">
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold text-gray-700">AI 이미지 생성 프롬프트</span>
-                  <span className="block text-[11px] text-gray-400">이미지 유형 선택 후 생성 — Midjourney · DALL·E 3 · Firefly 등에 붙여넣기</span>
-                </span>
-                <svg className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${promptPanelOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {promptPanelOpen && (
-              <div className="mt-3">
-              {/* 이미지 유형 선택 */}
-              <div className="grid grid-cols-3 gap-1.5 mb-3">
-                {PROMPT_TYPES.map((pt) => {
-                  const isModel = !["누끼컷", "원단컷"].includes(pt.key);
-                  return (
-                    <button key={pt.key} type="button"
-                      onClick={() => { setPromptType(pt.key); setShowAiPrompt(false); }}
-                      className={`py-2 px-1 text-xs font-medium border rounded transition-colors flex flex-col items-center gap-0.5 ${
-                        promptType === pt.key
-                          ? "bg-violet-600 text-white border-violet-600 shadow-sm"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                      }`}>
-                      <span>{pt.label}</span>
-                      <span className={`text-[10px] font-normal ${promptType === pt.key ? "text-violet-200" : "text-gray-400"}`}>
-                        {isModel ? "착용컷" : pt.key === "누끼컷" ? "제품단독" : "소재클로즈업"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* 선택 유형 안내 */}
-              {promptType === "대표반신컷" && (
-                <p className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3">
-                  ⚠ 상하세트·원피스 상품에는 대표 반신컷을 생성하지 않습니다.
-                </p>
-              )}
-
-              {/* 프롬프트 옵션 */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 space-y-3">
-                {/* 의류 유형 */}
-                <div>
-                  <p className="text-[11px] font-semibold text-gray-600 mb-1.5">의류 유형</p>
-                  <div className="flex gap-1.5">
-                    {(["작업복", "일상복"] as const).map(t => (
-                      <button key={t} type="button"
-                        onClick={() => setPromptClothingType(t)}
-                        className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                          promptClothingType === t
-                            ? "bg-violet-600 text-white border-violet-600"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                        }`}>{t}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 시즌 */}
-                <div>
-                  <p className="text-[11px] font-semibold text-gray-600 mb-1.5">시즌 <span className="text-gray-400 font-normal">(선택)</span></p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {["봄", "여름", "가을", "겨울", "전천후"].map(s => (
-                      <button key={s} type="button"
-                        onClick={() => setPromptSeason(promptSeason === s ? "" : s)}
-                        className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                          promptSeason === s
-                            ? "bg-violet-600 text-white border-violet-600"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                        }`}>{s}</button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 모델 연령대 — 착용컷 전용 */}
-                {!["누끼컷", "원단컷"].includes(promptType) && (
-                  <div>
-                    <p className="text-[11px] font-semibold text-gray-600 mb-1.5">모델 연령대 <span className="text-gray-400 font-normal">(선택)</span></p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {["20대", "30대", "40대", "50대"].map(a => (
-                        <button key={a} type="button"
-                          onClick={() => setPromptModelAge(promptModelAge === a ? "" : a)}
-                          className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                            promptModelAge === a
-                              ? "bg-violet-600 text-white border-violet-600"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                          }`}>{a}</button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 착용 부위 — 착용컷 전용 (장갑·모자·안전용품 등 소품) */}
-                {!["누끼컷", "원단컷"].includes(promptType) && (
-                  <div>
-                    <p className="text-[11px] font-semibold text-gray-600 mb-1.5">
-                      착용 부위 <span className="text-gray-400 font-normal">(장갑·모자·안전용품 등 소품)</span>
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {["기본", "손·장갑", "머리·모자", "발·신발/양말", "허리·벨트", "상체·조끼/가방", "얼굴·고글/마스크"].map(w => (
-                        <button key={w} type="button"
-                          onClick={() => setPromptWornFocus(w)}
-                          className={`px-3 py-1.5 text-[12px] rounded-full border font-medium transition-colors ${
-                            promptWornFocus === w
-                              ? "bg-violet-600 text-white border-violet-600"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600"
-                          }`}>{w}</button>
-                      ))}
-                    </div>
-                    {promptWornFocus !== "기본" && (
-                      <p className="text-[10px] text-violet-500 mt-1.5">
-                        선택한 부위 중심으로 착용컷이 생성됩니다. 제품 단독컷은 <b>누끼컷</b>을 사용하세요.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* 추가 옵션 */}
-                <div>
-                  <p className="text-[11px] font-semibold text-gray-600 mb-1.5">추가 옵션 <span className="text-gray-400 font-normal">(선택 · 복수가능)</span></p>
-                  <div className="flex gap-1.5 flex-wrap mb-2">
-                    {["남성", "여성", "한국인", "서양인", "캐주얼", "프로페셔널"].map(opt => (
-                      <button key={opt} type="button"
-                        onClick={() => setPromptExtras(prev =>
-                          prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]
-                        )}
-                        className={`px-2.5 py-1 text-[11px] rounded-full border transition-colors ${
-                          promptExtras.includes(opt)
-                            ? "bg-violet-100 text-violet-700 border-violet-300 font-semibold"
-                            : "bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
-                        }`}>{opt}</button>
-                    ))}
-                  </div>
-                  <div className="flex gap-1.5">
-                    <input
-                      value={promptCustomInput}
-                      onChange={e => setPromptCustomInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === "Enter" && promptCustomInput.trim()) {
-                          setPromptExtras(prev => [...prev, promptCustomInput.trim()]);
-                          setPromptCustomInput("");
-                        }
-                      }}
-                      placeholder="직접 입력 후 Enter..."
-                      className="flex-1 text-[11px] border border-gray-200 rounded px-2.5 py-1.5 focus:outline-none focus:border-violet-400 bg-white"
-                    />
-                    <button type="button"
-                      onClick={() => {
-                        if (promptCustomInput.trim()) {
-                          setPromptExtras(prev => [...prev, promptCustomInput.trim()]);
-                          setPromptCustomInput("");
-                        }
-                      }}
-                      className="px-3 py-1.5 text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium">추가</button>
-                  </div>
-                  {promptExtras.length > 0 && (
-                    <div className="flex gap-1 flex-wrap mt-2">
-                      {promptExtras.map((opt, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] rounded-full">
-                          {opt}
-                          <button type="button"
-                            onClick={() => setPromptExtras(prev => prev.filter((_, idx) => idx !== i))}
-                            className="text-violet-400 hover:text-violet-700 leading-none">×</button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 생성 버튼 */}
-              <button type="button" onClick={generateAIPrompt}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold bg-gradient-to-r from-violet-500 to-indigo-500 text-white hover:from-violet-600 hover:to-indigo-600 transition-all rounded shadow-sm">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-                </svg>
-                {PROMPT_TYPES.find((p) => p.key === promptType)?.label} 프롬프트 생성
-              </button>
-
-              {/* 생성된 프롬프트 출력 */}
-              {showAiPrompt && (
-                <div className="mt-3 bg-gray-900 rounded-lg overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 bg-gray-800">
-                    <span className="text-xs text-gray-400 font-mono">
-                      {PROMPT_TYPES.find((p) => p.key === promptType)?.label} — AI Image Prompt
-                    </span>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={copyPrompt}
-                        className={`text-xs px-3 py-1 rounded transition-colors ${
-                          promptCopied ? "bg-green-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                        }`}>
-                        {promptCopied ? "복사됨 ✓" : "복사"}
-                      </button>
-                      <button type="button" onClick={() => setShowAiPrompt(false)}
-                        className="text-xs text-gray-500 hover:text-gray-300 px-1">×</button>
-                    </div>
-                  </div>
-                  <textarea
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    rows={12}
-                    className="w-full bg-gray-900 text-green-400 text-xs font-mono px-4 py-3 focus:outline-none resize-y leading-relaxed"
-                  />
-                  <div className="px-3 py-2 bg-gray-800 text-[10px] text-gray-500">
-                    영문 프롬프트를 AI 이미지 생성 도구에 붙여넣으세요 · 하단 한글 내용은 참고용
-                  </div>
-                </div>
-              )}
-              </div>
-              )}
-            </div>
           </section>
 
           {/* ── 옵션 ── */}
@@ -2415,7 +2070,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </button>
             </div>
             <div className="mb-5">
-              <Field label="기본 사이즈 (의류)" hint="클릭으로 포함/제외 전환. 취소선 = 제외">
+              <Field label="기본 사이즈 (의류)">
                 <div className="flex flex-wrap gap-2 mt-1">
                   {CLOTHING_SIZE_PRESETS.map((size) => {
                     const active = form.sizes.includes(size);
@@ -2431,22 +2086,24 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </div>
               </Field>
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <label className="block text-xs font-medium text-gray-500 mb-1">직접 입력 사이즈</label>
-                {/* 빠른 템플릿 — 클릭 시 해당 사이즈 세트로 교체 */}
-                <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                  <span className="text-[11px] text-gray-400 mr-0.5">템플릿:</span>
-                  {SIZE_TEMPLATES.map((t) => (
-                    <button key={t.label} type="button" onClick={() => set("sizes", sortSizes(t.sizes))}
-                      className="px-2.5 py-1 text-[11px] border border-gray-200 text-gray-600 rounded-full hover:border-[#303236] hover:text-[#303236] transition-colors">
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
                 <div className="flex gap-2">
                   <input value={form.customSizeInput} onChange={(e) => set("customSizeInput", e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
                     placeholder="사이즈 입력 후 Enter 또는 추가 (예: 30,32,34,36,38,40)"
                     className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded" />
+                  {/* 빠른 템플릿 — 선택 시 해당 사이즈 세트로 교체 */}
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      const t = SIZE_TEMPLATES.find((t) => t.label === e.target.value);
+                      if (t) set("sizes", sortSizes(t.sizes));
+                    }}
+                    className="border border-gray-200 rounded px-2 py-2 text-sm text-gray-600 bg-white focus:outline-none focus:border-[#303236]">
+                    <option value="">템플릿 선택</option>
+                    {SIZE_TEMPLATES.map((t) => (
+                      <option key={t.label} value={t.label}>{t.label}</option>
+                    ))}
+                  </select>
                   <button type="button" onClick={addCustomSize}
                     className="px-3 py-2 bg-[#303236] text-white text-xs hover:bg-[#243d5e] transition-colors rounded">추가</button>
                 </div>
@@ -2467,38 +2124,9 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               )}
             </div>
 
-            {/* 사이즈별 가격 — 체크 시에만 입력 */}
-            {form.sizes.length > 0 && (
-              <div className="mb-5 pt-4 border-t border-gray-100">
-                <label className="flex items-center gap-2 cursor-pointer w-fit">
-                  <input type="checkbox" checked={useSizePrices}
-                    onChange={(e) => { setUseSizePrices(e.target.checked); if (!e.target.checked) set("sizePrices", []); }}
-                    className="accent-[#303236] w-4 h-4" />
-                  <span className="text-xs font-medium text-[#303236]">사이즈별 가격 사용 <span className="text-gray-400 font-normal">(사이즈마다 다른 가격)</span></span>
-                </label>
-                {useSizePrices && (
-                  <div className="mt-2 pl-6">
-                    <p className="text-[11px] text-gray-400 mb-2">비워둔 사이즈는 기본 판매가{form.price ? ` (${form.price})` : ""}가 적용됩니다.</p>
-                    <div className="flex flex-wrap gap-2">
-                      {form.sizes.map((size) => (
-                        <div key={size} className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-1">
-                          <span className="text-xs font-semibold text-[#303236] min-w-[36px] text-center">{size}</span>
-                          <input type="text" inputMode="numeric" value={sizePriceOf(size)}
-                            onChange={(e) => setSizePrice(size, e.target.value)}
-                            placeholder={form.price || "기본가"}
-                            className="w-24 border-b border-gray-200 px-1 py-0.5 text-sm focus:outline-none focus:border-[#303236]" />
-                          <span className="text-xs text-gray-400">원</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-2">색상 옵션</label>
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-3 items-start">
                 {COLOR_PRESETS.map((preset) => {
                   const selected = form.colors.some((c) => c.name === preset.name);
                   return (
@@ -2512,34 +2140,33 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                     </button>
                   );
                 })}
+                {colorDropdownOptions.length > 0 && (
+                  <div className="relative flex-1 min-w-[140px]">
+                    <button type="button" onClick={() => setColorDropdownOpen((v) => !v)}
+                      className="w-full flex items-center justify-between gap-1.5 px-2.5 py-1.5 border border-gray-200 text-gray-600 text-xs rounded hover:border-gray-400 transition-colors">
+                      자주 쓴 색상
+                      <span className="text-gray-400">{colorDropdownOpen ? "▲" : "▼"}</span>
+                    </button>
+                    {colorDropdownOpen && (
+                      <div className="absolute z-20 mt-1 left-0 w-full max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                        {colorDropdownOptions.map((opt) => {
+                          const selected = form.colors.some((c) => c.name === opt.name);
+                          return (
+                            <button key={opt.name} type="button" onClick={() => { toggleColor(opt); setColorDropdownOpen(false); }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-gray-50 last:border-0 ${
+                                selected ? "bg-orange-50 font-semibold text-gray-800" : "text-gray-600 hover:bg-gray-50"
+                              }`}>
+                              <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: opt.hex }} />
+                              <span className="flex-1">{opt.name}</span>
+                              {selected && <span className="text-[#E5541B] font-bold">✓</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {colorDropdownOptions.length > 0 && (
-                <div className="relative mb-3">
-                  <button type="button" onClick={() => setColorDropdownOpen((v) => !v)}
-                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded text-sm text-gray-700 hover:border-gray-400 transition-colors">
-                    <span>그 외 자주 쓴 색상 ({colorDropdownOptions.length}개, 5회 이상 사용)</span>
-                    <span className="text-gray-400">{colorDropdownOpen ? "▲" : "▼"}</span>
-                  </button>
-                  {colorDropdownOpen && (
-                    <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
-                      {colorDropdownOptions.map((opt) => {
-                        const selected = form.colors.some((c) => c.name === opt.name);
-                        return (
-                          <button key={opt.name} type="button" onClick={() => { toggleColor(opt); setColorDropdownOpen(false); }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-gray-50 last:border-0 ${
-                              selected ? "bg-orange-50 font-semibold text-gray-800" : "text-gray-600 hover:bg-gray-50"
-                            }`}>
-                            <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: opt.hex }} />
-                            <span className="flex-1">{opt.name}</span>
-                            <span className="text-[10px] text-gray-400">{opt.count}회</span>
-                            {selected && <span className="text-[#E5541B] font-bold">✓</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
               <div className="flex gap-2 items-center mt-2">
                 <input value={form.colorName} onChange={(e) => set("colorName", e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); addCustomColor(); } }}
@@ -2571,7 +2198,21 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
           {/* ── 상세 설명 ── */}
           <section className="bg-white border border-gray-200 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">상세 설명</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">상세 설명</h2>
+                <div className="relative">
+                  <button type="button" onClick={() => setDetailBlocksHelpOpen((v) => !v)}
+                    className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-400 text-[11px] font-bold hover:border-[#303236] hover:text-[#303236] transition-colors"
+                    aria-label="상세 설명 안내">?</button>
+                  {detailBlocksHelpOpen && (
+                    <div className="absolute z-20 top-full left-0 mt-1.5 w-64 bg-white border border-gray-200 rounded shadow-lg p-3">
+                      <p className="text-[11px] text-gray-500 leading-relaxed">
+                        이미지를 올리면 <b className="text-[#303236]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {/* 여러 장 업로드 — 선택한 이미지들이 각각 블록으로 추가 (이미지 중심 에디터) */}
                 <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded cursor-pointer transition-colors ${uploadingBlocksMulti ? "bg-gray-200 text-gray-400 pointer-events-none" : "bg-[#303236] text-white hover:bg-[#243d5e]"}`}>
@@ -2581,14 +2222,13 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
               </div>
             </div>
             {uploadError?.zone === "detail" && <p className="text-xs text-red-500 mb-2">{uploadError.message}</p>}
-            <p className="text-[11px] text-gray-400 mb-4">이미지를 올리면 <b className="text-[#303236]">위→아래 순서</b>대로 상세페이지에 표시됩니다. 카드를 드래그해 순서를 바꾸세요.</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {form.detailBlocks.map((block, idx) => (
                 <div key={block.id} draggable
                   onDragStart={() => setDragBlockIdx(idx)}
                   onDragOver={(e) => onBlockDragOver(e, idx)} onDrop={(e) => onBlockDrop(e, idx)} onDragEnd={onBlockDragEnd}
                   title="드래그해 순서 변경"
-                  className={`relative aspect-[3/4] rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all ${
+                  className={`relative aspect-[3/5] rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all ${
                     dragOverBlockIdx === idx && dragBlockIdx !== null && dragBlockIdx !== idx
                       ? "border-violet-400 ring-2 ring-violet-300"
                       : dragBlockIdx === idx ? "border-dashed border-gray-400 opacity-50" : "border-gray-200"
@@ -2614,7 +2254,7 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
                 </div>
               ))}
               {/* 이미지 추가 카드 (여러 장 선택) */}
-              <label className="aspect-[3/4] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-[#303236] hover:border-[#303236] transition-colors">
+              <label className="aspect-[3/5] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-[#303236] hover:border-[#303236] transition-colors">
                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleBlocksMultiUpload} disabled={uploadingBlocksMulti} />
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
                 <span className="text-[10px] mt-1">이미지 추가</span>
@@ -2622,109 +2262,6 @@ export default function ProductForm({ initial, isEdit }: { initial?: Product; is
             </div>
           </section>
 
-          {/* ── 상세 정보 (텍스트) ── */}
-          <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">상세 정보</h2>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={diLoadDefaults}
-                  className="px-3 py-1.5 text-xs border border-gray-300 text-gray-500 hover:border-[#303236] hover:text-[#303236] rounded transition-colors">기본 항목 불러오기</button>
-                <button type="button" onClick={diClearAll} disabled={form.detailInfo.length === 0}
-                  className="px-3 py-1.5 text-[11px] border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed">전체 삭제</button>
-                <button type="button" onClick={diAdd}
-                  className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
-              </div>
-            </div>
-            {form.detailInfo.length === 0 ? (
-              <p className="text-xs text-gray-400">&quot;기본 항목 불러오기&quot;로 품명·소재·색상·제조국 등 기본 라벨을 채우거나 &quot;+ 항목 추가&quot;로 직접 추가하세요. 값이 빈 항목은 노출되지 않습니다.</p>
-            ) : (
-              <div className="space-y-2">
-                {form.detailInfo.map((it, i) => (
-                  <div key={i} className="flex gap-2 items-start">
-                    <input value={it.label} onChange={(e) => diSet(i, "label", e.target.value)} placeholder="항목명 (예: 소재)"
-                      className="w-44 flex-shrink-0 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] font-medium" />
-                    <textarea value={it.value} onChange={(e) => diSet(i, "value", e.target.value)} rows={1} placeholder="내용"
-                      className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236] resize-y" />
-                    <button type="button" onClick={() => diRemove(i)}
-                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* ── 인스타 피드 (이 상품 관련 이미지/영상) ── */}
-          <section className="bg-white border border-gray-200 p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-              <h2 className="text-xs font-bold text-[#303236] uppercase tracking-widest">인스타 피드</h2>
-              <button type="button" onClick={igAdd}
-                className="px-3 py-1.5 text-xs border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors">+ 항목 추가</button>
-            </div>
-            <p className="text-[11px] text-gray-400 leading-relaxed mb-4">
-              이 상품과 관련된 인스타 <b>이미지</b>를 올리면 <b>상세 정보 탭 상단</b>에 깔끔한 그리드로 노출됩니다. (인스타 게시물 <b>링크</b>를 함께 넣으면 클릭 시 인스타로 이동 · 릴스/영상 링크는 ▶ 배지 표시) 섹션 계정·열 수 등 공통 설정은 <a href="/admin/main/instagram" target="_blank" rel="noopener" className="text-[#303236] underline">인스타 피드 설정 ↗</a>에서.
-            </p>
-            {uploadError?.zone === "instagram" && <p className="text-xs text-red-500 mb-3">{uploadError.message}</p>}
-
-            {form.instagramPosts.length === 0 ? (
-              <p className="text-xs text-gray-400">등록된 항목이 없습니다. <b>+ 항목 추가</b>로 시작하세요. (미등록 시 상세페이지에 인스타 섹션이 표시되지 않습니다)</p>
-            ) : (
-              <div className="space-y-3">
-                {form.instagramPosts.map((item, i) => {
-                  const parsed = item.url ? parseInstagramUrl(item.url) : null;
-                  const isVideo = parsed?.type === "reel" || parsed?.type === "tv";
-                  return (
-                    <div key={i} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
-                      <div className="flex flex-col items-center gap-1 pt-1">
-                        <button type="button" onClick={() => igMove(i, -1)} disabled={i === 0}
-                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▲</button>
-                        <span className="text-[11px] text-gray-400 font-mono">{i + 1}</span>
-                        <button type="button" onClick={() => igMove(i, 1)} disabled={i === form.instagramPosts.length - 1}
-                          className="text-gray-300 hover:text-[#303236] disabled:opacity-30 disabled:cursor-not-allowed leading-none">▼</button>
-                      </div>
-
-                      {/* 이미지 업로드/미리보기 (9:16 세로 — 실제 노출 비율) */}
-                      <div className="w-[90px] h-[160px] flex-shrink-0 relative">
-                        {item.image ? (
-                          <div className="relative w-full h-full rounded overflow-hidden border border-gray-100 bg-[#fafafa]">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={item.image} alt={`인스타 ${i + 1}`} className="w-full h-full object-cover" />
-                            {isVideo && <span className="absolute top-1 right-1 text-white drop-shadow"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>}
-                            <button type="button" onClick={() => igSetImage(i, "")}
-                              className="absolute bottom-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-[11px] leading-none">×</button>
-                          </div>
-                        ) : (
-                          <label className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded cursor-pointer text-gray-400 hover:border-[#303236] hover:text-[#303236] transition-colors text-center">
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIgImage(e, i)} disabled={uploadingIgIdx === i} />
-                            <span className="text-[11px] leading-tight px-1">{uploadingIgIdx === i ? "업로드 중…" : "＋ 이미지"}</span>
-                          </label>
-                        )}
-                      </div>
-
-                      {/* 인스타 링크(선택) */}
-                      <div className="flex-1 min-w-0">
-                        <label className="block text-[11px] text-gray-500 mb-1">인스타 링크 <span className="text-gray-300">(선택 · 클릭 시 이동)</span></label>
-                        <input value={item.url ?? ""} onChange={(e) => igSetUrl(i, e.target.value)}
-                          placeholder="https://www.instagram.com/p/XXXXXXXX/"
-                          className={`w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none ${
-                            (item.url ?? "").trim() === "" ? "border-gray-200 focus:border-[#303236]"
-                              : parsed ? "border-green-300 focus:border-green-500 bg-green-50/40"
-                              : "border-red-300 focus:border-red-500 bg-red-50/40"
-                          }`} />
-                        <p className="text-[11px] mt-1">
-                          {(item.url ?? "").trim() === "" ? <span className="text-gray-400">비워두면 클릭 이동 없이 이미지만 노출됩니다.</span>
-                            : parsed ? <span className="text-green-600">✓ 인식됨 ({parsed.type}){isVideo ? " · 영상 ▶" : ""}</span>
-                            : <span className="text-red-500">✕ 올바른 인스타 게시물 URL이 아닙니다.</span>}
-                        </p>
-                      </div>
-
-                      <button type="button" onClick={() => igRemove(i)} title="삭제"
-                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 border border-gray-200 rounded">×</button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
 
         </div>{/* end right col */}
       </div>{/* end grid */}
