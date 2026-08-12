@@ -86,7 +86,7 @@ function HeroDefault() {
           </p>
           <div className="flex flex-wrap gap-4">
             <a
-              href="/site"
+              href="/products"
               className="inline-block bg-[#E5541B] text-white text-sm tracking-widest px-8 py-3 hover:bg-[#d05518] transition-colors"
             >
               컬렉션 보기
