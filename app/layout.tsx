@@ -3,7 +3,6 @@ import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import AnnouncementBanner from "@/components/AnnouncementBanner";
 import SideBanner from "@/components/SideBanner";
 import BottomNav from "@/components/BottomNav";
 import { CartProvider } from "@/contexts/CartContext";
@@ -87,14 +86,12 @@ export default async function RootLayout({
   // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
   const visibleNavItems = headerNav?.items.filter((it) => it.isVisible !== false);
 
-  // PC/모바일 탑바 높이를 CSS 변수로 주입 — 헤더 sticky 오프셋·카탈로그 뷰어 높이가 참조.
-  const tbMobile = topbar?.enabled ? topbar.mobile_height : 0;
-  const tbPc     = topbar?.enabled ? topbar.height : 0;
-
   return (
     <html lang="ko">
       <body className={`min-h-full flex flex-col ${notoSansKR.className}`}>
-        <style>{`:root{--wu-topbar-h:${tbMobile}px}@media(min-width:768px){:root{--wu-topbar-h:${tbPc}px}}`}</style>
+        {/* 상단 탑배너를 없애고 가맹/제휴문의를 헤더 로고 행에 통합했으므로 탑바 높이는 항상 0 —
+            카탈로그 뷰어 등에서 여전히 참조하는 --wu-topbar-h 변수는 하위 호환을 위해 유지한다. */}
+        <style>{`:root{--wu-topbar-h:0px}`}</style>
         {/* 웹폰트 라이브러리 (영문+한글 장식용) — 슬라이딩 메뉴 텍스트 캔버스용 · 실제 사용 시에만 폰트 파일 다운로드 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -113,10 +110,13 @@ export default async function RootLayout({
               className={hideChrome ? "flex-1 min-h-0 overflow-y-auto" : "flex-1 min-h-0 flex flex-col"}
             >
               {!hideChrome && topbar && headerNav && logo && search && (
-                <>
-                  <AnnouncementBanner config={topbar} />
-                  <Header navItems={visibleNavItems} logo={logo} search={search} studioEnabled={studio?.enabled ?? true} />
-                </>
+                <Header
+                  navItems={visibleNavItems}
+                  logo={logo}
+                  search={search}
+                  topbarItems={topbar.enabled ? topbar.items : []}
+                  studioEnabled={studio?.enabled ?? true}
+                />
               )}
               <div className={hideChrome ? "flex-1" : "relative flex-1"}>
                 {children}

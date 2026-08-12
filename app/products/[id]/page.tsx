@@ -13,6 +13,7 @@ import MobileProductNav from "@/components/MobileProductNav";
 import InstagramFeed from "@/components/InstagramFeed";
 import JsonLd from "@/components/JsonLd";
 import { absoluteUrl } from "@/lib/site";
+import { getSearchConfig } from "@/lib/header-search-server";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -101,7 +102,7 @@ const WASH_ICON_MAP: Record<string, string> = {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
-  const product = await fetchProduct(id);
+  const [product, search] = await Promise.all([fetchProduct(id), getSearchConfig()]);
   if (!product) notFound();
   // 판매중지·진열대기 상품은 고객 노출 금지 — 단, 관리자는 등록 전 미리보기가 필요해 예외로 허용
   const isPreview = !isPubliclyVisible(product);
@@ -186,7 +187,7 @@ export default async function ProductDetailPage({ params }: Props) {
       <JsonLd data={productLd} />
 
       {/* 모바일 네비 */}
-      <MobileProductNav />
+      <MobileProductNav search={search} />
 
       {/* 데스크탑 브레드크럼 — 카테고리가 여러 개면 펼쳐서 전부 볼 수 있음 (제품명은 표시하지 않음) */}
       <div className="hidden md:block border-b border-gray-100">

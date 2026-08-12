@@ -1,7 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
+import { useCart } from "@/contexts/CartContext";
+
+type MemberSession = { name: string; grade: string } | null;
 
 export default function BottomNav({
   navItems = DEFAULT_HEADER_NAV.items,
@@ -11,6 +15,18 @@ export default function BottomNav({
   studioEnabled?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  // 상단 헤더의 회원 아이콘을 모바일에서는 이 하단 '마이' 탭으로 대체한다.
+  const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
+  // 찜(장바구니)에 담긴 상품이 있을 때만 '마이' 탭에 주황 점을 표시한다.
+  const { count } = useCart();
+
+  useEffect(() => {
+    fetch("/api/member/me")
+      .then(r => r.json())
+      .then(data => setMemberSession(data ?? null))
+      .catch(() => setMemberSession(null));
+  }, [pathname]);
 
   useEffect(() => {
     if (menuOpen) {
@@ -188,6 +204,24 @@ export default function BottomNav({
               <path strokeLinecap="round" strokeLinejoin="round" d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
             </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">매장</span>
+          </Link>
+
+          {/* 마이 — PC 헤더의 회원 아이콘을 모바일에서는 이 탭으로 대체 */}
+          <Link
+            href={memberSession ? "/mypage" : "/member/login"}
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#666666] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
+            aria-label={memberSession ? "마이페이지" : "로그인"}
+            onClick={() => setMenuOpen(false)}
+          >
+            <span className="relative">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+              </svg>
+              {count > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#E5541B] rounded-full" />
+              )}
+            </span>
+            <span className="text-[10px] font-semibold leading-none tracking-tight">마이</span>
           </Link>
 
         </div>
