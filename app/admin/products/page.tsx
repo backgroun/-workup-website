@@ -55,6 +55,31 @@ const TOGGLE_COLS = ["상태", "브랜드", "품번", "가격", "카테고리", 
 const COL_KEY = "wu-admin-product-cols";
 const SEARCH_TYPES: SearchType[] = ["상품명", "상품코드", "브랜드", "제조사"];
 
+// ── 퀵수정(간단 수정) 팝업용 프리셋 — 상품등록 폼과 동일한 목록 ───────────────────
+const QE_CLOTHING_SIZE_PRESETS = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
+const QE_CLOTHING_SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"];
+function qeSortSizes(sizes: string[]): string[] {
+  const rankOf = (s: string) => {
+    const i = QE_CLOTHING_SIZE_ORDER.indexOf(s.trim().toUpperCase());
+    return i === -1 ? null : i;
+  };
+  return [...sizes].sort((a, b) => {
+    const ra = rankOf(a), rb = rankOf(b);
+    if (ra !== null && rb !== null) return ra - rb;
+    if (ra !== null) return -1;
+    if (rb !== null) return 1;
+    return 0;
+  });
+}
+const QE_COLOR_PRESETS = [
+  { name: "블랙",   hex: "#1C1C1C" },
+  { name: "화이트", hex: "#F0F0F0" },
+  { name: "네이비", hex: "#303236" },
+  { name: "그레이", hex: "#7A7A7A" },
+  { name: "베이지", hex: "#C9B99A" },
+  { name: "카키",   hex: "#4A5240" },
+];
+
 // ── 컴포넌트 ───────────────────────────────────────────────────────────────────
 export default function AdminProductsPage() {
   // ─ 데이터 ────────────────────────────────────────────────────────────────
@@ -160,20 +185,72 @@ export default function AdminProductsPage() {
   const [rowMain, setRowMain]   = useState("");
   const [rowSub, setRowSub]     = useState("");
 
-  // ─ 상품명 옆 "수정" 버튼 → 간단 수정 팝업 (전체 수정 페이지 대신 이름·가격·상태만 빠르게) ──
+  // ─ 상품명 옆 "퀵수정" 버튼 → 간단 수정 팝업 (전체 수정 페이지 대신 색상·사이즈·브랜드만 빠르게) ──
   const [quickEditTarget, setQuickEditTarget] = useState<Product | null>(null);
-  const [quickEditName, setQuickEditName] = useState("");
-  const [quickEditPrice, setQuickEditPrice] = useState("");
-  const [quickEditStatus, setQuickEditStatus] = useState("판매중");
+  const [quickEditBrand, setQuickEditBrand] = useState("");
+  const [quickEditSizes, setQuickEditSizes] = useState<string[]>([]);
+  const [quickEditSizeInput, setQuickEditSizeInput] = useState("");
+  const [quickEditColors, setQuickEditColors] = useState<{ name: string; hex: string }[]>([]);
+  const [quickEditColorName, setQuickEditColorName] = useState("");
+  const [quickEditColorHex, setQuickEditColorHex] = useState("#303236");
   const [quickEditSaving, setQuickEditSaving] = useState(false);
+  const [qeColorDropdownOpen, setQeColorDropdownOpen] = useState(false);
+
+  // 전체 상품에서 자주 쓴 색상 집계 (프리셋에 없는 이름 중 5회 이상 사용) — 상품등록 폼과 동일한 규칙
+  const qeColorDropdownOptions = useMemo(() => {
+    const usage: Record<string, { hex: string; count: number }> = {};
+    for (const p of products) {
+      for (const c of p.colors ?? []) {
+        if (!c?.name) continue;
+        if (usage[c.name]) usage[c.name].count += 1;
+        else usage[c.name] = { hex: c.hex, count: 1 };
+      }
+    }
+    return Object.entries(usage)
+      .filter(([name, u]) => !QE_COLOR_PRESETS.some((p) => p.name === name) && u.count >= 5)
+      .map(([name, u]) => ({ name, hex: u.hex, count: u.count }))
+      .sort((a, b) => b.count - a.count);
+  }, [products]);
 
   const openQuickEdit = (p: Product) => {
     setQuickEditTarget(p);
-    setQuickEditName(p.name);
-    setQuickEditPrice(p.price ?? "");
-    setQuickEditStatus(p.status ?? "판매중");
+    setQuickEditBrand(p.brand ?? "");
+    setQuickEditSizes(p.sizes ?? []);
+    setQuickEditSizeInput("");
+    setQuickEditColors(p.colors ?? []);
+    setQuickEditColorName("");
+    setQuickEditColorHex("#303236");
+    setQeColorDropdownOpen(false);
   };
   const closeQuickEdit = () => setQuickEditTarget(null);
+
+  const qeToggleSize = (size: string) =>
+    setQuickEditSizes((prev) => qeSortSizes(prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]));
+  const qeAddCustomSize = () => {
+    const v = quickEditSizeInput.trim();
+    if (!v) return;
+    const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+    setQuickEditSizes((prev) => qeSortSizes([...new Set([...prev, ...parts])]));
+    setQuickEditSizeInput("");
+  };
+  const qeToggleColor = (preset: { name: string; hex: string }) =>
+    setQuickEditColors((prev) => {
+      const existing = prev.find((c) => c.name === preset.name);
+      if (!existing) return [...prev, preset];
+      if (existing.hex.toLowerCase() === preset.hex.toLowerCase()) {
+        return prev.filter((c) => c.name !== preset.name);
+      }
+      // 이름은 같지만 색상값이 다름(엑셀 등록 시 기본값으로 잘못 들어간 경우) — 해제 대신 값 교체
+      return prev.map((c) => (c.name === preset.name ? { ...c, hex: preset.hex } : c));
+    });
+  const qeAddCustomColor = () => {
+    const name = quickEditColorName.trim();
+    if (!name) return;
+    setQuickEditColors((prev) => [...prev.filter((c) => c.name !== name), { name, hex: quickEditColorHex }]);
+    setQuickEditColorName("");
+  };
+  const qeRemoveColor = (name: string) =>
+    setQuickEditColors((prev) => prev.filter((c) => c.name !== name));
 
   const saveQuickEdit = async () => {
     if (!quickEditTarget) return;
@@ -182,7 +259,7 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/admin/products/${quickEditTarget.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...quickEditTarget, name: quickEditName, price: quickEditPrice, status: quickEditStatus }),
+        body: JSON.stringify({ ...quickEditTarget, brand: quickEditBrand, sizes: quickEditSizes, colors: quickEditColors }),
       });
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));
@@ -1046,7 +1123,10 @@ export default function AdminProductsPage() {
                           )}
                         </Link>
                         <div className="min-w-0 flex-1 flex items-center gap-2">
-                          <span className="block truncate font-semibold text-[14px] text-gray-900 leading-tight">{p.name}</span>
+                          <Link href={`/admin/products/${p.id}/edit`}
+                            className="block truncate font-semibold text-[14px] text-gray-900 leading-tight hover:text-[#E5541B] hover:underline transition-colors">
+                            {p.name}
+                          </Link>
                           {isTempRegistered(p) && (
                             <span
                               title="지점 출고 패스에서 빠르게 임시등록한 상품 — 정식 정보(가격·카테고리 등) 미입력"
@@ -1057,7 +1137,7 @@ export default function AdminProductsPage() {
                           )}
                           <button type="button" onClick={() => openQuickEdit(p)}
                             className="flex-shrink-0 px-2.5 py-1 text-xs font-semibold border border-[#303236] text-[#303236] hover:bg-[#303236] hover:text-white rounded transition-colors whitespace-nowrap">
-                            수정
+                            퀵수정
                           </button>
                         </div>
                       </div>
@@ -1324,33 +1404,119 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* ── 간단 수정 팝업 (상품명 옆 "수정" 버튼) ──────────────────────────── */}
+      {/* ── 퀵수정 팝업 (상품명 옆 "퀵수정" 버튼) — 색상·사이즈·브랜드만 빠르게 ──────── */}
       {quickEditTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeQuickEdit}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
             <div className="px-7 py-5 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">간단 수정</h2>
-              <p className="text-[13px] text-gray-400 mt-0.5">이미지·카테고리 등 나머지 항목은 전체 수정 페이지에서 변경하세요.</p>
+              <h2 className="text-xl font-bold text-gray-900">퀵수정</h2>
+              <p className="text-[13px] text-gray-400 mt-0.5 truncate">{quickEditTarget.name} — 색상·사이즈·브랜드만 빠르게 변경합니다.</p>
             </div>
             <div className="px-7 py-6 space-y-5">
               <div>
-                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">상품명</label>
-                <input value={quickEditName} onChange={(e) => setQuickEditName(e.target.value)}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">판매가</label>
-                <input value={quickEditPrice} onChange={(e) => setQuickEditPrice(e.target.value)}
-                  inputMode="numeric" placeholder="예: 39,000원"
-                  className="w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">상태</label>
-                <select value={quickEditStatus} onChange={(e) => setQuickEditStatus(e.target.value)}
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">브랜드</label>
+                <select value={quickEditBrand} onChange={(e) => setQuickEditBrand(e.target.value)}
                   className="w-full border border-gray-200 px-3 py-2 text-sm bg-white rounded focus:outline-none focus:border-[#303236]">
-                  {STATUS_OPTIONS.filter((s) => s !== "전체").map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="">선택 안 함</option>
+                  {brandList.map((b) => <option key={b} value={b}>{b}</option>)}
+                  {quickEditBrand && !brandList.includes(quickEditBrand) && <option value={quickEditBrand}>{quickEditBrand}</option>}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">사이즈</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {QE_CLOTHING_SIZE_PRESETS.map((size) => {
+                    const active = quickEditSizes.includes(size);
+                    return (
+                      <button key={size} type="button" onClick={() => qeToggleSize(size)}
+                        className={`min-w-[40px] px-2.5 py-1 text-xs border font-semibold rounded transition-colors ${
+                          active ? "bg-[#303236] text-white border-[#303236]" : "bg-white text-gray-300 border-gray-200 line-through"
+                        }`}>
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <input value={quickEditSizeInput} onChange={(e) => setQuickEditSizeInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); qeAddCustomSize(); } }}
+                    placeholder="직접 입력 후 Enter (예: 230,240)"
+                    className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+                  <button type="button" onClick={qeAddCustomSize}
+                    className="px-3 py-2 bg-[#303236] text-white text-xs rounded hover:bg-[#243d5e] transition-colors">추가</button>
+                </div>
+                {quickEditSizes.length > 0 && (
+                  <p className="text-xs text-gray-400 mt-1.5">선택된 사이즈: {quickEditSizes.join(", ")}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-gray-600 mb-1.5">색상</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {QE_COLOR_PRESETS.map((preset) => {
+                    const selected = quickEditColors.some((c) => c.name === preset.name);
+                    return (
+                      <button key={preset.name} type="button" onClick={() => qeToggleColor(preset)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 border text-xs rounded transition-colors ${
+                          selected ? "border-[#E5541B] bg-orange-50 font-semibold text-gray-800" : "border-gray-200 text-gray-600 hover:border-gray-400"
+                        }`}>
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.hex }} />
+                        {preset.name}
+                        {selected && <span className="text-[#E5541B] font-bold">✓</span>}
+                      </button>
+                    );
+                  })}
+                  {qeColorDropdownOptions.length > 0 && (
+                    <div className="relative">
+                      <button type="button" onClick={() => setQeColorDropdownOpen((v) => !v)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#303236] text-[#303236] text-xs rounded hover:border-[#E5541B] hover:text-[#E5541B] transition-colors">
+                        자주 쓴 색상
+                        <span className="text-gray-400">{qeColorDropdownOpen ? "▲" : "▼"}</span>
+                      </button>
+                      {qeColorDropdownOpen && (
+                        <div className="absolute z-20 mt-1 left-0 w-52 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                          {qeColorDropdownOptions.map((opt) => {
+                            const selected = quickEditColors.some((c) => c.name === opt.name);
+                            return (
+                              <button key={opt.name} type="button" onClick={() => { qeToggleColor(opt); setQeColorDropdownOpen(false); }}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-gray-50 last:border-0 ${
+                                  selected ? "bg-orange-50 font-semibold text-gray-800" : "text-gray-600 hover:bg-gray-50"
+                                }`}>
+                                <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: opt.hex }} />
+                                <span className="flex-1">{opt.name}</span>
+                                {selected && <span className="text-[#E5541B] font-bold">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <input value={quickEditColorName} onChange={(e) => setQuickEditColorName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); qeAddCustomColor(); } }}
+                    placeholder="커스텀 색상명 (예: 형광그린)"
+                    className="flex-1 border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-[#303236]" />
+                  <input type="color" value={quickEditColorHex} onChange={(e) => setQuickEditColorHex(e.target.value)}
+                    className="w-10 h-9 border border-gray-200 cursor-pointer rounded p-0.5" />
+                  <button type="button" onClick={qeAddCustomColor}
+                    className="px-3 py-2 bg-[#303236] text-white text-xs rounded hover:bg-[#243d5e] transition-colors">추가</button>
+                </div>
+                {quickEditColors.filter((c) => !QE_COLOR_PRESETS.some((p) => p.name === c.name)).length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {quickEditColors.filter((c) => !QE_COLOR_PRESETS.some((p) => p.name === c.name)).map((c) => (
+                      <div key={c.name} className="flex items-center gap-1.5 border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs rounded">
+                        <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: c.hex }} />
+                        {c.name}
+                        <button type="button" onClick={() => qeRemoveColor(c.name)} className="text-gray-400 hover:text-red-500 ml-0.5">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Link href={`/admin/products/${quickEditTarget.id}/edit`} onClick={closeQuickEdit}
                 className="text-xs text-[#303236] underline underline-offset-2 hover:text-[#E5541B] inline-block">
                 전체 수정 페이지 열기 ↗
@@ -1359,7 +1525,7 @@ export default function AdminProductsPage() {
             <div className="px-7 py-5 border-t border-gray-200 flex gap-3 justify-end">
               <button onClick={closeQuickEdit}
                 className="px-6 py-2.5 border border-gray-200 text-[15px] text-gray-600 hover:border-gray-400 rounded">취소</button>
-              <button onClick={saveQuickEdit} disabled={quickEditSaving || !quickEditName.trim()}
+              <button onClick={saveQuickEdit} disabled={quickEditSaving}
                 className="px-6 py-2.5 bg-[#E5541B] text-white text-[15px] font-bold hover:bg-[#e04500] disabled:opacity-50 rounded">
                 {quickEditSaving ? "저장 중..." : "저장"}
               </button>
