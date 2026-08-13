@@ -3,35 +3,17 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
-import { DEFAULT_SEARCH, type SearchConfig } from "@/lib/header-search";
 
-export default function MobileProductNav({ search = DEFAULT_SEARCH }: { search?: SearchConfig }) {
+export default function MobileProductNav() {
   const router = useRouter();
   const { count } = useCart();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  // 검색창 안내문구를 관리자가 등록한 여러 문구로 순환 노출 — Header.tsx와 동일한 동작
-  const [phraseIdx, setPhraseIdx] = useState(0);
 
   useEffect(() => {
     if (searchOpen) inputRef.current?.focus();
   }, [searchOpen]);
-
-  // 관리자가 고른 목록(프로모션 문구 vs 검색 키워드)만 순환 대상으로 삼는다 — Header.tsx와 동일한 동작
-  const rotationList = search.rotationSource === "display" ? search.displayPhrases : search.popularTerms;
-
-  useEffect(() => {
-    if (!searchOpen || rotationList.length === 0) return;
-    const id = setInterval(() => {
-      setPhraseIdx((i) => (i + 1) % rotationList.length);
-    }, 3000);
-    return () => clearInterval(id);
-  }, [searchOpen, rotationList]);
-
-  const rotatingPlaceholder = rotationList.length > 0
-    ? rotationList[phraseIdx % rotationList.length]
-    : search.placeholder;
 
   const submitSearch = () => {
     const q = query.trim();
@@ -62,9 +44,9 @@ export default function MobileProductNav({ search = DEFAULT_SEARCH }: { search?:
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={rotatingPlaceholder}
+            placeholder=""
             aria-label="검색어 입력"
-            className="w-full text-[#303236] placeholder-gray-400 bg-transparent outline-none border-b border-gray-300 focus:border-[#303236] py-1 transition-colors"
+            className="w-full text-gray-600 placeholder-gray-400 bg-transparent outline-none border-b border-gray-300 focus:border-[#303236] py-1 transition-colors"
             style={{ fontSize: "16px" }}
             onKeyDown={(e) => {
               if (e.key === "Enter") submitSearch();

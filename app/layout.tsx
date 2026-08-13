@@ -113,7 +113,6 @@ export default async function RootLayout({
                 <Header
                   navItems={visibleNavItems}
                   logo={logo}
-                  search={search}
                   topbarItems={topbar.enabled ? topbar.items : []}
                   studioEnabled={studio?.enabled ?? true}
                 />

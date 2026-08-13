@@ -349,7 +349,7 @@ export default function ProductDetailClient({
         {/* 피팅 리스트 안내 — 버튼 바로 아래, 한 줄로 간략히 */}
         <Link
           href="/cart"
-          className="block bg-gray-50 px-3 py-2 border-l-2 border-gray-200 text-[11px] text-gray-500 hover:text-[#E5541B] transition-colors truncate"
+          className="hidden md:block bg-gray-50 px-3 py-2 border-l-2 border-gray-200 text-[11px] text-gray-500 hover:text-[#E5541B] transition-colors truncate"
         >
           <span className="text-[#E5541B]">♥</span> 피팅 리스트 : 원하는 제품을 담아두고 매장 방문 시 활용해 보세요.
         </Link>

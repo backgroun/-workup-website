@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type CatEntry = { main: string; sub: string };
 
@@ -8,12 +9,20 @@ type CatEntry = { main: string; sub: string };
 // "+N개 카테고리" 토글로 나머지를 펼쳐볼 수 있게 한다.
 export default function ProductBreadcrumb({ cats }: { cats: CatEntry[] }) {
   const [expanded, setExpanded] = useState(false);
+  const [query, setQuery] = useState("");
+  const router = useRouter();
   const [primary, ...rest] = cats;
 
   if (!primary) return null;
 
   const catHref = (c: CatEntry) =>
     `/products?category=${encodeURIComponent(c.main)}${c.sub ? `&sub=${encodeURIComponent(c.sub)}` : ""}`;
+
+  const submitSearch = () => {
+    const q = query.trim();
+    if (!q) return;
+    router.push(`/products?q=${encodeURIComponent(q)}`);
+  };
 
   return (
     <nav className="max-w-screen-2xl mx-auto px-8 py-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-400 tracking-wide">
@@ -42,6 +51,25 @@ export default function ProductBreadcrumb({ cats }: { cats: CatEntry[] }) {
           ))}
         </div>
       )}
+
+      {/* 검색 — PC 전용, 박스 없이 밑줄만, 카테고리 행 오른쪽 끝에 정렬 */}
+      <div className="hidden md:flex items-center gap-2 ml-auto flex-shrink-0 border-b border-gray-300 pb-1">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") submitSearch(); }}
+          aria-label="검색어 입력"
+          className="w-48 text-[12px] text-gray-600 bg-transparent outline-none"
+        />
+        <button type="button" onClick={submitSearch} aria-label="검색 실행"
+          className="text-gray-400 hover:text-[#E5541B] transition-colors flex-shrink-0">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+        </button>
+      </div>
     </nav>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import ProductsGrid, { type CatItem } from "@/components/ProductsGrid";
 import Hero from "@/components/Hero";
+import SearchBar from "@/components/SearchBar";
 import JsonLd from "@/components/JsonLd";
 import { createAdminClient } from "@/lib/supabase-server";
 import { siteUrl, absoluteUrl } from "@/lib/site";
+import { getSearchConfig } from "@/lib/header-search-server";
 
 export const metadata: Metadata = {
   title: "PRODUCTS — 제품 | WORKUP",
@@ -42,12 +44,13 @@ const collectionLd = {
 };
 
 export default async function ProductsPage() {
-  const initialCats = await getCategories();
+  const [initialCats, search] = await Promise.all([getCategories(), getSearchConfig()]);
   return (
     <main>
       <JsonLd data={collectionLd} />
       {/* 상단 상품 비주얼 슬라이더 (slide_type="product") — 슬라이드가 없으면 표시되지 않음 */}
       <Hero slideType="product" />
+      <SearchBar search={search} />
       <ProductsGrid initialCats={initialCats} />
     </main>
   );
