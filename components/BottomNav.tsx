@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 import { useCart } from "@/contexts/CartContext";
+import { BRANDS } from "@/lib/brands-data";
 
 type MemberSession = { name: string; grade: string } | null;
 
@@ -15,6 +16,7 @@ export default function BottomNav({
   studioEnabled?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [brandsExpanded, setBrandsExpanded] = useState(false);
   const pathname = usePathname();
   // 상단 헤더의 회원 아이콘을 모바일에서는 이 하단 '마이' 탭으로 대체한다.
   const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
@@ -33,6 +35,7 @@ export default function BottomNav({
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setBrandsExpanded(false);
     }
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
@@ -99,37 +102,97 @@ export default function BottomNav({
               </Link>
             </div>
           )}
-          {navItems.map((item, i) => (
-            <div
-              key={item.id}
-              className="border-b border-gray-100 last:border-0 transition-[opacity,transform] duration-300 ease-out"
-              style={{
-                transitionDelay: menuOpen ? `${i * 45 + 120}ms` : "0ms",
-                opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? "translateY(0)" : "translateY(10px)",
-              }}
-            >
-              <Link
-                href={item.href}
-                target={item.newTab ? "_blank" : undefined}
-                rel={item.newTab ? "noopener noreferrer" : undefined}
-                className="flex items-center justify-between py-4 text-[#303236] hover:text-[#E5541B] active:text-[#E5541B] transition-[color,transform] active:scale-[0.97]"
-                onClick={() => setMenuOpen(false)}
+          {navItems.map((item, i) => {
+            const isBrands = item.label.toUpperCase() === "BRANDS";
+            return (
+              <div
+                key={item.id}
+                className="border-b border-gray-100 last:border-0 transition-[opacity,transform] duration-300 ease-out"
+                style={{
+                  transitionDelay: menuOpen ? `${i * 45 + 120}ms` : "0ms",
+                  opacity: menuOpen ? 1 : 0,
+                  transform: menuOpen ? "translateY(0)" : "translateY(10px)",
+                }}
               >
-                <span className="flex items-baseline gap-3">
-                  <span className="text-[13px] font-semibold tracking-[0.15em]">{item.label}</span>
-                  {item.labelKo && (
-                    <span className="text-[11px] font-normal tracking-normal text-gray-400">
-                      <span className="text-gray-300 mr-1">/</span>{item.labelKo}
+                {isBrands ? (
+                  /* BRANDS — 아코디언 */
+                  <div>
+                    <button
+                      onClick={() => setBrandsExpanded((v) => !v)}
+                      className="flex items-center justify-between w-full py-4 text-[#303236] active:text-[#E5541B] transition-colors"
+                    >
+                      <span className="flex items-baseline gap-3">
+                        <span className="text-[13px] font-semibold tracking-[0.15em]">BRANDS</span>
+                        {item.labelKo && (
+                          <span className="text-[11px] font-normal tracking-normal text-gray-400">
+                            <span className="text-gray-300 mr-1">/</span>{item.labelKo}
+                          </span>
+                        )}
+                      </span>
+                      <svg
+                        className={`w-3.5 h-3.5 text-gray-300 transition-transform duration-200 ${brandsExpanded ? "rotate-90" : ""}`}
+                        fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                    {brandsExpanded && (
+                      <div className="pb-3">
+                        <Link
+                          href="/catalog"
+                          onClick={() => { setBrandsExpanded(false); setMenuOpen(false); }}
+                          className="block text-[11px] text-[#E5541B] font-medium tracking-wide py-2 border-t border-gray-50"
+                        >
+                          브랜드 전체 보기 →
+                        </Link>
+                        {BRANDS.map((brand) => (
+                          <Link
+                            key={brand.id}
+                            href={brand.href}
+                            onClick={() => { setBrandsExpanded(false); setMenuOpen(false); }}
+                            className="flex items-center gap-3 py-3 border-t border-gray-50 active:bg-gray-50 transition-colors"
+                          >
+                            <span className="text-[9px] font-semibold text-[#E5541B] flex-shrink-0 w-4">
+                              {brand.index}
+                            </span>
+                            <div>
+                              <div className="text-[12px] font-semibold tracking-[0.10em] text-[#303236]">
+                                {brand.name}
+                              </div>
+                              <div className="text-[9px] text-gray-400 tracking-[0.12em] uppercase mt-0.5">
+                                {brand.positioning}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* 일반 링크 */
+                  <Link
+                    href={item.href}
+                    target={item.newTab ? "_blank" : undefined}
+                    rel={item.newTab ? "noopener noreferrer" : undefined}
+                    className="flex items-center justify-between py-4 text-[#303236] hover:text-[#E5541B] active:text-[#E5541B] transition-[color,transform] active:scale-[0.97]"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <span className="flex items-baseline gap-3">
+                      <span className="text-[13px] font-semibold tracking-[0.15em]">{item.label}</span>
+                      {item.labelKo && (
+                        <span className="text-[11px] font-normal tracking-normal text-gray-400">
+                          <span className="text-gray-300 mr-1">/</span>{item.labelKo}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
-                <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
-                </svg>
-              </Link>
-            </div>
-          ))}
+                    <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </nav>
       </div>
 
@@ -176,19 +239,6 @@ export default function BottomNav({
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
             </svg>
             <span className="text-[10px] font-semibold leading-none tracking-tight">홈</span>
-          </Link>
-
-          {/* 상품 */}
-          <Link
-            href="/products"
-            className="flex-1 flex flex-col items-center justify-center gap-1 text-[#666666] touch-manipulation transition-[background-color,transform] active:scale-95 active:bg-gray-100"
-            aria-label="상품"
-            onClick={() => setMenuOpen(false)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z" />
-            </svg>
-            <span className="text-[10px] font-semibold leading-none tracking-tight">상품</span>
           </Link>
 
           {/* 매장 */}

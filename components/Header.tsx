@@ -8,6 +8,9 @@ import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
 import { DEFAULT_TOPBAR, safeHref, type TopbarItem } from "@/lib/topbar";
 import { FITTING_LIST_KEY } from "@/contexts/CartContext";
+import BrandsMegaMenu from "@/components/BrandsMegaMenu";
+import type { MegaBrandsConfig } from "@/lib/mega-brands-types";
+
 
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["600"] });
@@ -19,15 +22,33 @@ export default function Header({
   logo = DEFAULT_LOGO,
   topbarItems = DEFAULT_TOPBAR.items,
   studioEnabled = true,
+  megaBrandsConfig,
 }: {
   navItems?: NavMenuItem[];
   logo?: LogoConfig;
   topbarItems?: TopbarItem[];
   studioEnabled?: boolean;
+  megaBrandsConfig?: MegaBrandsConfig | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
   const headerRef = useRef<HTMLElement>(null);
+
+  // ── BRANDS 메가메뉴 상태 ──────────────────────────────────────────────────
+  const [brandsOpen, setBrandsOpen] = useState(false);
+  const brandsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openBrands = () => {
+    if (brandsTimerRef.current) clearTimeout(brandsTimerRef.current);
+    setBrandsOpen(true);
+  };
+  const closeBrandsDelayed = () => {
+    brandsTimerRef.current = setTimeout(() => setBrandsOpen(false), 120);
+  };
+  const closeBrandsNow = () => {
+    if (brandsTimerRef.current) clearTimeout(brandsTimerRef.current);
+    setBrandsOpen(false);
+  };
   const router = useRouter();
   const pathname = usePathname();
   // 모바일 상품 상세 페이지에서는 MobileProductNav가 대신 담당
@@ -77,6 +98,22 @@ export default function Header({
     return () => ro.disconnect();
   }, []);
 
+  // ESC 키 + 외부 클릭으로 BRANDS 메가메뉴 닫기
+  useEffect(() => {
+    if (!brandsOpen) return;
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeBrandsNow(); };
+    const handleClick = (e: MouseEvent) => {
+      if (!headerRef.current?.contains(e.target as Node)) closeBrandsNow();
+    };
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener("mousedown", handleClick);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brandsOpen]);
+
   const handleLogout = async () => {
     await fetch("/api/member/logout", { method: "POST" });
     // 찜은 계정에 저장되므로, 이 기기의 캐시는 지워 다음 사용자에게 노출되지 않게 한다.
@@ -85,6 +122,11 @@ export default function Header({
     router.push("/");
     router.refresh();
   };
+
+  // 관리자 헤더 메뉴에서 label이 "BRANDS"인 항목이 노출 상태면 메가메뉴 활성화.
+  // 나머지 항목은 기존 링크로 그대로 렌더링한다.
+  const brandsItem = navItems.find((item) => item.label.toUpperCase() === "BRANDS");
+  const regularNavItems = navItems.filter((item) => item.label.toUpperCase() !== "BRANDS");
 
   // ── 로고 / 내비게이션 / 가맹·제휴문의 / 로그인 행 ──
   const topRow = (
@@ -98,12 +140,13 @@ export default function Header({
 
         {/* 데스크탑 내비게이션 */}
         <nav className="hidden md:flex items-center gap-7 flex-1 justify-start ml-[60px]">
-          {navItems.map((item) => (
+          {regularNavItems.map((item) => (
             <Link
               key={item.id}
               href={item.href}
               target={item.newTab ? "_blank" : undefined}
               rel={item.newTab ? "noopener noreferrer" : undefined}
+              onMouseEnter={brandsItem ? closeBrandsNow : undefined}
               className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               style={{ fontWeight: 650 }}
             >
@@ -126,6 +169,37 @@ export default function Header({
               )}
             </Link>
           ))}
+
+          {/* ── BRANDS 메가메뉴 트리거 — 관리자 헤더 메뉴에서 BRANDS 항목 노출 시 활성화 ── */}
+          {brandsItem && (
+            <button
+              onMouseEnter={openBrands}
+              onMouseLeave={closeBrandsDelayed}
+              className={`group grid place-items-center whitespace-nowrap transition-colors ${
+                brandsOpen ? "text-[#E5541B]" : white ? "text-white" : "text-[#303236]"
+              }`}
+              style={{ fontWeight: 650 }}
+              aria-expanded={brandsOpen}
+              aria-haspopup="true"
+            >
+              <span
+                style={{ gridArea: "1 / 1" }}
+                className={`${oxanium.className} text-[17px] leading-none tracking-wide transition-opacity duration-200 group-hover:opacity-0 ${brandsOpen ? "opacity-0" : ""}`}
+              >
+                BRANDS
+              </span>
+              <span
+                style={{ gridArea: "1 / 1", fontWeight: 700 }}
+                className={`text-[14px] leading-none tracking-tighter transition-opacity duration-200 group-hover:opacity-100 ${
+                  brandsOpen
+                    ? "opacity-100 text-[#E5541B]"
+                    : `opacity-0 ${white ? "text-white/80" : "text-gray-500"}`
+                }`}
+              >
+                브랜드
+              </span>
+            </button>
+          )}
 
           {/* 티셔츠 꾸미기 스튜디오 — 관리자에서 활성화 시 노출 */}
           {studioEnabled && (
@@ -181,17 +255,36 @@ export default function Header({
     </div>
   );
 
+  // BRANDS 메가메뉴 — 두 header 반환부에서 공통으로 쓰이는 패널
+  const brandsMegaPanel = brandsItem ? (
+    <div
+      className={`absolute top-full left-0 right-0 z-40 transition-[opacity,transform] duration-200 ease-out ${
+        brandsOpen
+          ? "opacity-100 translate-y-0 pointer-events-auto"
+          : "opacity-0 -translate-y-[6px] pointer-events-none"
+      }`}
+    >
+      <BrandsMegaMenu
+          onMouseEnter={openBrands}
+          onMouseLeave={closeBrandsDelayed}
+          brands={megaBrandsConfig?.brands}
+          settings={megaBrandsConfig?.settings}
+        />
+    </div>
+  ) : null;
+
   // 스토리 페이지의 히어로 오버레이 헤더는 탑바 바로 아래에서 겹치는 고정 헤더로 표시한다.
   if (overlay) {
     return (
       <header
         ref={headerRef}
-        className={`fixed left-0 right-0 z-50 transition-colors duration-300 ${
+        className={`fixed left-0 right-0 z-50 transition-colors duration-300 relative ${
           scrolled ? "bg-white border-b border-gray-200 shadow-sm" : "bg-transparent border-b border-transparent"
         }${hideOnMobile ? " hidden md:block" : ""}`}
         style={{ top: "var(--wu-topbar-h, 36px)" }}
       >
         {topRow}
+        {brandsMegaPanel}
       </header>
     );
   }
@@ -199,10 +292,11 @@ export default function Header({
   return (
     <header
       ref={headerRef}
-      className={`md:sticky z-50 bg-white border-b border-gray-200${hideOnMobile ? " hidden md:block" : ""}`}
+      className={`md:sticky z-50 bg-white border-b border-gray-200 relative${hideOnMobile ? " hidden md:block" : ""}`}
       style={{ top: "var(--wu-topbar-h, 36px)" }}
     >
       {topRow}
+      {brandsMegaPanel}
     </header>
   );
 }

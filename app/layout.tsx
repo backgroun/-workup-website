@@ -13,6 +13,7 @@ import { getHeaderNavConfig } from "@/lib/header-nav-server";
 import { getLogoConfig } from "@/lib/logo-server";
 import { getSearchConfig } from "@/lib/header-search-server";
 import { getStudioSettings } from "@/lib/studio-server";
+import { getMegaBrandsConfig } from "@/lib/mega-brands-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
 import ImageProtection from "@/components/ImageProtection";
@@ -76,11 +77,11 @@ export default async function RootLayout({
   // 사이트 헤더·푸터·팝업 없이 단독으로 렌더링한다.
   const hideChrome = isAdmin || pathname.startsWith("/b/") || pathname.startsWith("/notices");
 
-  const [topbar, footer, headerNav, logo, search, studio] = hideChrome
-    ? [null, null, null, null, null, null]
+  const [topbar, footer, headerNav, logo, search, studio, megaBrands] = hideChrome
+    ? [null, null, null, null, null, null, null]
     : await Promise.all([
         getTopbarConfig(), getFooterConfig(), getHeaderNavConfig(), getLogoConfig(), getSearchConfig(),
-        getStudioSettings(),
+        getStudioSettings(), getMegaBrandsConfig(),
       ]);
 
   // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
@@ -115,6 +116,7 @@ export default async function RootLayout({
                   logo={logo}
                   topbarItems={topbar.enabled ? topbar.items : []}
                   studioEnabled={studio?.enabled ?? true}
+                  megaBrandsConfig={megaBrands}
                 />
               )}
               <div className={hideChrome ? "flex-1" : "relative flex-1"}>

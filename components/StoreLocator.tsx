@@ -163,6 +163,7 @@ export default function StoreLocator({
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [onlineExpanded, setOnlineExpanded] = useState(false);
   const [selectedSido, setSelectedSido] = useState("");
   const [selectedSigungu, setSelectedSigungu] = useState("");
   // 매장 목록을 한 번에 다 그리면(150개+) 무겁고 스크롤이 길어져서, "더보기"로 점진적으로 늘려 보여준다.
@@ -606,6 +607,56 @@ export default function StoreLocator({
 
         {/* ── 매장 목록 ── */}
         <div ref={listRef} className="space-y-2 scroll-mt-4">
+
+          {/* ── 온라인 스토어 (위치 무관, 항상 최상단 고정) ── */}
+          <div className="bg-white overflow-hidden border border-gray-200">
+            <button
+              className="w-full text-left px-4 py-4 flex items-center justify-between transition-colors hover:bg-gray-50"
+              onClick={() => setOnlineExpanded((v) => !v)}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-[#4b4e53] text-white">
+                  1
+                </span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm md:text-[15px] text-[#303236]">워크업 브랜드 스토어</span>
+                    <span className="text-[10px] px-2 py-0.5 font-semibold flex-shrink-0 border border-[#03C75A] text-[#03C75A]">온라인</span>
+                  </div>
+                  <p className="text-xs md:text-[13px] mt-0.5 truncate pr-2 text-gray-500">brand.naver.com/workup_offcial</p>
+                </div>
+              </div>
+              <svg
+                className={`w-4 h-4 flex-shrink-0 transition-transform text-gray-400 ${onlineExpanded ? "rotate-180" : ""}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {onlineExpanded && (
+              <div className="border-t border-gray-100 px-4 py-4">
+                <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 mb-4">
+                  <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <span>https://brand.naver.com/workup_offcial</span>
+                </div>
+                <a
+                  href="https://brand.naver.com/workup_offcial"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full md:w-auto items-center justify-center gap-1.5 bg-[#03C75A] text-white text-xs px-3 py-2 hover:bg-[#02b350] transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  네이버 브랜드스토어 방문
+                </a>
+              </div>
+            )}
+          </div>
+
           {displayList.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
           ) : (
@@ -641,7 +692,7 @@ export default function StoreLocator({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="w-7 h-7 flex items-center justify-center text-xs font-bold flex-shrink-0 bg-[#4b4e53] text-white">
-                        {index + 1}
+                        {index + 2}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
