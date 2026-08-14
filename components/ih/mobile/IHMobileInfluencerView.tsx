@@ -65,40 +65,45 @@ export default function IHMobileInfluencerView({ summary }: { summary: IHInfluen
           <p className="text-[12px] font-semibold text-slate-600 mb-2">WORKUP 협업</p>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
-              <p className="text-[16px] font-bold text-slate-900 tabular-nums">{summary.totalCollabs}</p>
+              <p className="text-[16px] font-bold text-slate-900 tabular-nums">{summary.sponsors.length}</p>
               <p className="text-[10.5px] text-slate-400">총 협업</p>
             </div>
             <div>
-              <p className="text-[16px] font-bold text-slate-900 tabular-nums">{summary.avgViews ?? "-"}</p>
-              <p className="text-[10.5px] text-slate-400">평균 조회수</p>
+              <p className="text-[16px] font-bold text-slate-900 tabular-nums">
+                {summary.performance.totalViews > 0 ? summary.performance.totalViews.toLocaleString() : "-"}
+              </p>
+              <p className="text-[10.5px] text-slate-400">총 조회수</p>
             </div>
             <div>
-              <p className="text-[16px] font-bold text-slate-900 tabular-nums">{summary.avgReactions ?? "-"}</p>
-              <p className="text-[10.5px] text-slate-400">평균 반응수</p>
+              <p className="text-[16px] font-bold text-slate-900 tabular-nums">
+                {summary.performance.totalReactions > 0 ? summary.performance.totalReactions.toLocaleString() : "-"}
+              </p>
+              <p className="text-[10.5px] text-slate-400">총 반응수</p>
             </div>
           </div>
         </section>
 
-        {/* 최근 협업 목록(최대 3건) — 협업유형/대상/일정/상태만, 비용·단가·메모 없음 */}
+        {/* 최근 지점 활동(최대 3건) — 협업유형/대상/일정만, 비용·메모 없음 */}
         <section>
-          <p className="text-[12px] font-semibold text-slate-600 mb-2">최근 협업</p>
-          {summary.recentActivities.length > 0 ? (
+          <p className="text-[12px] font-semibold text-slate-600 mb-2">최근 활동</p>
+          {summary.branchActivities.length > 0 ? (
             <ul className="rounded-lg border border-slate-200 divide-y divide-slate-100">
-              {summary.recentActivities.map((a, i) => (
-                <li key={i} className="px-3 py-2 text-[13px]">
+              {summary.branchActivities.slice(0, 3).map((a) => (
+                <li key={a.id} className="px-3 py-2 text-[13px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-700 truncate">{a.label}</span>
-                    <span className="flex-shrink-0 text-slate-400 tabular-nums">{fmtDate(a.date)}</span>
+                    <span className="text-slate-700 truncate">{a.branchName ?? "-"}</span>
+                    <span className="flex-shrink-0 text-slate-400 tabular-nums">{fmtDate(a.marketingDate)}</span>
                   </div>
                   <span className="text-[11px] text-slate-400">
-                    {ACTIVITY_TYPE_LABEL[a.type]} · {a.status}
+                    {ACTIVITY_TYPE_LABEL[a.activityType]}
+                    {a.description ? ` · ${a.description}` : ""}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-4 text-center">
-              <p className="text-[12px] text-slate-400">등록된 협업이 없습니다</p>
+              <p className="text-[12px] text-slate-400">등록된 활동이 없습니다</p>
             </div>
           )}
         </section>
