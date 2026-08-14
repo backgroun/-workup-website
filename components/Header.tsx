@@ -123,9 +123,11 @@ export default function Header({
     router.refresh();
   };
 
-  // 관리자 헤더 메뉴에서 label이 "BRANDS"인 항목이 노출 상태면 메가메뉴 활성화.
-  // 나머지 항목은 기존 링크로 그대로 렌더링한다.
-  const brandsItem = navItems.find((item) => item.label.toUpperCase() === "BRANDS");
+  // BRANDS 메가메뉴: megaBrandsConfig가 있고 settings.enabled !== false이면 활성.
+  // 헤더 nav에 label="BRANDS" 항목이 있으면 그것을 버튼으로 교체하고, 없으면 nav 끝에 추가한다.
+  // BRANDS 메가메뉴: megaBrandsConfig가 있고 settings.enabled !== false이면 활성.
+  // 헤더 nav에 BRANDS 항목이 있으면 버튼으로 교체하고, 없으면 nav 끝에 자동 추가된다.
+  const hasBrandsMega = !!megaBrandsConfig && megaBrandsConfig.settings?.enabled !== false;
   const regularNavItems = navItems.filter((item) => item.label.toUpperCase() !== "BRANDS");
 
   // ── 로고 / 내비게이션 / 가맹·제휴문의 / 로그인 행 ──
@@ -146,7 +148,7 @@ export default function Header({
               href={item.href}
               target={item.newTab ? "_blank" : undefined}
               rel={item.newTab ? "noopener noreferrer" : undefined}
-              onMouseEnter={brandsItem ? closeBrandsNow : undefined}
+              onMouseEnter={hasBrandsMega ? closeBrandsNow : undefined}
               className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#303236]"}`}
               style={{ fontWeight: 650 }}
             >
@@ -170,8 +172,8 @@ export default function Header({
             </Link>
           ))}
 
-          {/* ── BRANDS 메가메뉴 트리거 — 관리자 헤더 메뉴에서 BRANDS 항목 노출 시 활성화 ── */}
-          {brandsItem && (
+          {/* ── BRANDS 메가메뉴 트리거 — megaBrandsConfig가 있으면 항상 표시 ── */}
+          {hasBrandsMega && (
             <button
               onMouseEnter={openBrands}
               onMouseLeave={closeBrandsDelayed}
@@ -256,7 +258,7 @@ export default function Header({
   );
 
   // BRANDS 메가메뉴 — 두 header 반환부에서 공통으로 쓰이는 패널
-  const brandsMegaPanel = brandsItem ? (
+  const brandsMegaPanel = hasBrandsMega ? (
     <div
       className={`absolute top-full left-0 right-0 z-40 transition-[opacity,transform] duration-200 ease-out ${
         brandsOpen
