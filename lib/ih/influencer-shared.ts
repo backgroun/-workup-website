@@ -13,10 +13,9 @@ export const STATUS_LABEL: Record<IHInfluencerStatus, string> = {
 
 export type IHBranchActivityType = "GENERAL" | "INFLUENCER_VISIT";
 
-export const ACTIVITY_TYPE_LABEL: Record<"SPONSOR" | "VISIT" | "BRANCH", string> = {
-  SPONSOR: "제품 협찬",
-  VISIT: "방문 인플루언서",
-  BRANCH: "지점 마케팅",
+export const ACTIVITY_TYPE_LABEL: Record<IHBranchActivityType, string> = {
+  GENERAL: "일반 활동",
+  INFLUENCER_VISIT: "방문 인플루언서",
 };
 
 /** 채널 선택 Dropdown 우선 옵션 — "기타"는 직접 입력용. */
