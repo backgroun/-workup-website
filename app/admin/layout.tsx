@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import AdminShell from "@/components/AdminShell";
+import AdminShellGate from "@/components/AdminShellGate";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
 import { getAdminMember } from "@/lib/admin-auth";
 
@@ -45,7 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       {/* 본문 */}
       <div className="flex flex-1 overflow-hidden">
-        <AdminShell>{children}</AdminShell>
+        <AdminShellGate>{children}</AdminShellGate>
       </div>
     </div>
   );

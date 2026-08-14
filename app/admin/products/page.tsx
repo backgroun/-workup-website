@@ -12,7 +12,6 @@ const VIEW_KEY = "admin-products-view";
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 type SearchType = "상품명" | "상품코드" | "브랜드" | "제조사";
-type DisplayFilter = "전체" | "진열함" | "진열안함";
 type DatePreset = "전체" | "오늘" | "3일" | "7일" | "1개월" | "3개월" | "1년";
 type SortBy = "최종수정순" | "최신순" | "진열순" | "이름순";
 
@@ -47,8 +46,7 @@ function fmtDate(iso?: string) {
   return `${parts[0].slice(2)}.${parts[1]}.${parts[2]}`; // "26.06.15"
 }
 
-const DATE_PRESETS: DatePreset[] = ["오늘", "3일", "7일", "1개월", "3개월", "1년", "전체"];
-const STATUS_OPTIONS = ["전체", "판매중", "품절", "판매중지", "예약판매", "진열대기"];
+const DATE_PRESETS: DatePreset[] = ["오늘", "7일", "1개월"];
 const EXPOSE_OPTIONS: MainExpose[] = ["신상품", "추천상품", "베스트", "기획전"];
 // 제품목록 테이블에서 표시/숨김 토글 가능한 컬럼 (상품명은 항상 표시)
 const TOGGLE_COLS = ["상태", "브랜드", "품번", "가격", "카테고리", "색상", "사이즈", "최종수정"];
@@ -112,9 +110,12 @@ export default function AdminProductsPage() {
   const [datePreset, setDatePreset]   = useState<DatePreset>("전체");
   const [dateStart, setDateStart]     = useState<string>("");
   const [dateEnd, setDateEnd]         = useState<string>("");
-  const [displayFilter, setDisplayFilter] = useState<DisplayFilter>("전체");
+  const [dateRangeOpen, setDateRangeOpen] = useState(false); // "기간 선택" 버튼으로 시작~종료일 입력을 펼침
   const [statusFilter, setStatusFilter]   = useState<string>("전체");
   const [brandFilter, setBrandFilter]     = useState<string>("전체");
+  const [categoryFilter, setCategoryFilter]       = useState<string>("전체");
+  const [subCategoryFilter, setSubCategoryFilter] = useState<string>("전체");
+  const [sizeFilter, setSizeFilter]       = useState<string>("전체");
   // 지점 출고 패스에서 빠르게 임시등록된(정식 정보 미입력) 상품만 따로 걸러보기 — 일반 상품과 혼동 방지용
   const [tempOnlyFilter, setTempOnlyFilter] = useState(false);
   // products.registration_status 컬럼은 옛 상품에도 잘못 남아있을 수 있어(과거 ALTER TABLE 기본값 이슈),
@@ -144,9 +145,11 @@ export default function AdminProductsPage() {
     if (V.datePreset != null) setDatePreset(V.datePreset);
     if (V.dateStart != null) setDateStart(V.dateStart);
     if (V.dateEnd != null) setDateEnd(V.dateEnd);
-    if (V.displayFilter != null) setDisplayFilter(V.displayFilter);
     if (V.statusFilter != null) setStatusFilter(V.statusFilter);
     if (V.brandFilter != null) setBrandFilter(V.brandFilter);
+    if (V.categoryFilter != null) setCategoryFilter(V.categoryFilter);
+    if (V.subCategoryFilter != null) setSubCategoryFilter(V.subCategoryFilter);
+    if (V.sizeFilter != null) setSizeFilter(V.sizeFilter);
     if (V.sortBy != null) setSortBy(V.sortBy);
     if (V.perPage != null) setPerPage(V.perPage);
     if (V.page != null) setPage(Math.max(1, Math.floor(Number(V.page)) || 1));
@@ -195,6 +198,13 @@ export default function AdminProductsPage() {
   const [quickEditColorHex, setQuickEditColorHex] = useState("#303236");
   const [quickEditSaving, setQuickEditSaving] = useState(false);
   const [qeColorDropdownOpen, setQeColorDropdownOpen] = useState(false);
+
+  // 사이즈 필터 드롭다운 옵션 — 전체 상품에 실제로 쓰인 사이즈만 모아 표준 순서로 정렬
+  const sizeList = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) for (const s of p.sizes ?? []) if (s) set.add(s);
+    return qeSortSizes([...set]);
+  }, [products]);
 
   // 전체 상품에서 자주 쓴 색상 집계 (프리셋에 없는 이름 중 5회 이상 사용) — 상품등록 폼과 동일한 규칙
   const qeColorDropdownOptions = useMemo(() => {
@@ -336,10 +346,10 @@ export default function AdminProductsPage() {
       const prev = JSON.parse(sessionStorage.getItem(VIEW_KEY) || "{}");
       sessionStorage.setItem(VIEW_KEY, JSON.stringify({
         ...prev, searchType, searchQuery, applied, datePreset, dateStart, dateEnd,
-        displayFilter, statusFilter, brandFilter, sortBy, perPage, page,
+        statusFilter, brandFilter, categoryFilter, subCategoryFilter, sizeFilter, sortBy, perPage, page,
       }));
     } catch { /* noop */ }
-  }, [searchType, searchQuery, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, sortBy, perPage, page]);
+  }, [searchType, searchQuery, applied, datePreset, dateStart, dateEnd, statusFilter, brandFilter, categoryFilter, subCategoryFilter, sizeFilter, sortBy, perPage, page]);
 
   // 로드 완료 후 저장된 스크롤 위치 복원 (1회)
   useEffect(() => {
@@ -517,15 +527,23 @@ export default function AdminProductsPage() {
       });
     }
 
-    // 진열 상태
-    if (displayFilter === "진열함")   list = list.filter(p => DISPLAY_ON.includes(p.status ?? "판매중"));
-    if (displayFilter === "진열안함") list = list.filter(p => DISPLAY_OFF.includes(p.status ?? "판매중"));
-
     // 판매 상태
     if (statusFilter !== "전체") list = list.filter(p => (p.status ?? "판매중") === statusFilter);
 
     // 브랜드
     if (brandFilter !== "전체") list = list.filter(p => (p.brand ?? "") === brandFilter);
+
+    // 카테고리 (다중 카테고리(categories) 우선, 없으면 구버전 category/subCategory 사용)
+    if (categoryFilter !== "전체") {
+      list = list.filter(p => {
+        const raw = (p as Record<string, unknown>).categories as { main: string; sub: string }[] | undefined;
+        const entries = raw?.length ? raw : (p.category ? [{ main: p.category, sub: p.subCategory ?? "" }] : []);
+        return entries.some(c => c.main === categoryFilter && (subCategoryFilter === "전체" || c.sub === subCategoryFilter));
+      });
+    }
+
+    // 사이즈
+    if (sizeFilter !== "전체") list = list.filter(p => (p.sizes ?? []).includes(sizeFilter));
 
     // 임시등록만 보기
     if (tempOnlyFilter) list = list.filter(isTempRegistered);
@@ -539,7 +557,7 @@ export default function AdminProductsPage() {
     });
 
     return list;
-  }, [products, applied, datePreset, dateStart, dateEnd, displayFilter, statusFilter, brandFilter, tempOnlyFilter, isTempRegistered, sortBy]);
+  }, [products, applied, datePreset, dateStart, dateEnd, statusFilter, brandFilter, categoryFilter, subCategoryFilter, sizeFilter, tempOnlyFilter, isTempRegistered, sortBy]);
 
   const stats = useMemo(() => ({
     total:    filtered.length,
@@ -565,8 +583,9 @@ export default function AdminProductsPage() {
     setSearchQuery("");
     setSearchType("상품명");
     setApplied({ type: "상품명", query: "" });
-    setDisplayFilter("전체"); setStatusFilter("전체"); setBrandFilter("전체");
-    setDatePreset("전체"); setDateStart(""); setDateEnd("");
+    setStatusFilter("전체"); setBrandFilter("전체");
+    setCategoryFilter("전체"); setSubCategoryFilter("전체"); setSizeFilter("전체");
+    setDatePreset("전체"); setDateStart(""); setDateEnd(""); setDateRangeOpen(false);
     setTempOnlyFilter(false);
     setPage(1); setSelected(new Set());
   };
@@ -732,7 +751,7 @@ export default function AdminProductsPage() {
     else showMsg(`오류: ${d.error}`);
   };
 
-  const isFiltered = applied.query || displayFilter !== "전체" || statusFilter !== "전체" || brandFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd || tempOnlyFilter;
+  const isFiltered = applied.query || statusFilter !== "전체" || brandFilter !== "전체" || categoryFilter !== "전체" || sizeFilter !== "전체" || datePreset !== "전체" || dateStart || dateEnd || tempOnlyFilter;
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -812,9 +831,9 @@ export default function AdminProductsPage() {
       {/* ── 검색 & 필터 ──────────────────────────────────────────────────── */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         {/* 검색 분류 */}
-        <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 flex-wrap">
           <span className="text-[15px] font-semibold text-gray-600 w-24 shrink-0">검색 분류</span>
-          <div className="flex gap-2 flex-1">
+          <div className="flex gap-2 shrink-0">
             <select value={searchType} onChange={e => setSearchType(e.target.value as SearchType)}
               className="border border-gray-200 px-3 py-2 text-[15px] bg-white rounded w-32 focus:outline-none focus:border-[#303236]">
               {SEARCH_TYPES.map(t => <option key={t}>{t}</option>)}
@@ -823,7 +842,7 @@ export default function AdminProductsPage() {
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSearch()}
               placeholder={`${searchType}으로 검색...`}
-              className="flex-1 border border-gray-200 px-4 py-2 text-[15px] focus:outline-none focus:border-[#303236] rounded"
+              className="w-80 border border-gray-200 px-4 py-2 text-[15px] focus:outline-none focus:border-[#303236] rounded"
             />
             <button onClick={handleSearch}
               className="px-6 py-2 bg-[#303236] text-white text-[15px] font-semibold hover:bg-[#243d5e] rounded">검색</button>
@@ -834,59 +853,75 @@ export default function AdminProductsPage() {
                   : "border-gray-200 text-gray-400 hover:border-gray-300"
               }`}>초기화</button>
           </div>
+          <div className="flex items-center gap-2 shrink-0 ml-auto">
+            <span className="text-[15px] font-semibold text-gray-600">카테고리</span>
+            <select value={categoryFilter}
+              onChange={e => { setCategoryFilter(e.target.value); setSubCategoryFilter("전체"); setPage(1); }}
+              className="w-40 border border-gray-200 px-3 py-2 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
+              <option value="전체">전체</option>
+              {catList.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+            </select>
+            <select value={subCategoryFilter}
+              onChange={e => { setSubCategoryFilter(e.target.value); setPage(1); }}
+              disabled={categoryFilter === "전체"}
+              className="w-40 border border-gray-200 px-3 py-2 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236] disabled:bg-gray-50 disabled:text-gray-300">
+              <option value="전체">전체</option>
+              {(catList.find(c => c.name === categoryFilter)?.subs ?? []).map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
         </div>
 
-        {/* 상품 등록일 */}
-        <div className="flex items-center gap-3 px-6 py-3.5 border-b border-gray-100 flex-wrap">
+        {/* 상품 등록일 + 브랜드 + 사이즈 */}
+        <div className="flex items-center gap-3 px-6 py-3.5 flex-wrap">
           <span className="text-[15px] font-semibold text-gray-600 w-24 shrink-0">상품 등록일</span>
           <div className="flex items-center gap-1.5 flex-wrap">
             {DATE_PRESETS.map(preset => (
               <button key={preset} type="button"
-                onClick={() => { setDatePreset(preset); if (preset !== "전체") { setDateStart(""); setDateEnd(""); } setPage(1); }}
+                onClick={() => { setDatePreset(preset); setDateStart(""); setDateEnd(""); setDateRangeOpen(false); setPage(1); }}
                 className={`px-3.5 py-1.5 text-sm border rounded transition-colors ${
                   datePreset === preset
                     ? "bg-[#303236] text-white border-[#303236]"
                     : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
                 }`}>{preset}</button>
             ))}
+            <button type="button" onClick={() => setDateRangeOpen(v => !v)}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm border rounded transition-colors ${
+                dateRangeOpen || dateStart || dateEnd
+                  ? "bg-[#303236] text-white border-[#303236]"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-[#303236]"
+              }`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              기간 선택
+            </button>
           </div>
-          <div className="flex items-center gap-2 ml-1">
-            <input type="date" value={dateStart}
-              onChange={e => { setDateStart(e.target.value); setDatePreset("전체"); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
-            <span className="text-gray-400 text-sm">~</span>
-            <input type="date" value={dateEnd}
-              onChange={e => { setDateEnd(e.target.value); setDatePreset("전체"); setPage(1); }}
-              className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
-          </div>
-        </div>
-
-        {/* 진열 상태 + 판매 상태 */}
-        <div className="flex items-center gap-8 px-6 py-3.5 flex-wrap">
-          <div className="flex items-center gap-4">
-            <span className="text-[15px] font-semibold text-gray-600 w-24 shrink-0">진열 상태</span>
-            {(["전체", "진열함", "진열안함"] as DisplayFilter[]).map(f => (
-              <label key={f} className="flex items-center gap-1.5 cursor-pointer">
-                <input type="radio" name="disp" checked={displayFilter === f}
-                  onChange={() => { setDisplayFilter(f); setPage(1); }}
-                  className="accent-[#303236] w-4 h-4" />
-                <span className="text-[15px] text-gray-700">{f}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[15px] font-semibold text-gray-600">판매 상태</span>
-            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
-              {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-          <div className="flex items-center gap-3">
+          {dateRangeOpen && (
+            <div className="flex items-center gap-2">
+              <input type="date" value={dateStart}
+                onChange={e => { setDateStart(e.target.value); setDatePreset("전체"); setPage(1); }}
+                className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
+              <span className="text-gray-400 text-sm">~</span>
+              <input type="date" value={dateEnd}
+                onChange={e => { setDateEnd(e.target.value); setDatePreset("전체"); setPage(1); }}
+                className="border border-gray-200 px-2.5 py-1.5 text-[14px] rounded focus:outline-none focus:border-[#303236]" />
+            </div>
+          )}
+          <div className="flex items-center gap-3 ml-2">
             <span className="text-[15px] font-semibold text-gray-600">브랜드</span>
             <select value={brandFilter} onChange={e => { setBrandFilter(e.target.value); setPage(1); }}
               className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
               <option value="전체">전체</option>
               {brandList.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[15px] font-semibold text-gray-600">사이즈</span>
+            <select value={sizeFilter} onChange={e => { setSizeFilter(e.target.value); setPage(1); }}
+              className="border border-gray-200 px-3 py-1.5 text-[15px] bg-white rounded focus:outline-none focus:border-[#303236]">
+              <option value="전체">전체</option>
+              {sizeList.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
