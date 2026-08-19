@@ -86,6 +86,9 @@ export default async function RootLayout({
 
   // 관리자가 숨김 처리한 메뉴는 실제 사이트 노출에서만 제외한다(관리 화면에는 전체 노출).
   const visibleNavItems = headerNav?.items.filter((it) => it.isVisible !== false);
+  // BRANDS 아이템이 명시적으로 숨김(isVisible: false) 처리된 경우 mega menu도 함께 숨긴다.
+  const brandNavItem = headerNav?.items.find((it) => it.label.toUpperCase() === "BRANDS");
+  const effectiveMegaBrands = brandNavItem?.isVisible === false ? null : megaBrands;
 
   return (
     <html lang="ko">
@@ -116,7 +119,7 @@ export default async function RootLayout({
                   logo={logo}
                   topbarItems={topbar.enabled ? topbar.items : []}
                   studioEnabled={studio?.enabled ?? true}
-                  megaBrandsConfig={megaBrands}
+                  megaBrandsConfig={effectiveMegaBrands}
                 />
               )}
               <div className={hideChrome ? "flex-1" : "relative flex-1"}>
