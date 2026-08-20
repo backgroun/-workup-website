@@ -90,6 +90,8 @@ export default async function BrandPage({ params }: Props) {
 
   const latestCatalog = await getCatalog(brandName);
   const pdfUrl = latestCatalog?.pdf_url ?? "";
+  // react-pdf 클라이언트 fetch의 CORS 문제를 서버사이드 프록시로 우회
+  const proxyPdfUrl = pdfUrl ? `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}` : "";
 
   const toc: BrandTocItem[] = [];
   const hashtags = [brandPositioning, brandDescriptionKo].filter(Boolean);
@@ -175,7 +177,7 @@ export default async function BrandPage({ params }: Props) {
 
         {latestCatalog && pdfUrl ? (
           <BrandCatalogViewerWrapper
-            pdfUrl={pdfUrl}
+            pdfUrl={proxyPdfUrl}
             pageCount={latestCatalog.page_count}
             brandName={brandName}
             accentColor={brandAccentColor}

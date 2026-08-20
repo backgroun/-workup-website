@@ -11,7 +11,9 @@ export default function PdfDownloadButton({ pdfUrl, fileName }: { pdfUrl: string
   const [size, setSize] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(pdfUrl, { method: "HEAD" })
+    // HEAD 요청은 CORS 우회를 위해 프록시 경유
+    const proxyUrl = `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}`;
+    fetch(proxyUrl, { method: "HEAD" })
       .then((r) => {
         const cl = r.headers.get("content-length");
         if (cl) setSize(formatBytes(Number(cl)));
