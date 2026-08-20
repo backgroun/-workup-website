@@ -332,30 +332,6 @@ export default function BrandsAdminPage() {
                     </div>
                   </div>
 
-                  {/* 노출 설정 */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h2 className="text-[13px] font-bold text-gray-700 mb-3">노출 설정</h2>
-                    <div className="flex gap-6">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedBrand.megaMenuVisible}
-                          onChange={e => updateBrand(selectedBrand.id, { megaMenuVisible: e.target.checked })}
-                          className="w-4 h-4 accent-[#E5541B]"
-                        />
-                        <span className="text-[12px] text-gray-600">메가메뉴에 표시</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedBrand.brandPageVisible}
-                          onChange={e => updateBrand(selectedBrand.id, { brandPageVisible: e.target.checked })}
-                          className="w-4 h-4 accent-[#E5541B]"
-                        />
-                        <span className="text-[12px] text-gray-600">브랜드 페이지에 표시</span>
-                      </label>
-                    </div>
-                  </div>
                 </div>
               </div>
 

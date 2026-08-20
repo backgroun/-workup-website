@@ -30,7 +30,6 @@ export default function Header({
   studioEnabled?: boolean;
   megaBrandsConfig?: MegaBrandsConfig | null;
 }) {
-  const [scrolled, setScrolled] = useState(false);
   const [memberSession, setMemberSession] = useState<MemberSession>(undefined as unknown as MemberSession);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -53,10 +52,6 @@ export default function Header({
   const pathname = usePathname();
   // 모바일 상품 상세 페이지에서는 MobileProductNav가 대신 담당
   const hideOnMobile = /^\/products\/[^/]+$/.test(pathname ?? "");
-  // 스토리 페이지에서만 히어로 위 투명 오버레이 헤더(탑바는 다른 페이지와 동일하게 항상 노출 — 헤더만 탑바 바로 아래에서 겹친다).
-  // 클라이언트 경로 기준이라 soft navigation 시에도 정확히 갱신된다.
-  const overlay = pathname === "/story";
-
   useEffect(() => {
     fetch("/api/member/me")
       .then(r => r.json())
@@ -64,26 +59,7 @@ export default function Header({
       .catch(() => setMemberSession(null));
   }, [pathname]);
 
-  // overlay 모드: 히어로를 지나 스크롤하면 투명 → 흰 헤더로 전환.
-  // 데스크톱은 window, 모바일은 #scroll-root 가 스크롤되므로 둘 다 감지한다.
-  useEffect(() => {
-    if (!overlay) return;
-    const root = document.getElementById("scroll-root");
-    const onScroll = () => {
-      const y = window.scrollY || root?.scrollTop || 0;
-      setScrolled(y > 40);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    root?.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      root?.removeEventListener("scroll", onScroll);
-    };
-  }, [overlay]);
-
-  // 흰 글자(히어로 위 투명 상태). overlay 이면서 아직 스크롤 전.
-  const white = overlay && !scrolled;
+  const white = false;
 
   // 카탈로그 뷰어처럼 "화면 - 헤더 높이"를 계산하는 곳에서 쓸 수 있게 헤더 실측 높이를 CSS 변수로 공개한다.
   useEffect(() => {
@@ -274,22 +250,6 @@ export default function Header({
         />
     </div>
   ) : null;
-
-  // 스토리 페이지의 히어로 오버레이 헤더는 탑바 바로 아래에서 겹치는 고정 헤더로 표시한다.
-  if (overlay) {
-    return (
-      <header
-        ref={headerRef}
-        className={`fixed left-0 right-0 z-50 transition-colors duration-300 relative ${
-          scrolled ? "bg-white border-b border-gray-200 shadow-sm" : "bg-transparent border-b border-transparent"
-        }${hideOnMobile ? " hidden md:block" : ""}`}
-        style={{ top: "var(--wu-topbar-h, 36px)" }}
-      >
-        {topRow}
-        {brandsMegaPanel}
-      </header>
-    );
-  }
 
   return (
     <header

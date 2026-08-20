@@ -6,9 +6,11 @@ export type BrandCatalog = {
   pdf_file_id: string;     // R2 object key
   pdf_url: string;         // 원본 PDF (대체 보기용)
   page_count: number;
+  season?: string;          // 예: "2026 FW", "2025 SS" — 없으면 "카탈로그"로 표시
   thumbnail_url: string;   // 표지 썸네일 (현재 자동 생성 없음 — 카탈로그 뷰어 오픈 전)
   sort_order: number;
   is_visible: boolean;
+  created_at?: string;
 };
 
 export const EMPTY_BRAND_CATALOG: Omit<BrandCatalog, "id"> = {
@@ -17,6 +19,7 @@ export const EMPTY_BRAND_CATALOG: Omit<BrandCatalog, "id"> = {
   pdf_file_id: "",
   pdf_url: "",
   page_count: 0,
+  season: "",
   thumbnail_url: "",
   sort_order: 0,
   is_visible: true,

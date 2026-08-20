@@ -17,6 +17,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["react-pdf", "pdfjs-dist"],
   // 응답 헤더에서 x-powered-by 제거 (불필요한 정보 노출 차단)
   poweredByHeader: false,
   // 동적 페이지의 클라이언트 라우터 캐시 비활성화

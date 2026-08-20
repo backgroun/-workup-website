@@ -8,6 +8,15 @@ export type CatalogPageType = "image" | "cover" | "contents" | "divider";
 export type ContentsItem = { name: string; count: string; page: string };
 
 // 종류별 내용 (cover/contents/divider). image 페이지는 비어 있음({}).
+export type CatalogHotspot = {
+  x: number;      // 이미지 내 좌측에서 % (0-100)
+  y: number;      // 이미지 내 상단에서 % (0-100)
+  name: string;   // 제품명
+  desc?: string;  // 간단 설명
+  price?: string; // 가격 (예: "89,000원")
+  href?: string;  // 제품 상세 페이지 경로
+};
+
 export type CatalogPageData = {
   eyebrow?: string;            // 상단 영문 라벨 (cover/contents/divider 공통)
   bg?: string;                 // 배경색 hex (cover/divider)
@@ -17,6 +26,8 @@ export type CatalogPageData = {
   items?: ContentsItem[]; footer?: string;
   // divider (구분)
   no?: string; title?: string; desc?: string; count?: string;
+  // image 페이지 — 클릭 가능한 제품 핫스팟
+  hotspots?: CatalogHotspot[];
 };
 
 export type CatalogPage = {

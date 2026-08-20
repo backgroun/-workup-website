@@ -46,7 +46,7 @@ export async function uploadToR2(
 export async function getR2UploadUrl(
   key: string,
   contentType: string,
-  expiresInSeconds = 300
+  expiresInSeconds = 3600
 ): Promise<{ uploadUrl: string; publicUrl: string; key: string }> {
   const uploadUrl = await getSignedUrl(
     getClient(),

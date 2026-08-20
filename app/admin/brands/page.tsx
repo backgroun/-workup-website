@@ -348,25 +348,17 @@ export default function AdminCatalogPage() {
   return (
     <div className="space-y-6 h-full">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">브랜드 / 제조사 관리</h1>
-        <p className="text-base text-gray-400 mt-1">제품 등록 시 선택할 브랜드·제조사 목록을 관리합니다.</p>
+        <h1 className="text-3xl font-bold text-gray-900">브랜드 목록</h1>
+        <p className="text-base text-gray-400 mt-1">제품 등록 시 선택할 브랜드 목록을 관리합니다.</p>
       </div>
 
-      <FeaturedBrandSelector />
-
-      <div className="grid grid-cols-2 gap-6" style={{ height: "calc(100vh - 450px)" }}>
+      <div style={{ height: "calc(100vh - 200px)" }}>
         <Section
           title="브랜드 관리"
           desc="제품에 표시되는 브랜드 이름"
           apiPath="/api/admin/brands"
           addPlaceholder="브랜드명 입력 (예: WORKUP)"
           withAlias
-        />
-        <Section
-          title="제조사 관리"
-          desc="제품 스펙에 표시되는 제조사"
-          apiPath="/api/admin/manufacturers"
-          addPlaceholder="제조사명 입력 (예: 워크업코리아)"
         />
       </div>
     </div>

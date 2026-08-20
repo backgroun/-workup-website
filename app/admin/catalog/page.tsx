@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   EMPTY_CATALOG_PAGE, emptyDataFor, CATALOG_TYPE_LABEL,
-  type CatalogPage, type CatalogPageType, type CatalogPageData, type ContentsItem,
+  type CatalogPage, type CatalogPageType, type CatalogPageData, type ContentsItem, type CatalogHotspot,
 } from "@/data/catalog";
 import CatalogPageView from "@/components/CatalogPageView";
 
@@ -21,6 +21,7 @@ export default function AdminCatalogPage() {
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
+  const [selectedHotspot, setSelectedHotspot] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   // 종류 전환 시 종류별 입력 내용 보관 → 왕복해도 복원(데이터 유실 방지)
@@ -56,6 +57,7 @@ export default function AdminCatalogPage() {
 
   const openNew = () => {
     dataCacheRef.current = {};
+    setSelectedHotspot(null);
     setEditing({ id: "", ...EMPTY_CATALOG_PAGE, sort_order: pages.length });
     setIsNew(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
@@ -63,6 +65,7 @@ export default function AdminCatalogPage() {
 
   const openEdit = (page: CatalogPage) => {
     dataCacheRef.current = {};
+    setSelectedHotspot(null);
     // 구버전 행 방어: page_type/data 누락 시 기본값
     setEditing({ ...page, page_type: page.page_type ?? "image", data: page.data ?? {} });
     setIsNew(false);
@@ -72,12 +75,14 @@ export default function AdminCatalogPage() {
   const set = (key: keyof CatalogPage, value: string | boolean | number | null) => {
     setEditing((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
-  const setType = (type: CatalogPageType) =>
+  const setType = (type: CatalogPageType) => {
+    setSelectedHotspot(null);
     setEditing((prev) => {
       if (!prev || prev.page_type === type) return prev;
       dataCacheRef.current[prev.page_type] = prev.data; // 현재 종류 내용 보관
       return { ...prev, page_type: type, data: dataCacheRef.current[type] ?? emptyDataFor(type) };
     });
+  };
   const setData = (patch: Partial<CatalogPageData>) =>
     setEditing((prev) => (prev ? { ...prev, data: { ...(prev.data ?? {}), ...patch } } : prev));
   const updItems = (fn: (a: ContentsItem[]) => ContentsItem[]) =>
@@ -189,6 +194,11 @@ export default function AdminCatalogPage() {
   };
 
   const d = editing?.data ?? {};
+  const hotspots: CatalogHotspot[] = (d.hotspots ?? []) as CatalogHotspot[];
+  const setHotspot = (i: number, patch: Partial<CatalogHotspot>) =>
+    setData({ hotspots: hotspots.map((h, idx) => idx === i ? { ...h, ...patch } : h) });
+  const addHotspot = () => { setData({ hotspots: [...hotspots, { x: 50, y: 50, name: "" }] }); setSelectedHotspot(hotspots.length); };
+  const removeHotspot = (i: number) => { setData({ hotspots: hotspots.filter((_, idx) => idx !== i) }); setSelectedHotspot(null); };
 
   return (
     <div>
@@ -308,7 +318,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                           <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${page.is_visible ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                         </button>
                       </div>
-                      {page.link_url && <p className="text-[10px] text-[#E5541B] mt-0.5 truncate">↗ {page.link_label || page.link_url}</p>}
+                      {(page.data?.hotspots?.length ?? 0) > 0 && <p className="text-[10px] text-[#E5541B] mt-0.5">📍 핫스팟 {page.data!.hotspots!.length}개</p>}
                       <div className="flex items-center gap-1.5 mt-2">
                         <button onClick={() => openEdit(page)} className="text-[11px] font-medium text-slate-600 border border-slate-200 px-2.5 py-1 hover:bg-slate-100 transition-colors rounded">수정</button>
                         <button onClick={() => handleDuplicate(page)} title="복제" className="text-[11px] font-medium text-blue-500 border border-blue-200 px-2.5 py-1 hover:bg-blue-50 transition-colors rounded">복제</button>
@@ -380,12 +390,54 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                       <Field label="제목 (선택)" hint="이미지 하단 캡션. 비우면 이미지만."><input type="text" value={editing.title} onChange={(e) => set("title", e.target.value)} placeholder="예: 2026 SS 작업복 라인" className={INPUT} /></Field>
                       <Field label="설명 (선택)"><textarea value={editing.description} onChange={(e) => set("description", e.target.value)} rows={2} placeholder="예: 현장에서 검증된 내구성과 활동성" className={`${INPUT} resize-none`} /></Field>
                       <div className="pt-2 border-t border-gray-100 space-y-3">
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">링크 버튼 (선택)</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <Field label="이동 주소"><input type="text" value={editing.link_url} onChange={(e) => set("link_url", e.target.value)} placeholder="/products/... 또는 /store" className={INPUT} /></Field>
-                          <Field label="버튼 문구"><input type="text" value={editing.link_label} onChange={(e) => set("link_label", e.target.value)} placeholder="매장에서 보기 / 제품 보기" className={INPUT} /></Field>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">제품 핫스팟</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              {selectedHotspot !== null ? "→ 오른쪽 미리보기 이미지를 클릭해 위치 설정" : "핫스팟 번호를 클릭해 선택 후 이미지 클릭으로 위치 지정"}
+                            </p>
+                          </div>
+                          <button type="button" onClick={addHotspot}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-orange-50 text-[#E5541B] border border-orange-200 hover:bg-orange-100 transition-colors rounded-lg flex-shrink-0">
+                            + 추가
+                          </button>
                         </div>
-                        <p className="text-[11px] text-slate-400">두 칸을 모두 채워야 버튼이 표시됩니다.</p>
+                        {hotspots.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 py-1 leading-relaxed">등록된 핫스팟이 없습니다. 제품 위에 클릭 가능한 포인트를 추가하면 방문자가 탭해 제품 정보를 볼 수 있습니다.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {hotspots.map((hs, i) => (
+                              <div key={i} className={`p-3 rounded-lg border transition-colors ${selectedHotspot === i ? "border-[#E5541B] bg-orange-50/40" : "border-slate-200 bg-slate-50"}`}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <button type="button" onClick={() => setSelectedHotspot(selectedHotspot === i ? null : i)}
+                                    className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-colors ${selectedHotspot === i ? "bg-[#E5541B] text-white" : "bg-slate-200 text-slate-600 hover:bg-slate-300"}`}>
+                                    {i + 1}번 핫스팟{selectedHotspot === i ? " · 선택됨" : ""}
+                                  </button>
+                                  <button type="button" onClick={() => removeHotspot(i)}
+                                    className="text-red-400 hover:text-red-600 text-xs px-1.5 py-0.5 hover:bg-red-50 rounded transition-colors">삭제</button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-slate-500 mb-0.5 block">X 위치 %</label>
+                                    <input type="number" min={0} max={100} value={hs.x} onChange={(e) => setHotspot(i, { x: Number(e.target.value) })} className={INPUT} />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-slate-500 mb-0.5 block">Y 위치 %</label>
+                                    <input type="number" min={0} max={100} value={hs.y} onChange={(e) => setHotspot(i, { y: Number(e.target.value) })} className={INPUT} />
+                                  </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <input type="text" value={hs.name} onChange={(e) => setHotspot(i, { name: e.target.value })} placeholder="제품명 (필수)" className={INPUT} />
+                                  <input type="text" value={hs.desc ?? ""} onChange={(e) => setHotspot(i, { desc: e.target.value || undefined })} placeholder="간단 설명 (선택)" className={INPUT} />
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <input type="text" value={hs.price ?? ""} onChange={(e) => setHotspot(i, { price: e.target.value || undefined })} placeholder="가격 예: 89,000원" className={INPUT} />
+                                    <input type="text" value={hs.href ?? ""} onChange={(e) => setHotspot(i, { href: e.target.value || undefined })} placeholder="/products/..." className={INPUT} />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </>
                   )}
@@ -479,8 +531,30 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                 {/* 실시간 미리보기 */}
                 <div className="w-[220px] flex-shrink-0">
                   <p className="text-xs font-semibold text-slate-500 mb-2">미리보기</p>
-                  <div className="rounded-lg overflow-hidden border border-slate-200 shadow-sm" style={{ aspectRatio: "5 / 7" }}>
+                  <div
+                    className={`rounded-lg overflow-hidden border border-slate-200 shadow-sm relative ${editing.page_type === "image" && selectedHotspot !== null ? "cursor-crosshair" : ""}`}
+                    style={{ aspectRatio: "5 / 7" }}
+                    onClick={(e) => {
+                      if (editing.page_type !== "image" || selectedHotspot === null) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = Math.round((e.clientX - rect.left) / rect.width * 100);
+                      const y = Math.round((e.clientY - rect.top) / rect.height * 100);
+                      setHotspot(selectedHotspot, { x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+                    }}>
                     <CatalogPageView page={editing} />
+                    {editing.page_type === "image" && hotspots.map((hs, i) => (
+                      <div key={i} style={{ position: "absolute", left: `${hs.x}%`, top: `${hs.y}%`, transform: "translate(-50%,-50%)", zIndex: 20 }}>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedHotspot(selectedHotspot === i ? null : i); }}
+                          className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-white text-[8px] font-bold transition-all ${i === selectedHotspot ? "bg-blue-500 scale-110" : "bg-[#E5541B]"}`}>
+                          {i + 1}
+                        </button>
+                      </div>
+                    ))}
+                    {editing.page_type === "image" && selectedHotspot !== null && (
+                      <div className="absolute inset-x-0 bottom-0 px-2 py-1.5 bg-black/60 text-white text-[9px] tracking-wide text-center pointer-events-none">
+                        이미지 클릭 → 위치 설정
+                      </div>
+                    )}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">실제 카탈로그(플립북)에 표시되는 모습입니다.</p>
                 </div>
