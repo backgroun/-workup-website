@@ -398,8 +398,8 @@ export default function UnifiedBrandsPage() {
                     <Field label="브랜드명">
                       <input type="text" value={editing.name} onChange={(e) => set("name", e.target.value)} placeholder="예: KENTA" className={INPUT} />
                     </Field>
-                    <Field label="포지셔닝" hint="브랜드 상단 작은 태그 문구">
-                      <input type="text" value={editing.positioning} onChange={(e) => set("positioning", e.target.value)} placeholder="예: EVERYDAY BASIC" className={INPUT} />
+                    <Field label="포지셔닝" hint="쉼표로 구분하면 여러 태그 — 예: EVERYDAY BASIC, 태닝">
+                      <input type="text" value={editing.positioning} onChange={(e) => set("positioning", e.target.value)} placeholder="예: EVERYDAY BASIC, 태닝" className={INPUT} />
                     </Field>
                     <Field label="한글명">
                       <input type="text" value={editing.name_ko ?? ""} onChange={(e) => set("name_ko", e.target.value)} placeholder="예: 세이프티조거" className={INPUT} />

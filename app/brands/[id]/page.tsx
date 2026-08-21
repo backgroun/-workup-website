@@ -94,7 +94,12 @@ export default async function BrandPage({ params }: Props) {
   const proxyPdfUrl = pdfUrl ? `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}` : "";
 
   const toc: BrandTocItem[] = [];
-  const hashtags = [brandPositioning, brandDescriptionKo].filter(Boolean);
+  // 포지셔닝은 쉼표로 구분해 여러 태그 지원. 한글명은 별도 태그로 마지막에 추가.
+  const positioningTags = (brandPositioning ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const hashtags = [...positioningTags, brandDescriptionKo].filter(Boolean);
 
   return (
     <main className="min-h-screen bg-white">

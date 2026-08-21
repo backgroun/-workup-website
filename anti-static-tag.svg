@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 760">
+
+  <defs>
+    <clipPath id="iconClip">
+      <circle cx="250" cy="198" r="80"/>
+    </clipPath>
+  </defs>
+
+  <!-- ========================= TAG BACKGROUND ========================= -->
+  <rect x="18" y="40" width="464" height="706" rx="24" ry="24"
+        fill="white" stroke="black" stroke-width="7"/>
+
+  <!-- Hanging hole -->
+  <circle cx="250" cy="44" r="18" fill="black"/>
+
+  <!-- ========================= ANTI-STATIC SYMBOL ========================= -->
+
+  <!-- Circle background (white fill to clip internal content) -->
+  <circle cx="250" cy="198" r="80" fill="white" stroke="black" stroke-width="9"/>
+
+  <!-- 4-pointed spark/star: outer r=48 at diagonals, inner r=16 at cardinals -->
+  <polygon
+    points="284,164 266,198 284,232 250,214 216,232 234,198 216,164 250,182"
+    fill="black"
+    clip-path="url(#iconClip)"/>
+
+  <!-- X diagonal lines clipped to circle -->
+  <g clip-path="url(#iconClip)">
+    <line x1="183" y1="130" x2="317" y2="266" stroke="black" stroke-width="9" stroke-linecap="round"/>
+    <line x1="317" y1="130" x2="183" y2="266" stroke="black" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <!-- Circle border on top -->
+  <circle cx="250" cy="198" r="80" fill="none" stroke="black" stroke-width="9"/>
+
+  <!-- ========================= MAIN TEXT ========================= -->
+
+  <!-- ANTI-STATIC -->
+  <text x="250" y="316"
+        text-anchor="middle"
+        font-family="'Arial Black', 'Franklin Gothic Heavy', Impact, sans-serif"
+        font-weight="900"
+        font-size="44"
+        letter-spacing="1"
+        fill="black">ANTI-STATIC</text>
+
+  <!-- Short separator line -->
+  <line x1="230" y1="333" x2="270" y2="333" stroke="black" stroke-width="3.5"/>
+
+  <!-- Korean headline -->
+  <text x="250" y="374"
+        text-anchor="middle"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-weight="700"
+        font-size="36"
+        fill="black">정전기, 덜어내다.</text>
+
+  <!-- ========================= FEATURE ROWS ========================= -->
+
+  <!-- Top thin divider -->
+  <line x1="45" y1="408" x2="455" y2="408" stroke="#bbbbbb" stroke-width="1.5"/>
+
+  <!-- ============ ROW 1: 따끔거림 ============ -->
+
+  <!-- Icon circle -->
+  <circle cx="85" cy="460" r="33" fill="none" stroke="black" stroke-width="2.5"/>
+
+  <!-- T-shirt icon -->
+  <g transform="translate(85,460)" fill="none" stroke="black" stroke-width="2.5"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M -10,-5 Q 0,4 10,-5 L 16,-5 L 22,-16 L 26,-7 L 20,-4 L 20,18 L -20,18 L -20,-4 L -26,-7 L -22,-16 L -16,-5 Z"/>
+  </g>
+
+  <!-- Static × marks on shirt sides -->
+  <g stroke="black" stroke-width="2.2" stroke-linecap="round">
+    <line x1="53" y1="456" x2="60" y2="463"/>
+    <line x1="60" y1="456" x2="53" y2="463"/>
+    <line x1="110" y1="456" x2="117" y2="463"/>
+    <line x1="117" y1="456" x2="110" y2="463"/>
+  </g>
+
+  <!-- Vertical separator -->
+  <line x1="138" y1="418" x2="138" y2="502" stroke="black" stroke-width="1.5"/>
+
+  <!-- Row 1 text -->
+  <text x="155" y="450"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black">겨울철 옷을 입고 벗을 때</text>
+  <text x="155" y="476"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black">불쾌한 <tspan font-weight="700">따끔거림</tspan>을 줄이고,</text>
+
+  <!-- Row 1 bottom divider -->
+  <line x1="45" y1="510" x2="455" y2="510" stroke="#bbbbbb" stroke-width="1.5"/>
+
+  <!-- ============ ROW 2: 먼지와 보풀 ============ -->
+
+  <!-- Icon circle -->
+  <circle cx="85" cy="560" r="33" fill="none" stroke="black" stroke-width="2.5"/>
+
+  <!-- Dust particles + arrow icon -->
+  <g transform="translate(85,560)">
+    <circle cx="-14" cy="-4" r="2.5" fill="black"/>
+    <circle cx="-4" cy="-15" r="2.5" fill="black"/>
+    <circle cx="8"  cy="-7"  r="2.5" fill="black"/>
+    <circle cx="-8" cy="5"  r="2.5" fill="black"/>
+    <circle cx="5"  cy="8"  r="2.5" fill="black"/>
+    <circle cx="-18" cy="7" r="2.5" fill="black"/>
+    <circle cx="16"  cy="2" r="2.5" fill="black"/>
+    <path d="M 4,15 L 18,-8 M 18,-8 L 11,-2 M 18,-8 L 12,4"
+          stroke="black" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Vertical separator -->
+  <line x1="138" y1="520" x2="138" y2="602" stroke="black" stroke-width="1.5"/>
+
+  <!-- Row 2 text -->
+  <text x="155" y="550"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black">건조한 날씨에 따라붙는</text>
+  <text x="155" y="576"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black"><tspan font-weight="700">먼지와 보풀</tspan>까지 깔끔하게.</text>
+
+  <!-- Row 2 bottom divider -->
+  <line x1="45" y1="610" x2="455" y2="610" stroke="#bbbbbb" stroke-width="1.5"/>
+
+  <!-- ============ ROW 3: 더 쾌적하게 ============ -->
+
+  <!-- Icon circle -->
+  <circle cx="85" cy="657" r="33" fill="none" stroke="black" stroke-width="2.5"/>
+
+  <!-- Wavy lines + sparkle icon -->
+  <g transform="translate(85,657)" fill="none" stroke="black" stroke-linecap="round">
+    <path d="M -18,-11 Q -9,-18 0,-11 Q 9,-4 18,-11" stroke-width="2.5"/>
+    <path d="M -18,-1  Q -9,-8  0,-1  Q 9,6  18,-1"  stroke-width="2.5"/>
+    <path d="M -18,9  Q -9,2  0,9  Q 9,16 18,9"     stroke-width="2.5"/>
+    <!-- Sparkle (upper-right) -->
+    <line x1="20" y1="-24" x2="20" y2="-14" stroke-width="2"/>
+    <line x1="15" y1="-19" x2="25" y2="-19" stroke-width="2"/>
+    <line x1="16.5" y1="-22.5" x2="23.5" y2="-15.5" stroke-width="1.5"/>
+    <line x1="23.5" y1="-22.5" x2="16.5" y2="-15.5" stroke-width="1.5"/>
+  </g>
+
+  <!-- Vertical separator -->
+  <line x1="138" y1="619" x2="138" y2="698" stroke="black" stroke-width="1.5"/>
+
+  <!-- Row 3 text -->
+  <text x="155" y="646"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black">입는 순간부터</text>
+  <text x="155" y="672"
+        font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+        font-size="19" fill="black"><tspan font-weight="700">더 쾌적하게.</tspan></text>
+
+</svg>
