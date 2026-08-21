@@ -575,7 +575,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
             <div className="py-20 text-center text-sm text-gray-400">해당 카테고리의 제품이 없습니다.</div>
           ) : (
             <>
-              <div className="flex flex-wrap gap-[10px]">
+              <div className="flex flex-wrap gap-[10px]" data-nosnippet>
                 {visibleProducts.map((product) => (
                   <ProductCard key={product.id} product={product} mobile />
                 ))}
@@ -755,7 +755,7 @@ export default function ProductsGrid({ initialCats = [] }: { initialCats?: CatIt
                   <div className="py-24 text-center text-sm text-gray-400">해당 카테고리의 제품이 없습니다.</div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-3 xl:grid-cols-4 gap-5" data-nosnippet>
                       {visibleProducts.map((product) => (
                         <ProductCard key={product.id} product={product} />
                       ))}

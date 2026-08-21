@@ -13,6 +13,7 @@ import MobileProductNav from "@/components/MobileProductNav";
 import InstagramFeed from "@/components/InstagramFeed";
 import JsonLd from "@/components/JsonLd";
 import { absoluteUrl } from "@/lib/site";
+import { getHeaderNavConfig } from "@/lib/header-nav-server";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -63,8 +64,12 @@ async function fetchRelatedProducts(ids: string[]): Promise<Product[]> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const product = await fetchProduct(id);
+  const [product, nav] = await Promise.all([fetchProduct(id), getHeaderNavConfig()]);
   if (!product) return { title: "제품을 찾을 수 없습니다 | WORKUP" };
+
+  const productsNav = nav.items.find((it) => it.href === "/products");
+  const isHidden = productsNav ? productsNav.isVisible === false : false;
+
   // 관리자가 지정한 metaTitle/metaDesc 우선, 없으면 제품명·태그라인으로 자동 생성
   const title = product.metaTitle?.trim() || `${product.name} — WORKUP ${product.line}`;
   const description = product.metaDesc?.trim() || product.tagline;
@@ -80,6 +85,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       images: ogImage ? [ogImage] : undefined,
     },
+    // 관리자에서 제품 메뉴 비공개 처리 시 개별 상품 페이지도 인덱싱 차단
+    ...(isHidden && { robots: { index: false, follow: false } }),
   };
 }
 

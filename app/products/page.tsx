@@ -6,14 +6,23 @@ import JsonLd from "@/components/JsonLd";
 import { createAdminClient } from "@/lib/supabase-server";
 import { siteUrl, absoluteUrl } from "@/lib/site";
 import { getSearchConfig } from "@/lib/header-search-server";
+import { getHeaderNavConfig } from "@/lib/header-nav-server";
 
-export const metadata: Metadata = {
-  title: "PRODUCTS — 제품 | WORKUP",
-  description: "워크업이 검증한 기능성 워크웨어. 카테고리별로 찾아보세요.",
-  // 카테고리·검색 등 쿼리스트링 조합(?cat=, ?q= 등)은 전부 이 페이지의 변형일 뿐이므로
-  // 표준 URL을 명시해 구글이 "표준 없는 중복 페이지"로 잘못 판단하지 않게 한다.
-  alternates: { canonical: "/products" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const nav = await getHeaderNavConfig();
+  const productsNav = nav.items.find((it) => it.href === "/products");
+  const isHidden = productsNav ? productsNav.isVisible === false : false;
+
+  return {
+    title: "PRODUCTS — 제품 | WORKUP",
+    description: "워크업이 검증한 기능성 워크웨어. 카테고리별로 찾아보세요.",
+    // 카테고리·검색 등 쿼리스트링 조합(?cat=, ?q= 등)은 전부 이 페이지의 변형일 뿐이므로
+    // 표준 URL을 명시해 구글이 "표준 없는 중복 페이지"로 잘못 판단하지 않게 한다.
+    alternates: { canonical: "/products" },
+    // 관리자에서 메뉴 비공개 처리 시 구글 인덱싱도 함께 차단
+    ...(isHidden && { robots: { index: false, follow: false } }),
+  };
+}
 
 // 첫 화면부터 최신 분류를 그리도록 서버에서 카테고리를 읽어 전달한다 (옛 카테고리 깜빡임 방지)
 async function getCategories(): Promise<CatItem[]> {
