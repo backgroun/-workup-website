@@ -493,7 +493,6 @@ export default function MyPage() {
           {/* 빠른 메뉴 */}
           <div className={`${CARD_CLS} overflow-hidden flex flex-col ${CARD_H}`}>
             {[
-              { label: "전체 제품 보기", href: "/products", desc: "워크업 라인업 탐색" },
               { label: "매장 찾기", href: "/store", desc: "가까운 매장 위치 확인" },
             ].map((item, i, arr) => (
               <Link key={item.href} href={item.href}
