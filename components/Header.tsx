@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { DEFAULT_HEADER_NAV, type NavMenuItem } from "@/lib/header-nav";
 import { DEFAULT_LOGO, type LogoConfig } from "@/lib/logo";
 import { DEFAULT_TOPBAR, safeHref, type TopbarItem } from "@/lib/topbar";
-import { FITTING_LIST_KEY } from "@/contexts/CartContext";
 import BrandsMegaMenu from "@/components/BrandsMegaMenu";
 import type { MegaBrandsConfig } from "@/lib/mega-brands-types";
 
@@ -90,14 +89,6 @@ export default function Header({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandsOpen]);
 
-  const handleLogout = async () => {
-    await fetch("/api/member/logout", { method: "POST" });
-    // 찜은 계정에 저장되므로, 이 기기의 캐시는 지워 다음 사용자에게 노출되지 않게 한다.
-    try { localStorage.removeItem(FITTING_LIST_KEY); } catch {}
-    setMemberSession(null);
-    router.push("/");
-    router.refresh();
-  };
 
   // BRANDS 메가메뉴: megaBrandsConfig가 있고 settings.enabled !== false이면 활성.
   // 헤더 nav에 label="BRANDS" 항목이 있으면 그것을 버튼으로 교체하고, 없으면 nav 끝에 추가한다.
@@ -221,13 +212,22 @@ export default function Header({
           </div>
         )}
 
-        {/* 회원 버튼: 로그인 여부에 따라 로그인/회원가입 · 로그아웃 텍스트 박스 — 데스크탑 전용(모바일은 하단 '마이' 탭으로 이동) */}
-        <button
-          onClick={() => (memberSession ? handleLogout() : router.push("/member/login"))}
-          className="hidden md:inline-flex items-center justify-center flex-shrink-0 px-3 py-1.5 rounded-md bg-[#303236] text-white text-[11px] font-semibold tracking-wide whitespace-nowrap hover:bg-[#243d5e] transition-colors"
-        >
-          {memberSession ? "로그아웃" : "로그인 / 회원가입"}
-        </button>
+        {/* 회원 버튼 — 데스크탑 전용(모바일은 하단 '마이' 탭으로 이동) */}
+        {memberSession ? (
+          <Link
+            href="/mypage"
+            className="hidden md:inline-flex items-center justify-center flex-shrink-0 px-3 py-1.5 rounded-md bg-[#303236] text-white text-[11px] font-semibold tracking-wide whitespace-nowrap hover:bg-[#243d5e] transition-colors"
+          >
+            마이페이지
+          </Link>
+        ) : (
+          <button
+            onClick={() => router.push("/member/login")}
+            className="hidden md:inline-flex items-center justify-center flex-shrink-0 px-3 py-1.5 rounded-md bg-[#303236] text-white text-[11px] font-semibold tracking-wide whitespace-nowrap hover:bg-[#243d5e] transition-colors"
+          >
+            로그인 / 회원가입
+          </button>
+        )}
 
       </div>
     </div>
