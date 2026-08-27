@@ -60,10 +60,12 @@ export default function IHMobilePreview({
   defaultItems,
   defaultTotal,
   initialMobileViewerToken,
+  initialMobileViewerIssuedAt,
 }: {
   defaultItems: IHInfluencerListItem[];
   defaultTotal: number;
   initialMobileViewerToken: string | null;
+  initialMobileViewerIssuedAt: string | null;
 }) {
   const [openOnNarrow, setOpenOnNarrow] = useState(false);
   const [showLinkManager, setShowLinkManager] = useState(false);
@@ -86,7 +88,7 @@ export default function IHMobilePreview({
         </button>
         {showLinkManager && (
           <IHModal title="로그인 없이 볼 수 있는 링크 관리" onClose={() => setShowLinkManager(false)}>
-            <IHMobileViewerLinkManager initialToken={initialMobileViewerToken} />
+            <IHMobileViewerLinkManager initialToken={initialMobileViewerToken} initialIssuedAt={initialMobileViewerIssuedAt} />
           </IHModal>
         )}
       </aside>

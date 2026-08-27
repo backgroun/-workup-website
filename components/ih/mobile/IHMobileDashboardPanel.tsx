@@ -115,8 +115,10 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
   const [mobileIntegrated, setMobileIntegrated] = useState<IHIntegratedDashboardData | null | undefined>(integrated);
   const [loadingPeriod, setLoadingPeriod] = useState(false);
 
-  const [showPerf, setShowPerf] = useState(false);
-  const [showByType, setShowByType] = useState(false);
+  // 성과 요약/유형별 현황은 동시에 열리지 않고 하나만 펼쳐지는 아코디언 형태로 동작한다.
+  const [openSection, setOpenSection] = useState<"perf" | "byType" | null>(null);
+  const showPerf = openSection === "perf";
+  const showByType = openSection === "byType";
   const [rangeModalOpen, setRangeModalOpen] = useState(false);
   const [rangeApplied, setRangeApplied] = useState(false);
   const [rangeFrom, setRangeFrom] = useState(DEFAULT_FROM);
@@ -214,8 +216,8 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
 
             {/* 성과 요약 / 유형별 현황 — 버튼 2개로 펼쳐보기, 가로 꽉 채움 + 컬러 구분 */}
             <div className="flex items-center gap-1.5 px-4 pb-2">
-              <ToggleButton label="성과 요약" color="blue" active={showPerf} onClick={() => setShowPerf((v) => !v)} />
-              <ToggleButton label="유형별 현황" color="violet" active={showByType} onClick={() => setShowByType((v) => !v)} />
+              <ToggleButton label="성과 요약" color="blue" active={showPerf} onClick={() => setOpenSection((v) => (v === "perf" ? null : "perf"))} />
+              <ToggleButton label="유형별 현황" color="violet" active={showByType} onClick={() => setOpenSection((v) => (v === "byType" ? null : "byType"))} />
             </div>
 
             {showPerf && (

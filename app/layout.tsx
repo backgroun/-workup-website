@@ -73,9 +73,10 @@ export default async function RootLayout({
 }>) {
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdmin = pathname.startsWith("/admin");
-  // 지점 출고 패스 공개 페이지(/b/[token])와 관리 화면(/notices)도 관리자 화면과 동일하게
+  // 지점 출고 패스 공개 페이지(/b/[token]), 관리 화면(/notices), 인플루언서 허브 모바일 뷰어(/ih-mobile/[token] —
+  // 로그인 없이 토큰으로만 여는 페이지라 /admin 트리 밖에 있음)도 관리자 화면과 동일하게
   // 사이트 헤더·푸터·팝업 없이 단독으로 렌더링한다.
-  const hideChrome = isAdmin || pathname.startsWith("/b/") || pathname.startsWith("/notices");
+  const hideChrome = isAdmin || pathname.startsWith("/b/") || pathname.startsWith("/notices") || pathname.startsWith("/ih-mobile/");
 
   const [topbar, footer, headerNav, logo, search, studio, megaBrands] = hideChrome
     ? [null, null, null, null, null, null, null]

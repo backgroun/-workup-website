@@ -6,16 +6,24 @@ import { createAdminClient } from "@/lib/supabase-server";
 // 링크는 PC 관리자 화면(/admin/influencer-hub/mobile, 로그인 필요)에서만 확인/재발급할 수 있다.
 const SECTION = "ih_mobile_viewer";
 
-export async function getIHMobileViewerToken(): Promise<string | null> {
+export type IHMobileViewerTokenInfo = { token: string; issuedAt: string | null };
+
+export async function getIHMobileViewerTokenInfo(): Promise<IHMobileViewerTokenInfo | null> {
   noStore();
   try {
     const sb = createAdminClient();
     const { data } = await sb.from("site_settings").select("config").eq("section", SECTION).maybeSingle();
-    const token = (data?.config as { token?: string } | null)?.token;
-    return token && token.length > 0 ? token : null;
+    const config = data?.config as { token?: string; issuedAt?: string } | null;
+    if (!config?.token) return null;
+    return { token: config.token, issuedAt: config.issuedAt ?? null };
   } catch {
     return null;
   }
+}
+
+export async function getIHMobileViewerToken(): Promise<string | null> {
+  const info = await getIHMobileViewerTokenInfo();
+  return info?.token ?? null;
 }
 
 export async function isValidIHMobileViewerToken(token: string): Promise<boolean> {

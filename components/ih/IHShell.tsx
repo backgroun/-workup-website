@@ -2,7 +2,7 @@ import IHSidebar from "./IHSidebar";
 import IHMobilePreview from "./IHMobilePreview";
 import { IHMobileSelectionProvider } from "./IHMobileSelectionContext";
 import { searchInfluencers } from "@/lib/ih/influencers";
-import { getIHMobileViewerToken } from "@/lib/ih/mobile-viewer";
+import { getIHMobileViewerTokenInfo } from "@/lib/ih/mobile-viewer";
 
 /**
  * Influencer Hub 전용 3단 레이아웃 — Sidebar + Admin Workspace + Mobile Viewer.
@@ -14,9 +14,9 @@ import { getIHMobileViewerToken } from "@/lib/ih/mobile-viewer";
  * "지금 이 인플루언서를 보여줘"라고 알릴 수 있게 한다.
  */
 export default async function IHShell({ children }: { children: React.ReactNode }) {
-  const [defaultList, mobileViewerToken] = await Promise.all([
+  const [defaultList, mobileViewerTokenInfo] = await Promise.all([
     searchInfluencers({ pageSize: 20 }),
-    getIHMobileViewerToken(),
+    getIHMobileViewerTokenInfo(),
   ]);
 
   return (
@@ -26,7 +26,12 @@ export default async function IHShell({ children }: { children: React.ReactNode 
         <main className="flex-1 min-w-0 overflow-y-auto bg-[#f1f5f9]">
           <div className="px-4 sm:px-6 lg:px-8 pt-6 pb-10">{children}</div>
         </main>
-        <IHMobilePreview defaultItems={defaultList.items} defaultTotal={defaultList.total} initialMobileViewerToken={mobileViewerToken} />
+        <IHMobilePreview
+          defaultItems={defaultList.items}
+          defaultTotal={defaultList.total}
+          initialMobileViewerToken={mobileViewerTokenInfo?.token ?? null}
+          initialMobileViewerIssuedAt={mobileViewerTokenInfo?.issuedAt ?? null}
+        />
       </div>
     </IHMobileSelectionProvider>
   );

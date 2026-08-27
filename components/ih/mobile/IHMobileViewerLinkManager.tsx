@@ -5,8 +5,22 @@ import { useState } from "react";
  * "모바일 뷰어" 로그인 없이 접근 링크 발급/재발급 — PC 관리자(로그인 필요) 전용 화면.
  * 토큰은 site_settings.ih_mobile_viewer에 저장되고, /ih-mobile/[token]이 그 값과 일치할 때만 데이터를 보여준다.
  */
-export default function IHMobileViewerLinkManager({ initialToken }: { initialToken: string | null }) {
+function fmtIssuedAt(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())} 발급`;
+}
+
+export default function IHMobileViewerLinkManager({
+  initialToken,
+  initialIssuedAt,
+}: {
+  initialToken: string | null;
+  initialIssuedAt: string | null;
+}) {
   const [token, setToken] = useState(initialToken);
+  const [issuedAt, setIssuedAt] = useState(initialIssuedAt);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -18,16 +32,18 @@ export default function IHMobileViewerLinkManager({ initialToken }: { initialTok
     setSaving(true);
     try {
       const next = crypto.randomUUID().replace(/-/g, "");
+      const nextIssuedAt = new Date().toISOString();
       const res = await fetch("/api/admin/site-settings/ih_mobile_viewer", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: next }),
+        body: JSON.stringify({ token: next, issuedAt: nextIssuedAt }),
       });
       if (!res.ok) {
         alert("링크 발급에 실패했습니다. 잠시 후 다시 시도해주세요.");
         return;
       }
       setToken(next);
+      setIssuedAt(nextIssuedAt);
       setCopied(false);
     } finally {
       setSaving(false);
@@ -72,6 +88,8 @@ export default function IHMobileViewerLinkManager({ initialToken }: { initialTok
       ) : (
         <p className="mb-3 text-[13px] text-slate-400">아직 발급된 링크가 없습니다.</p>
       )}
+
+      {fullUrl && issuedAt && <p className="mb-3 -mt-1.5 text-[12px] text-slate-400">{fmtIssuedAt(issuedAt)}</p>}
 
       <button
         type="button"
