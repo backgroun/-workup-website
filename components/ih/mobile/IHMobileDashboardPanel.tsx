@@ -117,7 +117,8 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
 
   const [showPerf, setShowPerf] = useState(false);
   const [showByType, setShowByType] = useState(false);
-  const [showRangeSchedule, setShowRangeSchedule] = useState(false);
+  const [rangeModalOpen, setRangeModalOpen] = useState(false);
+  const [rangeApplied, setRangeApplied] = useState(false);
   const [rangeFrom, setRangeFrom] = useState(DEFAULT_FROM);
   const [rangeTo, setRangeTo] = useState(DEFAULT_TO);
   const [appliedRangeFrom, setAppliedRangeFrom] = useState(DEFAULT_FROM);
@@ -149,7 +150,7 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
   const integratedNow = mobileIntegrated;
 
   return (
-    <div className="flex flex-col h-full bg-white text-slate-900">
+    <div className="relative flex flex-col h-full bg-white text-slate-900">
       <header className="flex-shrink-0 h-12 flex items-center justify-between px-4 border-b border-slate-100">
         <span className="font-bold text-[14px] tracking-tight">WORKUP</span>
         <span className="text-[12px] text-slate-500">Dashboard</span>
@@ -158,12 +159,26 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
       <div className="flex-1 overflow-y-auto pb-3">
         {integratedNow && (
           <>
-            <SectionTitle>전체 현황</SectionTitle>
-            <div className="grid grid-cols-3 gap-2 px-4 pb-3">
-              <Tile label="협찬" value={`${fmtNumber(integratedNow.overview.sponsorsCount)}건`} />
-              <Tile label="방문" value={`${fmtNumber(integratedNow.overview.branchMarketingCount)}건`} />
-              <Tile label="브랜디드/PPL" value={`${fmtNumber(integratedNow.overview.brandedPplCount)}건`} />
-            </div>
+            {(() => {
+              // 진행 이력이 아예 없는(0건) 항목은 숨긴다.
+              const overviewTiles = [
+                { label: "협찬", count: integratedNow.overview.sponsorsCount, value: `${fmtNumber(integratedNow.overview.sponsorsCount)}건` },
+                { label: "방문", count: integratedNow.overview.branchMarketingCount, value: `${fmtNumber(integratedNow.overview.branchMarketingCount)}건` },
+                { label: "브랜디드/PPL", count: integratedNow.overview.brandedPplCount, value: `${fmtNumber(integratedNow.overview.brandedPplCount)}건` },
+              ].filter((t) => t.count > 0);
+              if (overviewTiles.length === 0) return null;
+              return (
+                <>
+                  <SectionTitle>전체 현황</SectionTitle>
+                  {/* 숨겨진 항목만큼 컬럼 수도 줄여서, 남은 항목들이 가로 여백 없이 폭을 꽉 채우게 한다. */}
+                  <div className="grid gap-2 px-4 pb-3" style={{ gridTemplateColumns: `repeat(${overviewTiles.length}, minmax(0, 1fr))` }}>
+                    {overviewTiles.map((t) => (
+                      <Tile key={t.label} label={t.label} value={t.value} />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* 기간 선택 — PC와 별개로 모바일 화면 자체에서 조작. 한 줄에 다 들어가도록 폭에 맞춰 균등 배분한다. */}
             <div className="flex items-center gap-1 px-4 pb-3">
@@ -238,48 +253,79 @@ export default function IHMobileDashboardPanel({ data, integrated }: { data: IHD
 
         <div className="border-t border-slate-100">
           <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
-            <p className="text-[12.5px] font-bold text-slate-500">2주 일정</p>
-            <button
-              type="button"
-              onClick={() => setShowRangeSchedule((v) => !v)}
-              className="rounded-md border border-slate-200 text-slate-600 text-[11px] font-semibold px-2 py-1"
-            >
-              기간 일정 확인
-            </button>
-          </div>
-          <IHScheduleAgenda branchMarketing={data.schedule.branchMarketing} sponsors={data.schedule.sponsors} bare />
-
-          {showRangeSchedule && (
-            <div className="border-t border-slate-100 px-4 py-3">
-              <p className="text-[12px] font-semibold text-slate-700 mb-2">기간 일정 확인</p>
-              <div className="flex items-center gap-1.5 mb-2">
-                <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1 text-[12px] flex-1 min-w-0" />
-                <span className="text-slate-300">~</span>
-                <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1 text-[12px] flex-1 min-w-0" />
+            <p className="text-[12.5px] font-bold text-slate-500">{rangeApplied ? "기간 일정 확인" : "2주 일정"}</p>
+            <div className="flex items-center gap-1">
+              {rangeApplied && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setAppliedRangeFrom(rangeFrom);
-                    setAppliedRangeTo(rangeTo);
-                  }}
-                  disabled={!rangeFrom || !rangeTo}
-                  className="flex-shrink-0 rounded-md bg-slate-900 text-white text-[12px] font-semibold px-2.5 py-1 disabled:opacity-50"
+                  onClick={() => setRangeApplied(false)}
+                  className="rounded-md border border-slate-200 text-slate-500 text-[11px] font-semibold px-2 py-1"
                 >
-                  조회
+                  2주 일정으로
                 </button>
-              </div>
-              <IHScheduleAgenda
-                branchMarketing={data.schedule.branchMarketing}
-                sponsors={data.schedule.sponsors}
-                startDate={new Date(appliedRangeFrom + "T00:00:00")}
-                dayCount={daysBetween(appliedRangeFrom, appliedRangeTo)}
-                hideEmptyDays
-                bare
-              />
+              )}
+              <button
+                type="button"
+                onClick={() => setRangeModalOpen(true)}
+                className="rounded-md border border-slate-200 text-slate-600 text-[11px] font-semibold px-2 py-1"
+              >
+                기간 일정 확인
+              </button>
             </div>
+          </div>
+
+          {rangeApplied ? (
+            <IHScheduleAgenda
+              branchMarketing={data.schedule.branchMarketing}
+              sponsors={data.schedule.sponsors}
+              startDate={new Date(appliedRangeFrom + "T00:00:00")}
+              dayCount={daysBetween(appliedRangeFrom, appliedRangeTo)}
+              hideEmptyDays
+              bare
+              scroll={false}
+            />
+          ) : (
+            <IHScheduleAgenda branchMarketing={data.schedule.branchMarketing} sponsors={data.schedule.sponsors} bare scroll={false} />
           )}
         </div>
       </div>
+
+      {/* 기간 선택 팝업 — PC의 IHModal(fixed inset-0)은 폰 프레임 밖으로 튀어나가 여기선 못 쓴다.
+          대신 이 패널 자체(위에서 relative)를 기준으로 absolute 오버레이를 띄워, 폰 화면 안에서만 뜨는 팝업처럼 보이게 한다. */}
+      {rangeModalOpen && (
+        <div className="absolute inset-0 z-50 bg-black/40 flex items-end" onClick={() => setRangeModalOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full bg-white rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <p className="text-[14px] font-bold text-slate-900 mb-3">기간 일정 확인</p>
+            <div className="flex items-center gap-1.5 mb-3">
+              <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1.5 text-[13px] flex-1 min-w-0" />
+              <span className="text-slate-300">~</span>
+              <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1.5 text-[13px] flex-1 min-w-0" />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRangeModalOpen(false)}
+                className="flex-1 rounded-md border border-slate-200 text-slate-600 text-[13.5px] font-semibold px-3 py-2"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAppliedRangeFrom(rangeFrom);
+                  setAppliedRangeTo(rangeTo);
+                  setRangeApplied(true);
+                  setRangeModalOpen(false);
+                }}
+                disabled={!rangeFrom || !rangeTo}
+                className="flex-1 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13.5px] font-semibold px-3 py-2 disabled:opacity-50"
+              >
+                조회
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,8 @@ import { logAudit } from "@/lib/audit-server";
 // 민감 정보가 담긴 섹션은 관리자만 읽을 수 있게 한다.
 // admin_favorites: 관리자 UI 개인설정(즐겨찾기) — 관리자만 조회.
 // store_status: 지점 현황(담당자 연락처·이메일 등 개인정보 포함) — 관리자만 조회.
-const SENSITIVE_SECTIONS = new Set(["notifications", "admin_favorites", "store_status"]);
+// ih_mobile_viewer: 인플루언서 허브 모바일 뷰어의 "로그인 없이 접근" 토큰 — 유출되면 누구나 데이터를 볼 수 있어 관리자만 조회.
+const SENSITIVE_SECTIONS = new Set(["notifications", "admin_favorites", "store_status", "ih_mobile_viewer"]);
 
 // 감사로그를 남기지 않는 섹션(관리자 UI 개인설정 등 — 로그 노이즈 방지).
 const NO_AUDIT_SECTIONS = new Set(["admin_favorites"]);

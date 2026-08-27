@@ -150,18 +150,29 @@ export default function IHIntegratedDashboard({ initialData }: { initialData: IH
 
   return (
     <div className="space-y-4">
-      {/* 1. 전체 현황 — 항상 현재 기준 누적 수치(기간 필터 영향 없음) */}
-      <div>
-        <p className="text-[12px] font-semibold text-slate-500 mb-2 tracking-[0.06em]">전체 현황</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          <Tile label="전체 인플루언서" value={`${fmtNumber(overview.totalInfluencers)}명`} />
-          <Tile label="활동 중" value={`${fmtNumber(overview.activeInfluencers)}명`} />
-          <Tile label="진행 중 협업" value={`${fmtNumber(overview.inProgressCollabs)}건`} />
-          <Tile label="제품 협찬" value={`${fmtNumber(overview.sponsorsCount)}건`} />
-          <Tile label="지점 마케팅" value={`${fmtNumber(overview.branchMarketingCount)}건`} />
-          <Tile label="브랜디드/PPL" value={`${fmtNumber(overview.brandedPplCount)}건`} />
-        </div>
-      </div>
+      {/* 1. 전체 현황 — 항상 현재 기준 누적 수치(기간 필터 영향 없음). 진행 이력이 아예 없는(0건) 항목은 숨긴다. */}
+      {(() => {
+        const overviewTiles = [
+          { label: "전체 인플루언서", count: overview.totalInfluencers, value: `${fmtNumber(overview.totalInfluencers)}명` },
+          { label: "활동 중", count: overview.activeInfluencers, value: `${fmtNumber(overview.activeInfluencers)}명` },
+          { label: "진행 중 협업", count: overview.inProgressCollabs, value: `${fmtNumber(overview.inProgressCollabs)}건` },
+          { label: "제품 협찬", count: overview.sponsorsCount, value: `${fmtNumber(overview.sponsorsCount)}건` },
+          { label: "지점 마케팅", count: overview.branchMarketingCount, value: `${fmtNumber(overview.branchMarketingCount)}건` },
+          { label: "브랜디드/PPL", count: overview.brandedPplCount, value: `${fmtNumber(overview.brandedPplCount)}건` },
+        ].filter((t) => t.count > 0);
+        if (overviewTiles.length === 0) return null;
+        return (
+          <div>
+            <p className="text-[12px] font-semibold text-slate-500 mb-2 tracking-[0.06em]">전체 현황</p>
+            {/* 항목 수가 줄어도(0건 숨김) 남은 타일이 가로 폭을 꽉 채우도록 auto-fit — 화면이 좁아지면 자연스럽게 줄바꿈된다. */}
+            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
+              {overviewTiles.map((t) => (
+                <Tile key={t.label} label={t.label} value={t.value} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 기간 필터 */}
       <div className="flex flex-wrap items-center gap-2">
@@ -203,7 +214,7 @@ export default function IHIntegratedDashboard({ initialData }: { initialData: IH
             <button
               type="button"
               onClick={() => setShowByType(true)}
-              className="rounded-md border border-slate-200 text-slate-600 hover:border-slate-400 text-[12.5px] font-semibold px-3 py-1.5"
+              className="rounded-md bg-violet-50 hover:bg-violet-100 text-violet-700 text-[12.5px] font-semibold px-3 py-1.5"
             >
               유형별 현황 보기
             </button>

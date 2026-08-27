@@ -30,6 +30,7 @@ export default function IHScheduleAgenda({
   title = "2주 일정",
   bare = false,
   hideEmptyDays = false,
+  scroll = true,
 }: {
   branchMarketing: IHDashboardData["schedule"]["branchMarketing"];
   sponsors: IHDashboardData["schedule"]["sponsors"];
@@ -42,6 +43,8 @@ export default function IHScheduleAgenda({
   bare?: boolean;
   /** 일정 없는 날은 아예 건너뛴다 — 기간이 긴 보기에서 빈 줄이 잔뜩 뜨는 걸 막는다. */
   hideEmptyDays?: boolean;
+  /** false면 내부 스크롤(최대 높이) 없이 전체를 그대로 펼친다 — 바깥 컨테이너의 스크롤에 맡길 때 사용(모바일 등). */
+  scroll?: boolean;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -85,7 +88,7 @@ export default function IHScheduleAgenda({
   const rows = days.filter((d) => !hideEmptyDays || (byDate.get(toIsoDate(d)) ?? []).length > 0);
 
   const list = (
-    <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
+    <div className={`divide-y divide-slate-100 ${scroll ? "max-h-[520px] overflow-y-auto ih-thin-scroll" : ""}`}>
       {rows.length === 0 ? (
         <p className="px-4 py-10 text-center text-[13px] text-slate-400">해당 기간에 예정된 일정이 없습니다.</p>
       ) : (
