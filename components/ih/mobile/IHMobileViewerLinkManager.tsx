@@ -15,9 +15,12 @@ function fmtIssuedAt(iso: string | null): string {
 export default function IHMobileViewerLinkManager({
   initialToken,
   initialIssuedAt,
+  onIssued,
 }: {
   initialToken: string | null;
   initialIssuedAt: string | null;
+  /** 발급/재발급에 성공할 때마다 호출 — 이 컴포넌트를 여는 트리거(링크 텍스트 등)에도 최신 발급일자를 반영할 때 쓴다. */
+  onIssued?: (info: { token: string; issuedAt: string }) => void;
 }) {
   const [token, setToken] = useState(initialToken);
   const [issuedAt, setIssuedAt] = useState(initialIssuedAt);
@@ -45,6 +48,7 @@ export default function IHMobileViewerLinkManager({
       setToken(next);
       setIssuedAt(nextIssuedAt);
       setCopied(false);
+      onIssued?.({ token: next, issuedAt: nextIssuedAt });
     } finally {
       setSaving(false);
     }

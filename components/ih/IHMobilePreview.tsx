@@ -14,6 +14,13 @@ import type { IHInfluencerListItem } from "@/lib/ih/influencers";
 const FRAME_W = 320;
 const FRAME_H = 640;
 
+function fmtIssuedDate(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} 발급`;
+}
+
 /**
  * 스마트폰 프레임 안의 콘텐츠 — Mobile Viewer는 PC가 지금 보고 있는 화면을 그대로 따라간다(별도 mock 없음).
  * 우선순위: 1) 인플루언서를 선택 중이면(PC 상세) → 그 인플루언서 상세 화면
@@ -69,6 +76,8 @@ export default function IHMobilePreview({
 }) {
   const [openOnNarrow, setOpenOnNarrow] = useState(false);
   const [showLinkManager, setShowLinkManager] = useState(false);
+  // 재발급하면 이 트리거 텍스트 옆 발급일자도 바로 갱신되도록 여기서도 최신 값을 들고 있는다.
+  const [issuedAt, setIssuedAt] = useState(initialMobileViewerIssuedAt);
 
   return (
     <>
@@ -82,13 +91,18 @@ export default function IHMobilePreview({
           className="mt-5 text-[13px] text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors"
         >
           로그인 없이 볼 수 있는 링크 관리
+          {issuedAt && <span className="text-slate-400">- {fmtIssuedDate(issuedAt)}</span>}
           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </button>
         {showLinkManager && (
           <IHModal title="로그인 없이 볼 수 있는 링크 관리" onClose={() => setShowLinkManager(false)}>
-            <IHMobileViewerLinkManager initialToken={initialMobileViewerToken} initialIssuedAt={initialMobileViewerIssuedAt} />
+            <IHMobileViewerLinkManager
+              initialToken={initialMobileViewerToken}
+              initialIssuedAt={initialMobileViewerIssuedAt}
+              onIssued={(info) => setIssuedAt(info.issuedAt)}
+            />
           </IHModal>
         )}
       </aside>
