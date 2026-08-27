@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IHInfluencerInput, IHInfluencerRow } from "@/lib/ih/influencers";
-import { STATUS_LABEL, CHANNEL_OPTIONS, formatFollowerDisplay } from "@/lib/ih/influencer-shared";
+import { STATUS_LABEL, CHANNEL_OPTIONS, formatFollowerDisplay, COLLAB_TYPE_LABEL, COLLAB_TYPE_ORDER, type IHCollabType } from "@/lib/ih/influencer-shared";
 import IHTagBadges from "./IHTagBadges";
 import IHRegionMultiSelect from "./IHRegionMultiSelect";
 import IHAddressSearchField from "./IHAddressSearchField";
+import IHNumberInput from "../IHNumberInput";
 
 type Props = {
   mode: "create" | "edit";
@@ -14,7 +15,7 @@ type Props = {
 };
 
 function toFormState(initial?: IHInfluencerRow): IHInfluencerInput {
-  if (!initial) return { nickname: "", channel: "Instagram", status: "ACTIVE", tags: [], content_type: [], activity_area: [] };
+  if (!initial) return { nickname: "", channel: "Instagram", status: "ACTIVE", tags: [], content_type: [], activity_area: [], collab_types: [] };
   return {
     nickname: initial.nickname,
     channel: initial.channel,
@@ -25,6 +26,7 @@ function toFormState(initial?: IHInfluencerRow): IHInfluencerInput {
     follower_display: initial.follower_display ?? "",
     content_type: initial.content_type,
     activity_area: Array.isArray(initial.activity_area) ? initial.activity_area : [],
+    collab_types: Array.isArray(initial.collab_types) ? initial.collab_types : [],
     status: initial.status,
     tags: initial.tags,
     name: initial.name ?? "",
@@ -43,17 +45,26 @@ function toFormState(initial?: IHInfluencerRow): IHInfluencerInput {
 function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[12.5px] font-medium text-slate-600">
+      <span className="text-[14px] font-semibold text-slate-700">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </span>
       <div className="mt-1">{children}</div>
-      {error && <p className="mt-1 text-[11.5px] text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-[12.5px] text-red-500">{error}</p>}
     </label>
   );
 }
 
-const inputCls = "w-full rounded-md border border-slate-200 px-3 py-2 text-[13.5px] outline-none focus:border-slate-400";
+const inputCls =
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-[14.5px] text-slate-900 placeholder:text-slate-500 outline-none focus:border-slate-500";
+
+/** 숫자만 입력해도 010-0000-0000 형태로 자동 하이픈 삽입. */
+function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
 
 const GROUP_COLS_CLASS: Record<2 | 3 | 4, string> = {
   2: "sm:grid-cols-2",
@@ -61,10 +72,23 @@ const GROUP_COLS_CLASS: Record<2 | 3 | 4, string> = {
   4: "sm:grid-cols-4",
 };
 
-function Group({ title, cols = 2, children }: { title: string; cols?: 2 | 3 | 4; children: React.ReactNode }) {
+function Group({
+  title,
+  cols = 2,
+  headerRight,
+  children,
+}: {
+  title: string;
+  cols?: 2 | 3 | 4;
+  headerRight?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-[13.5px] font-bold text-slate-900 mb-3">{title}</h2>
+      <div className="flex items-start justify-between mb-3 gap-3">
+        <h2 className="text-[14.5px] font-bold text-slate-900">{title}</h2>
+        {headerRight}
+      </div>
       <div className={`grid grid-cols-1 ${GROUP_COLS_CLASS[cols]} gap-3`}>{children}</div>
     </section>
   );
@@ -114,7 +138,11 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
         return;
       }
 
-      router.push(`/admin/influencer-hub/influencers/${data.id}`);
+      if (mode === "edit") {
+        router.push("/admin/influencer-hub/influencers");
+      } else {
+        router.push(`/admin/influencer-hub/influencers/${data.id}`);
+      }
       router.refresh();
     } finally {
       setSubmitting(false);
@@ -123,22 +151,61 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 max-w-4xl">
+      {mode === "edit" && (
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold px-5 py-2.5 disabled:opacity-50"
+          >
+            수정완료
+          </button>
+        </div>
+      )}
       {duplicate && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 flex items-center justify-between">
-          <p className="text-[13px] text-amber-800">
+          <p className="text-[14px] text-amber-800">
             이미 등록된 인플루언서입니다. <span className="font-semibold">{duplicate.nickname}</span>
           </p>
           <a
             href={`/admin/influencer-hub/influencers/${duplicate.id}`}
-            className="text-[12.5px] font-semibold text-amber-800 underline"
+            className="text-[13.5px] font-semibold text-amber-800 underline"
           >
             기존 인플루언서 보기
           </a>
         </div>
       )}
-      {errors._global && <p className="text-[13px] text-red-500">{errors._global}</p>}
+      {errors._global && <p className="text-[14px] text-red-500">{errors._global}</p>}
 
-      <Group title="기본정보">
+      <Group
+        title="기본정보"
+        cols={3}
+        headerRight={
+          <div className="flex-shrink-0 text-right">
+            <span className="block text-[12.5px] font-medium text-slate-600 mb-1">활동 유형</span>
+            <div className="flex items-center gap-3">
+              {COLLAB_TYPE_ORDER.map((t) => {
+                const checked = (form.collab_types ?? []).includes(t);
+                return (
+                  <label key={t} className="flex items-center gap-1.5 text-[14px] text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const cur = form.collab_types ?? [];
+                        const next: IHCollabType[] = e.target.checked ? [...cur, t] : cur.filter((v) => v !== t);
+                        set("collab_types", next);
+                      }}
+                      className="w-4 h-4"
+                    />
+                    {COLLAB_TYPE_LABEL[t]}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        }
+      >
         <Field label="닉네임" required error={errors.nickname}>
           <input className={inputCls} value={form.nickname} onChange={(e) => set("nickname", e.target.value)} />
         </Field>
@@ -166,20 +233,16 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
             )}
           </div>
         </Field>
-        <Field label="아이디">
-          <input className={inputCls} value={form.handle ?? ""} onChange={(e) => set("handle", e.target.value)} />
-        </Field>
         <Field label="채널 URL" error={errors.channel_url}>
           <input className={inputCls} value={form.channel_url ?? ""} onChange={(e) => set("channel_url", e.target.value)} placeholder="https://instagram.com/..." />
         </Field>
         <Field label="팔로워" error={errors.follower_count}>
           <div className="flex items-center gap-2">
-            <input
+            <IHNumberInput
               className={inputCls}
-              type="number"
-              value={form.follower_count ?? ""}
-              onChange={(e) => {
-                const n = e.target.value === "" ? null : Number(e.target.value);
+              value={form.follower_count != null ? String(form.follower_count) : ""}
+              onChange={(v) => {
+                const n = v === "" ? null : Number(v);
                 setForm((prev) => ({
                   ...prev,
                   follower_count: n,
@@ -188,41 +251,65 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
               }}
               placeholder="숫자 (예: 56000)"
             />
-            <span className="flex-shrink-0 text-[12.5px] text-slate-400 whitespace-nowrap">{form.follower_display || "-"}</span>
+            <span className="flex-shrink-0 text-[13.5px] text-slate-500 whitespace-nowrap">{form.follower_display || "-"}</span>
           </div>
         </Field>
-        <div className="sm:col-span-2">
-          <span className="text-[12.5px] font-medium text-slate-600">콘텐츠</span>
-          <p className="text-[11.5px] text-slate-400">쉼표(,)로 여러 개 입력 — 예: 캠핑, 차박, 여행</p>
-          <div className="mt-1">
-            <IHTagBadges
-              tags={form.content_type ?? []}
-              editable
-              hashPrefix={false}
-              placeholder="캠핑, 차박, 여행"
-              onChange={(next) => set("content_type", next)}
-            />
+        <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <span className="text-[13.5px] font-medium text-slate-700">콘텐츠</span>
+            <p className="text-[12.5px] text-slate-500">쉼표(,)로 여러 개 입력 — 예: 캠핑, 차박, 여행</p>
+            <div className="mt-1">
+              <IHTagBadges
+                tags={form.content_type ?? []}
+                editable
+                hashPrefix={false}
+                placeholder="캠핑, 차박, 여행"
+                onChange={(next) => set("content_type", next)}
+              />
+            </div>
           </div>
-        </div>
-        <div className="sm:col-span-2">
-          <span className="text-[12.5px] font-medium text-slate-600">활동지역</span>
-          <div className="mt-1">
-            <IHRegionMultiSelect value={form.activity_area ?? []} onChange={(next) => set("activity_area", next)} />
+          <div>
+            <span className="text-[13.5px] font-medium text-slate-700">활동지역</span>
+            <div className="mt-1">
+              <IHRegionMultiSelect value={form.activity_area ?? []} onChange={(next) => set("activity_area", next)} />
+            </div>
           </div>
         </div>
         {/* 태그는 콘텐츠와 중복이라 Form에서 제거(기존 값은 보존되어 그대로 저장됨). */}
         {/* 채널 ID는 일반 관리자가 직접 입력할 필요가 없어 Form에서 숨긴다(DB 컬럼/값은 유지, 향후 API·자동수집용). */}
       </Group>
 
+      {mode === "create" && (
+        <div className="flex items-start gap-2 rounded-md bg-orange-50 border border-orange-200 px-3 py-2.5 text-[13px] text-orange-800">
+          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4M12 8h.01" />
+          </svg>
+          <span>
+            단가는 이 등록 화면에서 입력하지 않습니다. 단가는 시점에 따라 바뀔 수 있어 변경 이력을 남겨야 하므로, 등록을 마친 뒤
+            인플루언서 상세 페이지의 <span className="font-semibold">&quot;기타정보&quot;</span> 탭에서 등록/수정해주세요.
+          </span>
+        </div>
+      )}
+
       <Group title="개인정보" cols={3}>
         <Field label="이름">
           <input className={inputCls} value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="성별">
-          <input className={inputCls} value={form.gender ?? ""} onChange={(e) => set("gender", e.target.value)} />
+          <select className={inputCls} value={form.gender ?? ""} onChange={(e) => set("gender", e.target.value)}>
+            <option value="">선택 안 함</option>
+            <option value="남">남</option>
+            <option value="여">여</option>
+          </select>
         </Field>
         <Field label="연락처" error={errors.phone}>
-          <input className={inputCls} value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} placeholder="010-0000-0000" />
+          <input
+            className={inputCls}
+            value={form.phone ?? ""}
+            onChange={(e) => set("phone", formatPhoneNumber(e.target.value))}
+            placeholder="010-0000-0000"
+          />
         </Field>
         <div className="sm:col-span-3">
           <Field label="주소">
@@ -233,7 +320,11 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
 
       <Group title="사이즈" cols={4}>
         <Field label="키" error={errors.height}>
-          <input className={inputCls} type="number" value={form.height ?? ""} onChange={(e) => set("height", e.target.value === "" ? null : Number(e.target.value))} />
+          <IHNumberInput
+            className={inputCls}
+            value={form.height != null ? String(form.height) : ""}
+            onChange={(v) => set("height", v === "" ? null : Number(v))}
+          />
         </Field>
         <Field label="상의">
           <input className={inputCls} value={form.top_size ?? ""} onChange={(e) => set("top_size", e.target.value)} />
@@ -265,14 +356,14 @@ export default function IHInfluencerForm({ mode, influencerId, initial }: Props)
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-5 py-2.5 disabled:opacity-50"
+          className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold px-5 py-2.5 disabled:opacity-50"
         >
           {mode === "create" ? "등록" : "저장"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-md border border-slate-300 text-slate-600 text-[13px] font-semibold px-5 py-2.5"
+          className="rounded-md border border-slate-300 text-slate-700 text-[14px] font-semibold px-5 py-2.5"
         >
           취소
         </button>

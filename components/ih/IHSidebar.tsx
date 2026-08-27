@@ -16,9 +16,6 @@ const ICONS: Record<string, React.ReactNode> = {
   branch: (
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h.01M9 12h.01M9 15h.01" />
   ),
-  pool: (
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-  ),
   ppl: (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.55-2.68A1 1 0 0121 8.2v7.6a1 1 0 01-1.45.88L15 14M4 6h9a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z" />
   ),
@@ -42,7 +39,7 @@ export default function IHSidebar() {
   return (
     <aside className="w-60 flex-shrink-0 bg-[#0f172a] min-h-full flex flex-col">
       <div className="px-5 py-5 border-b border-white/5">
-        <Link href="/admin" className="flex items-center gap-2 text-slate-400 hover:text-white text-[13px] transition-colors">
+        <Link href="/admin" className="flex items-center gap-2 text-slate-500 hover:text-white text-[14px] transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
@@ -58,13 +55,13 @@ export default function IHSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 h-9 pr-3 rounded-md text-[13.5px] font-medium border-l-2 outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[#3b82f6]/60 focus-visible:ring-inset ${
+              className={`flex items-center gap-3 h-9 pr-3 rounded-md text-[14.5px] font-medium border-l-2 outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[#3b82f6]/60 focus-visible:ring-inset ${
                 active
                   ? "border-[#3b82f6] bg-white/[0.06] text-white pl-[10px]"
-                  : "border-transparent text-slate-400 hover:text-white hover:bg-white/[0.04] pl-3"
+                  : "border-transparent text-slate-500 hover:text-white hover:bg-white/[0.04] pl-3"
               }`}
             >
-              <span className={`flex-shrink-0 ${active ? "text-[#60a5fa]" : "text-slate-500"}`}>
+              <span className={`flex-shrink-0 ${active ? "text-[#60a5fa]" : "text-slate-600"}`}>
                 <NavIcon name={item.icon} />
               </span>
               <span className="truncate">{item.label}</span>
@@ -74,7 +71,7 @@ export default function IHSidebar() {
       </nav>
 
       <div className="px-5 py-4 border-t border-white/5">
-        <p className="text-[11px] text-slate-600 font-medium">Influencer Hub · MVP</p>
+        <p className="text-[12px] text-slate-700 font-medium">Influencer Hub · MVP</p>
       </div>
     </aside>
   );

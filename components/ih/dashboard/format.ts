@@ -30,12 +30,4 @@ export function fmtDDay(daysRemaining: number | null): string {
   return `D-${daysRemaining}`;
 }
 
-export const SPONSOR_STAGE_LABEL: Record<string, string> = {
-  PLANNED: "협찬 예정",
-  SENT: "발송",
-  RECEIVED: "수령",
-  PRODUCING: "제작 중",
-  UPLOAD_SCHEDULED: "업로드 예정",
-  UPLOADED: "업로드 완료",
-  ENDED: "종료",
-};
+export { SPONSOR_STAGE_LABEL } from "@/lib/ih/influencer-shared";

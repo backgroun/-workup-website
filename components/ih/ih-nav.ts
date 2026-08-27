@@ -6,9 +6,8 @@ export const IH_NAV: IHNavItem[] = [
   { label: "인플루언서", href: "/admin/influencer-hub/influencers", icon: "influencers" },
   { label: "제품 협찬", href: "/admin/influencer-hub/sponsors", icon: "sponsors" },
   { label: "지점 마케팅", href: "/admin/influencer-hub/branch-marketing", icon: "branch" },
-  { label: "지점 인플루언서 Pool", href: "/admin/influencer-hub/influencer-pool", icon: "pool" },
   { label: "브랜디드/PPL", href: "/admin/influencer-hub/branded-ppl", icon: "ppl" },
-  { label: "설정", href: "/admin/influencer-hub/settings", icon: "settings" },
+  // 설정 메뉴는 당장 쓸 일이 없어 메뉴에서만 제외한다(페이지/기능은 그대로 남겨둠 — 필요해지면 이 줄만 복구).
 ];
 
 export function getIHNavLabel(pathname: string): string {

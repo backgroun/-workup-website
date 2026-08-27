@@ -51,18 +51,18 @@ export default function IHTagBadges({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {tags.length === 0 && !editable && <span className="text-[12.5px] text-slate-400">없음</span>}
+      {tags.length === 0 && !editable && <span className="text-[13.5px] text-slate-500">없음</span>}
       {tags.map((t) => (
         <span
           key={t}
-          className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-medium px-2.5 py-1"
+          className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 text-[13px] font-medium px-2.5 py-1"
         >
           {hashPrefix ? `#${t}` : t}
           {editable && onChange && (
             <button
               type="button"
               onClick={() => onChange(tags.filter((x) => x !== t))}
-              className="text-slate-400 hover:text-slate-700"
+              className="text-slate-500 hover:text-slate-700"
               aria-label={`${t} 삭제`}
             >
               ×
@@ -82,7 +82,7 @@ export default function IHTagBadges({
           }}
           onBlur={commitDraft}
           placeholder={placeholder}
-          className="w-40 rounded-md border border-slate-200 px-2 py-1 text-[12px] outline-none focus:border-slate-400"
+          className="w-40 rounded-md border border-slate-200 px-2 py-1 text-[13px] outline-none focus:border-slate-400"
         />
       )}
     </div>

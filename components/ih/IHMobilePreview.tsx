@@ -3,6 +3,10 @@ import { useState } from "react";
 import Link from "next/link";
 import IHMobileInfluencerView from "./mobile/IHMobileInfluencerView";
 import IHMobileInfluencerListPanel from "./mobile/IHMobileInfluencerListPanel";
+import IHMobileSponsorListPanel from "./mobile/IHMobileSponsorListPanel";
+import IHMobileBranchMarketingListPanel from "./mobile/IHMobileBranchMarketingListPanel";
+import IHMobileBrandedPplListPanel from "./mobile/IHMobileBrandedPplListPanel";
+import IHMobileDashboardPanel from "./mobile/IHMobileDashboardPanel";
 import { useIHMobileSelection } from "./IHMobileSelectionContext";
 import type { IHInfluencerListItem } from "@/lib/ih/influencers";
 
@@ -10,23 +14,38 @@ const FRAME_W = 320;
 const FRAME_H = 640;
 
 /**
- * 스마트폰 프레임 안의 콘텐츠 — Mobile Viewer는 "인플루언서 목록 + 상세" 구조다(Dashboard 요약 화면 없음).
- * 1) 인플루언서를 선택 중이면(PC 상세) → 그 인플루언서 상세 화면
- * 2) 선택된 게 없으면 → 인플루언서 목록을 기본 화면으로 표시.
- *    PC 인플루언서 목록 페이지가 열려있으면 그 페이지가 이미 조회한(필터링된) 결과를 Context로 그대로 재사용하고,
- *    그렇지 않으면(다른 PC 페이지를 보고 있을 때) IHShell이 내려준 기본 목록을 대신 보여준다 — 어느 경우든
- *    Mobile이 별도로 DB를 다시 조회하지 않는다.
+ * 스마트폰 프레임 안의 콘텐츠 — Mobile Viewer는 PC가 지금 보고 있는 화면을 그대로 따라간다(별도 mock 없음).
+ * 우선순위: 1) 인플루언서를 선택 중이면(PC 상세) → 그 인플루언서 상세 화면
+ *          2) 제품 협찬 목록 페이지가 열려있으면(sponsorListItems) → 그 필터 결과를 발송일 기준으로 묶어 표시
+ *          3) 지점 마케팅 목록 페이지가 열려있으면(branchMarketingListItems) → 그 필터 결과를 표시
+ *          4) 브랜디드 PPL 목록 페이지가 열려있으면(brandedPplListItems) → 그 필터 결과를 카드형으로 표시
+ *          5) Dashboard 페이지가 열려있으면(dashboardData) → 대시보드 요약 화면을 표시
+ *          6) 그 외에는 인플루언서 목록(PC 인플루언서 목록 페이지의 필터 결과, 없으면 IHShell 기본 목록)
+ * 어느 경우든 Mobile이 별도로 DB를 다시 조회하지 않는다.
  */
 function PhoneFrame({ defaultItems, defaultTotal }: { defaultItems: IHInfluencerListItem[]; defaultTotal: number }) {
-  const { selectedInfluencer, listItems, listMeta } = useIHMobileSelection();
+  const { selectedInfluencer, listItems, listMeta, sponsorListItems, branchMarketingListItems, brandedPplListItems, dashboardData, integratedDashboardData } = useIHMobileSelection();
   const items = listItems ?? defaultItems;
   const meta = listMeta ?? { total: defaultTotal, hasActiveFilters: false };
 
+  let content: React.ReactNode;
+  if (selectedInfluencer) {
+    content = <IHMobileInfluencerView summary={selectedInfluencer} />;
+  } else if (sponsorListItems) {
+    content = <IHMobileSponsorListPanel items={sponsorListItems} />;
+  } else if (branchMarketingListItems) {
+    content = <IHMobileBranchMarketingListPanel items={branchMarketingListItems} />;
+  } else if (brandedPplListItems) {
+    content = <IHMobileBrandedPplListPanel items={brandedPplListItems} />;
+  } else if (dashboardData) {
+    content = <IHMobileDashboardPanel data={dashboardData} integrated={integratedDashboardData} />;
+  } else {
+    content = <IHMobileInfluencerListPanel items={items} meta={meta} />;
+  }
+
   return (
     <div className="relative bg-slate-900 rounded-[2.2rem] p-2 shadow-lg" style={{ width: FRAME_W, height: FRAME_H }}>
-      <div className="w-full h-full bg-white rounded-[1.6rem] overflow-hidden">
-        {selectedInfluencer ? <IHMobileInfluencerView summary={selectedInfluencer} /> : <IHMobileInfluencerListPanel items={items} meta={meta} />}
-      </div>
+      <div className="w-full h-full bg-white rounded-[1.6rem] overflow-hidden">{content}</div>
     </div>
   );
 }
@@ -43,12 +62,12 @@ export default function IHMobilePreview({ defaultItems, defaultTotal }: { defaul
     <>
       {/* 데스크톱(xl↑): 항상 표시되는 고정 패널 */}
       <aside className="hidden xl:flex w-[380px] flex-shrink-0 bg-[#f8fafc] border-l border-slate-200 flex-col items-center py-8">
-        <p className="text-[11px] font-semibold text-slate-400 mb-4 tracking-[0.14em]">MOBILE VIEWER</p>
+        <p className="text-[12px] font-semibold text-slate-500 mb-4 tracking-[0.14em]">MOBILE VIEWER</p>
         <PhoneFrame defaultItems={defaultItems} defaultTotal={defaultTotal} />
         <Link
           href="/admin/influencer-hub/mobile"
           target="_blank"
-          className="mt-5 text-[12px] text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors"
+          className="mt-5 text-[13px] text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors"
         >
           실제 모바일 페이지 열기
           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -78,12 +97,12 @@ export default function IHMobilePreview({ defaultItems, defaultTotal }: { defaul
             onClick={() => setOpenOnNarrow(false)}
           >
             <div onClick={(e) => e.stopPropagation()} className="flex flex-col items-center">
-              <p className="text-[11px] font-semibold text-white/60 mb-3 tracking-[0.14em]">MOBILE VIEWER</p>
+              <p className="text-[12px] font-semibold text-white/60 mb-3 tracking-[0.14em]">MOBILE VIEWER</p>
               <PhoneFrame defaultItems={defaultItems} defaultTotal={defaultTotal} />
               <button
                 type="button"
                 onClick={() => setOpenOnNarrow(false)}
-                className="mt-4 text-[13px] text-white/80 hover:text-white"
+                className="mt-4 text-[14px] text-white/80 hover:text-white"
               >
                 닫기
               </button>

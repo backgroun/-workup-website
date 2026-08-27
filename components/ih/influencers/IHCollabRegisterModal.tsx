@@ -3,37 +3,26 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import IHModal from "./IHModal";
 import type { IHBranchOption } from "@/lib/ih/collabs";
-import { TAX_TYPE_OPTIONS } from "@/lib/ih/influencer-shared";
+import { TAX_TYPE_OPTIONS, BRANCH_MKT_STATUS_ORDER, BRANCH_MKT_STATUS_LABEL } from "@/lib/ih/influencer-shared";
+import IHNumberInput from "../IHNumberInput";
+import IHBranchPicker from "../IHBranchPicker";
 
-const SPONSOR_STATUS_OPTIONS = [
-  { value: "PLANNED", label: "협찬 예정" },
-  { value: "SENT", label: "발송" },
-  { value: "RECEIVED", label: "수령" },
-  { value: "PRODUCING", label: "제작 중" },
-  { value: "UPLOAD_SCHEDULED", label: "업로드 예정" },
-  { value: "UPLOADED", label: "업로드 완료" },
-  { value: "ENDED", label: "종료" },
-];
-const VISIT_STATUS_OPTIONS = [
-  { value: "IN_PROGRESS", label: "진행 중" },
-  { value: "COMPLETED", label: "완료" },
-];
-
-const inputCls = "w-full rounded-md border border-slate-200 px-3 py-2 text-[13.5px] outline-none focus:border-slate-400";
+const inputCls = "w-full rounded-md border border-slate-200 px-3 py-2 text-[14.5px] outline-none focus:border-slate-400";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[12.5px] font-medium text-slate-600">{label}</span>
+      <span className="text-[13.5px] font-medium text-slate-700">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
 }
 
-type CollabType = "SPONSOR" | "VISIT" | null;
+type CollabType = "VISIT" | null;
 
 /**
- * "+ 협찬 등록" — 협업 유형(제품 협찬 메이트 / 방문 인플루언서) 선택 후 해당 Form을 보여준다.
- * 제품 협찬 메이트 → POST .../sponsors (ih_sponsors)
+ * "+ 협찬 등록" — 협업 유형(제품 협찬 메이트 / 방문 인플루언서) 선택.
+ * 제품 협찬 메이트 → Phase 5부터 전용 등록 Form(/sponsors/new)으로 이동(인플루언서 검색선택·사이즈/회차
+ *   자동제안이 필요해 모달 안에서 처리하지 않는다). 해당 인플루언서가 자동 선택된 채로 열린다.
  * 방문 인플루언서   → POST .../branch-activities { activity_type: 'INFLUENCER_VISIT' } (ih_branch_marketing)
  */
 export default function IHCollabRegisterModal({ influencerId, onClose }: { influencerId: number; onClose: () => void }) {
@@ -51,48 +40,6 @@ export default function IHCollabRegisterModal({ influencerId, onClose }: { influ
       .catch(() => {});
   }, [type]);
 
-  // ── 제품 협찬 메이트 ──
-  const [sponsorForm, setSponsorForm] = useState({
-    product: "",
-    round: "",
-    support_type: "",
-    send_date: "",
-    upload_due_date: "",
-    upload_date: "",
-    content_url: "",
-    cost: "",
-    status: "PLANNED",
-    memo: "",
-  });
-  const submitSponsor = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/ih/influencers/${influencerId}/sponsors`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...sponsorForm,
-          round: sponsorForm.round ? Number(sponsorForm.round) : null,
-          cost: sponsorForm.cost ? Number(sponsorForm.cost) : null,
-          send_date: sponsorForm.send_date || null,
-          upload_due_date: sponsorForm.upload_due_date || null,
-          upload_date: sponsorForm.upload_date || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.fieldErrors ? Object.values(data.fieldErrors).join(" / ") : data.error ?? "저장 실패");
-        return;
-      }
-      router.refresh();
-      onClose();
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   // ── 방문 인플루언서 ──
   const [visitForm, setVisitForm] = useState({
     branch_id: "",
@@ -103,7 +50,7 @@ export default function IHCollabRegisterModal({ influencerId, onClose }: { influ
     content_url: "",
     views: "",
     reactions: "",
-    status: "IN_PROGRESS",
+    status: "VISIT_SCHEDULED",
     memo: "",
   });
   const submitVisit = async (e: React.FormEvent) => {
@@ -140,90 +87,31 @@ export default function IHCollabRegisterModal({ influencerId, onClose }: { influ
     <IHModal title="협찬 등록" onClose={onClose}>
       {type === null && (
         <div className="space-y-2">
-          <p className="text-[12.5px] text-slate-500 mb-3">협업 유형을 선택해주세요.</p>
+          <p className="text-[13.5px] text-slate-600 mb-3">협업 유형을 선택해주세요.</p>
           <button
             type="button"
-            onClick={() => setType("SPONSOR")}
+            onClick={() => router.push(`/admin/influencer-hub/sponsors/new?influencerId=${influencerId}`)}
             className="w-full text-left rounded-md border border-slate-200 px-4 py-3 hover:border-slate-400"
           >
-            <p className="text-[13.5px] font-semibold text-slate-800">제품 협찬 메이트</p>
-            <p className="text-[12px] text-slate-400">제품을 보내고 콘텐츠를 받는 협찬</p>
+            <p className="text-[14.5px] font-semibold text-slate-800">제품 협찬 메이트</p>
+            <p className="text-[13px] text-slate-500">제품을 보내고 콘텐츠를 받는 협찬</p>
           </button>
           <button
             type="button"
             onClick={() => setType("VISIT")}
             className="w-full text-left rounded-md border border-slate-200 px-4 py-3 hover:border-slate-400"
           >
-            <p className="text-[13.5px] font-semibold text-slate-800">방문 인플루언서</p>
-            <p className="text-[12px] text-slate-400">지점을 직접 방문해 콘텐츠를 제작하는 협업</p>
+            <p className="text-[14.5px] font-semibold text-slate-800">방문 인플루언서</p>
+            <p className="text-[13px] text-slate-500">지점을 직접 방문해 콘텐츠를 제작하는 협업</p>
           </button>
         </div>
       )}
 
-      {type === "SPONSOR" && (
-        <form onSubmit={submitSponsor} className="space-y-3">
-          {error && <p className="text-[12.5px] text-red-500">{error}</p>}
-          <Field label="제품 *">
-            <input required className={inputCls} value={sponsorForm.product} onChange={(e) => setSponsorForm((p) => ({ ...p, product: e.target.value }))} />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="회차">
-              <input type="number" className={inputCls} value={sponsorForm.round} onChange={(e) => setSponsorForm((p) => ({ ...p, round: e.target.value }))} />
-            </Field>
-            <Field label="지원 유형">
-              <input className={inputCls} value={sponsorForm.support_type} onChange={(e) => setSponsorForm((p) => ({ ...p, support_type: e.target.value }))} />
-            </Field>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="발송일">
-              <input type="date" className={inputCls} value={sponsorForm.send_date} onChange={(e) => setSponsorForm((p) => ({ ...p, send_date: e.target.value }))} />
-            </Field>
-            <Field label="업로드 예정일">
-              <input type="date" className={inputCls} value={sponsorForm.upload_due_date} onChange={(e) => setSponsorForm((p) => ({ ...p, upload_due_date: e.target.value }))} />
-            </Field>
-            <Field label="업로드일">
-              <input type="date" className={inputCls} value={sponsorForm.upload_date} onChange={(e) => setSponsorForm((p) => ({ ...p, upload_date: e.target.value }))} />
-            </Field>
-          </div>
-          <Field label="콘텐츠 링크">
-            <input className={inputCls} value={sponsorForm.content_url} onChange={(e) => setSponsorForm((p) => ({ ...p, content_url: e.target.value }))} />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="비용(원)">
-              <input type="number" className={inputCls} value={sponsorForm.cost} onChange={(e) => setSponsorForm((p) => ({ ...p, cost: e.target.value }))} />
-            </Field>
-            <Field label="상태">
-              <select className={inputCls} value={sponsorForm.status} onChange={(e) => setSponsorForm((p) => ({ ...p, status: e.target.value }))}>
-                {SPONSOR_STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <Field label="지원 내용 / 메모">
-            <textarea className={`${inputCls} min-h-[70px]`} value={sponsorForm.memo} onChange={(e) => setSponsorForm((p) => ({ ...p, memo: e.target.value }))} />
-          </Field>
-          <div className="flex gap-2 pt-1">
-            <button type="submit" disabled={submitting} className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-4 py-2 disabled:opacity-50">
-              등록
-            </button>
-            <button type="button" onClick={() => setType(null)} className="rounded-md border border-slate-300 text-slate-600 text-[13px] font-semibold px-4 py-2">
-              이전
-            </button>
-          </div>
-        </form>
-      )}
-
       {type === "VISIT" && (
         <form onSubmit={submitVisit} className="space-y-3">
-          {error && <p className="text-[12.5px] text-red-500">{error}</p>}
+          {error && <p className="text-[13.5px] text-red-500">{error}</p>}
           <Field label="방문 지점 *">
-            <select required className={inputCls} value={visitForm.branch_id} onChange={(e) => setVisitForm((p) => ({ ...p, branch_id: e.target.value }))}>
-              <option value="">선택해주세요</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>{b.branch_name}</option>
-              ))}
-            </select>
+            <IHBranchPicker required branches={branches} value={visitForm.branch_id} onChange={(id) => setVisitForm((p) => ({ ...p, branch_id: id }))} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="방문일">
@@ -231,15 +119,15 @@ export default function IHCollabRegisterModal({ influencerId, onClose }: { influ
             </Field>
             <Field label="상태">
               <select className={inputCls} value={visitForm.status} onChange={(e) => setVisitForm((p) => ({ ...p, status: e.target.value }))}>
-                {VISIT_STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                {BRANCH_MKT_STATUS_ORDER.map((s) => (
+                  <option key={s} value={s}>{BRANCH_MKT_STATUS_LABEL[s]}</option>
                 ))}
               </select>
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="단가(원)">
-              <input type="number" className={inputCls} value={visitForm.cost} onChange={(e) => setVisitForm((p) => ({ ...p, cost: e.target.value }))} />
+              <IHNumberInput className={inputCls} value={visitForm.cost} onChange={(v) => setVisitForm((p) => ({ ...p, cost: v }))} />
             </Field>
             <Field label="세금">
               <select className={inputCls} value={visitForm.tax_type} onChange={(e) => setVisitForm((p) => ({ ...p, tax_type: e.target.value }))}>
@@ -258,20 +146,20 @@ export default function IHCollabRegisterModal({ influencerId, onClose }: { influ
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="조회수(성과)">
-              <input type="number" className={inputCls} value={visitForm.views} onChange={(e) => setVisitForm((p) => ({ ...p, views: e.target.value }))} />
+              <IHNumberInput className={inputCls} value={visitForm.views} onChange={(v) => setVisitForm((p) => ({ ...p, views: v }))} />
             </Field>
             <Field label="반응수(성과)">
-              <input type="number" className={inputCls} value={visitForm.reactions} onChange={(e) => setVisitForm((p) => ({ ...p, reactions: e.target.value }))} />
+              <IHNumberInput className={inputCls} value={visitForm.reactions} onChange={(v) => setVisitForm((p) => ({ ...p, reactions: v }))} />
             </Field>
           </div>
           <Field label="메모">
             <textarea className={`${inputCls} min-h-[70px]`} value={visitForm.memo} onChange={(e) => setVisitForm((p) => ({ ...p, memo: e.target.value }))} />
           </Field>
           <div className="flex gap-2 pt-1">
-            <button type="submit" disabled={submitting} className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-4 py-2 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold px-4 py-2 disabled:opacity-50">
               등록
             </button>
-            <button type="button" onClick={() => setType(null)} className="rounded-md border border-slate-300 text-slate-600 text-[13px] font-semibold px-4 py-2">
+            <button type="button" onClick={() => setType(null)} className="rounded-md border border-slate-300 text-slate-700 text-[14px] font-semibold px-4 py-2">
               이전
             </button>
           </div>

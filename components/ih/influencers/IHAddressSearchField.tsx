@@ -79,12 +79,12 @@ export default function IHAddressSearchField({
           readOnly
           value={baseAddress}
           placeholder="주소 검색을 눌러주세요"
-          className="flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[13.5px] text-slate-600"
+          className="flex-1 rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-[14.5px] text-slate-900 placeholder:text-slate-500"
         />
         <button
           type="button"
           onClick={openSearch}
-          className="flex-shrink-0 rounded-md border border-slate-300 px-3 py-2 text-[12.5px] font-semibold text-slate-600 hover:bg-slate-50"
+          className="flex-shrink-0 rounded-md border border-slate-300 px-3 py-2 text-[14px] font-semibold text-slate-700 hover:bg-slate-50"
         >
           주소 검색
         </button>
@@ -94,7 +94,7 @@ export default function IHAddressSearchField({
           value={detailAddress}
           onChange={(e) => handleDetailChange(e.target.value)}
           placeholder="상세주소 입력"
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-[13.5px] outline-none focus:border-slate-400"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-[14.5px] text-slate-900 placeholder:text-slate-500 outline-none focus:border-slate-500"
         />
       )}
     </div>

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { listBranchOptions } from "@/lib/ih/collabs";
 
-// 방문 지점 / 지점 활동 등록 Dropdown용 — 활성 지점만 반환.
+// 방문 지점 / 지점 마케팅 등록 Dropdown용 — stores(고객용 매장) 중 활성 매장만 반환.
+// 매장 자체의 등록/수정은 /admin/stores에서 하므로 여기서는 조회만 제공한다.
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {

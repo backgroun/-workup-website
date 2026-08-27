@@ -3,12 +3,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import IHModal from "./IHModal";
 import { TAX_TYPE_OPTIONS } from "@/lib/ih/influencer-shared";
+import IHNumberInput from "../IHNumberInput";
 
-const inputCls = "w-full rounded-md border border-slate-200 px-3 py-2 text-[13.5px] outline-none focus:border-slate-400";
+const inputCls = "w-full rounded-md border border-slate-200 px-3 py-2 text-[14.5px] outline-none focus:border-slate-400";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[12.5px] font-medium text-slate-600">{label}</span>
+      <span className="text-[13.5px] font-medium text-slate-700">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
@@ -48,12 +49,12 @@ export default function IHRateRegisterModal({ influencerId, onClose }: { influen
   return (
     <IHModal title="단가 등록" onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
-        {error && <p className="text-[12.5px] text-red-500">{error}</p>}
+        {error && <p className="text-[13.5px] text-red-500">{error}</p>}
         <Field label="콘텐츠 유형">
           <input className={inputCls} placeholder="예: 릴스, 피드, 스토리" value={form.content_type} onChange={(e) => setForm((p) => ({ ...p, content_type: e.target.value }))} />
         </Field>
         <Field label="단가(원)">
-          <input type="number" className={inputCls} value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} />
+          <IHNumberInput className={inputCls} value={form.price} onChange={(v) => setForm((p) => ({ ...p, price: v }))} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="세금 유형">
@@ -70,8 +71,8 @@ export default function IHRateRegisterModal({ influencerId, onClose }: { influen
         <Field label="메모">
           <textarea className={`${inputCls} min-h-[70px]`} value={form.memo} onChange={(e) => setForm((p) => ({ ...p, memo: e.target.value }))} />
         </Field>
-        <p className="text-[11.5px] text-slate-400">기존 단가는 수정되지 않고, 이 단가가 새 이력으로 추가됩니다.</p>
-        <button type="submit" disabled={submitting} className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-4 py-2 disabled:opacity-50">
+        <p className="text-[12.5px] text-slate-500">기존 단가는 수정되지 않고, 이 단가가 새 이력으로 추가됩니다.</p>
+        <button type="submit" disabled={submitting} className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold px-4 py-2 disabled:opacity-50">
           등록
         </button>
       </form>

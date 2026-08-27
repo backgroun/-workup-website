@@ -41,18 +41,18 @@ export default function IHMemoPanel({ influencerId, memos }: { influencerId: num
   return (
     <div className="space-y-4">
       <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-white p-4">
-        <p className="text-[12.5px] font-medium text-slate-600 mb-2">+ 메모 등록</p>
-        {error && <p className="text-[12.5px] text-red-500 mb-2">{error}</p>}
+        <p className="text-[13.5px] font-medium text-slate-700 mb-2">+ 메모 등록</p>
+        {error && <p className="text-[13.5px] text-red-500 mb-2">{error}</p>}
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="내부 메모를 입력하세요"
-          className="w-full min-h-[70px] rounded-md border border-slate-200 px-3 py-2 text-[13.5px] outline-none focus:border-slate-400"
+          className="w-full min-h-[70px] rounded-md border border-slate-200 px-3 py-2 text-[14.5px] outline-none focus:border-slate-400"
         />
         <button
           type="submit"
           disabled={submitting || !content.trim()}
-          className="mt-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-4 py-2 disabled:opacity-50"
+          className="mt-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold px-4 py-2 disabled:opacity-50"
         >
           등록
         </button>
@@ -60,17 +60,17 @@ export default function IHMemoPanel({ influencerId, memos }: { influencerId: num
 
       {memos.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center">
-          <p className="text-[13px] text-slate-400">등록된 메모가 없습니다.</p>
+          <p className="text-[14px] text-slate-500">등록된 메모가 없습니다.</p>
         </div>
       ) : (
         <ul className="rounded-lg border border-slate-200 bg-white divide-y divide-slate-100">
           {memos.map((m) => (
             <li key={m.id} className="px-4 py-3">
-              <div className="flex items-center justify-between text-[11.5px] text-slate-400">
+              <div className="flex items-center justify-between text-[12.5px] text-slate-500">
                 <span>{m.author_name ?? "알 수 없음"}</span>
                 <span>{fmtDateTime(m.created_at)}</span>
               </div>
-              <p className="mt-1 text-[13.5px] text-slate-700 whitespace-pre-wrap">{m.content}</p>
+              <p className="mt-1 text-[14.5px] text-slate-700 whitespace-pre-wrap">{m.content}</p>
             </li>
           ))}
         </ul>

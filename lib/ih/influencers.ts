@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-server";
-import { STATUS_LABEL, ACTIVITY_TYPE_LABEL, type IHInfluencerStatus, type IHBranchActivityType } from "./influencer-shared";
+import { STATUS_LABEL, ACTIVITY_TYPE_LABEL, stripBranchPrefix, type IHInfluencerStatus, type IHBranchActivityType } from "./influencer-shared";
 import { SUB_REGIONS } from "./regions";
 
 // Influencer Hub — 인플루언서 데이터 접근/검증 헬퍼(서버 전용).
@@ -20,6 +20,8 @@ export type IHInfluencerRow = {
   content_type: string[];
   /** Phase 4.1부터 TEXT[] — 인플루언서 1명이 여러 지역에서 활동할 수 있다(migrate_ih_activity_area_array.sql). */
   activity_area: string[];
+  /** 제품 협찬 메이트/방문 인플루언서 고정 구분값 — migrate_ih_influencers_add_collab_types.sql 전이면 항상 []. */
+  collab_types: ("SPONSOR" | "VISIT")[];
   status: IHInfluencerStatus;
   match_status: "CONFIRMED" | "NEEDS_REVIEW";
   name: string | null;
@@ -50,6 +52,9 @@ export type IHInfluencerSearchParams = {
   followerMax?: number;
   status?: string;
   tag?: string;
+  /** 단가(ih_influencer_rates_current.price) 기준 예산 필터 — 지점 인플루언서 Pool 기능을 인플루언서 탭에 통합. */
+  costMin?: number;
+  costMax?: number;
   page?: number;
   pageSize?: number;
 };
@@ -62,10 +67,12 @@ export type IHInfluencerListItem = Pick<
   | "handle"
   | "channel"
   | "channel_id"
+  | "channel_url"
   | "follower_display"
   | "follower_count"
   | "content_type"
   | "activity_area"
+  | "collab_types"
   | "status"
   | "match_status"
   | "tags"
@@ -74,10 +81,16 @@ export type IHInfluencerListItem = Pick<
   /** 최근 협업(제품협찬/지점마케팅 통틀어 가장 최근 1건) 라벨 — WORKUP 마케팅 DB이므로 목록에서 바로 확인 가능해야 한다. */
   recentCollabLabel: string | null;
   recentCollabDate: string | null;
+  /** 협찬(ih_sponsors) + 지점마케팅(ih_branch_marketing) 통틀어 이 인플루언서와의 총 협업 횟수. */
+  collabCount: number;
+  /** 현재 단가(ih_influencer_rates_current) 최소/최대 — 콘텐츠 유형별로 여러 단가가 있을 수 있어 범위로 표시. 등록된 단가가 없으면 둘 다 null. */
+  currentRateMin: number | null;
+  currentRateMax: number | null;
 };
 
-const LIST_COLUMNS =
-  "id, nickname, handle, channel, channel_id, follower_display, follower_count, content_type, activity_area, status, match_status, tags, created_at";
+const LIST_COLUMNS_BASE =
+  "id, nickname, handle, channel, channel_id, channel_url, follower_display, follower_count, content_type, activity_area, status, match_status, tags, created_at";
+const LIST_COLUMNS_FULL = `${LIST_COLUMNS_BASE}, collab_types`;
 
 export type IHInfluencerSearchResult = {
   items: IHInfluencerListItem[];
@@ -90,11 +103,25 @@ export type IHInfluencerSearchResult = {
 export async function searchInfluencers(params: IHInfluencerSearchParams): Promise<IHInfluencerSearchResult> {
   const sb = createAdminClient();
   const page = Math.max(1, params.page ?? 1);
-  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 20));
+  const pageSize = Math.min(5000, Math.max(1, params.pageSize ?? 20));
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = sb.from("ih_influencers").select(LIST_COLUMNS, { count: "exact" });
+  // 예산(단가) 필터가 있으면 먼저 ih_influencer_rates_current에서 해당 범위의 influencer_id만 추려서
+  // 본 쿼리를 그 id 목록으로 제한한다(VIEW라 PostgREST embed 조인이 불가능해 2단계 조회).
+  let costFilterIds: number[] | null = null;
+  if (params.costMin != null || params.costMax != null) {
+    let rateQuery = sb.from("ih_influencer_rates_current").select("influencer_id");
+    if (params.costMin != null) rateQuery = rateQuery.gte("price", params.costMin);
+    if (params.costMax != null) rateQuery = rateQuery.lte("price", params.costMax);
+    const { data: rateRows, error: rateError } = await rateQuery;
+    if (rateError) throw rateError;
+    costFilterIds = Array.from(new Set((rateRows ?? []).map((r) => r.influencer_id)));
+    if (costFilterIds.length === 0) return { items: [], total: 0, page, pageSize };
+  }
+
+  let query = sb.from("ih_influencers").select(LIST_COLUMNS_FULL, { count: "exact" });
+  if (costFilterIds) query = query.in("id", costFilterIds);
 
   const q = params.q?.trim();
   if (q) {
@@ -121,54 +148,136 @@ export async function searchInfluencers(params: IHInfluencerSearchParams): Promi
   if (params.followerMin != null) query = query.gte("follower_count", params.followerMin);
   if (params.followerMax != null) query = query.lte("follower_count", params.followerMax);
 
-  const { data, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
+  let { data, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
+  if (error && /column .* does not exist/i.test(error.message)) {
+    // collab_types 컬럼 미적용(migrate_ih_influencers_add_collab_types.sql 실행 전) — 기본 컬럼만으로 재조회.
+    let fallbackQuery = sb.from("ih_influencers").select(LIST_COLUMNS_BASE, { count: "exact" });
+    if (costFilterIds) fallbackQuery = fallbackQuery.in("id", costFilterIds);
+    if (q) {
+      const safe = q.replace(/[,()]/g, " ").trim();
+      if (safe) fallbackQuery = fallbackQuery.or(`nickname.ilike.%${safe}%,handle.ilike.%${safe}%,channel.ilike.%${safe}%,channel_id.ilike.%${safe}%`);
+    }
+    if (params.channel) fallbackQuery = fallbackQuery.eq("channel", params.channel);
+    if (params.status) fallbackQuery = fallbackQuery.eq("status", params.status);
+    if (params.region) {
+      const subOptions = SUB_REGIONS[params.region];
+      const candidates = subOptions ? [params.region, ...subOptions.map((s) => `${params.region} ${s}`)] : [params.region];
+      fallbackQuery = fallbackQuery.overlaps("activity_area", candidates);
+    }
+    if (params.contentType) fallbackQuery = fallbackQuery.contains("content_type", [params.contentType]);
+    if (params.tag) fallbackQuery = fallbackQuery.contains("tags", [params.tag]);
+    if (params.followerMin != null) fallbackQuery = fallbackQuery.gte("follower_count", params.followerMin);
+    if (params.followerMax != null) fallbackQuery = fallbackQuery.lte("follower_count", params.followerMax);
+    const fallbackResult = await fallbackQuery.order("created_at", { ascending: false }).range(from, to);
+    error = fallbackResult.error;
+    count = fallbackResult.count;
+    data = (fallbackResult.data ?? []).map((r) => ({ ...r, collab_types: [] as ("SPONSOR" | "VISIT")[] }));
+  }
   if (error) throw error;
 
-  const items = await attachRecentCollab((data ?? []) as unknown as Omit<IHInfluencerListItem, "recentCollabLabel" | "recentCollabDate">[]);
+  const withCollab = await attachRecentCollab(
+    (data ?? []) as unknown as Omit<IHInfluencerListItem, "recentCollabLabel" | "recentCollabDate" | "collabCount" | "currentRateMin" | "currentRateMax">[]
+  );
+  const items = await attachCurrentRateRange(withCollab);
   return { items, total: count ?? 0, page, pageSize };
 }
 
-/** 현재 페이지에 보이는 인플루언서들의 "최근 협업"(협찬/지점마케팅 통틀어 가장 최근 1건)을 한 번에 붙인다. */
-async function attachRecentCollab<T extends { id: number }>(
+/** 현재 페이지에 보이는 인플루언서들의 현재 단가(ih_influencer_rates_current) 최소/최대를 붙인다. */
+async function attachCurrentRateRange<T extends { id: number }>(
   rows: T[]
-): Promise<(T & { recentCollabLabel: string | null; recentCollabDate: string | null })[]> {
+): Promise<(T & { currentRateMin: number | null; currentRateMax: number | null })[]> {
+  if (rows.length === 0) return [];
+  const sb = createAdminClient();
+  const ids = rows.map((r) => r.id);
+  const { data, error } = await sb.from("ih_influencer_rates_current").select("influencer_id, price").in("influencer_id", ids);
+  if (error) throw error;
+
+  const range = new Map<number, { min: number; max: number }>();
+  for (const r of data ?? []) {
+    if (r.price == null) continue;
+    const cur = range.get(r.influencer_id);
+    if (!cur) range.set(r.influencer_id, { min: r.price, max: r.price });
+    else {
+      cur.min = Math.min(cur.min, r.price);
+      cur.max = Math.max(cur.max, r.price);
+    }
+  }
+
+  return rows.map((r) => {
+    const hit = range.get(r.id);
+    return { ...r, currentRateMin: hit?.min ?? null, currentRateMax: hit?.max ?? null };
+  });
+}
+
+/** 현재 페이지에 보이는 인플루언서들의 "최근 협업"과 총 협업 횟수를 한 번에 붙인다.
+ *  "최근 협업" 라벨/날짜는 인플루언서의 활동 유형(collab_types)에 맞는 소스만 사용한다 —
+ *  제품 협찬 메이트는 ih_sponsors, 방문 인플루언서는 ih_branch_marketing(INFLUENCER_VISIT)만 반영해
+ *  Mobile Viewer의 "최근 협찬 vs 최근 방문 활동" 분리와 동일한 기준을 목록에도 적용한다.
+ *  활동 유형이 아직 지정 안 된 기존 데이터는 두 소스 모두 허용(데이터 누락 방지).
+ *  총 협업 횟수(collabCount)는 기존대로 협찬+지점마케팅을 합산한다. */
+async function attachRecentCollab<T extends { id: number; collab_types?: ("SPONSOR" | "VISIT")[] }>(
+  rows: T[]
+): Promise<(T & { recentCollabLabel: string | null; recentCollabDate: string | null; collabCount: number })[]> {
   if (rows.length === 0) return [];
   const sb = createAdminClient();
   const ids = rows.map((r) => r.id);
 
-  const [sponsorsRes, branchRes] = await Promise.all([
+  const branchColumnsFull = "influencer_id, marketing_date, created_at, activity_type, stores(name)";
+  const branchColumnsBase = "influencer_id, marketing_date, created_at, stores(name)";
+  const [sponsorsRes, branchResFull] = await Promise.all([
     sb.from("ih_sponsors").select("influencer_id, product, upload_date, send_date, created_at").in("influencer_id", ids),
-    sb
-      .from("ih_branch_marketing")
-      .select("influencer_id, marketing_date, created_at, ih_branches(branch_name)")
-      .in("influencer_id", ids),
+    sb.from("ih_branch_marketing").select(branchColumnsFull).in("influencer_id", ids),
   ]);
+  // activity_type은 migrate_ih_branch_marketing_visit_type.sql 실행 전에는 없을 수 있다 — 없으면 기본 컬럼만 재조회.
+  const branchRes = /column .* does not exist/i.test(branchResFull.error?.message ?? "")
+    ? await sb.from("ih_branch_marketing").select(branchColumnsBase).in("influencer_id", ids)
+    : branchResFull;
 
   type Candidate = { date: string; label: string };
-  const latest = new Map<number, Candidate>();
-  const consider = (influencerId: number | null, date: string | null, label: string) => {
+  const latestSponsor = new Map<number, Candidate>();
+  const latestVisit = new Map<number, Candidate>();
+  const counts = new Map<number, number>();
+  const bumpCount = (influencerId: number | null) => {
+    if (influencerId == null) return;
+    counts.set(influencerId, (counts.get(influencerId) ?? 0) + 1);
+  };
+  const considerLatest = (map: Map<number, Candidate>, influencerId: number | null, date: string | null, label: string) => {
     if (influencerId == null || !date) return;
-    const cur = latest.get(influencerId);
-    if (!cur || date > cur.date) latest.set(influencerId, { date, label });
+    const cur = map.get(influencerId);
+    if (!cur || date > cur.date) map.set(influencerId, { date, label });
   };
 
   for (const s of sponsorsRes.data ?? []) {
-    consider(s.influencer_id, s.upload_date ?? s.send_date ?? s.created_at, s.product);
+    bumpCount(s.influencer_id);
+    considerLatest(latestSponsor, s.influencer_id, s.upload_date ?? s.send_date ?? s.created_at, s.product);
   }
   type RawBranch = {
     influencer_id: number | null;
     marketing_date: string | null;
     created_at: string;
-    ih_branches: { branch_name: string } | { branch_name: string }[] | null;
+    activity_type?: "GENERAL" | "INFLUENCER_VISIT";
+    stores: { name: string } | { name: string }[] | null;
   };
   for (const b of (branchRes.data ?? []) as unknown as RawBranch[]) {
-    const branchName = Array.isArray(b.ih_branches) ? b.ih_branches[0]?.branch_name : b.ih_branches?.branch_name;
-    consider(b.influencer_id, b.marketing_date ?? b.created_at, branchName ?? "지점 마케팅");
+    bumpCount(b.influencer_id);
+    if (b.activity_type !== "INFLUENCER_VISIT") continue; // 일반 지점 마케팅은 "최근 협업"에 반영하지 않는다.
+    const branchName = Array.isArray(b.stores) ? b.stores[0]?.name : b.stores?.name;
+    considerLatest(latestVisit, b.influencer_id, b.marketing_date ?? b.created_at, branchName ? stripBranchPrefix(branchName) : "방문 인플루언서");
   }
 
   return rows.map((r) => {
-    const hit = latest.get(r.id);
-    return { ...r, recentCollabLabel: hit?.label ?? null, recentCollabDate: hit?.date ?? null };
+    const types = r.collab_types && r.collab_types.length > 0 ? r.collab_types : ["SPONSOR", "VISIT"];
+    const candidates: Candidate[] = [];
+    if (types.includes("SPONSOR")) {
+      const c = latestSponsor.get(r.id);
+      if (c) candidates.push(c);
+    }
+    if (types.includes("VISIT")) {
+      const c = latestVisit.get(r.id);
+      if (c) candidates.push(c);
+    }
+    const best = candidates.sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+    return { ...r, recentCollabLabel: best?.label ?? null, recentCollabDate: best?.date ?? null, collabCount: counts.get(r.id) ?? 0 };
   });
 }
 
@@ -203,6 +312,7 @@ export type IHInfluencerInput = {
   follower_display?: string;
   content_type?: string[];
   activity_area?: string[];
+  collab_types?: ("SPONSOR" | "VISIT")[];
   status?: IHInfluencerStatus;
   tags?: string[];
   name?: string;
@@ -256,6 +366,7 @@ function normalizeInfluencerInput(input: IHInfluencerInput) {
     follower_display: input.follower_display?.trim() || null,
     content_type: input.content_type ?? [],
     activity_area: input.activity_area ?? [],
+    collab_types: input.collab_types ?? [],
     status: input.status ?? "ACTIVE",
     tags: input.tags ?? [],
     name: input.name?.trim() || null,
@@ -339,11 +450,13 @@ export async function createInfluencer(input: IHInfluencerInput): Promise<Create
   if (existing) return { ok: false, reason: "duplicate", existing };
 
   const sb = createAdminClient();
-  const { data, error } = await sb
-    .from("ih_influencers")
-    .insert({ ...normalizeInfluencerInput(input), source_sheet: "manual" })
-    .select()
-    .single();
+  const insertRow = { ...normalizeInfluencerInput(input), source_sheet: "manual" };
+  let { data, error } = await sb.from("ih_influencers").insert(insertRow).select().single();
+  if (error && /column .* does not exist/i.test(error.message)) {
+    // collab_types 컬럼 미적용 — 그 필드만 빼고 재시도(등록 자체는 막지 않는다).
+    const { collab_types: _omit, ...withoutCollabTypes } = insertRow;
+    ({ data, error } = await sb.from("ih_influencers").insert(withoutCollabTypes).select().single());
+  }
   if (error) throw error;
 
   const row = data as IHInfluencerRow;
@@ -365,12 +478,12 @@ export async function updateInfluencer(id: number, input: IHInfluencerInput): Pr
   if (existing) return { ok: false, reason: "duplicate", existing };
 
   const sb = createAdminClient();
-  const { data, error } = await sb
-    .from("ih_influencers")
-    .update(normalizeInfluencerInput(input))
-    .eq("id", id)
-    .select()
-    .maybeSingle();
+  const updateRow = normalizeInfluencerInput(input);
+  let { data, error } = await sb.from("ih_influencers").update(updateRow).eq("id", id).select().maybeSingle();
+  if (error && /column .* does not exist/i.test(error.message)) {
+    const { collab_types: _omit, ...withoutCollabTypes } = updateRow;
+    ({ data, error } = await sb.from("ih_influencers").update(withoutCollabTypes).eq("id", id).select().maybeSingle());
+  }
   if (error) throw error;
   if (!data) return { ok: false, reason: "not_found" };
   return { ok: true, influencer: data as IHInfluencerRow };
@@ -386,6 +499,35 @@ export async function updateInfluencerStatus(id: number, status: IHInfluencerSta
     .maybeSingle();
   if (error) throw error;
   return (data as IHInfluencerRow | null) ?? null;
+}
+
+export type IHInfluencerBulkRow = IHInfluencerInput & { id?: number };
+export type IHInfluencerBulkResult = { row: number; ok: boolean; reason?: string };
+
+/** Excel 대량 업로드 — ID 있는 행은 수정, 없는 행은 신규 등록. 인플루언서는 채널URL 기준 중복 판별이 있어
+ *  (findExactDuplicate) 협찬/지점 마케팅처럼 단순 upsert로 처리하지 않고 한 행씩 create/updateInfluencer를 태운다. */
+export async function bulkImportInfluencers(rows: { rowNum: number; input: IHInfluencerBulkRow }[]): Promise<{
+  inserted: number;
+  updated: number;
+  failed: IHInfluencerBulkResult[];
+}> {
+  let inserted = 0;
+  let updated = 0;
+  const failed: IHInfluencerBulkResult[] = [];
+
+  for (const { rowNum, input } of rows) {
+    const { id, ...rest } = input;
+    if (id != null) {
+      const result = await updateInfluencer(id, rest);
+      if (result.ok) updated += 1;
+      else failed.push({ row: rowNum, ok: false, reason: result.reason === "duplicate" ? "이미 등록된 채널 URL" : result.reason === "not_found" ? "ID를 찾을 수 없음" : "입력값 오류" });
+    } else {
+      const result = await createInfluencer(rest);
+      if (result.ok) inserted += 1;
+      else failed.push({ row: rowNum, ok: false, reason: result.reason === "duplicate" ? "이미 등록된 채널 URL" : "입력값 오류" });
+    }
+  }
+  return { inserted, updated, failed };
 }
 
 // ── 중복 후보 큐 ───────────────────────────────────────────────────────────
@@ -482,25 +624,58 @@ export type IHInfluencerSponsorRow = {
   product: string;
   round: number | null;
   support_type: string | null;
+  /** Phase 5 migration(migrate_add_ih_sponsors_content_format.sql) 전이면 항상 null. */
+  content_format: string | null;
   send_date: string | null;
-  upload_due_date: string | null;
   upload_date: string | null;
   content_url: string | null;
   cost: number | null;
+  /** migrate_add_ih_sponsors_views.sql 전이면 항상 null. */
+  views: number | null;
+  /** 좋아요/댓글 — migrate_add_ih_sponsors_engagement.sql 전이면 항상 null(Phase 8). */
+  likes: number | null;
+  comments: number | null;
   status: string;
   memo: string | null;
 };
 
+const SPONSOR_COLUMNS_BASE = "id, influencer_id, product, round, support_type, send_date, upload_date, content_url, cost, status, memo, created_at, updated_at";
+const SPONSOR_COLUMNS_MID = `${SPONSOR_COLUMNS_BASE}, content_format, views`;
+const SPONSOR_COLUMNS_FULL = `${SPONSOR_COLUMNS_MID}, likes, comments`;
+
+/** content_format/views(Phase 5)와 likes/comments(Phase 8)는 서로 다른(둘 중 하나만 미실행일 수 있는) migration
+ *  전제 컬럼 — 좋아요/댓글만 뺀 단계를 먼저 시도해 이미 실행된 조회수 migration까지 실수로 잃지 않는다. */
+async function fetchSponsorsForInfluencer(id: number) {
+  const sb = createAdminClient();
+  const full = await sb.from("ih_sponsors").select(SPONSOR_COLUMNS_FULL).eq("influencer_id", id).order("created_at", { ascending: false });
+  if (!full.error) return full.data ?? [];
+  if (!/column .* does not exist/i.test(full.error.message)) throw full.error;
+
+  const mid = await sb.from("ih_sponsors").select(SPONSOR_COLUMNS_MID).eq("influencer_id", id).order("created_at", { ascending: false });
+  if (!mid.error) return (mid.data ?? []).map((r) => ({ ...r, likes: null, comments: null }));
+  if (!/column .* does not exist/i.test(mid.error.message)) throw mid.error;
+
+  const base = await sb.from("ih_sponsors").select(SPONSOR_COLUMNS_BASE).eq("influencer_id", id).order("created_at", { ascending: false });
+  if (base.error) throw base.error;
+  return (base.data ?? []).map((r) => ({ ...r, content_format: null, views: null, likes: null, comments: null }));
+}
+
 export type IHInfluencerBranchActivityRow = {
   id: number;
+  branchId: number | null;
   branchName: string | null;
   marketingDate: string | null;
   operationType: string | null;
   round: number | null;
   cost: number | null;
   taxType: string | null;
+  /** Phase 6 migration(migrate_add_ih_branch_marketing_content_format.sql) 전이면 항상 null. */
+  contentFormat: string | null;
   views: number | null;
+  /** 반응수 — 좋아요와 같은 의미로 다룬다(Phase 8 성과 관리). */
   reactions: number | null;
+  /** 댓글 — migrate_add_ih_branch_marketing_comments.sql 전이면 항상 null(Phase 8). */
+  comments: number | null;
   contentUrl: string | null;
   status: string;
   memo: string | null;
@@ -517,12 +692,28 @@ export type IHInfluencerRateRow = {
   memo: string | null;
 };
 
+/** 협업별 성과(Phase 8) — 제품 협찬/지점 마케팅을 소스 구분 없이 하나의 목록으로 합친 것.
+ *  브랜디드 PPL은 콘텐츠 성과 개념이 없는 단가 견적 리스트라 대상에서 제외한다. */
+export type IHInfluencerPerformanceItem = {
+  id: number;
+  source: "SPONSOR" | "BRANCH_MARKETING";
+  label: string; // 제품명(협찬) / 지점명(마케팅)
+  date: string | null; // 업로드일(협찬) / 진행일(마케팅)
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  contentUrl: string | null;
+  memo: string | null;
+  detailHref: string;
+};
+
 export type IHInfluencerDetail = {
   influencer: IHInfluencerRow;
   sponsors: IHInfluencerSponsorRow[];
   branchActivities: IHInfluencerBranchActivityRow[];
   currentRates: IHInfluencerRateRow[];
   rateHistory: IHInfluencerRateRow[];
+  performanceItems: IHInfluencerPerformanceItem[];
   performance: {
     totalCollabs: number;
     totalViews: number;
@@ -532,32 +723,42 @@ export type IHInfluencerDetail = {
     totalCost: number;
     cpv: number | null;
     cpe: number | null;
+    /** 좋아요/댓글 — Phase 8. */
+    totalLikes: number;
+    totalComments: number;
+    avgLikes: number | null;
+    avgComments: number | null;
   };
   pendingDuplicates: IHDuplicateCandidate[];
   memos: import("./memos").IHInfluencerMemoRow[];
 };
 
 const BRANCH_ACTIVITY_COLUMNS_BASE =
-  "id, marketing_date, operation_type, round, cost, views, reactions, content_url, status, memo, ih_branches(branch_name)";
-const BRANCH_ACTIVITY_COLUMNS_FULL = `${BRANCH_ACTIVITY_COLUMNS_BASE}, tax_type, activity_type`;
+  "id, branch_id, marketing_date, operation_type, round, cost, views, reactions, content_url, status, memo, stores(name)";
+const BRANCH_ACTIVITY_COLUMNS_MID = `${BRANCH_ACTIVITY_COLUMNS_BASE}, tax_type, activity_type, content_format`;
+const BRANCH_ACTIVITY_COLUMNS_FULL = `${BRANCH_ACTIVITY_COLUMNS_MID}, comments`;
 
 type RawBranchRow = {
   id: number;
+  branch_id: number | null;
   marketing_date: string | null;
   operation_type: string | null;
   round: number | null;
   cost: number | null;
   tax_type?: string | null;
+  content_format?: string | null;
   views: number | null;
   reactions: number | null;
+  comments?: number | null;
   content_url: string | null;
   status: string;
   memo: string | null;
   activity_type?: IHBranchActivityType;
-  ih_branches: { branch_name: string } | { branch_name: string }[] | null;
+  stores: { name: string } | { name: string }[] | null;
 };
 
-/** tax_type/activity_type은 Phase 4.3 migration(미실행 가능) 전제 컬럼 — 없으면 기본 컬럼만으로 재시도한다. */
+/** tax_type/activity_type(Phase 4.3)과 comments(Phase 8)는 서로 다른(둘 중 하나만 미실행일 수 있는) migration
+ *  전제 컬럼 — 댓글만 뺀 단계를 먼저 시도해 이미 실행된 구분값 migration까지 실수로 잃지 않는다. */
 async function fetchBranchActivitiesForInfluencer(id: number): Promise<RawBranchRow[]> {
   const sb = createAdminClient();
   const full = await sb
@@ -567,6 +768,14 @@ async function fetchBranchActivitiesForInfluencer(id: number): Promise<RawBranch
     .order("marketing_date", { ascending: false });
   if (!full.error) return (full.data ?? []) as unknown as RawBranchRow[];
   if (!/column .* does not exist/i.test(full.error.message)) throw full.error;
+
+  const mid = await sb
+    .from("ih_branch_marketing")
+    .select(BRANCH_ACTIVITY_COLUMNS_MID)
+    .eq("influencer_id", id)
+    .order("marketing_date", { ascending: false });
+  if (!mid.error) return ((mid.data ?? []) as unknown as RawBranchRow[]).map((r) => ({ ...r, comments: null }));
+  if (!/column .* does not exist/i.test(mid.error.message)) throw mid.error;
 
   const base = await sb
     .from("ih_branch_marketing")
@@ -584,12 +793,8 @@ export async function getInfluencerDetail(id: number): Promise<IHInfluencerDetai
   const { listInfluencerMemos } = await import("./memos");
 
   const sb = createAdminClient();
-  const [sponsorsRes, branchRows, currentRatesRes, rateHistoryRes, allDuplicates, memos] = await Promise.all([
-    sb
-      .from("ih_sponsors")
-      .select("id, product, round, support_type, send_date, upload_due_date, upload_date, content_url, cost, status, memo")
-      .eq("influencer_id", id)
-      .order("created_at", { ascending: false }),
+  const [sponsorRows, branchRows, currentRatesRes, rateHistoryRes, allDuplicates, memos] = await Promise.all([
+    fetchSponsorsForInfluencer(id),
     fetchBranchActivitiesForInfluencer(id),
     sb.from("ih_influencer_rates_current").select("*").eq("influencer_id", id),
     sb
@@ -603,27 +808,72 @@ export async function getInfluencerDetail(id: number): Promise<IHInfluencerDetai
 
   const branchActivities: IHInfluencerBranchActivityRow[] = branchRows.map((r) => ({
     id: r.id,
-    branchName: Array.isArray(r.ih_branches) ? r.ih_branches[0]?.branch_name ?? null : r.ih_branches?.branch_name ?? null,
+    branchId: r.branch_id,
+    branchName: (() => {
+      const n = Array.isArray(r.stores) ? r.stores[0]?.name : r.stores?.name;
+      return n ? stripBranchPrefix(n) : null;
+    })(),
     marketingDate: r.marketing_date,
     operationType: r.operation_type,
     round: r.round,
     cost: r.cost,
     taxType: r.tax_type ?? null,
+    contentFormat: r.content_format ?? null,
     views: r.views,
     reactions: r.reactions,
+    comments: r.comments ?? null,
     contentUrl: r.content_url,
     status: r.status,
     memo: r.memo,
     activityType: r.activity_type ?? "GENERAL",
   }));
 
-  const totalViews = branchActivities.reduce((s, r) => s + (r.views ?? 0), 0);
+  // 총 조회수/평균 조회수는 원래 지점 마케팅만 집계했는데(제품 협찬의 views가 이 화면에서 누락돼 있었음),
+  // Phase 8부터는 두 소스를 다 더한다 — CPV 계산도 이제 제품 협찬 조회수까지 반영한다.
+  const totalViews =
+    branchActivities.reduce((s, r) => s + (r.views ?? 0), 0) + sponsorRows.reduce((s, r) => s + (r.views ?? 0), 0);
   const totalReactions = branchActivities.reduce((s, r) => s + (r.reactions ?? 0), 0);
-  const viewsRows = branchActivities.filter((r) => r.views != null);
+  const viewsRows = [...branchActivities.filter((r) => r.views != null), ...sponsorRows.filter((r) => r.views != null)];
   const reactionsRows = branchActivities.filter((r) => r.reactions != null);
   const totalCost =
-    branchActivities.reduce((s, r) => s + (r.cost ?? 0), 0) + (sponsorsRes.data ?? []).reduce((s, r) => s + (r.cost ?? 0), 0);
-  const totalCollabs = (sponsorsRes.data?.length ?? 0) + branchActivities.length;
+    branchActivities.reduce((s, r) => s + (r.cost ?? 0), 0) + sponsorRows.reduce((s, r) => s + (r.cost ?? 0), 0);
+  const totalCollabs = sponsorRows.length + branchActivities.length;
+
+  // 좋아요/댓글 — Phase 8. 반응수(지점 마케팅)는 좋아요와 같은 의미로 합산한다.
+  const totalLikes =
+    sponsorRows.reduce((s, r) => s + (r.likes ?? 0), 0) + branchActivities.reduce((s, r) => s + (r.reactions ?? 0), 0);
+  const totalComments =
+    sponsorRows.reduce((s, r) => s + (r.comments ?? 0), 0) + branchActivities.reduce((s, r) => s + (r.comments ?? 0), 0);
+  const likesRows = [...sponsorRows.filter((r) => r.likes != null), ...branchActivities.filter((r) => r.reactions != null)];
+  const commentsRows = [...sponsorRows.filter((r) => r.comments != null), ...branchActivities.filter((r) => r.comments != null)];
+
+  // 협업별 성과 — 제품 협찬/지점 마케팅을 하나의 목록으로 합쳐 인플루언서 상세 "성과" 탭에서 보여준다(Phase 8).
+  const performanceItems: IHInfluencerPerformanceItem[] = [
+    ...sponsorRows.map((r): IHInfluencerPerformanceItem => ({
+      id: r.id,
+      source: "SPONSOR",
+      label: r.product,
+      date: r.upload_date ?? r.send_date,
+      views: r.views ?? null,
+      likes: r.likes ?? null,
+      comments: r.comments ?? null,
+      contentUrl: r.content_url,
+      memo: r.memo,
+      detailHref: `/admin/influencer-hub/sponsors/${r.id}`,
+    })),
+    ...branchActivities.map((r): IHInfluencerPerformanceItem => ({
+      id: r.id,
+      source: "BRANCH_MARKETING",
+      label: r.branchName ?? "-",
+      date: r.marketingDate,
+      views: r.views,
+      likes: r.reactions,
+      comments: r.comments,
+      contentUrl: r.contentUrl,
+      memo: r.memo,
+      detailHref: `/admin/influencer-hub/branch-marketing/${r.id}`,
+    })),
+  ].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 
   const mapRate = (r: {
     id: number;
@@ -643,10 +893,11 @@ export async function getInfluencerDetail(id: number): Promise<IHInfluencerDetai
 
   return {
     influencer,
-    sponsors: (sponsorsRes.data ?? []) as IHInfluencerSponsorRow[],
+    sponsors: sponsorRows as IHInfluencerSponsorRow[],
     branchActivities,
     currentRates: (currentRatesRes.data ?? []).map(mapRate),
     rateHistory: (rateHistoryRes.data ?? []).map(mapRate),
+    performanceItems,
     performance: {
       totalCollabs,
       totalViews,
@@ -656,6 +907,10 @@ export async function getInfluencerDetail(id: number): Promise<IHInfluencerDetai
       totalCost,
       cpv: totalViews > 0 ? Math.round(totalCost / totalViews) : null,
       cpe: totalReactions > 0 ? Math.round(totalCost / totalReactions) : null,
+      totalLikes,
+      totalComments,
+      avgLikes: likesRows.length > 0 ? Math.round(totalLikes / likesRows.length) : null,
+      avgComments: commentsRows.length > 0 ? Math.round(totalComments / commentsRows.length) : null,
     },
     pendingDuplicates: allDuplicates.filter(
       (c) => c.influencerA?.id === id || c.influencerB?.id === id
@@ -678,7 +933,9 @@ export type IHInfluencerMobileSummary = {
   channelUrl: string | null;
   status: IHInfluencerStatus;
   tags: string[];
-  sponsors: { id: number; product: string; status: string; uploadDueDate: string | null }[];
+  /** 제품 협찬 메이트/방문 인플루언서 고정 구분값 — Mobile Viewer에서 "최근 협찬" vs "최근 방문 활동" 섹션 노출 여부를 가른다. */
+  collabTypes: ("SPONSOR" | "VISIT")[];
+  sponsors: { id: number; product: string; round: number | null; status: string }[];
   branchActivities: {
     id: number;
     branchName: string | null;
@@ -687,7 +944,25 @@ export type IHInfluencerMobileSummary = {
     cost: number | null;
     description: string | null;
   }[];
-  performance: { totalViews: number; totalReactions: number; cpv: number | null; cpe: number | null };
+  performance: {
+    totalViews: number;
+    totalReactions: number;
+    cpv: number | null;
+    cpe: number | null;
+    totalLikes: number;
+    totalComments: number;
+  };
+  /** 최신순 최대 5건 — Mobile Viewer는 "핵심 성과만 간결하게"만 보여주면 되므로 전체를 다 내려보내지 않는다(Phase 8). */
+  recentPerformance: {
+    id: number;
+    source: "SPONSOR" | "BRANCH_MARKETING";
+    label: string;
+    date: string | null;
+    views: number | null;
+    likes: number | null;
+    comments: number | null;
+    contentUrl: string | null;
+  }[];
   currentRates: { contentType: string | null; price: number | null }[];
   rateHistory: { contentType: string | null; price: number | null; effectiveDate: string }[];
   memos: { id: number; authorName: string | null; content: string; createdAt: string }[];
@@ -699,7 +974,7 @@ export type IHInfluencerMobileSummary = {
  * 순수 변환 함수(DB 조회 없음) — PC 상세와 완전히 같은 조회 결과만 가공한다.
  */
 export function toMobileSummary(detail: IHInfluencerDetail): IHInfluencerMobileSummary {
-  const { influencer, branchActivities, sponsors, performance, currentRates, rateHistory, memos } = detail;
+  const { influencer, branchActivities, sponsors, performance, performanceItems, currentRates, rateHistory, memos } = detail;
 
   return {
     id: influencer.id,
@@ -711,7 +986,8 @@ export function toMobileSummary(detail: IHInfluencerDetail): IHInfluencerMobileS
     channelUrl: influencer.channel_url,
     status: influencer.status,
     tags: influencer.tags,
-    sponsors: sponsors.map((s) => ({ id: s.id, product: s.product, status: s.status, uploadDueDate: s.upload_due_date })),
+    collabTypes: Array.isArray(influencer.collab_types) ? influencer.collab_types : [],
+    sponsors: sponsors.map((s) => ({ id: s.id, product: s.product, round: s.round, status: s.status })),
     branchActivities: branchActivities.map((b) => ({
       id: b.id,
       branchName: b.branchName,
@@ -725,7 +1001,19 @@ export function toMobileSummary(detail: IHInfluencerDetail): IHInfluencerMobileS
       totalReactions: performance.totalReactions,
       cpv: performance.cpv,
       cpe: performance.cpe,
+      totalLikes: performance.totalLikes,
+      totalComments: performance.totalComments,
     },
+    recentPerformance: performanceItems.slice(0, 5).map((p) => ({
+      id: p.id,
+      source: p.source,
+      label: p.label,
+      date: p.date,
+      views: p.views,
+      likes: p.likes,
+      comments: p.comments,
+      contentUrl: p.contentUrl,
+    })),
     currentRates: currentRates.map((r) => ({ contentType: r.contentType, price: r.price })),
     rateHistory: rateHistory.map((r) => ({ contentType: r.contentType, price: r.price, effectiveDate: r.effectiveDate })),
     memos: memos.map((m) => ({ id: m.id, authorName: m.author_name, content: m.content, createdAt: m.created_at })),

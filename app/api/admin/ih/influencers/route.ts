@@ -17,6 +17,8 @@ export async function GET(req: Request) {
       region: sp.get("region") ?? undefined,
       followerMin: num("followerMin"),
       followerMax: num("followerMax"),
+      costMin: num("costMin"),
+      costMax: num("costMax"),
       status: sp.get("status") ?? undefined,
       tag: sp.get("tag") ?? undefined,
       page: num("page"),

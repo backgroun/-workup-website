@@ -18,7 +18,7 @@ export default function IHModal({
       >
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 sticky top-0 bg-white">
           <h2 className="text-[14.5px] font-bold text-slate-900">{title}</h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 text-[18px] leading-none">
+          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-700 text-[18px] leading-none">
             ×
           </button>
         </div>
