@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import InquiryTabs from "@/components/admin/InquiryTabs";
 import { INQUIRY_STATUS_LABEL, type Inquiry, type InquiryStatus } from "@/data/partnership";
 import { DEFAULT_NOTIFICATIONS, normalizeNotifications, NOTIFY_TYPES, type NotificationConfig, type NotifyType } from "@/lib/site-content";
@@ -49,6 +49,12 @@ function getTitle(q: Inquiry): string {
 
 // 펼침 상세에 표시할 필드(제목·본문·이름은 별도 표시하므로 제외)
 const HIDE_FIELDS = new Set(["title", "message", "content", "name", "manager"]);
+
+// "미답변" = 완료(done) 상태가 아니면서 답변 내용도 없는 건. 상태만 보고 완료를 걸러야
+// (상태를 답변 없이 수동으로 '완료'로 바꾼 경우도 있음) 완료 건이 미답변 목록에 섞여 나오지 않는다.
+function isUnanswered(q: Inquiry): boolean {
+  return q.status !== "done" && !q.payload._reply;
+}
 
 // ── 접수 목록 한 행 (아코디언: 제목 클릭 시 내용/답변 펼침) ──
 function InquiryRow({ q, selected, onToggleSelect, onStatus, onChangeType, onDelete, onSaveReply }: {
@@ -206,6 +212,12 @@ export default function AdminInquiriesPage() {
   const [moving, setMoving] = useState(false);
   const [deletingBulk, setDeletingBulk] = useState(false);
 
+  // ── 문의 통계(유형별 집계 + 미답변 건수) — 기본 최근 1개월, 직접 선택도 가능 ──
+  const [statsPeriod, setStatsPeriod] = useState<"1m" | "3m" | "all" | "custom">("1m");
+  const [statsFrom, setStatsFrom] = useState("");
+  const [statsTo, setStatsTo] = useState("");
+  const [unansweredOnly, setUnansweredOnly] = useState(false);
+
   const loadInquiries = () => {
     setLoadingList(true);
     fetch("/api/admin/inquiries")
@@ -215,7 +227,41 @@ export default function AdminInquiriesPage() {
       .finally(() => setLoadingList(false));
   };
   useEffect(() => { loadInquiries(); }, []);
-  useEffect(() => { setVisible(30); setSelected(new Set()); }, [filter, search, tab]);
+  useEffect(() => { setVisible(30); setSelected(new Set()); }, [filter, search, tab, unansweredOnly]);
+
+  // 통계 집계 기간 — "직접선택"은 두 날짜가 다 있어야 적용, 그 전까지는 "전체"와 동일하게 둔다.
+  const statsRangeStart = useMemo(() => {
+    if (statsPeriod === "1m" || statsPeriod === "3m") {
+      const d = new Date();
+      d.setMonth(d.getMonth() - (statsPeriod === "1m" ? 1 : 3));
+      return d.toISOString();
+    }
+    if (statsPeriod === "custom" && statsFrom) return new Date(statsFrom + "T00:00:00").toISOString();
+    return null;
+  }, [statsPeriod, statsFrom]);
+  const statsRangeEnd = useMemo(() => {
+    if (statsPeriod === "custom" && statsTo) return new Date(statsTo + "T23:59:59").toISOString();
+    return null;
+  }, [statsPeriod, statsTo]);
+
+  const statsScoped = useMemo(
+    () =>
+      inquiries.filter((q) => {
+        if (statsRangeStart && q.created_at < statsRangeStart) return false;
+        if (statsRangeEnd && q.created_at > statsRangeEnd) return false;
+        return true;
+      }),
+    [inquiries, statsRangeStart, statsRangeEnd]
+  );
+  const statsUnansweredCount = useMemo(() => statsScoped.filter(isUnanswered).length, [statsScoped]);
+
+  // 필터 버튼에 붙는 유형별 건수 — 통계 카드에서 고른 기간을 그대로 따라간다(기간을 바꾸면 이 숫자들도 바뀜).
+  const statsTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const t of MOVE_TYPES) counts[t] = 0;
+    for (const q of statsScoped) counts[q.type as string] = (counts[q.type as string] ?? 0) + 1;
+    return counts;
+  }, [statsScoped]);
 
   const changeStatus = async (id: string, status: InquiryStatus) => {
     const snapshot = inquiries;
@@ -320,13 +366,14 @@ export default function AdminInquiriesPage() {
   };
 
   const byType = filter === "all" ? inquiries : inquiries.filter(q => (q.type as string) === filter);
+  const byUnanswered = unansweredOnly ? byType.filter(isUnanswered) : byType;
   const kw = search.trim().toLowerCase();
   const filtered = kw
-    ? byType.filter(q => {
+    ? byUnanswered.filter(q => {
         const hay = [q.payload.name, q.payload.manager, getTitle(q), getBody(q), q.payload.phone].filter(Boolean).join(" ").toLowerCase();
         return hay.includes(kw);
       })
-    : byType;
+    : byUnanswered;
   const shown = filtered.slice(0, visible);
   const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
   const toggleSelectAll = () => setSelected(allFilteredSelected ? new Set() : new Set(filtered.map(q => q.id)));
@@ -357,20 +404,46 @@ export default function AdminInquiriesPage() {
       {/* ── 접수 목록 ── */}
       {tab === "list" && (
         <div>
-          {/* 검색 */}
-          <div className="relative mb-3">
-            <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="이름·제목·내용·연락처 검색"
-              className="w-full border border-gray-200 rounded-lg pl-9 pr-9 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-            {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">✕</button>}
+          {/* 문의 통계 — 기간 프리셋(왼쪽) + 검색창(오른쪽) + 미답변 건수. 유형별 집계는 아래 필터 버튼에 표기(중복 제거). 영역은 작게 유지. */}
+          <div className="bg-white rounded-lg border border-slate-200 px-3.5 py-2.5 mb-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {([["1m", "1개월"], ["3m", "3개월"], ["all", "전체"], ["custom", "직접선택"]] as const).map(([p, label]) => (
+                  <button key={p} onClick={() => setStatsPeriod(p)}
+                    className={`text-[11px] font-medium px-2 py-1 rounded ${statsPeriod === p ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                    {label}
+                  </button>
+                ))}
+                {statsPeriod === "custom" && (
+                  <span className="flex items-center gap-1 ml-1">
+                    <input type="date" value={statsFrom} onChange={(e) => setStatsFrom(e.target.value)} className="text-[11px] border border-slate-200 rounded px-1.5 py-1" />
+                    <span className="text-slate-300 text-[11px]">~</span>
+                    <input type="date" value={statsTo} onChange={(e) => setStatsTo(e.target.value)} className="text-[11px] border border-slate-200 rounded px-1.5 py-1" />
+                  </span>
+                )}
+              </div>
+
+              {/* 검색창 — 이 영역(통계 카드)의 오른쪽에 배치 */}
+              <div className="relative flex-1 min-w-[160px]">
+                <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="이름·제목·내용·연락처 검색"
+                  className="w-full border border-gray-200 rounded-lg pl-8 pr-7 py-1.5 text-[12px] focus:outline-none focus:border-blue-400" />
+                {search && <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">✕</button>}
+              </div>
+
+              <button onClick={() => setUnansweredOnly((v) => !v)}
+                className={`flex-shrink-0 text-[11px] font-semibold px-2 py-1 rounded ${unansweredOnly ? "bg-red-500 text-white" : "bg-red-50 text-red-600 hover:bg-red-100"}`}>
+                미답변 {statsUnansweredCount.toLocaleString()}건{unansweredOnly ? " · 해제" : ""}
+              </button>
+            </div>
           </div>
 
-          {/* 필터 */}
+          {/* 필터 — 전체를 제외한 나머지 버튼에 위 통계 카드에서 고른 기간 기준 건수를 표기한다(기간을 바꾸면 여기 숫자도 바뀐다). */}
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             {FILTERS.map(([f, label]) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-                {label}
+                {label}{f !== "all" && <span className={filter === f ? "text-white/70" : "text-slate-400"}> ({(statsTypeCounts[f] ?? 0).toLocaleString()})</span>}
               </button>
             ))}
             <button onClick={loadInquiries}
