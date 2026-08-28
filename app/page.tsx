@@ -7,10 +7,9 @@ import HomeEditorial from "@/components/HomeEditorial";
 import HomePeopleTeaser from "@/components/HomePeopleTeaser";
 import HomeInstagramFeed from "@/components/HomeInstagramFeed";
 import PopupBanner from "@/components/PopupBanner";
-import SearchBar from "@/components/SearchBar";
+import StoreSearchBar from "@/components/StoreSearchBar";
 import { getHomeLayout } from "@/lib/home-layout-server";
 import type { HomeSectionKey } from "@/lib/home-layout";
-import { getSearchConfig } from "@/lib/header-search-server";
 
 export const metadata: Metadata = {
   title: "WORKUP — 일하는 사람을 위한 옷",
@@ -42,7 +41,7 @@ const SECTION_RENDERERS: Record<HomeSectionKey, () => ReactNode> = {
 };
 
 export default async function Home() {
-  const [{ sections }, search] = await Promise.all([getHomeLayout(), getSearchConfig()]);
+  const { sections } = await getHomeLayout();
   const visibleSections = sections.filter((s) => s.visible);
   // 히어로가 꺼져 있으면(관리자가 숨김 처리) 따라붙을 자리가 없으니, 대신 맨 위에서 노출한다.
   const heroVisible = visibleSections.some((s) => s.key === "hero");
@@ -50,7 +49,7 @@ export default async function Home() {
     <main>
       {/* 팝업은 오버레이라 배치 대상에서 제외 — 항상 렌더 */}
       <PopupBanner />
-      {!heroVisible && <SearchBar search={search} />}
+      {!heroVisible && <StoreSearchBar />}
       {visibleSections
         .map((s) => {
           const render = SECTION_RENDERERS[s.key];
@@ -58,8 +57,8 @@ export default async function Home() {
           return (
             <Fragment key={s.key}>
               {render()}
-              {/* 검색창은 배너(히어로) 바로 아래 배치 — 관리자가 배치를 바꿔도 항상 히어로 다음에 따라온다 */}
-              {s.key === "hero" && <SearchBar search={search} />}
+              {/* 매장 검색창은 배너(히어로) 바로 아래 배치 — 관리자가 배치를 바꿔도 항상 히어로 다음에 따라온다 */}
+              {s.key === "hero" && <StoreSearchBar />}
             </Fragment>
           );
         })}

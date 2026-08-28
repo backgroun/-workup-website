@@ -263,6 +263,27 @@ export default function StoreLocator({
     if (locStatus === "idle" || locStatus === "loading") return;
     didApplyDeepLink.current = true;
 
+    // ?q=<검색어> 딥링크 — 메인 페이지 매장 검색창에서 넘어온 키워드를 그대로 적용
+    const qParam = searchParams.get("q")?.trim();
+    if (qParam) {
+      setShowAll(false);
+      setSelectedSido("");
+      setSelectedSigungu("");
+      setSearch(qParam);
+      const searchPool = allSorted.length > 0 ? allSorted : stores;
+      const matches = searchPool.filter((s) => s.name.includes(qParam) || s.address.includes(qParam));
+      if (matches.length === 1) {
+        setMapCenter({ lat: matches[0].lat, lng: matches[0].lng, level: 3 });
+        setSelectedStore(matches[0]);
+      } else if (matches.length > 1) {
+        const lat = matches.reduce((sum, s) => sum + s.lat, 0) / matches.length;
+        const lng = matches.reduce((sum, s) => sum + s.lng, 0) / matches.length;
+        setMapCenter({ lat, lng, level: 9 });
+      }
+      setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      return;
+    }
+
     const idParam = searchParams.get("store");
     if (!idParam) return;
     const target = stores.find((s) => String(s.id) === idParam);
