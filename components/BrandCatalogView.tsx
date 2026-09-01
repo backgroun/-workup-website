@@ -25,8 +25,11 @@ export default function BrandCatalogView({ data }: { data: LoadedBrandCatalog })
         <div className="relative max-w-screen-lg mx-auto px-6 flex flex-col justify-end" style={{ minHeight: "72vh", paddingBottom: "3rem" }}>
           {meta.season ? <p className="text-[11px] tracking-[0.3em] uppercase text-white/80 mb-3">{meta.season}</p> : null}
           {brand.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={brand.logo_url} alt={brandName} className="max-h-16 md:max-h-20 max-w-xs object-contain mb-3" />
+            <>
+              <h1 className="sr-only">{title}</h1>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={brand.logo_url} alt={brandName} className="max-h-16 md:max-h-20 max-w-xs object-contain mb-3" />
+            </>
           ) : (
             <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-none">{title}</h1>
           )}

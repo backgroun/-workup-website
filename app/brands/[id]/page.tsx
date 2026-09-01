@@ -89,6 +89,21 @@ export default async function BrandPage({ params }: Props) {
   const logoText = dbBrand?.logo_text ?? "";
 
   const latestCatalog = await getCatalog(brandName);
+
+  // 조립형 카탈로그(이미지+정보 입력형)가 공개 상태이고 항목이 있으면 링크를 노출한다.
+  let hasAssembledCatalog = false;
+  if (dbBrand?.catalog_enabled) {
+    try {
+      const sb = createAdminClient();
+      const { count } = await sb
+        .from("brand_catalog_items")
+        .select("id", { count: "exact", head: true })
+        .eq("brand_id", String(dbBrand.id))
+        .eq("is_visible", true);
+      hasAssembledCatalog = (count ?? 0) > 0;
+    } catch { /* 무시 — 링크만 숨김 */ }
+  }
+
   const pdfUrl = latestCatalog?.pdf_url ?? "";
   // react-pdf 클라이언트 fetch의 CORS 문제를 서버사이드 프록시로 우회
   const proxyPdfUrl = pdfUrl ? `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}` : "";
@@ -163,6 +178,16 @@ export default async function BrandPage({ params }: Props) {
               {brandName} {latestCatalog?.season || "카탈로그"}
             </h2>
           </div>
+
+          {hasAssembledCatalog ? (
+            <Link
+              href={`/brands/${id}/catalog`}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white min-h-[44px]"
+              style={{ backgroundColor: brandAccentColor }}
+            >
+              카탈로그 보기
+            </Link>
+          ) : null}
 
           {pdfUrl ? (
             <PdfDownloadButton pdfUrl={pdfUrl} fileName={`${brandName}_카탈로그.pdf`} />

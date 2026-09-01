@@ -5,6 +5,7 @@ import { BRANDS } from "@/lib/brands-data";
 import { loadBrandCatalog } from "@/lib/brandCatalog-server";
 import BrandCatalogView from "@/components/BrandCatalogView";
 import CatalogBodyClass from "@/components/CatalogBodyClass";
+import { absoluteUrl } from "@/lib/site";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -39,8 +40,8 @@ export default async function BrandAssembledCatalogPage({ params }: Props) {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "HOME", item: "/" },
-          { "@type": "ListItem", position: 2, name: "BRAND", item: "/brands" },
+          { "@type": "ListItem", position: 1, name: "HOME", item: absoluteUrl("/") },
+          { "@type": "ListItem", position: 2, name: "BRAND", item: absoluteUrl("/brands") },
           { "@type": "ListItem", position: 3, name: `${brandName} 카탈로그` },
         ],
       },
