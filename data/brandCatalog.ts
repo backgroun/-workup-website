@@ -22,6 +22,7 @@ export type BrandCatalogItem = {
   summary: string;
   description: string;
   price: string;
+  main_image_url: string; // 제품 메인 착용샷(세로형). 컬러별 착장컷이 없을 때 큰 이미지로 사용
   specs: CatalogSpec[];
   colors: CatalogColorVariant[];
   tech_images: string[];
@@ -44,6 +45,7 @@ export const EMPTY_CATALOG_ITEM: Omit<BrandCatalogItem, "id" | "brand_id"> = {
   summary: "",
   description: "",
   price: "",
+  main_image_url: "",
   specs: [],
   colors: [],
   tech_images: [],

@@ -21,6 +21,7 @@ function normalizeItem(row: Record<string, unknown>): BrandCatalogItem {
     summary: String(row.summary ?? ""),
     description: String(row.description ?? ""),
     price: String(row.price ?? ""),
+    main_image_url: String(row.main_image_url ?? ""),
     specs: asArray<CatalogSpec>(row.specs),
     colors: asArray<CatalogColorVariant>(row.colors),
     tech_images: asArray<string>(row.tech_images),

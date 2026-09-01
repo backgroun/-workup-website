@@ -29,7 +29,9 @@ export default function UnifiedBrandsPage() {
   const [dragOver, setDragOver] = useState<number | null>(null);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [deletingBulk, setDeletingBulk] = useState(false);
+  const [togglingVis, setTogglingVis] = useState(false);
   const [sortMode, setSortMode] = useState<"order" | "alpha" | "date">("alpha");
+  const [visFilter, setVisFilter] = useState<"all" | "visible" | "hidden">("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -216,6 +218,35 @@ export default function UnifiedBrandsPage() {
     return brands; // "order" — 드래그 순서 유지
   })();
 
+  // 노출/비노출 필터 (드래그 정렬은 필터가 걸리면 인덱스가 어긋나므로 "전체"에서만 허용)
+  const canDrag = sortMode === "order" && visFilter === "all";
+  const displayBrands = sortedBrands.filter((b) => {
+    if (visFilter === "visible") return b.is_visible !== false;
+    if (visFilter === "hidden") return b.is_visible === false;
+    return true;
+  });
+  const hiddenCount = brands.filter((b) => b.is_visible === false).length;
+
+  const showAllVisible = async () => {
+    const targets = displayBrands.filter((b) => b.is_visible === false);
+    if (targets.length === 0) return;
+    if (!confirm(`비노출 브랜드 ${targets.length}개를 모두 노출로 바꿀까요?`)) return;
+    setTogglingVis(true);
+    const ids = new Set(targets.map((t) => String(t.id)));
+    setBrands((prev) => prev.map((x) => (ids.has(String(x.id)) ? { ...x, is_visible: true } : x)));
+    await Promise.all(
+      targets.map((b) =>
+        fetch(`/api/admin/brands/${b.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_visible: true }),
+        }),
+      ),
+    );
+    setTogglingVis(false);
+    flash(`${targets.length}개 브랜드를 노출로 변경했습니다.`);
+  };
+
   // ── 이 브랜드의 카탈로그 ──────────────────────────────────
   const brandCatalogs = editing
     ? catalogs.filter((c) => c.brand_name.toLowerCase() === editing.name.toLowerCase())
@@ -289,6 +320,23 @@ export default function UnifiedBrandsPage() {
                   </button>
                 </div>
               </div>
+              {/* 노출/비노출 필터 */}
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center rounded-md border border-slate-200 overflow-hidden text-[11px]">
+                  {([["all", "전체"], ["visible", "노출"], ["hidden", `비노출 ${hiddenCount}`]] as const).map(([v, label]) => (
+                    <button key={v} onClick={() => setVisFilter(v)}
+                      className={`px-2 py-1 transition-colors ${visFilter === v ? "bg-slate-700 text-white font-semibold" : "text-slate-500 hover:bg-slate-50"}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {visFilter === "hidden" && displayBrands.length > 0 && (
+                  <button onClick={showAllVisible} disabled={togglingVis}
+                    className="ml-auto px-2 py-1 rounded-md border border-blue-200 bg-blue-50 text-blue-600 text-[11px] font-semibold hover:bg-blue-100 transition-colors disabled:opacity-50">
+                    {togglingVis ? "처리 중…" : "목록 전체 노출로"}
+                  </button>
+                )}
+              </div>
               {/* 일괄 선택·삭제 툴바 */}
               <div className="flex items-center gap-2">
                 <label className="flex items-center gap-1.5 cursor-pointer select-none" onClick={toggleCheckAll}>
@@ -297,7 +345,11 @@ export default function UnifiedBrandsPage() {
                     className="w-3.5 h-3.5 accent-blue-600 pointer-events-none" />
                   <span className="text-[11px] text-slate-500">전체 선택</span>
                 </label>
-                {sortMode === "order" && <span className="text-[10px] text-slate-400 ml-auto">드래그로 순서 변경</span>}
+                {sortMode === "order" && (
+                  <span className="text-[10px] text-slate-400 ml-auto">
+                    {canDrag ? "드래그로 순서 변경" : "순서 변경은 '전체' 필터에서만"}
+                  </span>
+                )}
                 {checkedIds.size > 0 && (
                   <button onClick={handleBulkDelete} disabled={deletingBulk}
                     className="ml-auto flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 text-[11px] font-semibold rounded-md hover:bg-red-100 transition-colors disabled:opacity-50">
@@ -315,13 +367,17 @@ export default function UnifiedBrandsPage() {
                 </div>
               ) : brands.length === 0 ? (
                 <div className="py-12 text-center text-slate-400 text-sm">등록된 브랜드가 없습니다.</div>
+              ) : displayBrands.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-sm">
+                  {visFilter === "hidden" ? "비노출 브랜드가 없습니다." : "해당하는 브랜드가 없습니다."}
+                </div>
               ) : (
                 <ul className="divide-y divide-slate-100">
-                  {sortedBrands.map((b, i) => (
-                    <li key={b.id} draggable={sortMode === "order"}
-                      onDragStart={() => sortMode === "order" && setDragIndex(i)}
-                      onDragOver={(e) => { if (sortMode === "order") { e.preventDefault(); setDragOver(i); } }}
-                      onDrop={() => sortMode === "order" && handleDrop(i)}
+                  {displayBrands.map((b, i) => (
+                    <li key={b.id} draggable={canDrag}
+                      onDragStart={() => canDrag && setDragIndex(i)}
+                      onDragOver={(e) => { if (canDrag) { e.preventDefault(); setDragOver(i); } }}
+                      onDrop={() => canDrag && handleDrop(i)}
                       onDragEnd={() => { setDragIndex(null); setDragOver(null); }}
                       onClick={() => selectBrand(b)}
                       className={`flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-colors
@@ -342,8 +398,10 @@ export default function UnifiedBrandsPage() {
                         const date = formatCatalogDate(b.name || "");
                         if (date) return <span className="text-[9px] text-blue-400 font-mono flex-shrink-0">{date}</span>;
                         const asm = b.catalog_enabled ? assembled[String(b.id)] : undefined;
-                        if (asm && asm.visibleCount > 0)
-                          return <span className="text-[9px] text-emerald-500 font-mono flex-shrink-0" title={`조립형 카탈로그 · 제품 ${asm.count}개`}>조립형 {asm.count}</span>;
+                        if (asm && asm.visibleCount > 0) {
+                          const asmDate = fmtDate(asm.latest);
+                          return <span className="text-[9px] text-emerald-500 font-mono flex-shrink-0" title={`조립형 카탈로그 · 제품 ${asm.count}개${asmDate ? ` · 수정 ${asmDate}` : ""}`}>조립형 {asmDate ?? asm.count}</span>;
+                        }
                         if (b.catalog_enabled)
                           return <span className="text-[9px] text-amber-500 flex-shrink-0" title="조립형 카탈로그 공개 상태이나 노출 제품이 없음">조립형 설정중</span>;
                         return <span className="text-[9px] text-slate-300 flex-shrink-0">파일없음</span>;
@@ -460,6 +518,7 @@ export default function UnifiedBrandsPage() {
                     flash={flash}
                     assembledEnabled={editing.catalog_enabled === true}
                     assembledCount={assembled[String(editing.id)]?.count ?? 0}
+                    assembledLatest={fmtDate(assembled[String(editing.id)]?.latest)}
                     onGoAssembled={() => setTab("assembled")}
                   />
                 )}
@@ -508,13 +567,14 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 
 // ── CatalogTab ────────────────────────────────────────────────
-function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, assembledCount, onGoAssembled }: {
+function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, assembledCount, assembledLatest, onGoAssembled }: {
   brandName: string;
   catalogs: BrandCatalog[];
   onRefresh: () => void;
   flash: (msg: string, type?: string) => void;
   assembledEnabled: boolean;
   assembledCount: number;
+  assembledLatest: string | null;
   onGoAssembled: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -576,6 +636,7 @@ function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, a
           {assembledEnabled ? <span className="text-emerald-600">공개 중</span> : <span className="text-slate-400">비공개</span>}
           {" · 제품 "}
           <span className="font-semibold">{assembledCount}</span>개
+          {assembledLatest ? <span className="text-slate-400">{" · 수정 "}{assembledLatest}</span> : null}
         </div>
         <button type="button" onClick={onGoAssembled}
           className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-600 hover:bg-white transition-colors">

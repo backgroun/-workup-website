@@ -28,7 +28,12 @@ export default function BrandCatalogItem({
   }, []);
 
   const current = colors[active];
-  const hero = current ? current.styled_url || current.cutout_url : "";
+  // 큰 이미지: 선택 컬러의 착장컷 → 제품 메인 착용샷 → 선택 컬러의 누끼컷
+  const hero =
+    (current && current.styled_url) ||
+    item.main_image_url ||
+    (current && current.cutout_url) ||
+    "";
 
   const selectColor = (idx: number) => {
     setActive(idx);

@@ -12,6 +12,16 @@ import {
 
 const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-gray-800";
 
+// 업로드 이미지 권장 사이즈 안내 (관리자에게 표기)
+const IMG_HINTS = {
+  cover: "16:9 가로형 · 권장 1920×1080 · 4MB 이하 · 이미지 안에 텍스트 금지",
+  main: "4:5 세로형 · 권장 1200×1500 · 4MB 이하 · 인물 착용컷",
+  styled: "4:5 세로형 · 권장 1200×1500 · 4MB 이하",
+  cutout: "1:1 정사각 · 권장 800×800 · 배경 제거 PNG · 4MB 이하",
+  gallery: "1:1 정사각 · 권장 1000×1000 · 4MB 이하",
+  tech: "세로 이미지 · 4MB 이하",
+} as const;
+
 async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
@@ -84,11 +94,10 @@ export default function AssembledCatalogTab({
         <span className="font-semibold">이 브랜드의 조립형 카탈로그 공개</span>
       </label>
 
-      <p className="text-xs text-gray-400">이미지는 4MB 이하, 텍스트가 없는 순수 사진</p>
-
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <p className="mb-1 text-gray-500">커버 이미지 (이미지 안에 텍스트를 넣지 마세요)</p>
+          <p className="mb-0.5 text-gray-500">커버 이미지</p>
+          <p className="mb-1.5 text-[11px] text-gray-400">{IMG_HINTS.cover}</p>
           {brand.catalog_cover_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={brand.catalog_cover_url} alt="" className="w-full h-40 object-cover rounded border mb-2" />
@@ -120,7 +129,8 @@ export default function AssembledCatalogTab({
       </div>
 
       <div>
-        <p className="mb-2 text-gray-500">공용 기술서 이미지 (카탈로그 맨 끝 · 이미지 안에 텍스트를 넣지 마세요)</p>
+        <p className="mb-0.5 text-gray-500">공용 기술서 이미지 (카탈로그 맨 끝)</p>
+        <p className="mb-2 text-[11px] text-gray-400">{IMG_HINTS.tech}</p>
         <div className="flex flex-wrap gap-2 mb-2">
           {techImages.map((t, i) => (
             <div key={i} className="relative">
@@ -152,6 +162,7 @@ function ItemsEditor({ brandId, flash }: { brandId: string; flash: (t: string, t
   const [items, setItems] = useState<BrandCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -183,6 +194,19 @@ function ItemsEditor({ brandId, flash }: { brandId: string; flash: (t: string, t
 
   const patchLocal = (id: string, patch: Partial<BrandCatalogItem>) =>
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+
+  const pickMain = async (id: string, file?: File) => {
+    if (!file) return;
+    setUploadingId(id);
+    try {
+      const url = await uploadImage(file);
+      patchLocal(id, { main_image_url: url });
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "업로드 실패", "err");
+    } finally {
+      setUploadingId(null);
+    }
+  };
 
   const saveItem = async (it: BrandCatalogItem) => {
     setSavingId(it.id);
@@ -255,6 +279,18 @@ function ItemsEditor({ brandId, flash }: { brandId: string; flash: (t: string, t
               <button type="button" onClick={() => removeItem(it.id)}
                 className="px-3 py-1.5 border rounded text-xs text-red-600">삭제</button>
             </div>
+          </div>
+
+          {/* 메인 착용샷 — 큰 이미지 영역. 컬러별 착장컷이 없을 때 노출됨 */}
+          <div className="border rounded p-3 bg-gray-50">
+            <ImageField
+              label="제품 메인 착용샷 (세로형)"
+              hint={IMG_HINTS.main}
+              url={it.main_image_url}
+              busy={uploadingId === it.id}
+              onPick={(f) => pickMain(it.id, f)}
+              onClear={it.main_image_url ? () => patchLocal(it.id, { main_image_url: "" }) : undefined}
+            />
           </div>
 
           <div className="grid md:grid-cols-2 gap-2">
@@ -382,19 +418,22 @@ function ColorsEditor({
           <div className="grid grid-cols-2 gap-2">
             <ImageField
               label="누끼컷 (칩)"
+              hint={IMG_HINTS.cutout}
               url={c.cutout_url}
               busy={busy}
               onPick={(f) => upload(i, "cutout_url", f)}
             />
             <ImageField
               label="착장컷 (큰 이미지)"
+              hint={IMG_HINTS.styled}
               url={c.styled_url}
               busy={busy}
               onPick={(f) => upload(i, "styled_url", f)}
             />
           </div>
           <div>
-            <p className="text-[11px] text-gray-400 mb-1">갤러리</p>
+            <p className="text-[11px] text-gray-500 mb-0.5">갤러리</p>
+            <p className="text-[10px] text-gray-400 mb-1">{IMG_HINTS.gallery}</p>
             <div className="flex flex-wrap gap-1 mb-1">
               {(c.gallery ?? []).map((g, gi) => (
                 <div key={gi} className="relative">
@@ -431,19 +470,24 @@ function ColorsEditor({
 
 function ImageField({
   label,
+  hint,
   url,
   busy,
   onPick,
+  onClear,
 }: {
   label: string;
+  hint?: string;
   url: string;
   busy: boolean;
   onPick: (f?: File) => void;
+  onClear?: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div>
-      <p className="text-[11px] text-gray-400 mb-1">{label}</p>
+      <p className="text-[11px] text-gray-500 mb-0.5">{label}</p>
+      {hint ? <p className="text-[10px] text-gray-400 mb-1">{hint}</p> : null}
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" className="w-full h-24 object-contain rounded border bg-white mb-1" />
@@ -455,14 +499,19 @@ function ImageField({
         className="hidden"
         onChange={(e) => onPick(e.target.files?.[0])}
       />
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => ref.current?.click()}
-        className="px-2 py-1 border rounded text-[11px]"
-      >
-        업로드
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => ref.current?.click()}
+          className="px-2 py-1 border rounded text-[11px]"
+        >
+          {busy ? "업로드 중…" : url ? "교체" : "업로드"}
+        </button>
+        {url && onClear ? (
+          <button type="button" onClick={onClear} className="text-[11px] text-red-500">제거</button>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS brand_catalog_items (
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS brand_catalog_items_brand_idx ON brand_catalog_items (brand_id, sort_order);
+-- 제품 메인 착용샷(세로형) — 나중에 추가된 컬럼
+ALTER TABLE brand_catalog_items ADD COLUMN IF NOT EXISTS main_image_url TEXT NOT NULL DEFAULT '';
 
 GRANT ALL ON TABLE brand_catalog_items TO anon, authenticated, service_role;
 ALTER TABLE brand_catalog_items ENABLE ROW LEVEL SECURITY;
