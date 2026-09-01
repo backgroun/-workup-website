@@ -33,7 +33,7 @@ export default function BrandCatalogTocBar({
       <div className="max-w-screen-lg mx-auto px-4 py-2 flex gap-3 overflow-x-auto text-xs whitespace-nowrap">
         {flat.map((it) => (
           <button key={it.id} type="button" onClick={() => jump(it.id)}
-            className="text-gray-500 hover:text-gray-900 py-1 min-h-[36px]">
+            className="text-gray-500 hover:text-gray-900 py-1 min-h-[44px]">
             {it.name}
           </button>
         ))}
