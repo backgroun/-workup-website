@@ -1,6 +1,11 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Brand } from "@/data/brands";
+import {
+  type BrandCatalogItem,
+  type CatalogSpec,
+  EMPTY_CATALOG_ITEM,
+} from "@/data/brandCatalog";
 
 const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-gray-800";
 
@@ -126,13 +131,146 @@ export default function AssembledCatalogTab({
         제품 항목은 아래에서 개별 저장됩니다.
       </p>
 
-      {/* 제품 항목 편집기 — Task 9~10에서 추가 */}
-      <ItemsEditorPlaceholder brandId={String(brandId)} />
+      {/* 제품 항목 편집기 */}
+      <ItemsEditor brandId={String(brandId)} />
     </div>
   );
 }
 
-function ItemsEditorPlaceholder({ brandId }: { brandId: string }) {
-  void brandId;
+function ItemsEditor({ brandId }: { brandId: string }) {
+  const [items, setItems] = useState<BrandCatalogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const r = await fetch(`/api/admin/brand-catalog-items?brandId=${encodeURIComponent(brandId)}`);
+    const d = await r.json();
+    setItems(Array.isArray(d) ? d : []);
+    setLoading(false);
+  };
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brandId]);
+
+  const addItem = async () => {
+    const r = await fetch("/api/admin/brand-catalog-items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...EMPTY_CATALOG_ITEM, brand_id: brandId, sort_order: items.length }),
+    });
+    if (r.ok) load();
+  };
+
+  const patchLocal = (id: string, patch: Partial<BrandCatalogItem>) =>
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+
+  const saveItem = async (it: BrandCatalogItem) => {
+    setSavingId(it.id);
+    await fetch(`/api/admin/brand-catalog-items/${it.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(it),
+    });
+    setSavingId(null);
+    load();
+  };
+
+  const removeItem = async (id: string) => {
+    if (!confirm("이 제품 항목을 삭제할까요?")) return;
+    await fetch(`/api/admin/brand-catalog-items/${id}`, { method: "DELETE" });
+    load();
+  };
+
+  const move = async (idx: number, dir: -1 | 1) => {
+    const j = idx + dir;
+    if (j < 0 || j >= items.length) return;
+    const reordered = [...items];
+    [reordered[idx], reordered[j]] = [reordered[j], reordered[idx]];
+    setItems(reordered);
+    await Promise.all(
+      reordered.map((it, i) =>
+        fetch(`/api/admin/brand-catalog-items/${it.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sort_order: i }),
+        }),
+      ),
+    );
+  };
+
+  if (loading) return <p className="text-gray-400 text-sm">제품 항목 불러오는 중…</p>;
+
+  return (
+    <div className="border-t pt-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold">제품 항목 ({items.length})</h4>
+        <button type="button" onClick={addItem} className="px-3 py-2 border rounded text-xs">+ 제품 추가</button>
+      </div>
+
+      {items.map((it, idx) => (
+        <div key={it.id} className="border rounded p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => move(idx, -1)} className="px-2 border rounded text-xs">↑</button>
+            <button type="button" onClick={() => move(idx, 1)} className="px-2 border rounded text-xs">↓</button>
+            <label className="flex items-center gap-1 text-xs">
+              <input type="checkbox" checked={it.is_visible}
+                onChange={(e) => patchLocal(it.id, { is_visible: e.target.checked })} />
+              노출
+            </label>
+            <div className="ml-auto flex gap-2">
+              <button type="button" disabled={savingId === it.id} onClick={() => saveItem(it)}
+                className="px-3 py-1.5 bg-gray-900 text-white rounded text-xs">저장</button>
+              <button type="button" onClick={() => removeItem(it.id)}
+                className="px-3 py-1.5 border rounded text-xs text-red-600">삭제</button>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-2">
+            <input className={INPUT} placeholder="카테고리 (상의·하의…)" value={it.category}
+              onChange={(e) => patchLocal(it.id, { category: e.target.value })} />
+            <input className={INPUT} placeholder="가격 (비우면 '가격 문의')" value={it.price}
+              onChange={(e) => patchLocal(it.id, { price: e.target.value })} />
+          </div>
+          <input className={INPUT} placeholder="제품명" value={it.name}
+            onChange={(e) => patchLocal(it.id, { name: e.target.value })} />
+          <input className={INPUT} placeholder="한 줄 설명" value={it.summary}
+            onChange={(e) => patchLocal(it.id, { summary: e.target.value })} />
+          <textarea className={INPUT} rows={3} placeholder="상세 설명 (선택)" value={it.description}
+            onChange={(e) => patchLocal(it.id, { description: e.target.value })} />
+
+          <SpecsEditor specs={it.specs} onChange={(specs) => patchLocal(it.id, { specs })} />
+
+          {/* 컬러 편집기 — Task 10 */}
+          <ColorsEditor item={it} onChange={(colors) => patchLocal(it.id, { colors })} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SpecsEditor({ specs, onChange }: { specs: CatalogSpec[]; onChange: (s: CatalogSpec[]) => void }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-xs text-gray-500">스펙</p>
+      {specs.map((s, i) => (
+        <div key={i} className="flex gap-2">
+          <input className={INPUT} placeholder="항목 (소재)" value={s.label}
+            onChange={(e) => onChange(specs.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />
+          <input className={INPUT} placeholder="값 (면 100%)" value={s.value}
+            onChange={(e) => onChange(specs.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))} />
+          <button type="button" onClick={() => onChange(specs.filter((_, j) => j !== i))}
+            className="px-2 border rounded text-xs">×</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...specs, { label: "", value: "" }])}
+        className="px-2 py-1 border rounded text-xs">+ 스펙 행</button>
+    </div>
+  );
+}
+
+function ColorsEditor({ item, onChange }: { item: BrandCatalogItem; onChange: (c: BrandCatalogItem["colors"]) => void }) {
+  void item; void onChange;
   return null;
 }
