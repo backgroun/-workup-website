@@ -2,19 +2,40 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase-server";
 import { logAudit } from "@/lib/audit-server";
+import type { AssembledCatalogSummary } from "@/data/brandCatalog";
 
 function projectRef() {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
     .replace(/^https?:\/\//, "").split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
 }
 
-// 특정 브랜드의 조립형 카탈로그 항목 전체 (숨김 포함 — 관리자 전용)
+// GET
+//  ?brandId=<id>  → 그 브랜드의 항목 전체 (숨김 포함, 관리자 편집용)
+//  ?summary=1     → 전 브랜드 요약 맵 (목록 화면의 상태 표시·정렬용)
 export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const brandId = new URL(req.url).searchParams.get("brandId");
-  if (!brandId) return NextResponse.json({ error: "brandId 필요" }, { status: 400 });
-
+  const params = new URL(req.url).searchParams;
   const supabase = createAdminClient();
+
+  if (params.get("summary")) {
+    const { data, error } = await supabase
+      .from("brand_catalog_items")
+      .select("brand_id, updated_at, is_visible");
+    if (error) return NextResponse.json({ error: error.message, project: projectRef() }, { status: 500 });
+    const map: AssembledCatalogSummary = {};
+    for (const r of (data ?? []) as { brand_id: unknown; updated_at: string | null; is_visible: unknown }[]) {
+      const k = String(r.brand_id);
+      const bucket = map[k] ?? (map[k] = { count: 0, visibleCount: 0, latest: "" });
+      bucket.count += 1;
+      if (r.is_visible !== false) bucket.visibleCount += 1;
+      if (r.updated_at && r.updated_at > bucket.latest) bucket.latest = r.updated_at;
+    }
+    return NextResponse.json(map);
+  }
+
+  const brandId = params.get("brandId");
+  if (!brandId) return NextResponse.json({ error: "brandId 또는 summary 필요" }, { status: 400 });
+
   const { data, error } = await supabase
     .from("brand_catalog_items")
     .select("*")

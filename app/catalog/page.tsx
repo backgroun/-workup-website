@@ -4,32 +4,52 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase-server";
 import type { CatalogPage } from "@/data/catalog";
 import { brandPageUrl, brandCoverUrl, type BrandCatalog } from "@/data/brandCatalogs";
-import UnifiedCatalogViewer, { type BrandEntry } from "@/components/UnifiedCatalogViewer";
+import UnifiedCatalogViewer, { type BrandEntry, type AssembledCatalogLink } from "@/components/UnifiedCatalogViewer";
 import CatalogBodyClass from "@/components/CatalogBodyClass";
+import { BRANDS } from "@/lib/brands-data";
 
 export const metadata: Metadata = {
   title: "2026 SS 카탈로그 | WORKUP",
   description: "WORKUP 2026 Spring/Summer 신제품 카탈로그와 입점 브랜드 카탈로그를 한곳에서.",
 };
 
-// WORKUP 카탈로그 페이지 + 타사 브랜드 카탈로그를 함께 읽는다(관리자 수정 즉시 반영).
-async function getData(): Promise<{ pages: CatalogPage[]; brands: BrandCatalog[] }> {
+type CatalogData = {
+  pages: CatalogPage[];
+  brands: BrandCatalog[];
+  assembled: AssembledCatalogLink[]; // 조립형 카탈로그(이미지+정보 입력형) — 별도 페이지로 링크
+};
+
+// WORKUP 카탈로그 페이지 + 타사 브랜드 PDF + 조립형 카탈로그 링크를 함께 읽는다(관리자 수정 즉시 반영).
+async function getData(): Promise<CatalogData> {
   noStore();
   try {
     const supabase = createAdminClient();
-    const [{ data: pages }, { data: brandsData }] = await Promise.all([
+    const [{ data: pages }, { data: brandsData }, { data: catBrands }, { data: items }] = await Promise.all([
       supabase.from("catalog_pages").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
       supabase.from("brand_catalogs").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
+      supabase.from("brands").select("id, name").eq("catalog_enabled", true),
+      supabase.from("brand_catalog_items").select("brand_id").eq("is_visible", true),
     ]);
-    return { pages: (pages as CatalogPage[]) ?? [], brands: (brandsData as BrandCatalog[]) ?? [] };
+
+    // 노출 제품이 1개 이상인 조립형 카탈로그만 링크로 노출
+    const withItems = new Set(((items as { brand_id: unknown }[]) ?? []).map((r) => String(r.brand_id)));
+    const assembled: AssembledCatalogLink[] = ((catBrands as { id: unknown; name: string }[]) ?? [])
+      .filter((b) => withItems.has(String(b.id)))
+      .map((b) => {
+        const slug = BRANDS.find((s) => s.name.toLowerCase() === (b.name ?? "").toLowerCase())?.id;
+        return slug ? { name: b.name, href: `/brands/${slug}/catalog` } : null;
+      })
+      .filter((x): x is AssembledCatalogLink => x !== null);
+
+    return { pages: (pages as CatalogPage[]) ?? [], brands: (brandsData as BrandCatalog[]) ?? [], assembled };
   } catch {
-    return { pages: [], brands: [] };
+    return { pages: [], brands: [], assembled: [] };
   }
 }
 
 export default async function CatalogPage() {
   const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT ?? "";
-  const { pages, brands } = await getData();
+  const { pages, brands, assembled } = await getData();
 
   const brandEntries: BrandEntry[] = brands
     .filter((b) => b.pdf_public_id)
@@ -41,14 +61,14 @@ export default async function CatalogPage() {
       pdf_url: b.pdf_url || "",
     }));
 
-  if (pages.length === 0 && brandEntries.length === 0) {
+  if (pages.length === 0 && brandEntries.length === 0 && assembled.length === 0) {
     return <main><CatalogEmpty /></main>;
   }
 
   return (
     <main>
       <CatalogBodyClass />
-      <UnifiedCatalogViewer workupPages={pages} brands={brandEntries} />
+      <UnifiedCatalogViewer workupPages={pages} brands={brandEntries} assembledLinks={assembled} />
     </main>
   );
 }

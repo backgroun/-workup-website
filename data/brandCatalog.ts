@@ -79,6 +79,13 @@ export function catalogColorAnchor(itemId: string, colorKey: string): string {
   return `item-${itemId}-${colorKey}`;
 }
 
+// 브랜드별 조립형 카탈로그 요약 — 관리자 목록 화면의 상태 표시·정렬용.
+// 키는 brand_id(문자열). GET /api/admin/brand-catalog-items?summary=1 이 반환한다.
+export type AssembledCatalogSummary = Record<
+  string,
+  { count: number; visibleCount: number; latest: string }
+>;
+
 export type CatalogTocGroup = { category: string; items: { id: string; name: string }[] };
 
 // category가 있는 항목은 그 이름으로 그룹, 없으면 "제품". 순서는 items 순서 유지.

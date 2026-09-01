@@ -6,6 +6,8 @@ import CatalogPageView from "./CatalogPageView";
 import { ikSrc } from "@/lib/imageSrc";
 
 export type BrandEntry = { id: string; name: string; cover: string; pages: string[]; pdf_url: string };
+// 조립형 카탈로그(이미지+정보 입력형) — 플립북에 넣지 않고 전용 페이지로 링크만 노출
+export type AssembledCatalogLink = { name: string; href: string };
 
 const A4_RATIO = 297 / 210;
 const THUMB_PER_GROUP = 30;
@@ -29,7 +31,7 @@ function pagesOfSpread(s: number, total: number) {
   return { left: l < total ? l : -1, right: r < total ? r : -1 };
 }
 
-export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPages: CatalogPage[]; brands: BrandEntry[] }) {
+export default function UnifiedCatalogViewer({ workupPages, brands, assembledLinks = [] }: { workupPages: CatalogPage[]; brands: BrandEntry[]; assembledLinks?: AssembledCatalogLink[] }) {
   const [selectedId, setSelectedId]   = useState(workupPages.length > 0 ? "workup" : (brands[0]?.id ?? "workup"));
   const areaRef      = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -64,7 +66,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
   const catalogTitle = isWorkup ? "2026 FW CATALOG" : (brand?.name ?? "CATALOG");
   const catalogSub   = isWorkup ? "K-WORKER STORE" : "";
   const tocItems     = isWorkup ? buildTocItems(workupPages) : [];
-  const hasBrandTabs = brands.length > 0;
+  const hasBrandTabs = brands.length > 0 || assembledLinks.length > 0;
   const totalSpreads = total === 0 ? 0 : Math.ceil(total / 2);
 
   const { left: leftIdx, right: rightIdx } = pagesOfSpread(spread, total);
@@ -185,6 +187,16 @@ export default function UnifiedCatalogViewer({ workupPages, brands }: { workupPa
                   className={`px-2.5 py-1 text-[11px] tracking-widest font-semibold rounded transition-colors ${b.id === selectedId ? "bg-[#E5541B] text-white" : "text-white/40 hover:text-white/70"}`}>
                   {b.name}
                 </button>
+              ))}
+              {assembledLinks.map(a => (
+                <Link key={a.href} href={a.href}
+                  className="px-2.5 py-1 text-[11px] tracking-widest font-semibold rounded transition-colors text-white/40 hover:text-white/70 inline-flex items-center gap-1"
+                  title={`${a.name} 카탈로그 (전용 페이지로 이동)`}>
+                  {a.name}
+                  <svg className="w-2.5 h-2.5 opacity-60" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H9M17 7v8" />
+                  </svg>
+                </Link>
               ))}
             </div>
           ) : (

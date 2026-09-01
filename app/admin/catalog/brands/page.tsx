@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, type ReactNode } from "react"
 import { EMPTY_BRAND, type Brand } from "@/data/brands";
 import { EMPTY_BRAND_CATALOG, type BrandCatalog } from "@/data/brandCatalogs";
 import AssembledCatalogTab from "@/components/admin/AssembledCatalogTab";
+import type { AssembledCatalogSummary } from "@/data/brandCatalog";
 
 // ── 탭 타입 ──────────────────────────────────────────────────
 type Tab = "info" | "catalog" | "assembled";
@@ -15,6 +16,7 @@ const slugify = (s: string) =>
 export default function UnifiedBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [catalogs, setCatalogs] = useState<BrandCatalog[]>([]);
+  const [assembled, setAssembled] = useState<AssembledCatalogSummary>({});
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -36,13 +38,15 @@ export default function UnifiedBrandsPage() {
     setLoading(true);
     setFetchError("");
     try {
-      const [br, ca] = await Promise.all([
+      const [br, ca, asm] = await Promise.all([
         fetch("/api/admin/brands").then((r) => r.json()),
         fetch("/api/admin/brand-catalogs").then((r) => r.json()),
+        fetch("/api/admin/brand-catalog-items?summary=1").then((r) => r.json()).catch(() => ({})),
       ]);
       if (br?.error) { setFetchError(br.error); setLoading(false); return; }
       setBrands(Array.isArray(br) ? br : []);
       setCatalogs(Array.isArray(ca) ? ca : []);
+      setAssembled(asm && typeof asm === "object" && !asm.error ? asm : {});
     } catch (e) {
       setFetchError(e instanceof Error ? e.message : String(e));
     }
@@ -172,8 +176,7 @@ export default function UnifiedBrandsPage() {
     return acc;
   }, {});
 
-  const formatCatalogDate = (brandName: string) => {
-    const dateStr = latestCatalogDateMap[brandName.toLowerCase()];
+  const fmtDate = (dateStr?: string | null) => {
     if (!dateStr) return null;
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return null;
@@ -181,6 +184,14 @@ export default function UnifiedBrandsPage() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yy}.${mm}.${dd}`;
+  };
+  const formatCatalogDate = (brandName: string) => fmtDate(latestCatalogDateMap[brandName.toLowerCase()]);
+
+  // PDF 최신일 + 조립형 최신 저장일 중 더 최근(ISO 문자열) — "업로드일자" 정렬·표시용
+  const brandUploadISO = (b: Brand): string => {
+    const pdf = latestCatalogDateMap[(b.name || "").toLowerCase()] ?? "";
+    const asm = (b.catalog_enabled && assembled[String(b.id)]?.latest) || "";
+    return pdf > asm ? pdf : asm;
   };
 
   // ── 정렬된 브랜드 목록 ───────────────────────────────────
@@ -194,8 +205,8 @@ export default function UnifiedBrandsPage() {
     }
     if (sortMode === "date") {
       return [...brands].sort((a, b) => {
-        const aDate = latestCatalogDateMap[(a.name || "").toLowerCase()] ?? "";
-        const bDate = latestCatalogDateMap[(b.name || "").toLowerCase()] ?? "";
+        const aDate = brandUploadISO(a);
+        const bDate = brandUploadISO(b);
         if (!aDate && !bDate) return 0;
         if (!aDate) return 1;
         if (!bDate) return -1;
@@ -329,9 +340,13 @@ export default function UnifiedBrandsPage() {
                       </div>
                       {(() => {
                         const date = formatCatalogDate(b.name || "");
-                        return date
-                          ? <span className="text-[9px] text-blue-400 font-mono flex-shrink-0">{date}</span>
-                          : <span className="text-[9px] text-slate-300 flex-shrink-0">파일없음</span>;
+                        if (date) return <span className="text-[9px] text-blue-400 font-mono flex-shrink-0">{date}</span>;
+                        const asm = b.catalog_enabled ? assembled[String(b.id)] : undefined;
+                        if (asm && asm.visibleCount > 0)
+                          return <span className="text-[9px] text-emerald-500 font-mono flex-shrink-0" title={`조립형 카탈로그 · 제품 ${asm.count}개`}>조립형 {asm.count}</span>;
+                        if (b.catalog_enabled)
+                          return <span className="text-[9px] text-amber-500 flex-shrink-0" title="조립형 카탈로그 공개 상태이나 노출 제품이 없음">조립형 설정중</span>;
+                        return <span className="text-[9px] text-slate-300 flex-shrink-0">파일없음</span>;
                       })()}
                       <button onClick={(e) => { e.stopPropagation(); toggleVisible(b); }}
                         title={b.is_visible ? "노출 중" : "숨김"}
@@ -438,7 +453,15 @@ export default function UnifiedBrandsPage() {
 
                 {/* ── 탭 2: 카탈로그 ── */}
                 {tab === "catalog" && !isNew && (
-                  <CatalogTab brandName={editing.name} catalogs={brandCatalogs} onRefresh={loadBrands} flash={flash} />
+                  <CatalogTab
+                    brandName={editing.name}
+                    catalogs={brandCatalogs}
+                    onRefresh={loadBrands}
+                    flash={flash}
+                    assembledEnabled={editing.catalog_enabled === true}
+                    assembledCount={assembled[String(editing.id)]?.count ?? 0}
+                    onGoAssembled={() => setTab("assembled")}
+                  />
                 )}
                 {tab === "catalog" && isNew && (
                   <p className="text-sm text-gray-400">브랜드를 먼저 저장한 후 카탈로그를 추가할 수 있습니다.</p>
@@ -485,11 +508,14 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 
 // ── CatalogTab ────────────────────────────────────────────────
-function CatalogTab({ brandName, catalogs, onRefresh, flash }: {
+function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, assembledCount, onGoAssembled }: {
   brandName: string;
   catalogs: BrandCatalog[];
   onRefresh: () => void;
   flash: (msg: string, type?: string) => void;
+  assembledEnabled: boolean;
+  assembledCount: number;
+  onGoAssembled: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Omit<BrandCatalog, "id">>({ ...EMPTY_BRAND_CATALOG, brand_name: brandName });
@@ -542,7 +568,22 @@ function CatalogTab({ brandName, catalogs, onRefresh, flash }: {
 
   return (
     <div className="space-y-4">
-      {/* 카탈로그 목록 */}
+      {/* 조립형 카탈로그 요약 — PDF 없이 이미지+정보만 입력하는 형태는 별도 탭에서 관리 */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50">
+        <div className="text-sm text-slate-600">
+          <span className="font-semibold text-slate-800">조립형 카탈로그</span>
+          {" · "}
+          {assembledEnabled ? <span className="text-emerald-600">공개 중</span> : <span className="text-slate-400">비공개</span>}
+          {" · 제품 "}
+          <span className="font-semibold">{assembledCount}</span>개
+        </div>
+        <button type="button" onClick={onGoAssembled}
+          className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-600 hover:bg-white transition-colors">
+          조립형 카탈로그 탭에서 편집 →
+        </button>
+      </div>
+
+      {/* PDF 카탈로그 목록 */}
       {catalogs.length === 0 ? (
         <p className="text-sm text-slate-400 py-4">등록된 카탈로그가 없습니다.</p>
       ) : (
