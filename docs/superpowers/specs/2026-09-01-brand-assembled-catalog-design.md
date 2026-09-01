@@ -218,7 +218,22 @@ ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_intro       TEXT NOT NULL DE
 ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_tech_images JSONB NOT NULL DEFAULT '[]'::jsonb;
 ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_updated_at  TIMESTAMPTZ DEFAULT NOW();
 
-CREATE TABLE IF NOT EXISTS brand_catalog_items ( ... 3.2 참조 ... );
+CREATE TABLE IF NOT EXISTS brand_catalog_items (
+  id          TEXT PRIMARY KEY,
+  brand_id    TEXT NOT NULL,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  is_visible  BOOLEAN NOT NULL DEFAULT TRUE,
+  category    TEXT NOT NULL DEFAULT '',
+  name        TEXT NOT NULL DEFAULT '',
+  summary     TEXT NOT NULL DEFAULT '',
+  description TEXT NOT NULL DEFAULT '',
+  price       TEXT NOT NULL DEFAULT '',
+  specs       JSONB NOT NULL DEFAULT '[]'::jsonb,
+  colors      JSONB NOT NULL DEFAULT '[]'::jsonb,
+  tech_images JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
 CREATE INDEX IF NOT EXISTS brand_catalog_items_brand_idx ON brand_catalog_items (brand_id, sort_order);
 
 GRANT ALL ON TABLE brand_catalog_items TO anon, authenticated, service_role;
