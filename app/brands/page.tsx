@@ -28,14 +28,21 @@ async function getBrandsData(): Promise<BrandItem[]> {
   noStore();
   try {
     const supabase = createAdminClient();
-    const [{ data: dbBrands }, { data: catalogs }] = await Promise.all([
-      supabase.from("brands").select("id, name, name_ko, positioning, description, accent_color, image_bg, mega_menu_image, is_visible").order("sort_order", { ascending: true }).order("name", { ascending: true }),
+    const [{ data: dbBrands }, { data: catalogs }, { data: asmItems }] = await Promise.all([
+      supabase.from("brands").select("id, name, name_ko, positioning, description, accent_color, image_bg, mega_menu_image, is_visible, catalog_enabled, catalog_cover_url").order("sort_order", { ascending: true }).order("name", { ascending: true }),
       supabase.from("brand_catalogs").select("brand_name").eq("is_visible", true),
+      supabase.from("brand_catalog_items").select("brand_id").eq("is_visible", true),
     ]);
 
     const catalogNames = new Set(
       (catalogs ?? []).map((c: { brand_name: string }) => c.brand_name.toLowerCase())
     );
+    // 조립형 카탈로그(공개 + 노출 제품 1개 이상)를 가진 브랜드 id
+    const asmBrandIds = new Set(
+      ((asmItems as { brand_id: unknown }[]) ?? []).map((r) => String(r.brand_id))
+    );
+    const hasAssembled = (db: Brand | null | undefined) =>
+      !!db && db.catalog_enabled === true && asmBrandIds.has(String(db.id));
 
     // 정적 BRANDS → DB 레코드가 is_visible=false면 제외
     const staticVisible = BRANDS.filter((b) => {
@@ -53,7 +60,7 @@ async function getBrandsData(): Promise<BrandItem[]> {
     const staticItems: BrandItem[] = staticVisible.map((b) => {
       const db = (dbBrands ?? []).find((d: Brand) => d.name.toLowerCase() === b.name.toLowerCase()) ?? null;
       const bgValue = db?.image_bg || b.imageBg || "";
-      const heroImage = db?.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "");
+      const heroImage = db?.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || db?.catalog_cover_url || "";
       return {
         id: b.id,
         name: b.name,
@@ -64,14 +71,14 @@ async function getBrandsData(): Promise<BrandItem[]> {
         accentColor: db?.accent_color || b.accentColor,
         heroImage,
         imageBg: heroImage ? "" : bgValue,
-        hasCatalog: catalogNames.has(b.name.toLowerCase()),
+        hasCatalog: catalogNames.has(b.name.toLowerCase()) || hasAssembled(db),
       };
     });
 
     // DB 전용 브랜드 → BrandItem 변환 (카탈로그 없음)
     const dbOnlyItems: BrandItem[] = dbOnlyVisible.map((d: Brand) => {
       const bgValue = d.image_bg || "";
-      const heroImage = d.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "");
+      const heroImage = d.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || d.catalog_cover_url || "";
       return {
         id: String(d.id),
         name: d.name,
@@ -82,7 +89,7 @@ async function getBrandsData(): Promise<BrandItem[]> {
         accentColor: d.accent_color || "#333333",
         heroImage,
         imageBg: heroImage ? "" : bgValue,
-        hasCatalog: false,
+        hasCatalog: false, // 정적 BRANDS에 없는 브랜드는 /brands/[slug] 허브가 없어 카탈로그 링크 불가
       };
     });
 
