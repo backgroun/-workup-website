@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (!body?.brand_id) return NextResponse.json({ error: "brand_id 필요" }, { status: 400 });
 
   const supabase = createAdminClient();
-  const row = { id: crypto.randomUUID(), ...body, brand_id: String(body.brand_id) };
+  const row = { ...body, id: crypto.randomUUID(), brand_id: String(body.brand_id) };
   const { data, error } = await supabase.from("brand_catalog_items").insert(row).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

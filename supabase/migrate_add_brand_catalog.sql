@@ -10,7 +10,6 @@ ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_season      TEXT NOT NULL DE
 ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_headline    TEXT NOT NULL DEFAULT '';
 ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_intro       TEXT NOT NULL DEFAULT '';
 ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_tech_images JSONB NOT NULL DEFAULT '[]'::jsonb;
-ALTER TABLE brands ADD COLUMN IF NOT EXISTS catalog_updated_at  TIMESTAMPTZ DEFAULT NOW();
 
 -- 조립형 카탈로그 제품 항목
 CREATE TABLE IF NOT EXISTS brand_catalog_items (

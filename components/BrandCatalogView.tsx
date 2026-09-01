@@ -46,9 +46,9 @@ export default function BrandCatalogView({ data }: { data: LoadedBrandCatalog })
           const groupItems = items.filter((it) => (it.category.trim() || "제품") === group.category);
           return (
             <section key={group.category} className="pt-10">
-              <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold" style={{ color: accent }}>
+              <h2 className="text-[11px] tracking-[0.3em] uppercase font-bold" style={{ color: accent }}>
                 {group.category}
-              </h3>
+              </h2>
               {groupItems.map((it) => (
                 <BrandCatalogItem key={it.id} item={it} accent={accent} />
               ))}

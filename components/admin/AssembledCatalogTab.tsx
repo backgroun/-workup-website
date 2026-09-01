@@ -16,8 +16,14 @@ async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
   const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+  if (!res.ok) {
+    let m = "업로드 실패";
+    try {
+      m = (await res.json())?.error ?? m;
+    } catch {}
+    throw new Error(m);
+  }
   const d = await res.json();
-  if (!res.ok) throw new Error(d?.error ?? "업로드 실패");
   return d.url as string;
 }
 
@@ -78,6 +84,8 @@ export default function AssembledCatalogTab({
         <span className="font-semibold">이 브랜드의 조립형 카탈로그 공개</span>
       </label>
 
+      <p className="text-xs text-gray-400">이미지는 4MB 이하, 텍스트가 없는 순수 사진</p>
+
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <p className="mb-1 text-gray-500">커버 이미지 (이미지 안에 텍스트를 넣지 마세요)</p>
@@ -135,12 +143,12 @@ export default function AssembledCatalogTab({
       </p>
 
       {/* 제품 항목 편집기 */}
-      <ItemsEditor brandId={String(brandId)} />
+      <ItemsEditor brandId={String(brandId)} flash={flash} />
     </div>
   );
 }
 
-function ItemsEditor({ brandId }: { brandId: string }) {
+function ItemsEditor({ brandId, flash }: { brandId: string; flash: (t: string, type?: string) => void }) {
   const [items, setItems] = useState<BrandCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -163,7 +171,14 @@ function ItemsEditor({ brandId }: { brandId: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...EMPTY_CATALOG_ITEM, brand_id: brandId, sort_order: items.length }),
     });
-    if (r.ok) load();
+    if (!r.ok) {
+      flash("제품 추가 실패", "err");
+      return;
+    }
+    const created = await r.json();
+    if (created && typeof created.id === "string") {
+      setItems((prev) => [...prev, created as BrandCatalogItem]);
+    }
   };
 
   const patchLocal = (id: string, patch: Partial<BrandCatalogItem>) =>
@@ -171,19 +186,30 @@ function ItemsEditor({ brandId }: { brandId: string }) {
 
   const saveItem = async (it: BrandCatalogItem) => {
     setSavingId(it.id);
-    await fetch(`/api/admin/brand-catalog-items/${it.id}`, {
+    const r = await fetch(`/api/admin/brand-catalog-items/${it.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(it),
     });
     setSavingId(null);
-    load();
+    if (!r.ok) {
+      flash("저장 실패", "err");
+      return;
+    }
+    const saved = await r.json();
+    if (saved && typeof saved.id === "string") {
+      setItems((prev) => prev.map((x) => (x.id === saved.id ? (saved as BrandCatalogItem) : x)));
+    }
   };
 
   const removeItem = async (id: string) => {
     if (!confirm("이 제품 항목을 삭제할까요?")) return;
-    await fetch(`/api/admin/brand-catalog-items/${id}`, { method: "DELETE" });
-    load();
+    const r = await fetch(`/api/admin/brand-catalog-items/${id}`, { method: "DELETE" });
+    if (!r.ok) {
+      flash("삭제 실패", "err");
+      return;
+    }
+    setItems((prev) => prev.filter((x) => x.id !== id));
   };
 
   const move = async (idx: number, dir: -1 | 1) => {
@@ -247,7 +273,7 @@ function ItemsEditor({ brandId }: { brandId: string }) {
           <SpecsEditor specs={it.specs} onChange={(specs) => patchLocal(it.id, { specs })} />
 
           {/* 컬러 편집기 — Task 10 */}
-          <ColorsEditor item={it} onChange={(colors) => patchLocal(it.id, { colors })} />
+          <ColorsEditor item={it} flash={flash} onChange={(colors) => patchLocal(it.id, { colors })} />
         </div>
       ))}
     </div>
@@ -276,9 +302,11 @@ function SpecsEditor({ specs, onChange }: { specs: CatalogSpec[]; onChange: (s: 
 
 function ColorsEditor({
   item,
+  flash,
   onChange,
 }: {
   item: BrandCatalogItem;
+  flash: (t: string, type?: string) => void;
   onChange: (c: CatalogColorVariant[]) => void;
 }) {
   const colors = item.colors ?? [];
@@ -296,8 +324,8 @@ function ColorsEditor({
   };
 
   const setLabel = (i: number, label: string) => {
-    const taken = colors.filter((_, j) => j !== i).map((c) => c.key);
-    patchColor(i, { label, key: slugifyColorKey(label || "color", taken) });
+    // key는 addColor에서 이미 생성됨 — 공유된 딥링크 보존을 위해 재생성하지 않는다
+    patchColor(i, { label });
   };
 
   const upload = async (i: number, field: "cutout_url" | "styled_url", file?: File) => {
@@ -306,6 +334,8 @@ function ColorsEditor({
     try {
       const url = await uploadImage(file);
       patchColor(i, { [field]: url } as Partial<CatalogColorVariant>);
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "업로드 실패", "err");
     } finally {
       setBusy(false);
     }
@@ -317,6 +347,8 @@ function ColorsEditor({
     try {
       const url = await uploadImage(file);
       patchColor(i, { gallery: [...(colors[i].gallery ?? []), url] });
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "업로드 실패", "err");
     } finally {
       setBusy(false);
     }

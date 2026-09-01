@@ -25,7 +25,6 @@ export type Brand = {
   catalog_headline?: string;
   catalog_intro?: string;
   catalog_tech_images?: string[];
-  catalog_updated_at?: string | null;
 };
 
 export const EMPTY_BRAND: Omit<Brand, "id"> = {

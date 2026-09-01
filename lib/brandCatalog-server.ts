@@ -69,7 +69,8 @@ export async function loadBrandCatalog(
     const { data: rows } = await q;
     const items = (rows ?? []).map((r) => normalizeItem(r as Record<string, unknown>));
     return { brand, meta, items };
-  } catch {
+  } catch (e) {
+    console.error("[brandCatalog] loadBrandCatalog failed:", e);
     return null;
   }
 }

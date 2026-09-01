@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ikSrc } from "@/lib/imageSrc";
 import {
   type BrandCatalogItem,
@@ -19,7 +20,7 @@ export default function BrandCatalogItem({
 
   // 마운트 시 해시로 초기 컬러 선택
   useEffect(() => {
-    const h = window.location.hash.replace(/^#/, "");
+    const h = decodeURIComponent(window.location.hash.replace(/^#/, ""));
     const idx = colors.findIndex((c) => catalogColorAnchor(item.id, c.key) === h);
     if (idx >= 0) setActive(idx);
     // item.id 고정, colors 참조만 사용 — 최초 1회
@@ -38,7 +39,7 @@ export default function BrandCatalogItem({
   };
 
   return (
-    <article className="scroll-mt-24 py-10 border-b border-gray-100 last:border-0">
+    <article id={catalogItemAnchor(item.id)} className="scroll-mt-24 py-10 border-b border-gray-100 last:border-0">
       <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-start">
         {/* 큰 이미지 */}
         <div className="relative w-full aspect-[4/5] bg-[#f5f0eb] overflow-hidden rounded-lg">
@@ -56,9 +57,9 @@ export default function BrandCatalogItem({
 
         {/* 정보 */}
         <div>
-          <h2 id={catalogItemAnchor(item.id)} className="text-2xl font-black tracking-tight text-gray-900">
+          <h3 className="text-2xl font-black tracking-tight text-gray-900">
             {item.name}
-          </h2>
+          </h3>
           {item.summary ? <p className="mt-2 text-sm text-gray-600">{item.summary}</p> : null}
 
           {/* 컬러 칩 */}
@@ -110,6 +111,12 @@ export default function BrandCatalogItem({
           <p className="mt-5 text-lg font-bold" style={{ color: accent }}>
             {item.price?.trim() ? item.price : "가격 문의"}
           </p>
+
+          {/* 제품별 매장 방문 유도 CTA */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Link href="/store" className="inline-flex items-center justify-center rounded-lg px-4 min-h-[44px] text-sm font-bold text-white" style={{ backgroundColor: accent }}>가까운 매장 찾기</Link>
+            <Link href="/support" className="inline-flex items-center justify-center rounded-lg px-4 min-h-[44px] text-sm font-semibold text-gray-700 border border-gray-200 hover:border-gray-400">제품 문의</Link>
+          </div>
         </div>
       </div>
 
