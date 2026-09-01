@@ -169,6 +169,21 @@ export default function UnifiedBrandsPage() {
     await fetch(`/api/admin/brands/${b.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_visible: next }) });
   };
 
+  // 선택한 브랜드 일괄 노출/비노출
+  const bulkSetVisible = async (next: boolean) => {
+    const ids = [...checkedIds];
+    if (ids.length === 0) return;
+    setTogglingVis(true);
+    const idSet = new Set(ids);
+    setBrands((prev) => prev.map((x) => (idSet.has(String(x.id)) ? { ...x, is_visible: next } : x)));
+    await Promise.all(ids.map((id) =>
+      fetch(`/api/admin/brands/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_visible: next }) })
+    ));
+    setTogglingVis(false);
+    setCheckedIds(new Set());
+    flash(`${ids.length}개 브랜드를 ${next ? "노출" : "비노출"}로 변경했습니다.`);
+  };
+
   // ── 브랜드별 최신 카탈로그 날짜 맵 ──────────────────────────
   const latestCatalogDateMap = catalogs.reduce<Record<string, string>>((acc, c) => {
     const key = c.brand_name.toLowerCase();
@@ -351,11 +366,21 @@ export default function UnifiedBrandsPage() {
                   </span>
                 )}
                 {checkedIds.size > 0 && (
-                  <button onClick={handleBulkDelete} disabled={deletingBulk}
-                    className="ml-auto flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 text-[11px] font-semibold rounded-md hover:bg-red-100 transition-colors disabled:opacity-50">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    {deletingBulk ? "삭제 중…" : `${checkedIds.size}개 삭제`}
-                  </button>
+                  <div className="ml-auto flex items-center gap-1">
+                    <button onClick={() => bulkSetVisible(true)} disabled={togglingVis}
+                      className="px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 text-[11px] font-semibold rounded-md hover:bg-blue-100 transition-colors disabled:opacity-50">
+                      노출
+                    </button>
+                    <button onClick={() => bulkSetVisible(false)} disabled={togglingVis}
+                      className="px-2 py-1 bg-slate-100 text-slate-600 border border-slate-300 text-[11px] font-semibold rounded-md hover:bg-slate-200 transition-colors disabled:opacity-50">
+                      비노출
+                    </button>
+                    <button onClick={handleBulkDelete} disabled={deletingBulk}
+                      className="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 text-[11px] font-semibold rounded-md hover:bg-red-100 transition-colors disabled:opacity-50">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      {deletingBulk ? "삭제 중…" : `${checkedIds.size} 삭제`}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
