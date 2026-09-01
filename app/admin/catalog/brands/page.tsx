@@ -2,9 +2,10 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { EMPTY_BRAND, type Brand } from "@/data/brands";
 import { EMPTY_BRAND_CATALOG, type BrandCatalog } from "@/data/brandCatalogs";
+import AssembledCatalogTab from "@/components/admin/AssembledCatalogTab";
 
 // ── 탭 타입 ──────────────────────────────────────────────────
-type Tab = "info" | "catalog";
+type Tab = "info" | "catalog" | "assembled";
 
 // ── 유틸 ─────────────────────────────────────────────────────
 const slugify = (s: string) =>
@@ -371,10 +372,10 @@ export default function UnifiedBrandsPage() {
 
               {/* 탭 */}
               <div className="flex border-b border-slate-200 bg-slate-50">
-                {(["info", "catalog"] as Tab[]).map((t) => (
+                {(["info", "catalog", "assembled"] as Tab[]).map((t) => (
                   <button key={t} onClick={() => setTab(t)}
                     className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 ${tab === t ? "border-blue-500 text-blue-600 bg-white" : "border-transparent text-slate-500 hover:text-slate-700"}`}>
-                    {t === "info" ? "기본 정보" : `카탈로그 (${brandCatalogs.length})`}
+                    {t === "info" ? "기본 정보" : t === "assembled" ? "조립형 카탈로그" : `카탈로그 (${brandCatalogs.length})`}
                   </button>
                 ))}
               </div>
@@ -441,6 +442,19 @@ export default function UnifiedBrandsPage() {
                 )}
                 {tab === "catalog" && isNew && (
                   <p className="text-sm text-gray-400">브랜드를 먼저 저장한 후 카탈로그를 추가할 수 있습니다.</p>
+                )}
+
+                {/* ── 탭 3: 조립형 카탈로그 ── */}
+                {tab === "assembled" && !isNew && editing && (
+                  <AssembledCatalogTab
+                    brand={editing}
+                    brandId={editing.id}
+                    onPatchBrand={(patch) => setEditing((prev) => (prev ? { ...prev, ...patch } : prev))}
+                    flash={flash}
+                  />
+                )}
+                {tab === "assembled" && isNew && (
+                  <p className="text-sm text-gray-400">브랜드를 먼저 저장한 후 조립형 카탈로그를 편집할 수 있습니다.</p>
                 )}
               </div>
             </div>
