@@ -141,26 +141,26 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
     );
   }
 
-  // ── 목차 ──
+  // ── 목차 ── (페이지 크기에 비례하도록 cqw 단위 사용)
   if (type === "contents") {
     const items = d.items ?? [];
     return (
-      <div className="w-full h-full bg-white flex flex-col" style={{ padding: "8% 9%" }}>
-        {d.eyebrow && <p className="text-[8px] tracking-[0.2em] text-[#E5541B] uppercase mb-3">{d.eyebrow}</p>}
-        <div className="flex-1 space-y-3">
+      <div className="w-full h-full bg-white flex flex-col" style={{ padding: "8% 9%", containerType: "inline-size" }}>
+        {d.eyebrow && <p className="tracking-[0.2em] text-[#E5541B] uppercase" style={{ fontSize: "1.5cqw", marginBottom: "3cqw" }}>{d.eyebrow}</p>}
+        <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap: "0.6cqw" }}>
           {items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[#303236]">{item.name}</span>
-                {item.count && <span className="text-[8px] text-gray-400">{item.count}</span>}
+            <div key={i} className="flex items-center justify-between border-b border-gray-100" style={{ paddingBottom: "1.2cqw" }}>
+              <div className="flex items-baseline" style={{ gap: "1.4cqw" }}>
+                <span className="font-semibold text-[#303236]" style={{ fontSize: "2cqw" }}>{item.name}</span>
+                {item.count && <span className="text-gray-400" style={{ fontSize: "1.3cqw" }}>{item.count}</span>}
               </div>
-              {item.page && <span className="text-[8px] text-gray-400">{item.page}</span>}
+              {item.page && <span className="text-gray-400" style={{ fontSize: "1.3cqw" }}>{item.page}</span>}
             </div>
           ))}
         </div>
         {d.footer && (
-          <div className="pt-3 border-t border-gray-100">
-            <p className="text-[7px] text-gray-300 tracking-widest">{d.footer}</p>
+          <div className="border-t border-gray-100" style={{ paddingTop: "2cqw" }}>
+            <p className="text-gray-300 tracking-widest" style={{ fontSize: "1.2cqw" }}>{d.footer}</p>
           </div>
         )}
       </div>
