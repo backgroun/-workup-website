@@ -29,7 +29,7 @@ async function getData(): Promise<CatalogData> {
       supabase.from("catalog_pages").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
       supabase.from("brand_catalogs").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
       supabase.from("brands").select("id, name").eq("catalog_enabled", true),
-      supabase.from("brand_catalog_items").select("brand_id").eq("is_visible", true),
+      supabase.from("catalog_pages").select("brand_id").eq("is_visible", true).neq("brand_id", ""),
     ]);
 
     // 노출 제품이 1개 이상인 조립형 카탈로그만 링크로 노출

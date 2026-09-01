@@ -31,7 +31,7 @@ function pagesOfSpread(s: number, total: number) {
   return { left: l < total ? l : -1, right: r < total ? r : -1 };
 }
 
-export default function UnifiedCatalogViewer({ workupPages, brands, assembledLinks = [] }: { workupPages: CatalogPage[]; brands: BrandEntry[]; assembledLinks?: AssembledCatalogLink[] }) {
+export default function UnifiedCatalogViewer({ workupPages, brands, assembledLinks = [], sourceLabel }: { workupPages: CatalogPage[]; brands: BrandEntry[]; assembledLinks?: AssembledCatalogLink[]; sourceLabel?: string }) {
   const [selectedId, setSelectedId]   = useState(workupPages.length > 0 ? "workup" : (brands[0]?.id ?? "workup"));
   const areaRef      = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,8 +63,8 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
 
   const total        = pageNodes.length;
   const pdfUrl       = isWorkup ? "" : (brand?.pdf_url ?? "");
-  const catalogTitle = isWorkup ? "2026 FW CATALOG" : (brand?.name ?? "CATALOG");
-  const catalogSub   = isWorkup ? "K-WORKER STORE" : "";
+  const catalogTitle = isWorkup ? (sourceLabel || "2026 FW CATALOG") : (brand?.name ?? "CATALOG");
+  const catalogSub   = isWorkup ? (sourceLabel ? "" : "K-WORKER STORE") : "";
   const tocItems     = isWorkup ? buildTocItems(workupPages) : [];
   const hasBrandTabs = brands.length > 0 || assembledLinks.length > 0;
   const totalSpreads = total === 0 ? 0 : Math.ceil(total / 2);

@@ -58,6 +58,13 @@ export type CatalogPage = {
   sort_order: number;
 };
 
+// 관리자 목록 화면의 브랜드별 카탈로그 상태 표시용 — 키는 brand_id(문자열).
+// GET /api/admin/catalog?summary=1 이 반환한다.
+export type CatalogPagesSummary = Record<
+  string,
+  { count: number; visibleCount: number; latest: string }
+>;
+
 export const CATALOG_TYPE_LABEL: Record<CatalogPageType, string> = {
   image: "이미지",
   split: "분할",

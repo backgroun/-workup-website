@@ -10,13 +10,36 @@ function connectedProjectRef() {
     .split(".")[0] || "(NEXT_PUBLIC_SUPABASE_URL 미설정)";
 }
 
-// 카탈로그 페이지 전체 조회 (순서대로)
-export async function GET() {
+// 카탈로그 페이지 조회 — ?brand=<id> 로 브랜드별 분리(없으면 WORKUP 전용: brand_id=""), ?summary=1 로 브랜드별 집계
+export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createAdminClient();
+  const { searchParams } = new URL(req.url);
+
+  // 브랜드별 집계 맵 — /admin/catalog/brands 목록 뱃지용
+  if (searchParams.get("summary")) {
+    const { data, error } = await supabase
+      .from("catalog_pages")
+      .select("brand_id, updated_at, is_visible");
+    if (error) return NextResponse.json({ error: error.message, project: connectedProjectRef() }, { status: 500 });
+    const summary: Record<string, { count: number; visibleCount: number; latest: string }> = {};
+    for (const row of (data ?? []) as { brand_id: string | null; updated_at: string | null; is_visible: boolean | null }[]) {
+      const bid = String(row.brand_id ?? "");
+      if (!bid) continue; // WORKUP 전용 페이지 제외
+      const entry = summary[bid] ?? { count: 0, visibleCount: 0, latest: "" };
+      entry.count += 1;
+      if (row.is_visible !== false) entry.visibleCount += 1;
+      if (row.updated_at && row.updated_at > entry.latest) entry.latest = row.updated_at;
+      summary[bid] = entry;
+    }
+    return NextResponse.json(summary);
+  }
+
+  const brand = searchParams.get("brand");
   const { data, error } = await supabase
     .from("catalog_pages")
     .select("*")
+    .eq("brand_id", brand ? String(brand) : "")
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
   if (error) {
@@ -36,7 +59,7 @@ export async function POST(req: Request) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("catalog_pages")
-    .insert(body)
+    .insert({ brand_id: "", ...body })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

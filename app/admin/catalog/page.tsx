@@ -1,15 +1,25 @@
 "use client";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import {
-  EMPTY_CATALOG_PAGE, emptyDataFor, CATALOG_TYPE_LABEL,
-  type CatalogPage, type CatalogPageType, type CatalogPageData, type ContentsItem, type CatalogHotspot,
+  EMPTY_CATALOG_PAGE, emptyDataFor, CATALOG_TYPE_LABEL, CATALOG_SPLIT_LAYOUT_LABEL,
+  type CatalogPage, type CatalogPageType, type CatalogPageData, type ContentsItem, type CatalogHotspot, type CatalogTile,
 } from "@/data/catalog";
 import CatalogPageView from "@/components/CatalogPageView";
 
-const PAGE_TYPES: CatalogPageType[] = ["image", "cover", "contents", "divider"];
+const PAGE_TYPES: CatalogPageType[] = ["image", "split", "cover", "contents", "divider"];
 const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#303236] rounded";
 
 export default function AdminCatalogPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-slate-400 text-sm">불러오는 중…</div>}>
+      <AdminCatalogPageInner />
+    </Suspense>
+  );
+}
+
+function AdminCatalogPageInner() {
+  const brandId = useSearchParams().get("brand") ?? "";
   const [pages, setPages] = useState<CatalogPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -31,7 +41,7 @@ export default function AdminCatalogPage() {
     setLoading(true);
     setFetchError(false);
     try {
-      const res = await fetch("/api/admin/catalog");
+      const res = await fetch(`/api/admin/catalog${brandId ? `?brand=${encodeURIComponent(brandId)}` : ""}`);
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));
         setFetchErrMsg(`${e.error ?? `HTTP ${res.status}`}${e.project ? ` · 연결된 프로젝트: ${e.project}` : ""}`);
@@ -48,7 +58,8 @@ export default function AdminCatalogPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [brandId]);
 
   const flash = (text: string, type = "ok") => {
     setMsg({ text, type });
@@ -58,7 +69,7 @@ export default function AdminCatalogPage() {
   const openNew = () => {
     dataCacheRef.current = {};
     setSelectedHotspot(null);
-    setEditing({ id: "", ...EMPTY_CATALOG_PAGE, sort_order: pages.length });
+    setEditing({ id: "", ...EMPTY_CATALOG_PAGE, brand_id: brandId, sort_order: pages.length });
     setIsNew(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
@@ -116,10 +127,11 @@ export default function AdminCatalogPage() {
     if (editing.page_type === "cover" && !editing.data?.brand?.trim()) { flash("표지 브랜드명을 입력하세요.", "err"); return; }
     if (editing.page_type === "divider" && !editing.data?.title?.trim()) { flash("구분 페이지 제목을 입력하세요.", "err"); return; }
     if (editing.page_type === "contents" && !(editing.data?.items ?? []).some((it) => it.name.trim())) { flash("목차 항목을 1개 이상 입력하세요.", "err"); return; }
+    if (editing.page_type === "split" && ((editing.data?.tiles ?? []) as CatalogTile[]).every((t) => !t.image_url)) { flash("분할 페이지에 이미지를 1개 이상 넣으세요.", "err"); return; }
     setSaving(true);
 
     const id = isNew ? crypto.randomUUID() : editing.id;
-    const payload: Record<string, unknown> = { ...editing, id, image_url: editing.image_url || null };
+    const payload: Record<string, unknown> = { ...editing, id, brand_id: editing.brand_id ?? brandId, image_url: editing.image_url || null };
     delete payload.created_at; delete payload.updated_at; // 서버 관리 컬럼 제외
 
     const url = isNew ? "/api/admin/catalog" : `/api/admin/catalog/${editing.id}`;
@@ -141,6 +153,7 @@ export default function AdminCatalogPage() {
     const payload: Record<string, unknown> = {
       ...page,
       id: crypto.randomUUID(),
+      brand_id: page.brand_id ?? brandId,
       admin_title: `${page.admin_title || page.title || "페이지"} (복사본)`,
       sort_order: pages.length,
       image_url: page.image_url || null,
@@ -200,18 +213,31 @@ export default function AdminCatalogPage() {
   const addHotspot = () => { setData({ hotspots: [...hotspots, { x: 50, y: 50, name: "" }] }); setSelectedHotspot(hotspots.length); };
   const removeHotspot = (i: number) => { setData({ hotspots: hotspots.filter((_, idx) => idx !== i) }); setSelectedHotspot(null); };
 
+  // ── 분할(split) 페이지 헬퍼 ──
+  const tiles = (d.tiles ?? []) as CatalogTile[];
+  const setTiles = (fn: (t: CatalogTile[]) => CatalogTile[]) => setData({ tiles: fn(tiles) });
+  const uploadTileImage = async (i: number, file: File) => {
+    setUploading(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+    setUploading(false);
+    if (res.ok) { const { url } = await res.json(); setTiles((t) => t.map((x, idx) => idx === i ? { ...x, image_url: url } : x)); }
+    else { const err = await res.json().catch(() => ({})); flash(`업로드 실패: ${err.error ?? res.status}`, "err"); }
+  };
+
   return (
     <div>
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">카탈로그 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900">카탈로그 관리{brandId && <span className="ml-2 text-lg text-blue-600">· {brandId} 브랜드</span>}</h1>
           <p className="text-base text-gray-400 mt-1">
             디지털 카탈로그(플립북) 페이지 관리 <span className="font-semibold text-gray-600">({pages.length}페이지)</span>
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/catalog" target="_blank" className="px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">카탈로그 미리보기 ↗</a>
+          <a href={brandId ? `/brands/${brandId}/catalog` : "/catalog"} target="_blank" className="px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">카탈로그 미리보기 ↗</a>
           <button onClick={openNew} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             페이지 추가
@@ -221,7 +247,7 @@ export default function AdminCatalogPage() {
 
       {/* 안내 */}
       <div className="mb-6 p-4 bg-blue-50/60 border border-blue-100 rounded-xl text-sm text-slate-600 leading-relaxed">
-        페이지 종류: <b>표지</b>·<b>목차</b>·<b>구분</b>은 디자인이 자동 적용되고 글자만 수정합니다. <b>이미지</b>는 직접 디자인한 페이지를 업로드합니다.
+        페이지 종류: <b>표지</b>·<b>목차</b>·<b>구분</b>은 디자인이 자동 적용되고 글자만 수정합니다. <b>이미지</b>는 직접 디자인한 페이지를 업로드합니다. <b>분할</b>은 한 페이지를 2~4칸으로 나눠 각 칸에 이미지를 배치합니다.
         등록한 순서대로 <span className="font-semibold text-slate-800">/catalog 플립북</span>에 노출됩니다.
         <span className="block mt-1 text-xs text-slate-400">이미지 권장 비율 5:7 세로형 (예: 1000 × 1400px) · JPG/PNG · 10MB 이하</span>
       </div>
@@ -434,6 +460,52 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                                     <input type="text" value={hs.href ?? ""} onChange={(e) => setHotspot(i, { href: e.target.value || undefined })} placeholder="/products/..." className={INPUT} />
                                   </div>
                                 </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {editing.page_type === "split" && (
+                    <>
+                      <Field label="분할 레이아웃">
+                        <div className="flex flex-wrap gap-1.5">
+                          {(Object.keys(CATALOG_SPLIT_LAYOUT_LABEL) as (keyof typeof CATALOG_SPLIT_LAYOUT_LABEL)[]).map((key) => (
+                            <button key={key} type="button" onClick={() => setData({ layout: key })}
+                              className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${(d.layout ?? "2col") === key ? "border-blue-400 text-blue-600 bg-blue-50" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                              {CATALOG_SPLIT_LAYOUT_LABEL[key]}
+                            </button>
+                          ))}
+                        </div>
+                      </Field>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">칸 목록 ({tiles.length})</p>
+                          <button type="button" onClick={() => setTiles((t) => [...t, { image_url: "", title: "" }])}
+                            className="px-3 py-1.5 text-xs font-semibold bg-orange-50 text-[#E5541B] border border-orange-200 hover:bg-orange-100 transition-colors rounded-lg">
+                            + 칸 추가
+                          </button>
+                        </div>
+                        {tiles.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 py-1">칸을 추가하고 이미지를 넣으세요.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {tiles.map((tile, i) => (
+                              <div key={i} className="p-3 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-semibold text-slate-500">{i + 1}번 칸</span>
+                                  <button type="button" onClick={() => setTiles((t) => t.filter((_, idx) => idx !== i))}
+                                    className="text-red-400 hover:text-red-600 text-xs px-1.5 py-0.5 hover:bg-red-50 rounded transition-colors">삭제</button>
+                                </div>
+                                <input type="text" value={tile.image_url} onChange={(e) => setTiles((t) => t.map((x, idx) => idx === i ? { ...x, image_url: e.target.value } : x))} placeholder="이미지 URL" className={INPUT} />
+                                <label className="inline-block px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors rounded-lg cursor-pointer">
+                                  {uploading ? "업로드 중..." : "파일 업로드"}
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadTileImage(i, f); e.target.value = ""; }} />
+                                </label>
+                                <input type="text" value={tile.title ?? ""} onChange={(e) => setTiles((t) => t.map((x, idx) => idx === i ? { ...x, title: e.target.value || undefined } : x))} placeholder="작은 제목 (선택)" className={INPUT} />
+                                <input type="text" value={tile.href ?? ""} onChange={(e) => setTiles((t) => t.map((x, idx) => idx === i ? { ...x, href: e.target.value || undefined } : x))} placeholder="링크 (선택) 예: /products/..." className={INPUT} />
                               </div>
                             ))}
                           </div>

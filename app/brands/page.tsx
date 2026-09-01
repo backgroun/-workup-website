@@ -32,7 +32,7 @@ async function getBrandsData(): Promise<BrandItem[]> {
     const [{ data: dbBrands }, { data: catalogs }, { data: asmItems }] = await Promise.all([
       supabase.from("brands").select("id, name, name_ko, positioning, description, accent_color, image_bg, mega_menu_image, is_visible, catalog_enabled, catalog_cover_url").order("sort_order", { ascending: true }).order("name", { ascending: true }),
       supabase.from("brand_catalogs").select("brand_name").eq("is_visible", true),
-      supabase.from("brand_catalog_items").select("brand_id").eq("is_visible", true),
+      supabase.from("catalog_pages").select("brand_id").eq("is_visible", true).neq("brand_id", ""),
     ]);
 
     // 이름 표기 차이(예: "MAD DOG" vs "MADDOG")를 흡수하는 정규화 키

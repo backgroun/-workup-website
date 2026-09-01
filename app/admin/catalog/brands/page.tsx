@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, type ReactNode } from "react"
 import { EMPTY_BRAND, type Brand } from "@/data/brands";
 import { EMPTY_BRAND_CATALOG, type BrandCatalog } from "@/data/brandCatalogs";
 import AssembledCatalogTab from "@/components/admin/AssembledCatalogTab";
-import type { AssembledCatalogSummary } from "@/data/brandCatalog";
+import type { CatalogPagesSummary } from "@/data/catalog";
 
 // ── 탭 타입 ──────────────────────────────────────────────────
 type Tab = "info" | "catalog" | "assembled";
@@ -16,7 +16,7 @@ const slugify = (s: string) =>
 export default function UnifiedBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [catalogs, setCatalogs] = useState<BrandCatalog[]>([]);
-  const [assembled, setAssembled] = useState<AssembledCatalogSummary>({});
+  const [assembled, setAssembled] = useState<CatalogPagesSummary>({});
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export default function UnifiedBrandsPage() {
       const [br, ca, asm] = await Promise.all([
         fetch("/api/admin/brands").then((r) => r.json()),
         fetch("/api/admin/brand-catalogs").then((r) => r.json()),
-        fetch("/api/admin/brand-catalog-items?summary=1").then((r) => r.json()).catch(() => ({})),
+        fetch("/api/admin/catalog?summary=1").then((r) => r.json()).catch(() => ({})),
       ]);
       if (br?.error) { setFetchError(br.error); setLoading(false); return; }
       setBrands(Array.isArray(br) ? br : []);
@@ -425,10 +425,10 @@ export default function UnifiedBrandsPage() {
                         const asm = b.catalog_enabled ? assembled[String(b.id)] : undefined;
                         if (asm && asm.visibleCount > 0) {
                           const asmDate = fmtDate(asm.latest);
-                          return <span className="text-[9px] text-emerald-500 font-mono flex-shrink-0" title={`조립형 카탈로그 · 제품 ${asm.count}개${asmDate ? ` · 수정 ${asmDate}` : ""}`}>조립형 {asmDate ?? asm.count}</span>;
+                          return <span className="text-[9px] text-emerald-500 font-mono flex-shrink-0" title={`카탈로그 · ${asm.count}페이지${asmDate ? ` · 수정 ${asmDate}` : ""}`}>카탈로그 {asmDate ?? asm.count}</span>;
                         }
                         if (b.catalog_enabled)
-                          return <span className="text-[9px] text-amber-500 flex-shrink-0" title="조립형 카탈로그 공개 상태이나 노출 제품이 없음">조립형 설정중</span>;
+                          return <span className="text-[9px] text-amber-500 flex-shrink-0" title="카탈로그 공개 상태이나 노출 페이지가 없음">카탈로그 준비중</span>;
                         return <span className="text-[9px] text-slate-300 flex-shrink-0">파일없음</span>;
                       })()}
                       <button onClick={(e) => { e.stopPropagation(); toggleVisible(b); }}
@@ -473,7 +473,7 @@ export default function UnifiedBrandsPage() {
                 {(["info", "catalog", "assembled"] as Tab[]).map((t) => (
                   <button key={t} onClick={() => setTab(t)}
                     className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 ${tab === t ? "border-blue-500 text-blue-600 bg-white" : "border-transparent text-slate-500 hover:text-slate-700"}`}>
-                    {t === "info" ? "기본 정보" : t === "assembled" ? "조립형 카탈로그" : `카탈로그 (${brandCatalogs.length})`}
+                    {t === "info" ? "기본 정보" : t === "assembled" ? "카탈로그(플립북)" : `카탈로그 PDF (${brandCatalogs.length})`}
                   </button>
                 ))}
               </div>
@@ -558,6 +558,7 @@ export default function UnifiedBrandsPage() {
                     brandId={editing.id}
                     onPatchBrand={(patch) => setEditing((prev) => (prev ? { ...prev, ...patch } : prev))}
                     flash={flash}
+                    pageCount={assembled[String(editing.id)]?.count}
                   />
                 )}
                 {tab === "assembled" && isNew && (
@@ -656,16 +657,16 @@ function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, a
       {/* 조립형 카탈로그 요약 — PDF 없이 이미지+정보만 입력하는 형태는 별도 탭에서 관리 */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50">
         <div className="text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">조립형 카탈로그</span>
+          <span className="font-semibold text-slate-800">카탈로그</span>
           {" · "}
           {assembledEnabled ? <span className="text-emerald-600">공개 중</span> : <span className="text-slate-400">비공개</span>}
-          {" · 제품 "}
-          <span className="font-semibold">{assembledCount}</span>개
+          {" · "}
+          <span className="font-semibold">{assembledCount}</span>페이지
           {assembledLatest ? <span className="text-slate-400">{" · 수정 "}{assembledLatest}</span> : null}
         </div>
         <button type="button" onClick={onGoAssembled}
           className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-600 hover:bg-white transition-colors">
-          조립형 카탈로그 탭에서 편집 →
+          카탈로그 탭에서 편집 →
         </button>
       </div>
 

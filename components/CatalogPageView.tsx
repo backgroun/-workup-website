@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import type { CatalogPage, CatalogHotspot } from "@/data/catalog";
+import type { CatalogPage, CatalogHotspot, CatalogTile } from "@/data/catalog";
 import { ikSrc } from "@/lib/imageSrc";
 
 // ── 핫스팟 팝업 ──
@@ -68,6 +68,40 @@ function HotspotDot({ spot, idx, active, onToggle }: {
       )}
     </div>
   );
+}
+
+// ── 분할(split) 페이지의 한 칸 ──
+function SplitTile({ tile }: { tile: CatalogTile }) {
+  const [active, setActive] = useState(-1);
+  const spots = tile.hotspots ?? [];
+  const inner = (
+    <div
+      className="relative w-full h-full bg-[#0d1826] overflow-hidden"
+      style={{ containerType: "inline-size" }}
+      onMouseDown={spots.length > 0 ? () => setActive(-1) : undefined}
+    >
+      {tile.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={ikSrc(tile.image_url, 900)} alt={tile.title || "카탈로그 분할 이미지"} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white/25" style={{ fontSize: "5cqw" }}>이미지 없음</div>
+      )}
+      {spots.map((spot, i) => (
+        <HotspotDot key={i} spot={spot} idx={i} active={active === i} onToggle={(n) => setActive((p) => (p === n ? -1 : n))} />
+      ))}
+      {tile.title && (
+        <div className="absolute left-0 bottom-0" style={{ padding: "4cqw" }}>
+          <div className="inline-block max-w-[86%]" style={{ backgroundColor: "rgba(13,15,18,0.82)", borderRadius: "1.6cqw", padding: "1.6cqw 2.8cqw" }}>
+            <p className="text-white font-semibold leading-tight" style={{ fontSize: "3cqw", letterSpacing: "-0.01em" }}>{tile.title}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+  if (tile.href) {
+    return <Link href={tile.href} className="block w-full h-full">{inner}</Link>;
+  }
+  return inner;
 }
 
 // 카탈로그 한 페이지의 시각 표현 — 플립북과 관리자 미리보기에서 공용으로 사용한다(DRY).
@@ -156,6 +190,24 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
     );
   }
 
+  // ── 분할(split) 페이지 ──
+  if (type === "split") {
+    const tiles = d.tiles ?? [];
+    const layout = d.layout ?? "2col";
+    const gridClass =
+      layout === "2col" ? "grid-cols-2 grid-rows-1" :
+      layout === "2row" ? "grid-cols-1 grid-rows-2" :
+      layout === "3col" ? "grid-cols-3 grid-rows-1" :
+      "grid-cols-2 grid-rows-2"; // grid4
+    return (
+      <div className={`w-full h-full bg-[#0d1826] grid ${gridClass} gap-[1cqw]`} style={{ containerType: "inline-size" }}>
+        {tiles.map((t, i) => (
+          <SplitTile key={i} tile={t} />
+        ))}
+      </div>
+    );
+  }
+
   // ── 이미지 페이지 (기본) — 핫스팟 지원 ──
   const hotspots: CatalogHotspot[] = d.hotspots ?? [];
   const hasCaption = !!(page.title || page.description);
@@ -180,12 +232,11 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
 
       {/* 캡션 (타이틀/설명) */}
       {hasCaption && (
-        <div
-          className="absolute inset-x-0 bottom-0"
-          style={{ padding: "6%", paddingTop: "16%", background: "linear-gradient(to top, rgba(0,0,0,0.74), rgba(0,0,0,0.28) 55%, transparent)" }}
-        >
-          {page.title && <h2 className="text-white font-bold leading-tight" style={{ fontSize: "4.4cqw", letterSpacing: "-0.01em" }}>{page.title}</h2>}
-          {page.description && <p className="text-white/85 leading-snug" style={{ fontSize: "2.6cqw", marginTop: "1.2cqw", letterSpacing: "-0.01em" }}>{page.description}</p>}
+        <div className="absolute left-0 bottom-0" style={{ padding: "3.5cqw" }}>
+          <div className="inline-block max-w-[80%]" style={{ backgroundColor: "rgba(13,15,18,0.82)", borderRadius: "1.2cqw", padding: "1.4cqw 2.4cqw" }}>
+            {page.title && <p className="text-white font-semibold leading-tight" style={{ fontSize: "2.4cqw", letterSpacing: "-0.01em" }}>{page.title}</p>}
+            {page.description && <p className="text-white/70 leading-snug" style={{ fontSize: "1.9cqw", marginTop: "0.6cqw" }}>{page.description}</p>}
+          </div>
         </div>
       )}
     </div>

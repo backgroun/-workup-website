@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
 import { loadBrandCatalog } from "@/lib/brandCatalog-server";
-import BrandCatalogView from "@/components/BrandCatalogView";
+import UnifiedCatalogViewer from "@/components/UnifiedCatalogViewer";
 import CatalogBodyClass from "@/components/CatalogBodyClass";
 import { absoluteUrl } from "@/lib/site";
 
@@ -13,36 +13,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await loadBrandCatalog(id);
   if (!data) return {};
   const name = data.brand.name;
-  const desc = data.meta.intro || data.brand.description || `${name} 제품 카탈로그`;
   return {
     title: `${name} 카탈로그 | WORKUP`,
-    description: desc,
-    openGraph: {
-      title: `${name} 카탈로그 | WORKUP`,
-      description: desc,
-      images: data.meta.cover_url ? [data.meta.cover_url] : undefined,
-    },
+    description: `${name} 제품 카탈로그. WORKUP K-WORKER STORE.`,
   };
 }
 
-export default async function BrandAssembledCatalogPage({ params }: Props) {
+export default async function BrandCatalogPage({ params }: Props) {
   noStore();
   const { id } = await params;
   const data = await loadBrandCatalog(id);
-  if (!data || data.items.length === 0) notFound();
+  if (!data || data.pages.length === 0) notFound();
 
   const brandName = data.brand.name;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "HOME", item: absoluteUrl("/") },
-          { "@type": "ListItem", position: 2, name: "BRAND", item: absoluteUrl("/brands") },
-          { "@type": "ListItem", position: 3, name: `${brandName} 카탈로그` },
-        ],
-      },
+      { "@type": "BreadcrumbList", itemListElement: [
+        { "@type": "ListItem", position: 1, name: "HOME", item: absoluteUrl("/") },
+        { "@type": "ListItem", position: 2, name: "BRAND", item: absoluteUrl("/brands") },
+        { "@type": "ListItem", position: 3, name: `${brandName} 카탈로그` },
+      ] },
       { "@type": "Brand", name: brandName, description: data.brand.description ?? "" },
     ],
   };
@@ -51,7 +42,7 @@ export default async function BrandAssembledCatalogPage({ params }: Props) {
     <main>
       <CatalogBodyClass />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <BrandCatalogView data={data} />
+      <UnifiedCatalogViewer workupPages={data.pages} brands={[]} sourceLabel={brandName} />
     </main>
   );
 }

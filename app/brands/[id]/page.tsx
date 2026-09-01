@@ -107,7 +107,7 @@ export default async function BrandPage({ params }: Props) {
     try {
       const sb = createAdminClient();
       const { count } = await sb
-        .from("brand_catalog_items")
+        .from("catalog_pages")
         .select("id", { count: "exact", head: true })
         .eq("brand_id", String(dbBrand.id))
         .eq("is_visible", true);
