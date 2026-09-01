@@ -600,8 +600,8 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                   )}
                 </div>
 
-                {/* 실시간 미리보기 */}
-                <div className="w-[220px] flex-shrink-0">
+                {/* 실시간 미리보기 (실제 플립북 한 페이지 폭에 근접) */}
+                <div className="w-[320px] flex-shrink-0">
                   <p className="text-xs font-semibold text-slate-500 mb-2">미리보기</p>
                   <div
                     className={`rounded-lg overflow-hidden border border-slate-200 shadow-sm relative ${editing.page_type === "image" && selectedHotspot !== null ? "cursor-crosshair" : ""}`}
