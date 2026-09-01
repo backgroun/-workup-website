@@ -146,8 +146,10 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
     const items = d.items ?? [];
     return (
       <div className="w-full h-full bg-white flex flex-col" style={{ padding: "8% 9%", containerType: "inline-size" }}>
-        {d.eyebrow && <p className="tracking-[0.2em] text-[#E5541B] uppercase" style={{ fontSize: "2cqw", marginBottom: "4cqw" }}>{d.eyebrow}</p>}
-        <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap: "1.6cqw" }}>
+        {d.eyebrow && <p className="tracking-[0.2em] text-[#E5541B] uppercase" style={{ fontSize: "2cqw" }}>{d.eyebrow}</p>}
+        {/* 제목↔리스트 사이 여백: 리스트가 짧으면 크게, 길면 작게 (남는 공간을 흡수) */}
+        <div style={{ flexGrow: 2, minHeight: "6cqw" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.6cqw" }}>
           {items.map((item, i) => (
             <div key={i} className="flex items-center justify-between border-b border-gray-100" style={{ paddingBottom: "2cqw" }}>
               <div className="flex items-baseline" style={{ gap: "2cqw" }}>
@@ -158,6 +160,8 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
             </div>
           ))}
         </div>
+        {/* 리스트 아래 남는 공간 — 위 스페이서보다 크게 잡아 리스트를 화면 상단~중앙에 배치 */}
+        <div style={{ flexGrow: 3 }} />
         {d.footer && (
           <div className="border-t border-gray-100" style={{ paddingTop: "2.5cqw" }}>
             <p className="text-gray-300 tracking-widest" style={{ fontSize: "1.7cqw" }}>{d.footer}</p>
