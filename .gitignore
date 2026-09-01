@@ -28,3 +28,6 @@ products-inbox/
 
 # Claude 임시 dev 로그
 scratchpad_dev.log
+
+# SDD scratch (subagent-driven-development)
+.superpowers/
