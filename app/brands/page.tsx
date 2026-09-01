@@ -3,6 +3,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { BRANDS } from "@/lib/brands-data";
 import { createAdminClient } from "@/lib/supabase-server";
+import { brandSlug } from "@/lib/brandCatalog-server";
 import type { Brand } from "@/data/brands";
 import BrandsPageClient from "@/components/BrandsPageClient";
 
@@ -34,8 +35,11 @@ async function getBrandsData(): Promise<BrandItem[]> {
       supabase.from("brand_catalog_items").select("brand_id").eq("is_visible", true),
     ]);
 
+    // 이름 표기 차이(예: "MAD DOG" vs "MADDOG")를 흡수하는 정규화 키
+    const norm = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+
     const catalogNames = new Set(
-      (catalogs ?? []).map((c: { brand_name: string }) => c.brand_name.toLowerCase())
+      (catalogs ?? []).map((c: { brand_name: string }) => norm(c.brand_name))
     );
     // 조립형 카탈로그(공개 + 노출 제품 1개 이상)를 가진 브랜드 id
     const asmBrandIds = new Set(
@@ -43,27 +47,29 @@ async function getBrandsData(): Promise<BrandItem[]> {
     );
     const hasAssembled = (db: Brand | null | undefined) =>
       !!db && db.catalog_enabled === true && asmBrandIds.has(String(db.id));
+    const findDb = (name: string) =>
+      (dbBrands ?? []).find((d: Brand) => norm(d.name) === norm(name)) ?? null;
 
-    // 정적 BRANDS → DB 레코드가 is_visible=false면 제외
+    // 정적 BRANDS → 매칭되는 DB 레코드가 is_visible=false면 제외
     const staticVisible = BRANDS.filter((b) => {
-      const db = (dbBrands ?? []).find((d: Brand) => d.name.toLowerCase() === b.name.toLowerCase());
+      const db = findDb(b.name);
       return !db || db.is_visible !== false;
     });
 
-    // DB 전용 브랜드: 정적 BRANDS에 없고 is_visible=false가 아닌 것
-    const staticNames = new Set(BRANDS.map((b) => b.name.toLowerCase()));
+    // DB 전용 브랜드: 정적 BRANDS와 정규화 이름이 겹치지 않고 is_visible=false가 아닌 것
+    const staticNorm = new Set(BRANDS.map((b) => norm(b.name)));
     const dbOnlyVisible = (dbBrands ?? []).filter(
-      (d: Brand) => !staticNames.has(d.name.toLowerCase()) && d.is_visible !== false
+      (d: Brand) => !staticNorm.has(norm(d.name)) && d.is_visible !== false
     );
 
     // 정적 브랜드 → BrandItem 변환
     const staticItems: BrandItem[] = staticVisible.map((b) => {
-      const db = (dbBrands ?? []).find((d: Brand) => d.name.toLowerCase() === b.name.toLowerCase()) ?? null;
+      const db = findDb(b.name);
       const bgValue = db?.image_bg || b.imageBg || "";
       const heroImage = db?.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || db?.catalog_cover_url || "";
       return {
         id: b.id,
-        name: b.name,
+        name: db?.name || b.name,
         positioning: db?.positioning || b.positioning,
         descriptionKo: db?.name_ko || b.descriptionKo,
         description: db?.description || b.description,
@@ -71,25 +77,26 @@ async function getBrandsData(): Promise<BrandItem[]> {
         accentColor: db?.accent_color || b.accentColor,
         heroImage,
         imageBg: heroImage ? "" : bgValue,
-        hasCatalog: catalogNames.has(b.name.toLowerCase()) || hasAssembled(db),
+        hasCatalog: catalogNames.has(norm(b.name)) || hasAssembled(db),
       };
     });
 
-    // DB 전용 브랜드 → BrandItem 변환 (카탈로그 없음)
+    // DB 전용 브랜드 → BrandItem 변환
     const dbOnlyItems: BrandItem[] = dbOnlyVisible.map((d: Brand) => {
       const bgValue = d.image_bg || "";
       const heroImage = d.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || d.catalog_cover_url || "";
+      const catalog = catalogNames.has(norm(d.name)) || hasAssembled(d);
       return {
         id: String(d.id),
         name: d.name,
         positioning: d.positioning || "",
         descriptionKo: d.name_ko || "",
         description: d.description || "",
-        href: "",
+        href: `/brands/${brandSlug(d.name)}`,
         accentColor: d.accent_color || "#333333",
         heroImage,
         imageBg: heroImage ? "" : bgValue,
-        hasCatalog: false, // 정적 BRANDS에 없는 브랜드는 /brands/[slug] 허브가 없어 카탈로그 링크 불가
+        hasCatalog: catalog,
       };
     });
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
-import { BRANDS } from "@/lib/brands-data";
 import { loadBrandCatalog } from "@/lib/brandCatalog-server";
 import BrandCatalogView from "@/components/BrandCatalogView";
 import CatalogBodyClass from "@/components/CatalogBodyClass";
@@ -11,18 +10,17 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const staticBrand = BRANDS.find((b) => b.id === id);
-  if (!staticBrand) return {};
   const data = await loadBrandCatalog(id);
-  const name = data?.brand.name ?? staticBrand.name;
-  const desc = data?.meta.intro || data?.brand.description || `${name} 제품 카탈로그`;
+  if (!data) return {};
+  const name = data.brand.name;
+  const desc = data.meta.intro || data.brand.description || `${name} 제품 카탈로그`;
   return {
     title: `${name} 카탈로그 | WORKUP`,
     description: desc,
     openGraph: {
       title: `${name} 카탈로그 | WORKUP`,
       description: desc,
-      images: data?.meta.cover_url ? [data.meta.cover_url] : undefined,
+      images: data.meta.cover_url ? [data.meta.cover_url] : undefined,
     },
   };
 }

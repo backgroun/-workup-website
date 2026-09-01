@@ -6,6 +6,14 @@ import type { BrandCatalogItem, BrandCatalogMeta, CatalogColorVariant, CatalogSp
 
 export type LoadedBrandCatalog = { brand: Brand; meta: BrandCatalogMeta; items: BrandCatalogItem[] };
 
+// 브랜드명 → URL 슬러그. 정적 BRANDS는 고정 id를 쓰고, DB 전용 브랜드는 이 함수로 슬러그를 만든다.
+export function brandSlug(name: string): string {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function asArray<T>(v: unknown): T[] {
   return Array.isArray(v) ? (v as T[]) : [];
 }
@@ -44,15 +52,25 @@ export async function loadBrandCatalog(
   opts: { includeHidden?: boolean } = {},
 ): Promise<LoadedBrandCatalog | null> {
   const staticBrand = BRANDS.find((b) => b.id === slug);
-  if (!staticBrand) return null;
 
   try {
     const sb = createAdminClient();
-    const { data: brandRow } = await sb
-      .from("brands")
-      .select("*")
-      .ilike("name", staticBrand.name)
-      .maybeSingle();
+    let brandRow: unknown = null;
+
+    if (staticBrand) {
+      const { data } = await sb.from("brands").select("*").ilike("name", staticBrand.name).maybeSingle();
+      brandRow = data;
+    } else {
+      // DB 전용 브랜드: slugify(name) === slug 인 브랜드를 찾는다 (SQL로 슬러그 계산이 어려워 이름만 받아 매칭)
+      const { data: names } = await sb.from("brands").select("id, name");
+      const match = (names as { id: unknown; name: string }[] | null ?? []).find(
+        (b) => brandSlug(b.name) === slug,
+      );
+      if (match) {
+        const { data } = await sb.from("brands").select("*").eq("id", match.id).maybeSingle();
+        brandRow = data;
+      }
+    }
     if (!brandRow) return null;
 
     const brand = brandRow as Brand;

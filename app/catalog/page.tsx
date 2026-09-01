@@ -7,6 +7,7 @@ import { brandPageUrl, brandCoverUrl, type BrandCatalog } from "@/data/brandCata
 import UnifiedCatalogViewer, { type BrandEntry, type AssembledCatalogLink } from "@/components/UnifiedCatalogViewer";
 import CatalogBodyClass from "@/components/CatalogBodyClass";
 import { BRANDS } from "@/lib/brands-data";
+import { brandSlug } from "@/lib/brandCatalog-server";
 
 export const metadata: Metadata = {
   title: "2026 SS 카탈로그 | WORKUP",
@@ -36,7 +37,9 @@ async function getData(): Promise<CatalogData> {
     const assembled: AssembledCatalogLink[] = ((catBrands as { id: unknown; name: string }[]) ?? [])
       .filter((b) => withItems.has(String(b.id)))
       .map((b) => {
-        const slug = BRANDS.find((s) => s.name.toLowerCase() === (b.name ?? "").toLowerCase())?.id;
+        const slug =
+          BRANDS.find((s) => s.name.toLowerCase() === (b.name ?? "").toLowerCase())?.id ||
+          brandSlug(b.name);
         return slug ? { name: b.name, href: `/brands/${slug}/catalog` } : null;
       })
       .filter((x): x is AssembledCatalogLink => x !== null);

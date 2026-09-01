@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
 import { BRANDS } from "@/lib/brands-data";
 import { createAdminClient } from "@/lib/supabase-server";
+import { brandSlug } from "@/lib/brandCatalog-server";
 import { type BrandCatalog } from "@/data/brandCatalogs";
 import { type BrandTocItem } from "@/types/catalog";
 import BrandCatalogViewerWrapper from "@/components/BrandCatalogViewerWrapper";
@@ -23,6 +24,17 @@ async function getBrandByName(name: string): Promise<Brand | null> {
       .single();
     if (error || !data) return null;
     return data as Brand;
+  } catch {
+    return null;
+  }
+}
+
+// 정적 BRANDS에 없는 브랜드: slugify(name) === slug 로 DB에서 찾는다
+async function getBrandBySlug(slug: string): Promise<Brand | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase.from("brands").select("*");
+    return ((data as Brand[]) ?? []).find((b) => brandSlug(b.name) === slug) ?? null;
   } catch {
     return null;
   }
@@ -48,11 +60,10 @@ async function getCatalog(brandName: string): Promise<BrandCatalog | null> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const staticBrand = BRANDS.find((b) => b.id === id);
-  if (!staticBrand) return {};
-  const dbBrand = await getBrandByName(staticBrand.name);
-  const name = dbBrand?.name ?? staticBrand.name;
-  const desc = dbBrand?.description ?? staticBrand.description;
+  const staticBrand = BRANDS.find((b) => b.id === id) ?? null;
+  const dbBrand = staticBrand ? await getBrandByName(staticBrand.name) : await getBrandBySlug(id);
+  const name = dbBrand?.name ?? staticBrand?.name ?? "";
+  const desc = dbBrand?.description ?? staticBrand?.description ?? "";
   if (!name) return {};
   return {
     title: `${name} 카탈로그 | WORKUP`,
@@ -64,18 +75,18 @@ export default async function BrandPage({ params }: Props) {
   noStore();
   const { id } = await params;
 
-  const staticBrand = BRANDS.find((b) => b.id === id);
-  if (!staticBrand) notFound();
+  const staticBrand = BRANDS.find((b) => b.id === id) ?? null;
 
-  // DB 조회는 name 기준 (DB id는 정수, 슬러그와 다름)
-  const dbBrand = await getBrandByName(staticBrand.name);
+  // DB 조회: 정적 브랜드는 name 기준, 그 외에는 slugify(name) 기준
+  const dbBrand = staticBrand ? await getBrandByName(staticBrand.name) : await getBrandBySlug(id);
+  if (!staticBrand && !dbBrand) notFound();
 
-  // 브랜드 데이터 (DB 우선)
-  const brandName = dbBrand?.name ?? staticBrand.name;
-  const brandPositioning = dbBrand?.positioning ?? staticBrand.positioning;
-  const brandDescription = dbBrand?.description ?? staticBrand.description;
+  // 브랜드 데이터 (DB 우선, 정적값 폴백)
+  const brandName = dbBrand?.name ?? staticBrand?.name ?? "";
+  const brandPositioning = dbBrand?.positioning ?? staticBrand?.positioning ?? "";
+  const brandDescription = dbBrand?.description ?? staticBrand?.description ?? "";
   const brandDescriptionKo = dbBrand?.name_ko ?? staticBrand?.descriptionKo ?? "";
-  const brandAccentColor = dbBrand?.accent_color ?? staticBrand.accentColor;
+  const brandAccentColor = dbBrand?.accent_color ?? staticBrand?.accentColor ?? "#333333";
   // mega_menu_image 우선, 없으면 image_bg가 URL인 경우 히어로 이미지로 사용
   const bgValue = dbBrand?.image_bg ?? (staticBrand?.imageBg ?? "");
   const bgIsImage = bgValue.startsWith("http");

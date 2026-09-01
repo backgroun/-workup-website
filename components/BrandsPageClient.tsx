@@ -5,6 +5,9 @@ import type { BrandItem } from "@/app/brands/page";
 
 const CATEGORIES = ["전체", "WORKWEAR", "CASUAL", "OUTDOOR", "SAFETY", "ACCESSORY"] as const;
 
+// 상단 카테고리 탭 임시 숨김 (기능/필터 로직은 유지 — true 로 바꾸면 다시 노출)
+const SHOW_CATEGORY_TABS = false;
+
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   WORKWEAR: ["workwear", "work"],
   CASUAL: ["casual", "basic", "life", "street"],
@@ -73,20 +76,22 @@ export default function BrandsPageClient({ brands }: { brands: BrandItem[] }) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-8">
-      {/* 카테고리 탭 */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2 mb-8 border-b border-gray-100">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-full transition-colors
-              ${activeCategory === cat
-                ? "bg-gray-900 text-white"
-                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}>
-            {cat}
-          </button>
-        ))}
-      </div>
+      {/* 카테고리 탭 (임시 숨김 — SHOW_CATEGORY_TABS) */}
+      {SHOW_CATEGORY_TABS && (
+        <div className="flex items-center gap-1 overflow-x-auto pb-2 mb-8 border-b border-gray-100">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex-shrink-0 px-4 py-2 text-sm font-semibold rounded-full transition-colors
+                ${activeCategory === cat
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 카탈로그 있는 브랜드 — 큰 그리드 */}
       {withCatalog.length > 0 && (
