@@ -231,7 +231,7 @@ function AdminCatalogPageInner() {
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">카탈로그 관리{brandId && <span className="ml-2 text-lg text-blue-600">· {brandId} 브랜드</span>}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">카탈로그 관리{brandId && <span className="ml-2 text-lg text-blue-600">· 브랜드 전용 (id {brandId})</span>}</h1>
           <p className="text-base text-gray-400 mt-1">
             디지털 카탈로그(플립북) 페이지 관리 <span className="font-semibold text-gray-600">({pages.length}페이지)</span>
           </p>

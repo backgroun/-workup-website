@@ -26,7 +26,7 @@ async function getData(): Promise<CatalogData> {
   try {
     const supabase = createAdminClient();
     const [{ data: pages }, { data: brandsData }, { data: catBrands }, { data: items }] = await Promise.all([
-      supabase.from("catalog_pages").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
+      supabase.from("catalog_pages").select("*").eq("is_visible", true).eq("brand_id", "").order("sort_order", { ascending: true }).order("id", { ascending: true }),
       supabase.from("brand_catalogs").select("*").eq("is_visible", true).order("sort_order", { ascending: true }).order("id", { ascending: true }),
       supabase.from("brands").select("id, name").eq("catalog_enabled", true),
       supabase.from("catalog_pages").select("brand_id").eq("is_visible", true).neq("brand_id", ""),

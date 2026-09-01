@@ -15,7 +15,13 @@ export function brandSlug(name: string): string {
 
 export type LoadedBrandCatalog = { brand: Brand; pages: CatalogPage[] };
 
-// 슬러그(정적 BRANDS.id 또는 slugify(브랜드명)) → 그 브랜드 + 공개 카탈로그 페이지들
+// 이름 표기 차이("MAD DOG" vs "MADDOG")를 흡수하는 정규화 키
+const normName = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+
+// URL 슬러그 → 브랜드. 다음을 모두 지원:
+//   - 정적 BRANDS.id (예: "maddog", "detroit")
+//   - DB brands.id 숫자 (예: "14") — 관리자 편집기가 ?brand=<id> 로 넘기는 값
+//   - slugify(브랜드명) (예: "k-workers") — DB 전용 브랜드
 export async function loadBrandCatalog(
   slug: string,
   opts: { includeHidden?: boolean } = {},
@@ -23,13 +29,15 @@ export async function loadBrandCatalog(
   const staticBrand = BRANDS.find((b) => b.id === slug);
   try {
     const sb = createAdminClient();
+    const { data: all } = await sb.from("brands").select("*");
+    const brands = (all as Brand[]) ?? [];
     let brand: Brand | null = null;
     if (staticBrand) {
-      const { data } = await sb.from("brands").select("*").ilike("name", staticBrand.name).maybeSingle();
-      brand = (data as Brand) ?? null;
+      brand = brands.find((b) => normName(b.name) === normName(staticBrand.name)) ?? null;
+    } else if (/^\d+$/.test(slug)) {
+      brand = brands.find((b) => String(b.id) === slug) ?? null;
     } else {
-      const { data: all } = await sb.from("brands").select("*");
-      brand = ((all as Brand[]) ?? []).find((b) => brandSlug(b.name) === slug) ?? null;
+      brand = brands.find((b) => brandSlug(b.name) === slug) ?? null;
     }
     if (!brand) return null;
     if (brand.catalog_enabled !== true && !opts.includeHidden) return null;
