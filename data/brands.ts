@@ -18,6 +18,14 @@ export type Brand = {
   is_visible?: boolean;
   created_at?: string;
   updated_at?: string;
+  // ── 조립형 카탈로그 메타 (brand_catalog_items 는 별도 테이블) ──
+  catalog_enabled?: boolean;
+  catalog_cover_url?: string;
+  catalog_season?: string;
+  catalog_headline?: string;
+  catalog_intro?: string;
+  catalog_tech_images?: string[];
+  catalog_updated_at?: string | null;
 };
 
 export const EMPTY_BRAND: Omit<Brand, "id"> = {
@@ -37,4 +45,10 @@ export const EMPTY_BRAND: Omit<Brand, "id"> = {
   logo_text: "",
   sort_order: 0,
   is_visible: true,
+  catalog_enabled: false,
+  catalog_cover_url: "",
+  catalog_season: "",
+  catalog_headline: "",
+  catalog_intro: "",
+  catalog_tech_images: [],
 };
