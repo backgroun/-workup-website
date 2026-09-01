@@ -4,7 +4,10 @@ import type { Brand } from "@/data/brands";
 import {
   type BrandCatalogItem,
   type CatalogSpec,
+  type CatalogColorVariant,
   EMPTY_CATALOG_ITEM,
+  EMPTY_COLOR_VARIANT,
+  slugifyColorKey,
 } from "@/data/brandCatalog";
 
 const INPUT = "w-full border border-gray-200 px-3 py-2 text-sm rounded focus:outline-none focus:border-gray-800";
@@ -188,13 +191,14 @@ function ItemsEditor({ brandId }: { brandId: string }) {
     if (j < 0 || j >= items.length) return;
     const reordered = [...items];
     [reordered[idx], reordered[j]] = [reordered[j], reordered[idx]];
-    setItems(reordered);
+    const renumbered = reordered.map((it, i) => ({ ...it, sort_order: i }));
+    setItems(renumbered);
     await Promise.all(
-      reordered.map((it, i) =>
+      renumbered.map((it) =>
         fetch(`/api/admin/brand-catalog-items/${it.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sort_order: i }),
+          body: JSON.stringify({ sort_order: it.sort_order }),
         }),
       ),
     );
@@ -270,7 +274,186 @@ function SpecsEditor({ specs, onChange }: { specs: CatalogSpec[]; onChange: (s: 
   );
 }
 
-function ColorsEditor({ item, onChange }: { item: BrandCatalogItem; onChange: (c: BrandCatalogItem["colors"]) => void }) {
-  void item; void onChange;
-  return null;
+function ColorsEditor({
+  item,
+  onChange,
+}: {
+  item: BrandCatalogItem;
+  onChange: (c: CatalogColorVariant[]) => void;
+}) {
+  const colors = item.colors ?? [];
+  const [busy, setBusy] = useState(false);
+
+  const patchColor = (i: number, patch: Partial<CatalogColorVariant>) =>
+    onChange(colors.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+
+  const addColor = () => {
+    const taken = colors.map((c) => c.key);
+    onChange([
+      ...colors,
+      { ...EMPTY_COLOR_VARIANT, key: slugifyColorKey("color", taken), label: "" },
+    ]);
+  };
+
+  const setLabel = (i: number, label: string) => {
+    const taken = colors.filter((_, j) => j !== i).map((c) => c.key);
+    patchColor(i, { label, key: slugifyColorKey(label || "color", taken) });
+  };
+
+  const upload = async (i: number, field: "cutout_url" | "styled_url", file?: File) => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const url = await uploadImage(file);
+      patchColor(i, { [field]: url } as Partial<CatalogColorVariant>);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const addGallery = async (i: number, file?: File) => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const url = await uploadImage(file);
+      patchColor(i, { gallery: [...(colors[i].gallery ?? []), url] });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-500">컬러</p>
+      {colors.map((c, i) => (
+        <div key={i} className="border rounded p-3 space-y-2 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <input
+              className={INPUT}
+              placeholder="컬러명 (블랙)"
+              value={c.label}
+              onChange={(e) => setLabel(i, e.target.value)}
+            />
+            <input
+              type="color"
+              value={c.swatch || "#000000"}
+              onChange={(e) => patchColor(i, { swatch: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(colors.filter((_, j) => j !== i))}
+              className="px-2 border rounded text-xs"
+            >
+              삭제
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <ImageField
+              label="누끼컷 (칩)"
+              url={c.cutout_url}
+              busy={busy}
+              onPick={(f) => upload(i, "cutout_url", f)}
+            />
+            <ImageField
+              label="착장컷 (큰 이미지)"
+              url={c.styled_url}
+              busy={busy}
+              onPick={(f) => upload(i, "styled_url", f)}
+            />
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-400 mb-1">갤러리</p>
+            <div className="flex flex-wrap gap-1 mb-1">
+              {(c.gallery ?? []).map((g, gi) => (
+                <div key={gi} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={g} alt="" className="w-14 h-14 object-cover rounded border" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      patchColor(i, {
+                        gallery: (c.gallery ?? []).filter((_, j) => j !== gi),
+                      })
+                    }
+                    className="absolute -top-1.5 -right-1.5 bg-white border rounded-full w-4 h-4 text-[10px]"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <GalleryAdd busy={busy} onPick={(f) => addGallery(i, f)} />
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addColor}
+        className="px-2 py-1 border rounded text-xs"
+      >
+        + 컬러
+      </button>
+    </div>
+  );
+}
+
+function ImageField({
+  label,
+  url,
+  busy,
+  onPick,
+}: {
+  label: string;
+  url: string;
+  busy: boolean;
+  onPick: (f?: File) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <p className="text-[11px] text-gray-400 mb-1">{label}</p>
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="" className="w-full h-24 object-contain rounded border bg-white mb-1" />
+      ) : null}
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => onPick(e.target.files?.[0])}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => ref.current?.click()}
+        className="px-2 py-1 border rounded text-[11px]"
+      >
+        업로드
+      </button>
+    </div>
+  );
+}
+
+function GalleryAdd({ busy, onPick }: { busy: boolean; onPick: (f?: File) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => onPick(e.target.files?.[0])}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => ref.current?.click()}
+        className="px-2 py-1 border rounded text-[11px]"
+      >
+        + 갤러리 이미지
+      </button>
+    </>
+  );
 }
