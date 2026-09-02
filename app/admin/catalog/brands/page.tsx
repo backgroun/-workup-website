@@ -30,8 +30,8 @@ export default function UnifiedBrandsPage() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [deletingBulk, setDeletingBulk] = useState(false);
   const [togglingVis, setTogglingVis] = useState(false);
-  const [sortMode, setSortMode] = useState<"order" | "alpha" | "date">("alpha");
-  const [visFilter, setVisFilter] = useState<"all" | "visible" | "hidden">("all");
+  const [sortMode, setSortMode] = useState<"order" | "alpha" | "date">("date");
+  const [visFilter, setVisFilter] = useState<"all" | "visible" | "hidden">("visible");
   const [showAddModal, setShowAddModal] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
