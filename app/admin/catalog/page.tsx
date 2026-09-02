@@ -488,6 +488,9 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                             + 칸 추가
                           </button>
                         </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          칸 이미지는 칸 크기에 맞춰 가운데 기준으로 잘립니다. 권장: 좌우/상하 2분할 약 <b>1000×1400px</b>, 3분할 약 <b>700×1400px</b>, 4분할 격자 약 <b>1000×1000px</b> · 10MB 이하
+                        </p>
                         {tiles.length === 0 ? (
                           <p className="text-[11px] text-slate-400 py-1">칸을 추가하고 이미지를 넣으세요.</p>
                         ) : (
@@ -529,7 +532,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         <Field label="하단 코드"><input type="text" value={d.code ?? ""} onChange={(e) => setData({ code: e.target.value })} placeholder="Cat. WU-2026-SS-001" className={INPUT} /></Field>
                         <ColorField label="배경색" value={d.bg ?? "#303236"} onChange={(v) => setData({ bg: v })} />
                       </div>
-                      <Field label="배경 이미지 (선택)" hint="표지 전체에 이미지가 깔리고 그 위에 글자가 표시됩니다. 비우면 배경색만.">
+                      <Field label="배경 이미지 (선택)" hint="표지 전체에 이미지가 깔리고 그 위에 글자가 표시됩니다. 비우면 배경색만. 권장 5:7 세로형 (예: 1400×1960px) · 10MB 이하">
                         <div className="space-y-2">
                           <input type="text" value={editing.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://... (URL 직접 입력)" className={INPUT} />
                           <div className="flex items-center gap-2">
@@ -585,7 +588,7 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                         <Field label="개수 문구"><input type="text" value={d.count ?? ""} onChange={(e) => setData({ count: e.target.value })} placeholder="5개 제품" className={INPUT} /></Field>
                         <ColorField label="배경색" value={d.bg ?? "#303236"} onChange={(v) => setData({ bg: v })} />
                       </div>
-                      <Field label="배경 이미지 (선택)" hint="구분 페이지 전체에 이미지가 깔립니다. 비우면 배경색만.">
+                      <Field label="배경 이미지 (선택)" hint="구분 페이지 전체에 이미지가 깔립니다. 비우면 배경색만. 권장 5:7 세로형 (예: 1400×1960px) · 10MB 이하">
                         <div className="space-y-2">
                           <input type="text" value={editing.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://... (URL 직접 입력)" className={INPUT} />
                           <div className="flex items-center gap-2">
