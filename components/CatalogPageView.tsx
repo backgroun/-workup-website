@@ -233,11 +233,16 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
         <HotspotDot key={i} spot={spot} idx={i} active={activeHotspot === i} onToggle={toggleHotspot} />
       ))}
 
-      {/* 캡션 (타이틀/설명) — 가로 전체 반투명 바, 한 줄 표시 */}
+      {/* 캡션 (타이틀/설명) — 가로 전체 반투명 바. 제목 1줄, 설명 최대 2줄 */}
       {hasCaption && (
         <div className="absolute inset-x-0 bottom-0" style={{ backgroundColor: "rgba(13,15,18,0.6)", padding: "1.8cqw 3.5cqw" }}>
           {page.title && <p className="text-white font-semibold leading-tight" style={{ fontSize: "2.4cqw", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{page.title}</p>}
-          {page.description && <p className="text-white/75 leading-snug" style={{ fontSize: "1.9cqw", marginTop: "0.5cqw", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{page.description}</p>}
+          {page.description && (
+            <p className="text-white/75 leading-snug" style={{
+              fontSize: "1.9cqw", marginTop: "0.5cqw",
+              display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden",
+            }}>{page.description}</p>
+          )}
         </div>
       )}
     </div>
