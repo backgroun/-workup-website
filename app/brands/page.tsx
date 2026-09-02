@@ -18,7 +18,7 @@ export type BrandItem = {
   positioning: string;
   descriptionKo: string;
   description: string;
-  href: string;
+  href: string;              // 카드 클릭 시 이동 (조립형 카탈로그 있으면 플립북, 없으면 브랜드 허브)
   accentColor: string;
   heroImage: string;
   imageBg: string;
@@ -74,7 +74,8 @@ async function getBrandsData(): Promise<BrandItem[]> {
         positioning: db?.positioning || b.positioning,
         descriptionKo: db?.name_ko || b.descriptionKo,
         description: db?.description || b.description,
-        href: b.href,
+        // 조립형 카탈로그가 있으면 카드 클릭 시 플립북으로 바로 이동 (브릿지 페이지 생략)
+        href: hasAssembled(db) ? `${b.href}/catalog` : b.href,
         accentColor: db?.accent_color || b.accentColor,
         heroImage,
         imageBg: heroImage ? "" : bgValue,
@@ -93,7 +94,7 @@ async function getBrandsData(): Promise<BrandItem[]> {
         positioning: d.positioning || "",
         descriptionKo: d.name_ko || "",
         description: d.description || "",
-        href: `/brands/${brandSlug(d.name)}`,
+        href: hasAssembled(d) ? `/brands/${brandSlug(d.name)}/catalog` : `/brands/${brandSlug(d.name)}`,
         accentColor: d.accent_color || "#333333",
         heroImage,
         imageBg: heroImage ? "" : bgValue,
