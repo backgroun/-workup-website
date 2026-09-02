@@ -204,7 +204,8 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
       layout === "3col" ? "grid-cols-3 grid-rows-1" :
       "grid-cols-2 grid-rows-2"; // grid4
     return (
-      <div className={`w-full h-full bg-[#0d1826] grid ${gridClass} gap-[1cqw]`} style={{ containerType: "inline-size" }}>
+      {/* 칸 사이는 아주 얇은 선(1px)만 — bg 색이 gap 사이로 비쳐 선처럼 보인다 */}
+      <div className={`w-full h-full bg-[#d4d4d4] grid ${gridClass} gap-px`} style={{ containerType: "inline-size" }}>
         {tiles.map((t, i) => (
           <SplitTile key={i} tile={t} />
         ))}
