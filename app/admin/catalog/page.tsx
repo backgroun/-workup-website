@@ -480,6 +480,9 @@ NOTIFY pgrst, 'reload schema';`}</pre>
                           ))}
                         </div>
                       </Field>
+                      <Field label="목차 표시 제목 (선택)" hint="목차 페이지에 이 페이지를 표시할 이름. 비우면 관리용 제목 사용.">
+                        <input type="text" value={editing.title} onChange={(e) => set("title", e.target.value)} placeholder="예: 피그먼트 워시드 티셔츠" className={INPUT} />
+                      </Field>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">칸 목록 ({tiles.length})</p>
