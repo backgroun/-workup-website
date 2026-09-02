@@ -18,9 +18,10 @@ export type Brand = {
   is_visible?: boolean;
   created_at?: string;
   updated_at?: string;
-  // ── 조립형 카탈로그 메타 (brand_catalog_items 는 별도 테이블) ──
-  catalog_enabled?: boolean;
-  catalog_cover_url?: string;
+  // ── 카탈로그 관련 ──
+  catalog_enabled?: boolean;           // 조립형 카탈로그(catalog_pages) 공개 여부
+  catalog_cover_url?: string;          // ★ 재사용: 브랜드 목록(/brands) 카드 이미지 (3:2 가로형)
+  // 아래 3개는 옛 시스템 잔여 필드 — 현재 미사용 (제거된 brand_catalog_items 시스템)
   catalog_season?: string;
   catalog_headline?: string;
   catalog_intro?: string;

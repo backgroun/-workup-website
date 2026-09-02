@@ -66,7 +66,8 @@ async function getBrandsData(): Promise<BrandItem[]> {
     const staticItems: BrandItem[] = staticVisible.map((b) => {
       const db = findDb(b.name);
       const bgValue = db?.image_bg || b.imageBg || "";
-      const heroImage = db?.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || db?.catalog_cover_url || "";
+      // 카드 이미지: 목록 카드 전용 이미지(catalog_cover_url) 우선 → 메가메뉴 이미지 → 배경 URL
+      const heroImage = db?.catalog_cover_url || db?.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || "";
       return {
         id: b.id,
         name: db?.name || b.name,
@@ -84,7 +85,7 @@ async function getBrandsData(): Promise<BrandItem[]> {
     // DB 전용 브랜드 → BrandItem 변환
     const dbOnlyItems: BrandItem[] = dbOnlyVisible.map((d: Brand) => {
       const bgValue = d.image_bg || "";
-      const heroImage = d.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || d.catalog_cover_url || "";
+      const heroImage = d.catalog_cover_url || d.mega_menu_image || (bgValue.startsWith("http") ? bgValue : "") || "";
       const catalog = catalogNames.has(norm(d.name)) || hasAssembled(d);
       return {
         id: String(d.id),

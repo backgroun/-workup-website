@@ -530,6 +530,7 @@ export default function UnifiedBrandsPage() {
                       </div>
                     </Field>
                     <BgField editing={editing} set={set} flash={flash} />
+                    <CardImageField editing={editing} set={set} flash={flash} />
                     <LogoField editing={editing} set={set} flash={flash} />
                   </div>
                 )}
@@ -741,6 +742,63 @@ function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, a
 }
 
 // ── BgField ───────────────────────────────────────────────────
+// 브랜드 목록(/brands) 카드 이미지 — catalog_cover_url 컬럼 재사용 (3:2 가로형)
+function CardImageField({ editing, set, flash }: {
+  editing: Brand;
+  set: <K extends keyof Brand>(k: K, v: Brand[K]) => void;
+  flash: (msg: string, type?: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const url = editing.catalog_cover_url ?? "";
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    try {
+      const sig = await fetch("/api/admin/r2-upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder: "workup/brands/card", fileName: file.name, contentType: file.type }),
+      }).then((r) => r.json());
+      if (!sig?.uploadUrl) { flash("업로드 URL 발급 실패", "err"); return; }
+      const up = await fetch(sig.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!up.ok) { flash(`업로드 실패: ${up.status}`, "err"); return; }
+      set("catalog_cover_url", sig.publicUrl);
+      flash("목록 카드 이미지 업로드 완료");
+    } catch { flash("업로드 실패 (네트워크 확인)", "err"); }
+    finally { setUploading(false); }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-sm font-medium text-slate-700">브랜드 목록 카드 이미지</label>
+        <span className="text-[11px] text-slate-400">권장 사이즈: <strong>1200 × 800px</strong> (3:2 가로형)</span>
+      </div>
+      <p className="text-[11px] text-slate-400 mb-2"><code>/brands</code> 목록에서 이 브랜드 카드에 표시됩니다. 비우면 히어로 배경 이미지를 대신 사용합니다.</p>
+      <div className="flex items-center gap-3 mb-3">
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          className="px-4 py-2 text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg disabled:opacity-50 transition-colors">
+          {uploading ? "업로드 중…" : url ? "이미지 교체" : "이미지 업로드"}
+        </button>
+        {url && (
+          <button type="button" onClick={() => set("catalog_cover_url", "")}
+            className="text-xs text-red-400 hover:text-red-600">이미지 삭제</button>
+        )}
+        <span className="text-xs text-slate-400">JPG · PNG · WEBP</span>
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+      {url && (
+        <div className="rounded-lg overflow-hidden border border-slate-200" style={{ aspectRatio: "3 / 2", maxWidth: 280 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // 히어로 배경: 이미지 업로드 OR CSS 그라디언트 둘 다 지원
 function BgField({ editing, set, flash }: {
   editing: Brand;
@@ -774,8 +832,9 @@ function BgField({ editing, set, flash }: {
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-sm font-medium text-slate-700">히어로 배경</label>
-        <span className="text-[11px] text-slate-400">권장 사이즈: <strong>1920 × 560px</strong></span>
+        <span className="text-[11px] text-slate-400">권장 사이즈: <strong>1920 × 560px</strong> (가로 배너)</span>
       </div>
+      <p className="text-[11px] text-slate-400 mb-2">브랜드 페이지(<code>/brands/[브랜드]</code>) 상단 배너 전용. 브랜드 목록 카드 이미지는 아래 <b>&ldquo;브랜드 목록 카드 이미지&rdquo;</b>에서 따로 올립니다.</p>
 
       {/* 업로드 버튼 */}
       <div className="flex items-center gap-3 mb-3">
