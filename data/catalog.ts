@@ -9,12 +9,13 @@ export type CatalogPageType = "image" | "split" | "cover" | "contents" | "divide
 export type ContentsItem = { name: string; count: string; page: string };
 
 export type CatalogHotspot = {
-  x: number;      // 이미지 내 좌측에서 % (0-100)
-  y: number;      // 이미지 내 상단에서 % (0-100)
-  name: string;   // 제품명
-  desc?: string;  // 간단 설명
-  price?: string; // 가격 (예: "89,000원")
-  href?: string;  // 제품 상세 페이지 경로
+  x: number;         // 이미지 내 좌측에서 % (0-100)
+  y: number;         // 이미지 내 상단에서 % (0-100)
+  name: string;      // 제품명
+  desc?: string;     // 간단 설명
+  price?: string;    // 가격 (예: "89,000원")
+  href?: string;     // 제품 상세 페이지 경로 (미사용 시 image_url 표시 우선)
+  image_url?: string; // 클릭 시 팝업에 보여줄 제품 이미지
 };
 
 // 분할(split) 페이지의 한 칸

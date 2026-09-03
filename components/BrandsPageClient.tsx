@@ -44,8 +44,8 @@ function CatalogCard({ item }: { item: BrandItem }) {
       </div>
       <div className="px-3 py-3">
         <h3 className="text-sm font-black text-gray-900 leading-tight mb-0.5">{name}</h3>
-        <p className="text-[9px] tracking-[0.2em] font-bold uppercase text-gray-400 mb-1">{positioning}</p>
-        <p className="text-[11px] text-gray-400 leading-relaxed line-clamp-2">{description}</p>
+        {positioning && <p className="text-[9px] tracking-[0.2em] font-bold uppercase text-gray-400 mb-1">{positioning}</p>}
+        {description && <p className="text-[11px] text-gray-400 leading-relaxed line-clamp-2">{description}</p>}
       </div>
     </Link>
   );

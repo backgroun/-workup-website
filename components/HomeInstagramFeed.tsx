@@ -1,7 +1,8 @@
 // 워크업 인스타그램 피드 — Behold JSON 피드에서 데이터만 받아 직접 렌더링한다.
 // 위젯(closed shadow DOM)과 달리 비율·열 수·crop을 코드로 제어할 수 있어,
 // 게시물 원본 비율(4:5)에 맞춰 위아래 잘림 없이 보여준다.
-// 서버에서 30분마다 재검증 → 새 게시물 자동 반영 + 인스타 CDN 서명 URL 자동 갱신.
+// 서버에서 하루 1회 재검증 → 새 게시물 자동 반영 + 인스타 CDN 서명 URL 자동 갱신.
+// (Behold 무료 플랜 한도는 월 1,200회 요청 — 30분 주기면 갱신만으로 초과하므로 24시간으로 둔다.)
 
 // 워크업 공식 인스타그램 프로필
 const IG_PROFILE = "https://www.instagram.com/workup_official_kr/";
@@ -32,20 +33,26 @@ type BeholdPost = {
 
 type FeedTile = { image?: string; href: string };
 
+// 마지막으로 성공한 응답을 서버 프로세스 메모리에 보관 → Behold가 일시적으로
+// 오류(한도 초과 등)를 내도 회색 빈 타일 대신 직전 게시물을 계속 보여준다.
+let lastGoodTiles: FeedTile[] | null = null;
+
 async function getTiles(): Promise<FeedTile[]> {
   try {
     const res = await fetch(`https://feeds.behold.so/${FEED_ID}`, {
-      next: { revalidate: 1800 }, // 30분 캐시 → 새 게시물·갱신된 이미지 URL 자동 반영
+      next: { revalidate: 86400 }, // 24시간 캐시 → 무료 플랜 한도(월 1,200) 안에서 하루 1회만 갱신
     });
-    if (!res.ok) return [];
+    if (!res.ok) return lastGoodTiles ?? [];
     const data = (await res.json()) as { posts?: BeholdPost[] };
-    return (data.posts ?? []).slice(0, MAX_POSTS).map((p) => ({
+    const tiles = (data.posts ?? []).slice(0, MAX_POSTS).map((p) => ({
       // 비디오(릴스)는 썸네일, 그 외는 원본 이미지 — 둘 다 원본 비율(무크롭)
       image: p.mediaType === "VIDEO" ? p.thumbnailUrl || p.mediaUrl : p.mediaUrl,
       href: p.permalink || IG_PROFILE,
     }));
+    if (tiles.length > 0) lastGoodTiles = tiles;
+    return tiles.length > 0 ? tiles : lastGoodTiles ?? [];
   } catch {
-    return [];
+    return lastGoodTiles ?? [];
   }
 }
 

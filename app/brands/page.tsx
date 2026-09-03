@@ -71,9 +71,11 @@ async function getBrandsData(): Promise<BrandItem[]> {
       return {
         id: b.id,
         name: db?.name || b.name,
-        positioning: db?.positioning || b.positioning,
-        descriptionKo: db?.name_ko || b.descriptionKo,
-        description: db?.description || b.description,
+        // DB 레코드가 있으면 그 값이 유일한 소스 — 관리자가 비운 항목은 화면에서도 비운다
+        // (정적 하드코딩(lib/brands-data) 폴백을 쓰지 않는다)
+        positioning: db ? (db.positioning ?? "") : b.positioning,
+        descriptionKo: db ? (db.name_ko ?? "") : b.descriptionKo,
+        description: db ? (db.description ?? "") : b.description,
         // 조립형 카탈로그가 있으면 카드 클릭 시 플립북으로 바로 이동 (브릿지 페이지 생략)
         href: hasAssembled(db) ? `${b.href}/catalog` : b.href,
         accentColor: db?.accent_color || b.accentColor,
@@ -114,12 +116,13 @@ async function getBrandsData(): Promise<BrandItem[]> {
 
     return allItems;
   } catch {
+    // DB 조회 실패 시 최소 정보만 (브랜드명·이동경로). 설명 문구는 DB가 유일한 소스라 비운다.
     return BRANDS.map((b) => ({
       id: b.id,
       name: b.name,
-      positioning: b.positioning,
-      descriptionKo: b.descriptionKo,
-      description: b.description,
+      positioning: "",
+      descriptionKo: "",
+      description: "",
       href: b.href,
       accentColor: b.accentColor,
       heroImage: "",

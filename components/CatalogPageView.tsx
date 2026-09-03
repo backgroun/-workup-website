@@ -4,6 +4,23 @@ import Link from "next/link";
 import type { CatalogPage, CatalogHotspot, CatalogTile } from "@/data/catalog";
 import { ikSrc } from "@/lib/imageSrc";
 
+// "P.3 · P.4 · P.5" → "P.3-5", "P.3 · P.7 · P.8" → "P.3 · P.7-8"
+function formatPageRange(page: string): string {
+  const parts = page.split("·").map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return page;
+  const nums = parts.map((p) => parseInt(p.replace("P.", ""))).filter((n) => !isNaN(n));
+  if (nums.length === 0) return page;
+  nums.sort((a, b) => a - b);
+  const groups: number[][] = [];
+  let cur = [nums[0]];
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] === cur[cur.length - 1] + 1) { cur.push(nums[i]); }
+    else { groups.push(cur); cur = [nums[i]]; }
+  }
+  groups.push(cur);
+  return groups.map((g) => g.length === 1 ? `P.${g[0]}` : `P.${g[0]}-${g[g.length - 1]}`).join(" · ");
+}
+
 // ── 핫스팟 팝업 ──
 function HotspotDot({ spot, idx, active, onToggle }: {
   spot: CatalogHotspot; idx: number; active: boolean; onToggle: (i: number) => void;
@@ -15,11 +32,13 @@ function HotspotDot({ spot, idx, active, onToggle }: {
     <div
       className="absolute"
       style={{ left: `${spot.x}%`, top: `${spot.y}%`, transform: "translate(-50%, -50%)", zIndex: active ? 20 : 10 }}
+      onClick={e => e.stopPropagation()}
     >
       <style>{`@keyframes wu-hs-pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.55)}100%{box-shadow:0 0 0 18px rgba(255,255,255,0)}}`}</style>
       {/* 도트 버튼 */}
       <button
         onMouseDown={e => { e.stopPropagation(); onToggle(idx); }}
+        onClick={e => e.stopPropagation()}
         className="w-4 h-4 rounded-full flex items-center justify-center transition-transform hover:scale-110"
         style={{
           backgroundColor: "rgba(255,255,255,0.35)",
@@ -37,11 +56,12 @@ function HotspotDot({ spot, idx, active, onToggle }: {
         <div
           className="absolute"
           style={{
-            width: 168,
+            width: spot.image_url ? 200 : 168,
             backgroundColor: "rgba(13,15,18,0.97)",
             border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: 8,
-            padding: "10px 12px",
+            padding: spot.image_url ? "0 0 10px" : "10px 12px",
+            overflow: "hidden",
             bottom: popupAbove ? "calc(100% + 8px)" : "auto",
             top:    popupAbove ? "auto" : "calc(100% + 8px)",
             right:  popupLeft  ? 0      : "auto",
@@ -49,16 +69,23 @@ function HotspotDot({ spot, idx, active, onToggle }: {
           }}
           onMouseDown={e => e.stopPropagation()}
         >
-          <p className="text-white font-bold text-[12px] leading-snug">{spot.name}</p>
-          {spot.desc  && <p className="text-white/55 text-[10px] mt-1 leading-snug">{spot.desc}</p>}
-          {spot.price && <p className="text-[#E5541B] text-[12px] font-semibold mt-1.5">{spot.price}</p>}
-          {spot.href  && (
-            <Link href={spot.href}
-              onMouseDown={e => e.stopPropagation()}
-              className="inline-block mt-2 text-[10px] text-white/70 border border-white/20 rounded px-2 py-0.5 hover:border-[#E5541B] hover:text-[#E5541B] transition-colors">
-              자세히 보기
-            </Link>
+          {/* 제품 이미지 */}
+          {spot.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={spot.image_url} alt={spot.name} className="w-full object-cover" style={{ aspectRatio: "1 / 1", display: "block" }} />
           )}
+          <div className={spot.image_url ? "px-3 pt-2" : ""}>
+            <p className="text-white font-bold text-[12px] leading-snug">{spot.name}</p>
+            {spot.desc  && <p className="text-white/55 text-[10px] mt-1 leading-snug">{spot.desc}</p>}
+            {spot.price && <p className="text-[#E5541B] text-[12px] font-semibold mt-1.5">{spot.price}</p>}
+            {spot.href && !spot.image_url && (
+              <Link href={spot.href}
+                onMouseDown={e => e.stopPropagation()}
+                className="inline-block mt-2 text-[10px] text-white/70 border border-white/20 rounded px-2 py-0.5 hover:border-[#E5541B] hover:text-[#E5541B] transition-colors">
+                자세히 보기
+              </Link>
+            )}
+          </div>
           {/* 닫기 */}
           <button onClick={() => onToggle(idx)}
             className="absolute top-1.5 right-2 text-white/30 hover:text-white/70 text-[12px] leading-none transition-colors">
@@ -71,9 +98,13 @@ function HotspotDot({ spot, idx, active, onToggle }: {
 }
 
 // ── 분할(split) 페이지의 한 칸 ──
-function SplitTile({ tile }: { tile: CatalogTile }) {
+// colCount: 가로 칸 수 (1/2/3). cqw는 각 칸 너비 기준이므로 칸이 좁을수록 보정 필요.
+// 기준: 2col 텍스트 3cqw = 페이지 너비의 1.5%. colCount에 비례해 보정.
+function SplitTile({ tile, colCount = 2, ikWidth = 900 }: { tile: CatalogTile; colCount?: number; ikWidth?: number }) {
   const [active, setActive] = useState(-1);
   const spots = tile.hotspots ?? [];
+  const fs = `${(1.5 * colCount).toFixed(1)}cqw`;
+  const pad = `${(0.9 * colCount).toFixed(1)}cqw ${(1.5 * colCount).toFixed(1)}cqw`;
   const inner = (
     <div
       className="relative w-full h-full bg-[#0d1826] overflow-hidden"
@@ -82,7 +113,7 @@ function SplitTile({ tile }: { tile: CatalogTile }) {
     >
       {tile.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={ikSrc(tile.image_url, 900)} alt={tile.title || "카탈로그 분할 이미지"} className="w-full h-full object-cover" />
+        <img src={ikSrc(tile.image_url, ikWidth)} alt={tile.title || "카탈로그 분할 이미지"} className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white/25" style={{ fontSize: "5cqw" }}>이미지 없음</div>
       )}
@@ -90,8 +121,8 @@ function SplitTile({ tile }: { tile: CatalogTile }) {
         <HotspotDot key={i} spot={spot} idx={i} active={active === i} onToggle={(n) => setActive((p) => (p === n ? -1 : n))} />
       ))}
       {tile.title && (
-        <div className="absolute inset-x-0 bottom-0" style={{ backgroundColor: "rgba(13,15,18,0.6)", padding: "1.8cqw 3cqw" }}>
-          <p className="text-white font-semibold leading-tight" style={{ fontSize: "3cqw", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tile.title}</p>
+        <div className="absolute inset-x-0 bottom-0" style={{ backgroundColor: "rgba(13,15,18,0.6)", padding: pad }}>
+          <p className="text-white font-semibold leading-tight" style={{ fontSize: fs, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tile.title}</p>
         </div>
       )}
     </div>
@@ -124,8 +155,8 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
           </>
         )}
         <div className="relative">
-          {d.eyebrow && <p className="text-[9px] tracking-[0.2em] text-[#E5541B] uppercase">{d.eyebrow}</p>}
-          {d.season && <p className="text-[8px] tracking-[0.15em] text-gray-300 uppercase mt-0.5">{d.season}</p>}
+          {d.eyebrow && <p className="text-[9px] tracking-[0.2em] text-white uppercase">{d.eyebrow}</p>}
+          {d.season && <p className="text-[8px] tracking-[0.15em] text-white font-bold uppercase mt-0.5">{d.season}</p>}
         </div>
         <div className="relative">
           <h1 className="text-4xl font-black text-white tracking-tight leading-none">{d.brand || "WORKUP"}</h1>
@@ -148,13 +179,13 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
         {/* 제목↔리스트 사이 여백: 리스트가 짧으면 크게, 길면 작게 (남는 공간을 흡수) */}
         <div style={{ flexGrow: 2, minHeight: "6cqw" }} />
         <div style={{ display: "flex", flexDirection: "column", gap: "1.6cqw" }}>
-          {items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between border-b border-gray-100" style={{ paddingBottom: "2cqw" }}>
+          {items.map((item, i, arr) => (
+            <div key={i} className={`flex items-center justify-between ${i < arr.length - 1 ? "border-b border-gray-100" : ""}`} style={{ paddingBottom: "2cqw" }}>
               <div className="flex items-baseline" style={{ gap: "2cqw" }}>
                 <span className="font-semibold text-[#303236]" style={{ fontSize: "3.4cqw" }}>{item.name}</span>
                 {item.count && <span className="text-gray-400" style={{ fontSize: "2cqw" }}>{item.count}</span>}
               </div>
-              {item.page && <span className="text-gray-400" style={{ fontSize: "2cqw" }}>{item.page}</span>}
+              {item.page && <span className="text-gray-400" style={{ fontSize: "2.8cqw" }}>{formatPageRange(item.page)}</span>}
             </div>
           ))}
         </div>
@@ -201,11 +232,15 @@ export default function CatalogPageView({ page }: { page: CatalogPage }) {
       layout === "2row" ? "grid-cols-1 grid-rows-2" :
       layout === "3col" ? "grid-cols-3 grid-rows-1" :
       "grid-cols-2 grid-rows-2"; // grid4
+    // colCount: 가로 칸 수 → cqw 보정에 사용
+    // ikWidth: IK 이미지 요청 너비 (칸이 작을수록 줄여 불필요한 대역폭 방지)
+    const colCount = layout === "3col" ? 3 : layout === "2row" ? 1 : 2;
+    const ikWidth  = layout === "3col" ? 600 : layout === "grid4" ? 700 : layout === "2row" ? 1200 : 900;
     // 칸 사이는 아주 얇은 선(1px)만 — bg 색이 gap 사이로 비쳐 선처럼 보인다
     return (
       <div className={`w-full h-full bg-[#d4d4d4] grid ${gridClass} gap-px`} style={{ containerType: "inline-size" }}>
         {tiles.map((t, i) => (
-          <SplitTile key={i} tile={t} />
+          <SplitTile key={i} tile={t} colCount={colCount} ikWidth={ikWidth} />
         ))}
       </div>
     );

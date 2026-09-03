@@ -30,9 +30,12 @@ export default function UnifiedBrandsPage() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [deletingBulk, setDeletingBulk] = useState(false);
   const [togglingVis, setTogglingVis] = useState(false);
+  const [seasonInput, setSeasonInput] = useState("");
+  const [applyingSeasonBulk, setApplyingSeasonBulk] = useState(false);
   const [sortMode, setSortMode] = useState<"order" | "alpha" | "date">("date");
   const [visFilter, setVisFilter] = useState<"all" | "visible" | "hidden">("visible");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [listCollapsed, setListCollapsed] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
   // ── 데이터 로드 ───────────────────────────────────────────
@@ -184,6 +187,28 @@ export default function UnifiedBrandsPage() {
     flash(`${ids.length}개 브랜드를 ${next ? "노출" : "비노출"}로 변경했습니다.`);
   };
 
+  // 선택한 브랜드들의 카탈로그에 시즌 일괄 적용
+  const applySeasonBulk = async () => {
+    const season = seasonInput.trim();
+    if (!season) { flash("시즌 문구를 입력하세요.", "err"); return; }
+    if (checkedIds.size === 0) { flash("브랜드를 선택하세요.", "err"); return; }
+    setApplyingSeasonBulk(true);
+    try {
+      const res = await fetch("/api/admin/catalog/apply-season", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ season, brand_ids: [...checkedIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { flash(data.error ?? "오류가 발생했습니다.", "err"); }
+      else if (data.updated === 0) { flash(data.message ?? "적용할 페이지가 없습니다."); }
+      else { flash(`"${season}" 시즌을 ${data.updated}개 페이지에 적용했습니다.`); }
+    } catch {
+      flash("요청 실패", "err");
+    }
+    setApplyingSeasonBulk(false);
+  };
+
   // ── 브랜드별 최신 카탈로그 날짜 맵 ──────────────────────────
   const latestCatalogDateMap = catalogs.reduce<Record<string, string>>((acc, c) => {
     const key = c.brand_name.toLowerCase();
@@ -311,32 +336,52 @@ export default function UnifiedBrandsPage() {
 
       <div className="flex gap-6 items-start">
         {/* ── 왼쪽: 브랜드 목록 ── */}
-        <div className="w-[380px] flex-shrink-0 sticky top-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col" style={{ maxHeight: "calc(80vh - 160px)" }}>
+        <div className={`flex-shrink-0 sticky top-6 transition-all duration-200 ${listCollapsed ? "w-[44px]" : "w-[380px]"}`}>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col" style={listCollapsed ? {} : { maxHeight: "calc(80vh - 160px)" }}>
             {/* 목록 헤더 */}
-            <div className="px-4 py-3 border-b border-slate-100 flex-shrink-0">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold text-slate-700">브랜드 목록</h2>
-                {/* 정렬 토글 */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center rounded-md border border-slate-200 overflow-hidden text-[11px]">
-                    <button onClick={() => setSortMode("alpha")}
-                      className={`px-2 py-1 transition-colors ${sortMode === "alpha" ? "bg-blue-500 text-white font-semibold" : "text-slate-500 hover:bg-slate-50"}`}>
-                      가나다
+            <div className={`border-b border-slate-100 flex-shrink-0 ${listCollapsed ? "px-2 py-3" : "px-4 py-3"}`}>
+              <div className={`flex items-center justify-between ${listCollapsed ? "" : "mb-2"}`}>
+                {listCollapsed ? (
+                  <div className="flex flex-col items-center w-full gap-2">
+                    <button onClick={() => setListCollapsed(false)}
+                      title="목록 펼치기"
+                      className="p-1.5 rounded-md border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">
+                      <svg className="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
-                    <button onClick={() => setSortMode("date")}
-                      className={`px-2 py-1 transition-colors ${sortMode === "date" ? "bg-blue-500 text-white font-semibold" : "text-slate-500 hover:bg-slate-50"}`}>
-                      업로드일자
+                    <span className="text-[10px] font-semibold text-slate-400 [writing-mode:vertical-rl] tracking-widest select-none mt-1">브랜드 목록</span>
+                  </div>
+                ) : <h2 className="text-sm font-semibold text-slate-700">브랜드 목록</h2>}
+                {/* 접기/펼치기 + 정렬 토글 (펼쳐진 상태에서만 표시) */}
+                {!listCollapsed && (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <div className="flex items-center rounded-md border border-slate-200 overflow-hidden text-[11px]">
+                      <button onClick={() => setSortMode("alpha")}
+                        className={`px-2 py-1 transition-colors ${sortMode === "alpha" ? "bg-blue-500 text-white font-semibold" : "text-slate-500 hover:bg-slate-50"}`}>
+                        가나다
+                      </button>
+                      <button onClick={() => setSortMode("date")}
+                        className={`px-2 py-1 transition-colors ${sortMode === "date" ? "bg-blue-500 text-white font-semibold" : "text-slate-500 hover:bg-slate-50"}`}>
+                        업로드일자
+                      </button>
+                    </div>
+                    <button onClick={() => setSortMode("order")}
+                      className={`px-2 py-1 rounded-md border text-[11px] transition-colors ${sortMode === "order" ? "bg-orange-500 text-white border-orange-500 font-semibold" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                      순서변경
+                    </button>
+                    <button onClick={() => setListCollapsed(true)}
+                      title="목록 접기"
+                      className="p-1.5 rounded-md border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors flex-shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
                   </div>
-                  <button onClick={() => setSortMode("order")}
-                    className={`px-2 py-1 rounded-md border text-[11px] transition-colors ${sortMode === "order" ? "bg-orange-500 text-white border-orange-500 font-semibold" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
-                    순서변경
-                  </button>
-                </div>
+                )}
               </div>
               {/* 노출/비노출 필터 */}
-              <div className="flex items-center gap-1.5 mb-2">
+              {!listCollapsed && <div className="flex items-center gap-1.5 mb-2">
                 <div className="flex items-center rounded-md border border-slate-200 overflow-hidden text-[11px]">
                   {([["all", "전체"], ["visible", "노출"], ["hidden", `비노출 ${hiddenCount}`]] as const).map(([v, label]) => (
                     <button key={v} onClick={() => setVisFilter(v)}
@@ -351,9 +396,9 @@ export default function UnifiedBrandsPage() {
                     {togglingVis ? "처리 중…" : "목록 전체 노출로"}
                   </button>
                 )}
-              </div>
+              </div>}
               {/* 일괄 선택·삭제 툴바 */}
-              <div className="flex items-center gap-2">
+              {!listCollapsed && <div className="flex items-center gap-2">
                 <label className="flex items-center gap-1.5 cursor-pointer select-none" onClick={toggleCheckAll}>
                   <input type="checkbox" readOnly
                     checked={brands.length > 0 && checkedIds.size === brands.length}
@@ -382,10 +427,29 @@ export default function UnifiedBrandsPage() {
                     </button>
                   </div>
                 )}
-              </div>
+                {checkedIds.size > 0 && (
+                  <div className="w-full mt-1.5 flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+                    <span className="text-[10px] font-semibold text-amber-700 flex-shrink-0">시즌 적용</span>
+                    <input
+                      type="text"
+                      value={seasonInput}
+                      onChange={(e) => setSeasonInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") applySeasonBulk(); }}
+                      placeholder="예: 2026 F/W"
+                      className="flex-1 min-w-0 border border-amber-300 bg-white px-2.5 py-1 text-[11px] rounded-lg focus:outline-none focus:border-amber-500 placeholder-amber-300"
+                    />
+                    <button
+                      onClick={applySeasonBulk}
+                      disabled={applyingSeasonBulk || !seasonInput.trim()}
+                      className="flex-shrink-0 px-2.5 py-1 bg-amber-500 text-white text-[10px] font-semibold rounded-lg hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                      {applyingSeasonBulk ? "적용 중…" : `${checkedIds.size}개 브랜드 적용`}
+                    </button>
+                  </div>
+                )}
+              </div>}
             </div>
             {/* 스크롤 목록 */}
-            <div className="overflow-y-auto flex-1">
+            {!listCollapsed && <div className="overflow-y-auto flex-1">
               {loading ? (
                 <div className="flex items-center justify-center gap-2 py-14 text-slate-400 text-sm">
                   <span className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />불러오는 중...
@@ -441,7 +505,7 @@ export default function UnifiedBrandsPage() {
                   ))}
                 </ul>
               )}
-            </div>
+            </div>}
           </div>
         </div>
 
@@ -470,10 +534,10 @@ export default function UnifiedBrandsPage() {
 
               {/* 탭 */}
               <div className="flex border-b border-slate-200 bg-slate-50">
-                {(["info", "catalog", "assembled"] as Tab[]).map((t) => (
-                  <button key={t} onClick={() => setTab(t)}
+                {(["info", "assembled"] as Tab[]).map((t) => (
+                  <button key={t} onClick={() => { setTab(t); setListCollapsed(t === "assembled"); }}
                     className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 ${tab === t ? "border-blue-500 text-blue-600 bg-white" : "border-transparent text-slate-500 hover:text-slate-700"}`}>
-                    {t === "info" ? "기본 정보" : t === "assembled" ? "카탈로그(플립북)" : `카탈로그 PDF (${brandCatalogs.length})`}
+                    {t === "info" ? "기본 정보" : "카탈로그(플립북)"}
                   </button>
                 ))}
               </div>
@@ -506,50 +570,47 @@ export default function UnifiedBrandsPage() {
                     <Field label="설명 (영문)">
                       <input type="text" value={editing.description} onChange={(e) => set("description", e.target.value)} placeholder="예: Everyday basic workwear for every occasion" className={INPUT} />
                     </Field>
-                    <Field label="강조 색상 (Accent Color)">
-                      <div className="flex items-center gap-3">
-                        <input type="color" value={editing.accent_color} onChange={(e) => set("accent_color", e.target.value)}
-                          className="w-10 h-10 rounded cursor-pointer border border-gray-200 p-0.5" />
-                        <input type="text" value={editing.accent_color} onChange={(e) => set("accent_color", e.target.value)}
-                          placeholder="#000000" className={`${INPUT} w-36`} />
-                        <span className="text-xs text-gray-400">포지셔닝 텍스트·CTA 버튼 색상</span>
-                      </div>
-                    </Field>
-                    <Field label="히어로 텍스트 색상" hint="배경 이미지 위 브랜드명·설명 글자색. 비워두면 흰색(#ffffff)으로 표시됩니다.">
-                      <div className="flex items-center gap-3">
-                        <input type="color" value={editing.hero_text_color || "#ffffff"}
-                          onChange={(e) => set("hero_text_color", e.target.value)}
-                          className="w-10 h-10 rounded cursor-pointer border border-gray-200 p-0.5" />
-                        <input type="text" value={editing.hero_text_color ?? ""}
-                          onChange={(e) => set("hero_text_color", e.target.value)}
-                          placeholder="#ffffff (비워두면 흰색)" className={`${INPUT} w-44`} />
-                        {editing.hero_text_color && (
-                          <button type="button" onClick={() => set("hero_text_color", "")}
-                            className="text-xs text-slate-400 hover:text-red-500">초기화</button>
-                        )}
-                      </div>
-                    </Field>
-                    <BgField editing={editing} set={set} flash={flash} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="강조 색상 (Accent Color)">
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={editing.accent_color} onChange={(e) => set("accent_color", e.target.value)}
+                            className="w-9 h-9 rounded cursor-pointer border border-gray-200 p-0.5 flex-shrink-0" />
+                          <input type="text" value={editing.accent_color} onChange={(e) => set("accent_color", e.target.value)}
+                            placeholder="#000000" className={INPUT} />
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">포지셔닝 텍스트·CTA 버튼 색상</p>
+                      </Field>
+                      <Field label="히어로 텍스트 색상">
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={editing.hero_text_color || "#ffffff"}
+                            onChange={(e) => set("hero_text_color", e.target.value)}
+                            className="w-9 h-9 rounded cursor-pointer border border-gray-200 p-0.5 flex-shrink-0" />
+                          <input type="text" value={editing.hero_text_color ?? ""}
+                            onChange={(e) => set("hero_text_color", e.target.value)}
+                            placeholder="#ffffff (비워두면 흰색)" className={INPUT} />
+                          {editing.hero_text_color && (
+                            <button type="button" onClick={() => set("hero_text_color", "")}
+                              className="text-xs text-slate-400 hover:text-red-500 flex-shrink-0">초기화</button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">배경 이미지 위 브랜드명·설명 글자색</p>
+                      </Field>
+                    </div>
                     <CardImageField editing={editing} set={set} flash={flash} />
-                    <LogoField editing={editing} set={set} flash={flash} />
-                  </div>
-                )}
 
-                {/* ── 탭 2: 카탈로그 ── */}
-                {tab === "catalog" && !isNew && (
-                  <CatalogTab
-                    brandName={editing.name}
-                    catalogs={brandCatalogs}
-                    onRefresh={loadBrands}
-                    flash={flash}
-                    assembledEnabled={editing.catalog_enabled === true}
-                    assembledCount={assembled[String(editing.id)]?.count ?? 0}
-                    assembledLatest={fmtDate(assembled[String(editing.id)]?.latest)}
-                    onGoAssembled={() => setTab("assembled")}
-                  />
-                )}
-                {tab === "catalog" && isNew && (
-                  <p className="text-sm text-gray-400">브랜드를 먼저 저장한 후 카탈로그를 추가할 수 있습니다.</p>
+                    {/* 카탈로그 PDF — 기본 정보 하단 */}
+                    {!isNew && (
+                      <div className="border-t border-slate-100 pt-5">
+                        <p className="text-sm font-semibold text-slate-700 mb-3">카탈로그 PDF <span className="ml-1 text-xs font-normal text-slate-400">({brandCatalogs.length})</span></p>
+                        <CatalogTab
+                          brandName={editing.name}
+                          catalogs={brandCatalogs}
+                          onRefresh={loadBrands}
+                          flash={flash}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* ── 탭 3: 조립형 카탈로그 ── */}
@@ -594,15 +655,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 
 // ── CatalogTab ────────────────────────────────────────────────
-function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, assembledCount, assembledLatest, onGoAssembled }: {
+function CatalogTab({ brandName, catalogs, onRefresh, flash }: {
   brandName: string;
   catalogs: BrandCatalog[];
   onRefresh: () => void;
   flash: (msg: string, type?: string) => void;
-  assembledEnabled: boolean;
-  assembledCount: number;
-  assembledLatest: string | null;
-  onGoAssembled: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Omit<BrandCatalog, "id">>({ ...EMPTY_BRAND_CATALOG, brand_name: brandName });
@@ -655,22 +712,6 @@ function CatalogTab({ brandName, catalogs, onRefresh, flash, assembledEnabled, a
 
   return (
     <div className="space-y-4">
-      {/* 조립형 카탈로그 요약 — PDF 없이 이미지+정보만 입력하는 형태는 별도 탭에서 관리 */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50">
-        <div className="text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">카탈로그</span>
-          {" · "}
-          {assembledEnabled ? <span className="text-emerald-600">공개 중</span> : <span className="text-slate-400">비공개</span>}
-          {" · "}
-          <span className="font-semibold">{assembledCount}</span>페이지
-          {assembledLatest ? <span className="text-slate-400">{" · 수정 "}{assembledLatest}</span> : null}
-        </div>
-        <button type="button" onClick={onGoAssembled}
-          className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-600 hover:bg-white transition-colors">
-          카탈로그 탭에서 편집 →
-        </button>
-      </div>
-
       {/* PDF 카탈로그 목록 */}
       {catalogs.length === 0 ? (
         <p className="text-sm text-slate-400 py-4">등록된 카탈로그가 없습니다.</p>

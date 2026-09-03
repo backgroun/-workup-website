@@ -7,9 +7,8 @@ import * as XLSX from "xlsx";
 // 엑셀 컬럼 (image · divider 페이지만 지원)
 const COLUMNS = [
   { key: "page_type",   label: "종류(image/divider)" },
-  { key: "admin_title", label: "관리용 제목" },
   { key: "image",       label: "이미지 (파일명 또는 URL)" },
-  { key: "title",       label: "목차 제목 / 구분 제목" },
+  { key: "title",       label: "제목 (관리+화면 공용)" },
   { key: "description", label: "설명(이미지 캡션)" },
   { key: "link_url",    label: "링크 URL" },
   { key: "link_label",  label: "링크 문구" },
@@ -25,7 +24,6 @@ type ParsedRow = {
   _error?: string;
   _imageRef: string; // 엑셀에 적힌 원본 값(파일명/URL)
   page_type: "image" | "divider";
-  admin_title: string;
   image_url: string;
   title: string;
   description: string;
@@ -52,7 +50,7 @@ function parseRow(row: Record<string, unknown>, idx: number, imageMap: ImageMap)
   const rawType = pick(row, "종류(image/divider)", "종류", "page_type").toLowerCase();
   const page_type: "image" | "divider" = rawType === "divider" ? "divider" : "image";
   const imageRef = pick(row, "이미지 (파일명 또는 URL)", "이미지 URL", "이미지", "image", "image_url");
-  const title = pick(row, "목차 제목 / 구분 제목", "목차 제목", "구분 제목", "title");
+  const title = pick(row, "제목 (관리+화면 공용)", "목차 제목 / 구분 제목", "목차 제목", "구분 제목", "title");
   const isVisRaw = pick(row, "노출(TRUE/FALSE)", "노출", "is_visible") || "TRUE";
 
   // 이미지 값 해석: URL 이면 그대로, 아니면 업로드한 파일에서 찾기 (파일명 or 확장자 제외 일치)
@@ -74,7 +72,6 @@ function parseRow(row: Record<string, unknown>, idx: number, imageMap: ImageMap)
     _error: errors.length ? errors.join(", ") : undefined,
     _imageRef: imageRef,
     page_type,
-    admin_title: pick(row, "관리용 제목", "admin_title"),
     image_url,
     title,
     description: pick(row, "설명(이미지 캡션)", "설명", "description"),
@@ -88,10 +85,11 @@ function parseRow(row: Record<string, unknown>, idx: number, imageMap: ImageMap)
 
 function downloadTemplate() {
   const header = COLUMNS.map((c) => c.label);
+  // 컬럼 순서: 종류 / 이미지(파일명or URL) / 제목 / 설명 / 링크URL / 링크문구 / 구분번호 / 구분설명 / 노출
   const samples = [
-    ["divider", "카테고리1 구분", "", "상의 라인", "", "", "", "01", "현장에서 검증된 데일리 상의", "TRUE"],
-    ["image", "상의1 착장컷", "top1.jpg", "피그먼트 워시드 티셔츠", "부드러운 촉감의 데일리 티셔츠", "/products/xxxx", "제품 보기", "", "", "TRUE"],
-    ["image", "상의2 착장컷", "top2.png", "옥스포드 셔츠", "", "", "", "", "", "TRUE"],
+    ["divider", "", "상의 라인", "", "", "", "01", "현장에서 검증된 데일리 상의", "TRUE"],
+    ["image", "top1.jpg", "피그먼트 워시드 티셔츠", "부드러운 촉감의 데일리 티셔츠", "/products/xxxx", "제품 보기", "", "", "TRUE"],
+    ["image", "top2.png", "옥스포드 셔츠", "", "", "", "", "", "TRUE"],
   ];
   const ws = XLSX.utils.aoa_to_sheet([header, ...samples]);
   ws["!cols"] = COLUMNS.map(() => ({ wch: 22 }));
@@ -268,7 +266,7 @@ function CatalogImportInner() {
                   <tr key={r._row} className={r._error ? "bg-red-50/50" : ""}>
                     <td className="px-3 py-2 text-gray-400">{r._row}</td>
                     <td className="px-3 py-2">{r.page_type}</td>
-                    <td className="px-3 py-2 text-gray-800">{r.title || r.admin_title || <span className="text-gray-300">—</span>}</td>
+                    <td className="px-3 py-2 text-gray-800">{r.title || <span className="text-gray-300">—</span>}</td>
                     <td className="px-3 py-2 text-gray-400 truncate max-w-[220px]">
                       {r._imageRef ? (r.image_url ? <span className="text-emerald-600">✓ {r._imageRef}</span> : r._imageRef) : <span className="text-gray-300">—</span>}
                     </td>

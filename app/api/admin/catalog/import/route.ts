@@ -9,7 +9,6 @@ import type { CatalogPageType, CatalogPageData } from "@/data/catalog";
 // ImportRow(엑셀 파싱 결과 한 줄) → catalog_pages 신규 insert (기존 페이지 뒤에 이어붙임)
 type ImportRow = {
   page_type: CatalogPageType;     // "image" | "divider" (엑셀 지원 범위)
-  admin_title: string;
   image_url: string;
   title: string;
   description: string;
@@ -47,7 +46,7 @@ export async function POST(req: Request) {
       id: crypto.randomUUID(),
       brand_id: brandId,
       page_type: type,
-      admin_title: r.admin_title || r.title || (type === "divider" ? "구분" : "이미지"),
+      admin_title: r.title || (type === "divider" ? "구분" : "이미지"),
       image_url: r.image_url || null,
       title: type === "divider" ? "" : (r.title || ""),
       description: type === "divider" ? "" : (r.description || ""),

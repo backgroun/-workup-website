@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import type { CatalogPage } from "@/data/catalog";
 import CatalogPageView from "./CatalogPageView";
@@ -21,6 +22,68 @@ function buildTocItems(pages: CatalogPage[]) {
     else                                  title = p.title || p.admin_title;
     return { title: title.trim(), pageIndex: i, type: p.page_type };
   }).filter(it => it.title);
+}
+
+// ── PDF 저장(브라우저 인쇄) ──
+// 조립형 카탈로그는 원본 PDF 파일이 없어(표지·목차·구분 페이지는 코드 렌더),
+// 전체 페이지를 A4 한 장씩 화면 밖에 렌더한 뒤 window.print()로 "PDF로 저장"하게 한다.
+// 새 라이브러리·서버 함수 없이 브라우저 기본 기능만 사용한다.
+// 인쇄용 컨테이너는 <body> 바로 아래에 포탈로 붙인다 — 뷰어의 overflow:hidden·고정높이
+// 조상 안에 두면 인쇄 시 내용이 잘려 빈 페이지가 나온다.
+const PRINT_CSS = `
+#wu-catalog-print-portal { position: fixed; left: -10000px; top: 0; width: 210mm; z-index: -1; pointer-events: none; }
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #fff !important; }
+  body > *:not(#wu-catalog-print-portal) { display: none !important; }
+  #wu-catalog-print-portal { position: static !important; left: auto !important; top: auto !important; width: auto !important; z-index: auto !important; }
+  .wu-print-page { break-after: page; page-break-after: always; break-inside: avoid; }
+  .wu-print-page:last-child { break-after: auto; page-break-after: auto; }
+  .wu-print-page button { display: none !important; }
+}
+`;
+
+function CatalogPrintDoc({ pages, onReady }: { pages: React.ReactNode[]; onReady: () => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const el = rootRef.current;
+    if (!el) { onReady(); return; }
+    const imgs = Array.from(el.querySelectorAll("img"));
+    const waitAll = Promise.all(
+      imgs.map((img) =>
+        img.complete && img.naturalWidth > 0
+          ? Promise.resolve()
+          : new Promise<void>((res) => {
+              img.addEventListener("load", () => res(), { once: true });
+              img.addEventListener("error", () => res(), { once: true });
+            })
+      )
+    );
+    // 이미지 로딩이 오래 걸려도 8초 후엔 그대로 인쇄
+    const timeout = new Promise<void>((res) => setTimeout(res, 8000));
+    Promise.race([waitAll, timeout]).then(() => {
+      if (cancelled) return;
+      onReady();
+      // 레이아웃 안정화를 위해 짧게 지연 후 인쇄
+      setTimeout(() => { if (!cancelled) window.print(); }, 120);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div ref={rootRef} aria-hidden="true" id="wu-catalog-print-portal">
+      {pages.map((node, i) => (
+        <div key={i} className="wu-print-page"
+          style={{ width: "210mm", height: "297mm", position: "relative", overflow: "hidden", background: "#fff" }}>
+          {node}
+        </div>
+      ))}
+    </div>,
+    document.body
+  );
 }
 
 // 스프레드 계산: 0=표지(오른쪽만), k>=1: left=2k-1, right=2k
@@ -45,6 +108,8 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
   const [thumbGroup, setThumbGroup] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copied, setCopied]         = useState(false);
+  // PDF 저장(인쇄): "idle" → "preparing"(오프스크린 렌더+이미지 로딩) → 인쇄 대화상자
+  const [printState, setPrintState] = useState<"idle" | "preparing">("idle");
 
   const isWorkup = selectedId === "workup";
   const brand    = brands.find(b => b.id === selectedId);
@@ -148,6 +213,19 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
+  // PDF 저장 — 인쇄 종료(또는 취소) 시 오프스크린 렌더 정리
+  useEffect(() => {
+    const done = () => setPrintState("idle");
+    window.addEventListener("afterprint", done);
+    return () => window.removeEventListener("afterprint", done);
+  }, []);
+  // afterprint를 못 받는 브라우저 대비 안전장치 (로딩 오버레이가 남지 않도록)
+  useEffect(() => {
+    if (printState !== "preparing") return;
+    const t = setTimeout(() => setPrintState("idle"), 90000);
+    return () => clearTimeout(t);
+  }, [printState]);
+
   // 공유
   const handleShare = useCallback(async () => {
     try {
@@ -231,13 +309,23 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
             }
             <span className="hidden md:inline">{copied ? "복사됨" : "공유"}</span>
           </button>
-          {/* 다운로드 */}
-          {pdfUrl && (
+          {/* 다운로드 — 원본 PDF가 있으면 파일 링크, 없으면(조립형) 브라우저 인쇄로 PDF 저장 */}
+          {pdfUrl ? (
             <a href={pdfUrl} download className="hidden md:flex items-center gap-2 px-4 py-3 text-white/50 hover:text-white/90 transition-colors text-[11px] tracking-widest">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
               <span>다운로드</span>
             </a>
-          )}
+          ) : total > 0 ? (
+            <button onClick={() => setPrintState("preparing")} disabled={printState === "preparing"}
+              className="hidden md:flex items-center gap-2 px-4 py-3 text-white/50 hover:text-white/90 disabled:opacity-50 transition-colors text-[11px] tracking-widest"
+              title="브라우저 인쇄 대화상자에서 'PDF로 저장'을 선택하세요">
+              {printState === "preparing"
+                ? <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2a10 10 0 00-10 10h2z" /></svg>
+                : <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" /></svg>
+              }
+              <span>{printState === "preparing" ? "준비 중" : "PDF 저장"}</span>
+            </button>
+          ) : null}
           {/* TOC 토글 — 오른쪽 배치 */}
           {!isFullscreen && (
             <button onClick={() => setShowToc(v => !v)}
@@ -280,7 +368,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
         {/* TOC 사이드바 (PC, 전체화면 아닐 때) */}
         {!dims.portrait && showToc && !isFullscreen && (
           <aside className="flex-shrink-0 flex flex-col border-r border-white/10 overflow-hidden"
-            style={{ width: 256, backgroundColor: "#090b0d" }}>
+            style={{ width: 320, backgroundColor: "#090b0d" }}>
             <div className="px-5 pt-4 pb-3 border-b border-white/8 flex-shrink-0">
               <p className="text-[9px] tracking-[0.3em] text-[#E5541B] uppercase">Contents</p>
             </div>
@@ -582,6 +670,26 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
       {/* 바텀시트 딤 배경 */}
       {dims.portrait && showToc && !isFullscreen && (
         <div className="absolute inset-0 z-40 bg-black/50" onClick={() => setShowToc(false)} />
+      )}
+
+      {/* PDF 저장 — 인쇄용 오프스크린 렌더 (준비 중일 때만 마운트) */}
+      {printState === "preparing" && total > 0 && (
+        <>
+          <style>{PRINT_CSS}</style>
+          <CatalogPrintDoc pages={pageNodes} onReady={() => { /* afterprint 이벤트가 정리 */ }} />
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-6 print:hidden">
+            <div className="max-w-xs rounded-lg bg-[#0d0f12] px-5 py-5 text-center">
+              <div className="flex items-center justify-center gap-2 text-white/80 text-[13px] font-semibold">
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2a10 10 0 00-10 10h2z" /></svg>
+                인쇄 창을 준비 중입니다…
+              </div>
+              <p className="mt-3 text-[12px] leading-relaxed text-white/45">
+                잠시 후 뜨는 창에서 <span className="text-[#E5541B] font-semibold">대상</span>을
+                <br /><span className="text-white/70 font-semibold">&quot;PDF로 저장&quot;</span>으로 선택한 뒤 저장하세요.
+              </p>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
