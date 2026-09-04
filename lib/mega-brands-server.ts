@@ -2,6 +2,8 @@ import { getSiteSection } from "@/lib/site-settings";
 import { buildDefaultBrands, DEFAULT_MEGA_SETTINGS } from "@/lib/mega-brands-defaults";
 import type { MegaBrandsConfig, MegaBrandItem } from "@/lib/mega-brands-types";
 import { createAdminClient } from "@/lib/supabase-server";
+import { BRANDS } from "@/lib/brands-data";
+import { brandSlug } from "@/lib/brandCatalog-server";
 
 async function getBrandsFromDb(): Promise<MegaBrandItem[] | null> {
   try {
@@ -20,7 +22,7 @@ async function getBrandsFromDb(): Promise<MegaBrandItem[] | null> {
       descriptionKo: b.name_ko ?? "",
       description: b.description,
       accentColor: b.accent_color,
-      href: `/brands/${b.id}`,
+      href: BRANDS.find(s => s.name.toLowerCase() === b.name?.toLowerCase())?.href ?? `/brands/${brandSlug(b.name)}`,
       megaMenuImage: b.mega_menu_image ?? "",
       megaMenuImageX: b.mega_menu_image_x ?? 50,
       megaMenuImageY: b.mega_menu_image_y ?? 30,
@@ -40,7 +42,7 @@ export async function getMegaBrandsConfig(): Promise<MegaBrandsConfig> {
     getSiteSection<MegaBrandsConfig>("mega_menu_brands"),
   ]);
 
-  const brands = dbBrands ?? saved?.brands ?? buildDefaultBrands();
+  const brands = saved?.brands?.length ? saved.brands : (dbBrands ?? buildDefaultBrands());
   const settings = saved?.settings ?? DEFAULT_MEGA_SETTINGS;
 
   return { brands, settings };

@@ -95,7 +95,6 @@ export default function Header({
   // BRANDS 메가메뉴: megaBrandsConfig가 있고 settings.enabled !== false이면 활성.
   // 헤더 nav에 BRANDS 항목이 있으면 버튼으로 교체하고, 없으면 nav 끝에 자동 추가된다.
   const hasBrandsMega = !!megaBrandsConfig && megaBrandsConfig.settings?.enabled !== false;
-  const regularNavItems = navItems.filter((item) => item.label.toUpperCase() !== "BRANDS");
 
   // ── 로고 / 내비게이션 / 가맹·제휴문의 / 로그인 행 ──
   const topRow = (
@@ -107,41 +106,75 @@ export default function Header({
           <Image src={logo.src} alt={logo.alt} width={130} height={18} className={`h-[14px] w-[100px] md:h-[18px] md:w-[130px] transition-[filter] ${white ? "brightness-0 invert" : ""}`} priority />
         </Link>
 
-        {/* 데스크탑 내비게이션 */}
+        {/* 데스크탑 내비게이션 — navItems 순서 그대로 렌더링, BRANDS 위치에서 메가메뉴 트리거로 교체 */}
         <nav className="hidden md:flex items-center gap-7 flex-1 justify-start ml-[60px]">
-          {regularNavItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              target={item.newTab ? "_blank" : undefined}
-              rel={item.newTab ? "noopener noreferrer" : undefined}
-              onMouseEnter={hasBrandsMega ? closeBrandsNow : undefined}
-              className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#303236]"}`}
-              style={{ fontWeight: 650 }}
-            >
-              {/* 기본은 영문, 마우스 오버 시 한글로 크로스페이드.
-                  두 텍스트를 같은 그리드 셀(1/1)에 겹쳐 폭 밀림 없이 자연스럽게 전환한다.
-                  영문·한글의 font-size와 leading을 동일하게 맞춰 겹칠 때 위치가 어긋나지 않게 한다. */}
-              <span
-                style={{ gridArea: "1 / 1" }}
-                className={`${oxanium.className} text-[17px] leading-none tracking-wide transition-opacity duration-200 ${item.labelKo ? "group-hover:opacity-0" : ""}`}
-              >
-                {item.label}
-              </span>
-              {item.labelKo && (
-                <span
-                  style={{ gridArea: "1 / 1", fontWeight: 700 }}
-                  className={`text-[14px] leading-none tracking-tighter opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${white ? "text-white/80" : "text-gray-500"}`}
+          {navItems.map((item) => {
+            const isBrands = item.label.toUpperCase() === "BRANDS";
+            if (isBrands && hasBrandsMega) {
+              return (
+                <Link
+                  key={item.id}
+                  href="/brands"
+                  onMouseEnter={openBrands}
+                  onMouseLeave={closeBrandsDelayed}
+                  className={`group grid place-items-center whitespace-nowrap transition-colors ${
+                    brandsOpen ? "text-[#E5541B]" : white ? "text-white" : "text-[#303236]"
+                  }`}
+                  style={{ fontWeight: 650 }}
+                  aria-expanded={brandsOpen}
+                  aria-haspopup="true"
                 >
-                  {item.labelKo}
+                  <span
+                    style={{ gridArea: "1 / 1" }}
+                    className={`${oxanium.className} text-[17px] leading-none tracking-wide transition-opacity duration-200 group-hover:opacity-0 ${brandsOpen ? "opacity-0" : ""}`}
+                  >
+                    BRANDS
+                  </span>
+                  <span
+                    style={{ gridArea: "1 / 1", fontWeight: 700 }}
+                    className={`text-[14px] leading-none tracking-tighter transition-opacity duration-200 group-hover:opacity-100 ${
+                      brandsOpen
+                        ? "opacity-100 text-[#E5541B]"
+                        : `opacity-0 ${white ? "text-white/80" : "text-gray-500"}`
+                    }`}
+                  >
+                    브랜드
+                  </span>
+                </Link>
+              );
+            }
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                target={item.newTab ? "_blank" : undefined}
+                rel={item.newTab ? "noopener noreferrer" : undefined}
+                onMouseEnter={hasBrandsMega ? closeBrandsNow : undefined}
+                className={`group grid place-items-center whitespace-nowrap transition-colors ${white ? "text-white" : "text-[#303236]"}`}
+                style={{ fontWeight: 650 }}
+              >
+                <span
+                  style={{ gridArea: "1 / 1" }}
+                  className={`${oxanium.className} text-[17px] leading-none tracking-wide transition-opacity duration-200 ${item.labelKo ? "group-hover:opacity-0" : ""}`}
+                >
+                  {item.label}
                 </span>
-              )}
-            </Link>
-          ))}
+                {item.labelKo && (
+                  <span
+                    style={{ gridArea: "1 / 1", fontWeight: 700 }}
+                    className={`text-[14px] leading-none tracking-tighter opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${white ? "text-white/80" : "text-gray-500"}`}
+                  >
+                    {item.labelKo}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
 
-          {/* ── BRANDS 메가메뉴 트리거 — megaBrandsConfig가 있으면 항상 표시 ── */}
-          {hasBrandsMega && (
-            <button
+          {/* BRANDS가 navItems에 없을 때만 메가메뉴 트리거를 끝에 추가 */}
+          {hasBrandsMega && !navItems.some(it => it.label.toUpperCase() === "BRANDS") && (
+            <Link
+              href="/brands"
               onMouseEnter={openBrands}
               onMouseLeave={closeBrandsDelayed}
               className={`group grid place-items-center whitespace-nowrap transition-colors ${
@@ -160,14 +193,12 @@ export default function Header({
               <span
                 style={{ gridArea: "1 / 1", fontWeight: 700 }}
                 className={`text-[14px] leading-none tracking-tighter transition-opacity duration-200 group-hover:opacity-100 ${
-                  brandsOpen
-                    ? "opacity-100 text-[#E5541B]"
-                    : `opacity-0 ${white ? "text-white/80" : "text-gray-500"}`
+                  brandsOpen ? "opacity-100 text-[#E5541B]" : `opacity-0 ${white ? "text-white/80" : "text-gray-500"}`
                 }`}
               >
                 브랜드
               </span>
-            </button>
+            </Link>
           )}
 
           {/* 티셔츠 꾸미기 스튜디오 — 관리자에서 활성화 시 노출 */}
@@ -245,6 +276,7 @@ export default function Header({
       <BrandsMegaMenu
           onMouseEnter={openBrands}
           onMouseLeave={closeBrandsDelayed}
+          onLinkClick={closeBrandsNow}
           brands={megaBrandsConfig?.brands}
           settings={megaBrandsConfig?.settings}
         />

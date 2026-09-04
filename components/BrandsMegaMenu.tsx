@@ -19,7 +19,6 @@ function toDisplayBrands(propBrands: MegaBrandItem[] | undefined): DisplayBrand[
   if (propBrands) {
     return propBrands
       .filter(b => b.megaMenuVisible !== false && b.status !== "inactive")
-      .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(b => ({
         id: b.id,
         name: b.name,
@@ -44,11 +43,13 @@ function toDisplayBrands(propBrands: MegaBrandItem[] | undefined): DisplayBrand[
 export default function BrandsMegaMenu({
   onMouseEnter,
   onMouseLeave,
+  onLinkClick,
   brands: propBrands,
   settings: propSettings,
 }: {
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onLinkClick?: () => void;
   brands?: MegaBrandItem[];
   settings?: MegaMenuSettings;
 }) {
@@ -101,6 +102,7 @@ export default function BrandsMegaMenu({
           </div>
           <Link
             href={ctaUrl}
+            onClick={onLinkClick}
             className="hover:text-[#E5541B] transition-colors duration-200"
             style={{
               fontSize: "11px",
@@ -118,6 +120,7 @@ export default function BrandsMegaMenu({
             <Link
               key={brand.id}
               href={brand.href}
+              onClick={onLinkClick}
               className="flex-1 group flex flex-col min-w-0 overflow-hidden hover:bg-white/[0.02] transition-colors duration-200"
               style={{
                 borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.15)" : undefined,
