@@ -132,7 +132,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
   const catalogSub   = isWorkup ? (sourceLabel ? "" : "K-WORKER STORE") : "";
   const tocItems     = isWorkup ? buildTocItems(workupPages) : [];
   const hasBrandTabs = brands.length > 0 || assembledLinks.length > 0;
-  const totalSpreads = total === 0 ? 0 : Math.ceil(total / 2);
+  const totalSpreads = total === 0 ? 0 : Math.ceil((total + 1) / 2);
 
   const { left: leftIdx, right: rightIdx } = pagesOfSpread(spread, total);
   const isSpread = !dims.portrait && spread > 0 && leftIdx >= 0;

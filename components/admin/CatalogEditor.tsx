@@ -24,6 +24,7 @@ export default function CatalogEditor({ brandId }: { brandId: string }) {
   const [selectedHotspot, setSelectedHotspot] = useState<number | null>(null);
   const [focusedTocItemIdx, setFocusedTocItemIdx] = useState<number | null>(null);
   const [checkedPageIds, setCheckedPageIds] = useState<Set<string>>(new Set());
+  const [jumpInput, setJumpInput] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const dataCacheRef = useRef<Partial<Record<CatalogPageType, CatalogPageData>>>({});
@@ -51,6 +52,16 @@ export default function CatalogEditor({ brandId }: { brandId: string }) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [brandId]);
+
+  // contents 페이지를 열었는데 items가 비어있으면 자동 생성
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (editing?.page_type === "contents" && !(editing.data?.items ?? []).some((it) => it.name.trim())) {
+      autoFillToc();
+    }
+  // autoFillToc 은 pages 변경 시에도 재생성되면 안 되므로 editing.id 만 추적
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing?.id, editing?.page_type]);
 
   const flash = (text: string, type = "ok") => {
     setMsg({ text, type });
@@ -132,20 +143,77 @@ export default function CatalogEditor({ brandId }: { brandId: string }) {
     flash(`${removed}개 중복 항목을 병합·정렬했습니다.`);
   };
 
-  const autoFillToc = () => {
-    const visible = pages.filter((p) => p.is_visible);
-    const items: ContentsItem[] = [];
-    visible.forEach((p, i) => {
-      if (p.page_type !== "divider") return;
-      const nextDivIdx = visible.findIndex((q, qi) => qi > i && q.page_type === "divider");
-      const contentStart = i + 2;
-      const contentEnd = nextDivIdx !== -1 ? nextDivIdx : visible.length;
-      const pageStr = contentStart <= contentEnd ? `P.${contentStart} – ${contentEnd}` : `P.${contentStart}`;
-      items.push({ name: p.data?.title ?? "", count: p.data?.count ?? "", page: pageStr });
+  const autoFillToc = async () => {
+    if (!editing) return;
+    const CHUNK = 10;
+
+    // 페이지명 기준 그룹핑
+    const titleMap = new Map<string, number[]>();
+    const titleOrder: string[] = [];
+    pages.forEach((p, i) => {
+      if (p.page_type === "contents" || p.page_type === "divider") return;
+      const name = (p.admin_title || p.title || p.data?.brand || p.data?.title || "").trim();
+      if (!name) return;
+      if (!titleMap.has(name)) { titleMap.set(name, []); titleOrder.push(name); }
+      titleMap.get(name)!.push(i + 1);
     });
-    if (items.length === 0) { flash("노출 중인 구분(divider) 페이지가 없어 자동 생성할 항목이 없습니다.", "err"); return; }
-    updItems(() => items);
-    flash(`${items.length}개 항목을 자동으로 채웠습니다.`);
+    if (titleOrder.length === 0) { flash("제목이 있는 페이지가 없습니다.", "err"); return; }
+
+    const allItems: ContentsItem[] = titleOrder.map((name) => {
+      const nums = titleMap.get(name)!;
+      return { name, count: String(nums.length), page: nums.map((n) => `P.${n}`).join("·") };
+    });
+
+    // 10개씩 청크 분할
+    const chunks: ContentsItem[][] = [];
+    for (let i = 0; i < allItems.length; i += CHUNK) chunks.push(allItems.slice(i, i + CHUNK));
+
+    // 현재 편집 중인 페이지에 첫 번째 청크 반영 (로컬 상태)
+    updItems(() => chunks[0]);
+
+    if (chunks.length === 1) {
+      flash(`${allItems.length}개 항목을 생성했습니다.`);
+      return;
+    }
+
+    // 나머지 청크: 기존 목차 페이지 재활용 or 신규 생성
+    const otherContentsPages = pages
+      .filter((p) => p.page_type === "contents" && p.id !== editing.id)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    const maxSortOrder = Math.max(...pages.map((p) => p.sort_order ?? 0));
+
+    for (let ci = 1; ci < chunks.length; ci++) {
+      const existing = otherContentsPages[ci - 1];
+      if (existing) {
+        await fetch(`/api/admin/catalog/${existing.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: { ...(existing.data ?? {}), items: chunks[ci] } }),
+        });
+      } else {
+        await fetch(`/api/admin/catalog`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brand_id: brandId, page_type: "contents", is_visible: true,
+            sort_order: maxSortOrder + ci,
+            admin_title: `목차 ${ci + 1}`, title: `목차 ${ci + 1}`,
+            data: { items: chunks[ci], footer: editing.data?.footer ?? "" },
+          }),
+        });
+      }
+    }
+    // 초과 기존 목차 페이지 항목 비우기
+    for (let ci = chunks.length - 1; ci < otherContentsPages.length; ci++) {
+      const extra = otherContentsPages[ci];
+      await fetch(`/api/admin/catalog/${extra.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { ...(extra.data ?? {}), items: [] } }),
+      });
+    }
+    await load();
+    flash(`총 ${allItems.length}개 항목 → ${chunks.length}개 목차 페이지로 나눠 생성했습니다.`);
   };
 
   const handleSave = async () => {
@@ -180,6 +248,33 @@ export default function CatalogEditor({ brandId }: { brandId: string }) {
 
   const togglePageCheck = (id: string) => {
     setCheckedPageIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
+
+  const moveCheckedToPosition = async () => {
+    const q = jumpInput.trim();
+    if (!q || checkedPageIds.size === 0) return;
+    const targetPos = parseInt(q, 10);
+    if (isNaN(targetPos) || targetPos < 1 || targetPos > pages.length) {
+      flash(`1~${pages.length} 사이의 번호를 입력하세요.`, "err");
+      return;
+    }
+    // 선택된 것 / 나머지 분리 (원래 순서 유지)
+    const selected = pages.filter((p) => checkedPageIds.has(p.id));
+    const rest = pages.filter((p) => !checkedPageIds.has(p.id));
+    // targetPos 는 1-indexed → rest 기준 삽입 위치로 환산
+    const insertAt = Math.min(targetPos - 1, rest.length);
+    const next = [...rest.slice(0, insertAt), ...selected, ...rest.slice(insertAt)];
+    const updated = next.map((p, i) => ({ ...p, sort_order: i }));
+    const snapshot = pages;
+    setPages(updated);
+    setCheckedPageIds(new Set());
+    setJumpInput("");
+    const results = await Promise.allSettled(updated.map((p) =>
+      fetch(`/api/admin/catalog/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: p.sort_order }) })
+        .then((r) => { if (!r.ok) throw new Error(); })
+    ));
+    if (results.some((r) => r.status === "rejected")) { setPages(snapshot); flash("순서 저장에 실패했습니다.", "err"); }
+    else flash(`${selected.length}개 페이지를 ${targetPos}번 위치로 이동했습니다.`);
   };
 
   const handleBulkDelete = async () => {
@@ -384,6 +479,27 @@ export default function CatalogEditor({ brandId }: { brandId: string }) {
                   <span className="text-[10px] text-slate-400">드래그 순서변경</span>
                 </div>
               </div>
+              {/* 선택 항목 위치 이동 */}
+              {checkedPageIds.size > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-slate-500 flex-shrink-0">선택 항목을</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={pages.length}
+                    value={jumpInput}
+                    onChange={(e) => setJumpInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") moveCheckedToPosition(); }}
+                    placeholder={`1~${pages.length}`}
+                    className="w-16 text-[11px] border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-orange-400 bg-slate-50 text-center"
+                  />
+                  <span className="text-[10px] text-slate-500 flex-shrink-0">번으로</span>
+                  <button onClick={moveCheckedToPosition}
+                    className="text-[10px] font-semibold text-white bg-orange-500 hover:bg-orange-600 px-2.5 py-1 rounded transition-colors flex-shrink-0">
+                    이동
+                  </button>
+                </div>
+              )}
               {checkedPageIds.size > 0 && (
                 <div className="flex items-center gap-1">
                   <button

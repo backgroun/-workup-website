@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { BRANDS } from "@/lib/brands-data";
 import { createAdminClient } from "@/lib/supabase-server";
@@ -138,29 +137,11 @@ export default async function BrandsPage() {
     <main className="min-h-screen bg-white">
       {/* 헤더 히어로 */}
       <section className="relative bg-gray-900 overflow-hidden">
-        <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-14 md:py-20 flex flex-col md:flex-row items-start md:items-end gap-6 justify-between">
-          <div>
-            <p className="text-[10px] tracking-[0.3em] text-[#E5541B] uppercase font-bold mb-3">K-WORKER STORE</p>
-            <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
-              일할 때도, 일상에서도<br />
-              <span className="text-[#E5541B]">WORKUP</span>이 선택한<br />
-              좋은 브랜드들
-            </h1>
-            <p className="text-sm text-white/50 mt-4 max-w-sm leading-relaxed">
-              기능성과 디자인, 그리고 현장 중심의 기준까지.<br />
-              WORKUP이 직접 경험하고 믿을 수 있는 브랜드만을 소개합니다.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-            <Link href="/stores"
-              className="px-6 py-3 bg-[#E5541B] text-white text-sm font-bold rounded-lg hover:bg-[#d14d18] transition-colors text-center">
-              가까운 매장 찾기
-            </Link>
-            <a href="tel:0000000000"
-              className="px-6 py-3 border border-white/30 text-white/80 text-sm font-semibold rounded-lg hover:border-white/60 transition-colors text-center">
-              전화 문의
-            </a>
-          </div>
+        <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-8 md:py-10">
+          <p className="text-[10px] tracking-[0.3em] text-[#E5541B] uppercase font-bold mb-2">K-WORKER STORE</p>
+          <h1 className="text-2xl md:text-3xl font-black text-white leading-tight">
+            <span className="text-[#E5541B]">WORKUP</span>이 선택한 좋은 브랜드들
+          </h1>
         </div>
       </section>
 
