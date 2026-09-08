@@ -51,22 +51,44 @@ function EditModal({
   const [saving,    setSaving]    = useState(false);
   const [saved,     setSaved]     = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // 드래그 리오더
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const onImgDragStart = (idx: number) => setDragIdx(idx);
+  const onImgDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setDragOverIdx(idx); };
+  const onImgDrop = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) return;
+    setImages(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIdx, 1);
+      next.splice(idx, 0, moved);
+      return next;
+    });
+    setDragIdx(null); setDragOverIdx(null);
+  };
+  const onImgDragEnd = () => { setDragIdx(null); setDragOverIdx(null); };
 
   // 저장 시 배열 → 콤마 문자열로 변환
   const imageStr = images.join(",");
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
     setUploading(true);
+    setUploadProgress({ done: 0, total: files.length });
     try {
-      const fd = new FormData();
-      fd.append("files", file);
-      const res = await fetch("/api/admin/arrival/images", { method: "POST", body: fd });
-      const json = await res.json();
-      if (json.saved?.[0]) {
-        setImages(prev => [...prev, json.saved[0]]); // 기존 이미지 목록에 추가
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("files", file);
+        const res = await fetch("/api/admin/arrival/images", { method: "POST", body: fd });
+        const json = await res.json();
+        if (json.saved?.[0]) setImages(prev => [...prev, json.saved[0]]);
+        setUploadProgress(p => ({ ...p, done: p.done + 1 }));
       }
     } finally {
       setUploading(false);
@@ -199,13 +221,24 @@ function EditModal({
               <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">상세 모달 3:4</span>
               <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full font-medium">권장 1200×1600px</span>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
             {images.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mb-2">
                 {images.map((src, idx) => (
-                  <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                  <div
+                    key={src + idx}
+                    draggable
+                    onDragStart={() => onImgDragStart(idx)}
+                    onDragOver={(e) => onImgDragOver(e, idx)}
+                    onDrop={(e) => onImgDrop(e, idx)}
+                    onDragEnd={onImgDragEnd}
+                    className={`relative group aspect-square rounded-lg overflow-hidden border bg-gray-50 cursor-grab active:cursor-grabbing transition-all ${
+                      dragOverIdx === idx && dragIdx !== idx ? "border-blue-400 ring-2 ring-blue-300" :
+                      dragIdx === idx ? "opacity-40 border-dashed border-gray-300" : "border-gray-200"
+                    }`}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <img src={src} alt="" className="w-full h-full object-cover pointer-events-none" />
                     <button
                       type="button"
                       onClick={() => removeImage(idx)}
@@ -224,6 +257,8 @@ function EditModal({
                         대표로 설정
                       </button>
                     )}
+                    {/* 순서 번호 */}
+                    <span className="absolute top-1 left-1 text-[9px] bg-black/40 text-white px-1 py-0.5 rounded leading-none">{idx + 1}</span>
                   </div>
                 ))}
               </div>
@@ -234,7 +269,9 @@ function EditModal({
               disabled={uploading}
               className="w-full border-2 border-dashed border-gray-200 hover:border-[#1a1a1a] rounded-lg py-3 text-[13px] text-gray-400 hover:text-[#1a1a1a] transition-colors disabled:opacity-40"
             >
-              {uploading ? "업로드 중..." : `+ 이미지 추가${images.length > 0 ? " (여러 장 가능)" : ""}`}
+              {uploading
+                ? `업로드 중... (${uploadProgress.done}/${uploadProgress.total})`
+                : `+ 이미지 추가 (여러 장 선택 가능)`}
             </button>
           </div>
 
@@ -550,13 +587,23 @@ function UploadPanel({
     const newFiles:   Record<string, File[]>   = {};
     const newPrevs:   Record<string, string>   = {};
 
+    // 긴 코드 우선 매칭 (짧은 코드가 긴 코드의 prefix인 경우 오탐 방지)
+    const sortedProducts = [...products].sort((a, b) => b.productCode.length - a.productCode.length);
+
     for (const f of files) {
       const base     = f.name.replace(/\.[^.]+$/, "").trim();
-      const codeBase = base.replace(/\s*\(\d+\)$/, "").replace(/_\d+$/, "").trim();
       const ext      = f.name.slice(f.name.lastIndexOf(".")).toLowerCase();
       if (!exts.includes(ext)) continue;
 
-      const match = products.find(p => p.productCode === base || p.productCode === codeBase);
+      const match = sortedProducts.find(p => {
+        const code = p.productCode;
+        if (code === base) return true;
+        // _숫자, (숫자), _텍스트, -숫자, -텍스트 등 suffix 제거 후 코드와 일치하는지 확인
+        if (base.startsWith(code + "_") || base.startsWith(code + "-") || base.startsWith(code + " ")) return true;
+        // Windows 복사본: "code (N)" 패턴
+        if (base.replace(/\s*\(\d+\)$/, "").trim() === code) return true;
+        return false;
+      });
       if (match) {
         newMatches[match.productCode] = [...(newMatches[match.productCode] ?? []), `/images/arrival/${f.name}`];
         newFiles[match.productCode]   = [...(newFiles[match.productCode]   ?? []), f];
@@ -693,10 +740,22 @@ function UploadPanel({
 
   const imgMatchCount = Object.keys(imgMatches).length;
 
+  const resetAll = () => {
+    setImgFiles([]);
+    setImgMatches({});
+    setImgFilesMap({});
+    setImgPreviews({});
+    setImgDone(false);
+    setImgProgress({ done: 0, total: 0 });
+    setCsvRows([]);
+    setCsvResult(null);
+    setCsvError("");
+  };
+
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { resetAll(); setOpen(true); }}
         className="px-4 py-2 border border-gray-200 text-[13px] text-gray-600 rounded-lg hover:border-gray-400 hover:text-[#1a1a1a] transition-colors flex items-center gap-2"
       >
         <span>📦</span> 이미지·데이터 업로드

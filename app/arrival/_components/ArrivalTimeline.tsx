@@ -564,17 +564,15 @@ function MiniThumb({ product }: { product: ArrivalProduct }) {
 
   if (failed || !src) {
     return (
-      <div className="w-full h-full bg-[#edebe8] flex items-center justify-center">
+      <div className="absolute inset-0 bg-[#edebe8] flex items-center justify-center">
         <span className="text-[5px] text-gray-400 font-mono uppercase">no</span>
       </div>
     );
   }
   return (
-    <div className="relative w-full h-full">
-      <img src={src} alt={product.productName}
-        className="w-full h-full object-cover"
-        onError={() => setFailed(true)} />
-    </div>
+    <img src={src} alt={product.productName}
+      className="absolute inset-0 w-full h-full object-cover"
+      onError={() => setFailed(true)} />
   );
 }
 
@@ -1009,7 +1007,7 @@ function CalendarView({ products, onSelect }: {
                                     return (
                                       <button key={`${p.productCode}_${p.arrivalDate || "none"}`} onClick={() => onSelect(p)}
                                         className="w-full text-left transition-opacity hover:opacity-75">
-                                        <div className="w-full aspect-square overflow-hidden rounded-sm bg-[#f0efed]">
+                                        <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm bg-[#f0efed]">
                                           <MiniThumb product={p} />
                                         </div>
                                         <div className="flex items-center gap-1 mt-1">

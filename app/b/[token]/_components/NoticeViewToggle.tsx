@@ -20,10 +20,7 @@ export type NoticeItem = {
 };
 
 type ViewMode = "card" | "list";
-const STORAGE_KEY = "branchPassViewMode";
 
-// 카드형(사진 포함, 지금까지의 기본 화면)과 텍스트 목록형(상품명+패스 버튼만) 두 가지 보기.
-// 마지막으로 고른 보기 방식은 기기에 저장해 다음 방문에도 유지한다.
 export default function NoticeViewToggle({
   items,
   token,
@@ -43,18 +40,13 @@ export default function NoticeViewToggle({
   const isPastClose = useIsPastClose(closeTime);
 
   useEffect(() => {
-    if (isHistorical) {
-      setView("list");
-      return;
-    }
-    const saved = localStorage.getItem(STORAGE_KEY);
-    setView(saved === "card" || saved === "list" ? saved : "card");
+    // 지난 날짜 조회는 목록형으로 강제, 오늘 화면은 항상 카드형으로 시작
+    if (isHistorical) setView("list");
+    else setView("card");
   }, [isHistorical]);
 
   const changeView = (next: ViewMode) => {
     setView(next);
-    // 지난 날짜 조회 중 토글은 일시적인 선택일 뿐, 오늘 화면의 기본값에는 저장하지 않는다.
-    if (!isHistorical) localStorage.setItem(STORAGE_KEY, next);
   };
 
   return (
