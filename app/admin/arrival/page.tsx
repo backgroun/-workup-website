@@ -570,34 +570,54 @@ function UploadPanel({
     setImgDone(false);
   };
 
+  const [imgProgress, setImgProgress] = useState({ done: 0, total: 0 });
+
   const applyImages = async () => {
     setImgUploading(true);
+    // productCode → 실제 업로드된 URL[]
+    const uploadedUrls: Record<string, string[]> = {};
+
     try {
-      // 모든 productCode의 File 배열을 flat하게 업로드
-      const filesToUpload = Object.values(imgFiles_map).flat();
-      if (filesToUpload.length > 0) {
-        const formData = new FormData();
-        for (const file of filesToUpload) formData.append("files", file);
-        const uploadRes = await fetch("/api/admin/arrival/images", { method: "POST", body: formData });
-        if (!uploadRes.ok) {
-          const err = await uploadRes.json().catch(() => ({}));
-          alert(`이미지 업로드 실패: ${err.error ?? uploadRes.status}`);
-          return;
+      // 파일을 하나씩 업로드 (Vercel 4.5 MB 본문 제한 우회)
+      const allEntries = Object.entries(imgFiles_map);
+      const totalFiles = Object.values(imgFiles_map).flat().length;
+      setImgProgress({ done: 0, total: totalFiles });
+
+      for (const [code, fileArr] of allEntries) {
+        uploadedUrls[code] = [];
+        for (const file of fileArr) {
+          const fd = new FormData();
+          fd.append("files", file);
+          const res = await fetch("/api/admin/arrival/images", { method: "POST", body: fd });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(`업로드 실패 (${file.name}): ${err.error ?? res.status}`);
+            return;
+          }
+          const json = await res.json();
+          if (json.saved?.[0]) uploadedUrls[code].push(json.saved[0]);
+          setImgProgress(p => ({ ...p, done: p.done + 1 }));
         }
       }
-      // productCode별 이미지 URL 배열을 콤마 문자열로 변환해 저장
+
+      // productCode별 저장
       await Promise.all(
-        Object.entries(imgMatches).map(([productCode, images]) =>
-          fetch("/api/admin/arrival", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productCode, image: images.join(",") }),
-          })
-        )
+        Object.entries(uploadedUrls)
+          .filter(([, urls]) => urls.length > 0)
+          .map(([productCode, urls]) =>
+            fetch("/api/admin/arrival", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ productCode, image: urls.join(",") }),
+            })
+          )
       );
-      // 전체 이미지 URL을 콤마 문자열로 로컬 상태에 반영
+
+      // 로컬 상태 반영
       const allImages: Record<string, string> = {};
-      for (const [code, urls] of Object.entries(imgMatches)) allImages[code] = urls.join(",");
+      for (const [code, urls] of Object.entries(uploadedUrls)) {
+        if (urls.length > 0) allImages[code] = urls.join(",");
+      }
       onImageMatched(allImages);
       setImgDone(true);
     } catch (e) {
@@ -768,7 +788,12 @@ function UploadPanel({
                         : "bg-[#1a1a1a] text-white hover:bg-[#333] disabled:opacity-40"
                     }`}
                   >
-                    {imgDone ? "✓ 이미지 적용 완료" : imgUploading ? "업로드 중..." : `${imgTotalFileCount}개 이미지 서버에 업로드`}
+                    {imgDone
+                    ? "✓ 이미지 적용 완료"
+                    : imgUploading
+                      ? `업로드 중... (${imgProgress.done}/${imgProgress.total})`
+                      : `${imgTotalFileCount}개 이미지 서버에 업로드`
+                  }
                   </button>
                 )}
               </div>
