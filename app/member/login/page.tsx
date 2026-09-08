@@ -117,6 +117,15 @@ function LoginContent() {
         </form>
 
         <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-gray-400 flex items-center justify-center gap-3">
+            <Link href="/member/find-id" className="text-[#303236] font-semibold hover:underline">
+              아이디 찾기
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link href="/member/find-password" className="text-[#303236] font-semibold hover:underline">
+              비밀번호 찾기
+            </Link>
+          </p>
           <p className="text-sm text-gray-400">
             아직 회원이 아니신가요?{" "}
             <Link href="/register" className="text-[#303236] font-semibold hover:underline">
