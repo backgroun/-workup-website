@@ -2,7 +2,7 @@
   "DT6FUATL112": {
     "arrivalDate": "2026-09-04",
     "status": "입고완료",
-    "image": null,
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL112.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL112-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL112-2.png",
     "changeHistory": []
   },
   "BA6FMAJP101": {
@@ -16,26 +16,36 @@
     "changeHistory": []
   },
   "DT6WUAPT139": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAPT139.png",
+    "changeHistory": []
   },
   "KW6FMATL121": {
     "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-2.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-3.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-4.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-5.png",
     "changeHistory": []
   },
   "DT6WUATL111": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUATL111.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUATL111-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUATL111-2.png",
+    "changeHistory": []
   },
   "DT6WUAJP123": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP123.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP123-1.png",
+    "changeHistory": []
   },
   "DT6WUAVS107": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAVS107.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAVS107-1.png",
+    "changeHistory": []
   },
   "DT6WUAJP125": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP125_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP125_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP125_(3).png",
+    "changeHistory": []
   },
   "KT6FMATL647": {
-    "image": null,
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMATL647_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMATL647_(2).png",
     "changeHistory": [],
     "arrivalDate": "2026-08-14",
     "status": "입고완료"
@@ -47,19 +57,23 @@
     "status": "입고완료"
   },
   "KT6FMATL646": {
-    "image": null,
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMATL646.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMATL646-1.png",
     "changeHistory": [],
     "arrivalDate": "2026-08-17",
     "status": "입고완료"
   },
   "DT6FUAJP120": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP120_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP120_(2).png",
+    "changeHistory": []
   },
   "DT6WUAVS106": {
     "status": "입고완료"
   },
   "DT6FUATL109": {
-    "status": "입고완료"
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL109_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL109_(2).png",
+    "changeHistory": []
   },
   "KW6FMATL121::2026-09-21": {
     "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-5.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-4.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-3.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL121-2.png",
@@ -76,19 +90,19 @@
     "changeHistory": []
   },
   "DW6FUATL101": {
-    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL101.png",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL101.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL101_1.png",
     "changeHistory": []
   },
   "DW6FUATL102": {
-    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL102.png",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL102.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL102_1.png",
     "changeHistory": []
   },
   "DW6WUADW101": {
-    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUADW101.png",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUADW101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUADW101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUADW101_(3).png",
     "changeHistory": []
   },
   "DW6WUAPT101": {
-    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUAPT101.png",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUAPT101.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUAPT101_1.png",
     "changeHistory": []
   },
   "DW6WUAPT102": {
@@ -331,6 +345,336 @@
     "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL122.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL122-3.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL122-2.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KW6FMATL122-1.png",
     "changeHistory": [],
     "arrivalDate": "2026-09-21",
+    "status": "입고예정"
+  },
+  "KT5WMAPT610": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT5WMAPT610_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT5WMAPT610_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT5WMAPT610_(4).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT5WMAPT610_(5).png",
+    "changeHistory": []
+  },
+  "KT6FMAJP639": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(3).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(4).png",
+    "changeHistory": []
+  },
+  "KT6FMAJP643": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP643.png",
+    "changeHistory": []
+  },
+  "KT6FMAPT644": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAPT644.png",
+    "changeHistory": []
+  },
+  "KT6FUGAH642": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FUGAH642_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FUGAH642_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FUGAH642_(4).png",
+    "changeHistory": []
+  },
+  "KT6WFAJP640": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP640_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP640_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP640_(3).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP640_(4).png",
+    "changeHistory": []
+  },
+  "KT6WFAJP651": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP651_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP651_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAJP651_(3).png",
+    "changeHistory": []
+  },
+  "KT6WFAPT654": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAPT654_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAPT654_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAPT654_(3).png",
+    "changeHistory": []
+  },
+  "KT6WFAPT663": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFAPT663_p.png",
+    "changeHistory": []
+  },
+  "KT6WFATL652": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL652_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL652_(4).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL652_(5).png",
+    "changeHistory": []
+  },
+  "KT6WFATL653": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL653_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL653_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL653_(3).png",
+    "changeHistory": []
+  },
+  "KT6WFATL657": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL657_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL657_(2).png",
+    "changeHistory": []
+  },
+  "KT6WFATL662": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WFATL662_t.png",
+    "changeHistory": []
+  },
+  "KT6WMAJP640": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(3).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(4).png",
+    "changeHistory": []
+  },
+  "KT6WMAPT649": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAPT649_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAPT649_(2).png",
+    "changeHistory": []
+  },
+  "KT6WMAPT661": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAPT661_p.png",
+    "changeHistory": []
+  },
+  "KT6WMATL648": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL648_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL648_(2).png",
+    "changeHistory": []
+  },
+  "KT6WMATL650": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL650_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL650_(2).png",
+    "changeHistory": []
+  },
+  "KT6WMATL660": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL660_t.png",
+    "changeHistory": []
+  },
+  "KT6WMATL664": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMATL664.png",
+    "changeHistory": []
+  },
+  "GB6FUAPT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUAPT101.png",
+    "changeHistory": []
+  },
+  "GB6FUATL102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUATL102_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUATL102_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUATL102_(3).png",
+    "changeHistory": []
+  },
+  "GB6FUAPT102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUAPT102.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6FUAPT102_kh.png",
+    "changeHistory": []
+  },
+  "GB6WUADW101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6WUADW101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6WUADW101_(2).png",
+    "changeHistory": []
+  },
+  "GB6WUAKT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6WUAKT101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6WUAKT101_(2).png",
+    "changeHistory": []
+  },
+  "GSGWUVT01": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GSGWUVT01.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GSGWUVT01_BK_1.png",
+    "changeHistory": []
+  },
+  "GB6SUATL102::2026-08-20": {
+    "arrivalDate": "2026-08-20",
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6SUATL102-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6SUATL102.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/GB6SUATL102-2.png",
+    "changeHistory": []
+  },
+  "KT6FMAJP639::2026-08-26": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(4).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6FMAJP639_(3).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-08-26",
+    "status": "입고완료"
+  },
+  "PP6FUAPT100::2026-09-01": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/PP6FUAPT100_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/PP6FUAPT100_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/PP6FUAPT100_(3).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/PP6FUAPT100_(4).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-09-01",
+    "status": "입고완료"
+  },
+  "DT6FUAJP119": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP119_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP119_(2).png",
+    "changeHistory": []
+  },
+  "DT6FUAJP121": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP121.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP121-1.png",
+    "changeHistory": []
+  },
+  "DT6FUAPT137": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT137.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT137-1.png",
+    "changeHistory": []
+  },
+  "DT6FUAPT138": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT138_.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT138_-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT138_-2.png",
+    "changeHistory": []
+  },
+  "DT6FUATL108": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL108.png",
+    "changeHistory": []
+  },
+  "DT6FUATL110": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL110_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL110_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL110.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUATL110-1.png",
+    "changeHistory": []
+  },
+  "DT6WUAJP126": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP126_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAJP126_(2).png",
+    "changeHistory": []
+  },
+  "DT6WUAPT140": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAPT140.png",
+    "changeHistory": []
+  },
+  "DT6WUATL113": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUATL113_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUATL113_(2).png",
+    "changeHistory": []
+  },
+  "KT6WMAJP640::2026-10-30": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(4).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(3).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/KT6WMAJP640_(2).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-10-30",
+    "status": "입고예정"
+  },
+  "DT6FUAPT137::2026-08-28": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT137-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAPT137.png",
+    "changeHistory": [],
+    "arrivalDate": "2026-08-28",
+    "status": "입고완료"
+  },
+  "DT6FUAJP121::2026-09-01": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP121-1.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6FUAJP121.png",
+    "changeHistory": [],
+    "arrivalDate": "2026-09-01",
+    "status": "입고완료"
+  },
+  "DV6FMAJP112": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAJP112_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAJP112_(2).png",
+    "changeHistory": []
+  },
+  "DV6FMAJP128": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAJP128.png",
+    "changeHistory": []
+  },
+  "DV6FMAPT130": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAPT130_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAPT130_(2).png",
+    "changeHistory": []
+  },
+  "DV6WMAJP113": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAJP113.png",
+    "changeHistory": []
+  },
+  "DV6WMAJP117": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAJP117.png",
+    "changeHistory": []
+  },
+  "DV6WMAVS120": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAVS120_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAVS120_(2).png",
+    "changeHistory": []
+  },
+  "DV6WMAWB109": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAWB109.png",
+    "changeHistory": []
+  },
+  "DV6WMAWT108": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAWT108.png",
+    "changeHistory": []
+  },
+  "DV6XMAWB103": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6XMAWB103.png",
+    "changeHistory": []
+  },
+  "DV6XMAWT102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6XMAWT102.png",
+    "changeHistory": []
+  },
+  "DV6XMAWT104": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6XMAWT104.png",
+    "changeHistory": []
+  },
+  "DV6WMAVS120::2026-10-15": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAVS120_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6WMAVS120_(1).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-10-15",
+    "status": "입고예정"
+  },
+  "DV6FMAJP112::2026-10-10": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAJP112_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DV6FMAJP112_(1).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-10-10",
+    "status": "입고예정"
+  },
+  "VC6FUAJP107": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAJP107_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAJP107_(2).png",
+    "changeHistory": []
+  },
+  "VC6FUAPT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT101_(3).png",
+    "changeHistory": []
+  },
+  "VC6FUAPT102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT102.png",
+    "changeHistory": []
+  },
+  "VC6FUATL101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL101_(3).png",
+    "changeHistory": []
+  },
+  "VC6FUATL102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL102_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL102_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL102_(3).png",
+    "changeHistory": []
+  },
+  "VC6FUAPT103": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT103_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAPT103_(2).png",
+    "changeHistory": []
+  },
+  "VC6FUASH101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUASH101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUASH101_(2).png",
+    "changeHistory": []
+  },
+  "VC6FUATL103": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL103_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL103_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL103_(3).png",
+    "changeHistory": []
+  },
+  "VC6FUATL104": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL104_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL104_(2).png",
+    "changeHistory": []
+  },
+  "VC6FUATL105": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL105_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL105_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUATL105_(3).png",
+    "changeHistory": []
+  },
+  "VC6FUAVS101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAVS101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAVS101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6FUAVS101_(3).png",
+    "changeHistory": []
+  },
+  "VC6WUACT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUACT101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUACT101_(2).png",
+    "changeHistory": []
+  },
+  "VC6WUADW101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUADW101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUADW101_(2).png",
+    "changeHistory": []
+  },
+  "VC6WUADW102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUADW102_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUADW102_(2).png",
+    "changeHistory": []
+  },
+  "VC6WUAJP101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP101_(3).png",
+    "changeHistory": []
+  },
+  "VC6WUAJP102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP102.png",
+    "changeHistory": []
+  },
+  "VC6WUAJP103": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP103_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAJP103_(2).png",
+    "changeHistory": []
+  },
+  "VC6WUATL101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL101_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL101_(3).png",
+    "changeHistory": []
+  },
+  "VC6WUATL102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL102_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL102_(2).png",
+    "changeHistory": []
+  },
+  "VC6WUATL103": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL103_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL103_(2).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUATL103_(3).png",
+    "changeHistory": []
+  },
+  "VC6WUAPT101::2026-10-20": {
+    "arrivalDate": "2026-10-20",
+    "status": "입고예정",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAPT101_(5).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAPT101_(1).png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/VC6WUAPT101_(3).png",
+    "changeHistory": []
+  },
+  "DT6WUAVS107::2026-09-15": {
+    "status": "입고완료",
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAVS107.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DT6WUAVS107-1.png",
+    "changeHistory": [],
+    "arrivalDate": "2026-09-15"
+  },
+  "MS6WFAVT103::2026-09-30": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/MS6WFAVT103_4.png,https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/MS6WFAVT103_(3).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-09-30",
     "status": "입고예정"
   }
 }
