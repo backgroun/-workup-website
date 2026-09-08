@@ -589,12 +589,12 @@ function UploadPanel({
           const fd = new FormData();
           fd.append("files", file);
           const res = await fetch("/api/admin/arrival/images", { method: "POST", body: fd });
+          const json = await res.json().catch(() => ({}));
           if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            alert(`업로드 실패 (${file.name}): ${err.error ?? res.status}`);
+            alert(`업로드 실패 (${file.name})\n\n${json.error ?? res.status}`);
             return;
           }
-          const json = await res.json();
+          if (json.errors?.length) console.warn("[arrival upload]", json.errors);
           if (json.saved?.[0]) uploadedUrls[code].push(json.saved[0]);
           setImgProgress(p => ({ ...p, done: p.done + 1 }));
         }

@@ -6,13 +6,6 @@ export const maxDuration = 60;
 
 const BUCKET = "arrival-images";
 
-async function ensureBucket(sb: ReturnType<typeof createAdminClient>) {
-  const { data: buckets } = await sb.storage.listBuckets();
-  if (!buckets?.find(b => b.name === BUCKET)) {
-    await sb.storage.createBucket(BUCKET, { public: true });
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -23,31 +16,47 @@ export async function POST(req: NextRequest) {
     }
 
     const sb = createAdminClient();
-    await ensureBucket(sb);
+
+    // 버킷 없으면 생성 시도
+    const { data: buckets, error: listErr } = await sb.storage.listBuckets();
+    if (listErr) {
+      return NextResponse.json({ error: `버킷 목록 조회 실패: ${listErr.message}` }, { status: 500 });
+    }
+    if (!buckets?.find(b => b.name === BUCKET)) {
+      const { error: createErr } = await sb.storage.createBucket(BUCKET, { public: true });
+      if (createErr) {
+        return NextResponse.json({ error: `버킷 생성 실패: ${createErr.message}` }, { status: 500 });
+      }
+    }
 
     const saved: string[] = [];
+    const errors: string[] = [];
 
     for (const file of files) {
-      const filename = file.name.split("/").pop() ?? file.name; // webkitdirectory는 경로 포함
+      const filename = (file.name.split("/").pop() ?? file.name).replace(/\s+/g, "_");
       const buffer   = Buffer.from(await file.arrayBuffer());
 
       const { error } = await sb.storage
         .from(BUCKET)
         .upload(filename, buffer, {
           contentType: file.type || "image/jpeg",
-          upsert: true, // 같은 이름이면 덮어쓰기
+          upsert: true,
         });
 
       if (error) {
-        console.error("[arrival/images] upload error:", filename, error.message);
-        continue; // 오류 난 파일은 건너뜀 (다른 파일은 계속 처리)
+        errors.push(`${filename}: ${error.message}`);
+        continue;
       }
 
       const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(filename);
       saved.push(urlData.publicUrl);
     }
 
-    return NextResponse.json({ saved, count: saved.length });
+    if (errors.length > 0 && saved.length === 0) {
+      return NextResponse.json({ error: errors.join(" | ") }, { status: 500 });
+    }
+
+    return NextResponse.json({ saved, count: saved.length, errors });
   } catch (err) {
     console.error("[arrival/images] route error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
