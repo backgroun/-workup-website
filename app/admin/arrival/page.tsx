@@ -743,15 +743,14 @@ function UploadPanel({
                   ) : (
                     <>
                       <span className="text-3xl text-gray-300">🖼</span>
-                      <p className="text-[14px] text-gray-500">이미지 파일을 한 번에 선택 (여러 번 나눠 올려도 누적됨)</p>
+                      <p className="text-[14px] text-gray-500">이미지 파일 여러 장을 한 번에 선택 (Ctrl+A 또는 드래그 선택)</p>
                       <p className="text-[12px] text-gray-400">.jpg .jpeg .png .webp</p>
                     </>
                   )}
                   <input type="file"
-                    // @ts-expect-error webkitdirectory is non-standard
-                    webkitdirectory="" directory="" multiple
+                    multiple
                     className="hidden" onChange={handleFolder}
-                    accept=".jpg,.jpeg,.png,.webp"
+                    accept=".jpg,.jpeg,.png,.webp,image/*"
                   />
                 </label>
 
@@ -937,8 +936,10 @@ export default function AdminArrivalPage() {
       const formData = new FormData();
       formData.append("files", file);
       const uploadRes = await fetch("/api/admin/arrival/images", { method: "POST", body: formData });
-      if (!uploadRes.ok) { alert("이미지 업로드 실패"); return; }
-      const imagePath = `/images/arrival/${file.name}`;
+      const json = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) { alert(`이미지 업로드 실패\n${json.error ?? uploadRes.status}`); return; }
+      const imagePath: string = json.saved?.[0] ?? `/images/arrival/${file.name}`;
+      if (!json.saved?.[0]) { alert(`업로드 응답에 URL이 없습니다.\n응답: ${JSON.stringify(json)}`); return; }
       const patchRes = await fetch("/api/admin/arrival", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

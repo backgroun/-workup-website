@@ -62,9 +62,9 @@ export default async function BranchPassPage({ params, searchParams }: Props) {
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <a
               href={`/b/${token}/history`}
-              className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#303236] text-white hover:bg-[#444] whitespace-nowrap"
+              className="px-4 py-2 rounded-lg text-[13.5px] font-bold whitespace-nowrap border-2 border-[#303236] bg-[#303236] text-white hover:bg-[#444] hover:border-[#444] transition-colors"
             >
-              패스현황 보기
+              패스현황
             </a>
             <RefreshButton />
           </div>

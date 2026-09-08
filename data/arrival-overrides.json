@@ -62,5 +62,33 @@
     "changeHistory": [],
     "arrivalDate": "2026-09-21",
     "status": "입고예정"
+  },
+  "DW6FUACT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUACT101.png",
+    "changeHistory": []
+  },
+  "DW6FUAPT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUAPT101.png",
+    "changeHistory": []
+  },
+  "DW6FUATL101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL101.png",
+    "changeHistory": []
+  },
+  "DW6FUATL102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6FUATL102.png",
+    "changeHistory": []
+  },
+  "DW6WUADW101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUADW101.png",
+    "changeHistory": []
+  },
+  "DW6WUAPT101": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUAPT101.png",
+    "changeHistory": []
+  },
+  "DW6WUAPT102": {
+    "image": "https://gvlyppooyqawakaieafg.supabase.co/storage/v1/object/public/arrival-images/DW6WUAPT102.png",
+    "changeHistory": []
   }
 }

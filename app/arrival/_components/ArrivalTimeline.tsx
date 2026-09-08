@@ -115,7 +115,7 @@ function ProductImage({ product, size = "md" }: { product: ArrivalProduct; size?
   const imgs = parseImages(product);
   const src = imgs[0] ?? `/images/arrival/${product.productCode}.jpg`;
   const [failed, setFailed] = useState(imgs.length === 0);
-  const aspectCls = size === "sm" ? "aspect-square" : "aspect-[3/4]";
+  const aspectCls = "aspect-[3/4]";
   if (failed) {
     return (
       <div className={`w-full ${aspectCls} bg-[#f0eeeb] flex flex-col items-center justify-center gap-1`}>
@@ -371,21 +371,21 @@ function ProductCard({ product, onSelect, showDate }: { product: ArrivalProduct;
   const { full } = fmtDate(product.arrivalDate);
   return (
     <button onClick={onSelect}
-      className="text-left transition-opacity hover:opacity-80">
-      <div className="overflow-hidden rounded-sm"><ProductImage product={product} size="sm" /></div>
-      <div className="pt-2 space-y-1">
+      className="text-left transition-opacity hover:opacity-80 flex flex-col">
+      <div className="w-full overflow-hidden rounded-sm"><ProductImage product={product} size="sm" /></div>
+      <div className="pt-2 flex flex-col gap-1 flex-1">
         <div className="flex items-center justify-between gap-1">
           <span className="text-[11px] tracking-wider text-gray-500 uppercase truncate font-medium">{product.brand}</span>
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${meta.cls}`}>{meta.label}</span>
         </div>
-        <p className="text-[12px] font-semibold text-[#1a1a1a] leading-tight line-clamp-2">{stripBrand(product.productName, product.brand)}</p>
+        <p className="text-[12px] font-semibold text-[#1a1a1a] leading-tight line-clamp-2 flex-1">{stripBrand(product.productName, product.brand)}</p>
         {showDate && product.arrivalDate ? (
-          <p className="text-[11px] text-gray-600 flex items-center justify-between">
-            <span>{full}</span>
-            {product.price > 0 && <span className="font-medium text-[#1a1a1a]">{fmtPrice(product.price)}</span>}
-          </p>
+          <div className="text-[11px] text-gray-600 flex items-center justify-between gap-1 mt-auto">
+            <span className="truncate">{full}</span>
+            {product.price > 0 && <span className="font-medium text-[#1a1a1a] whitespace-nowrap shrink-0">{fmtPrice(product.price)}</span>}
+          </div>
         ) : (
-          <p className="text-[11px] text-gray-600 font-medium text-right">{fmtPrice(product.price)}</p>
+          <p className="text-[11px] text-gray-600 font-medium text-right mt-auto">{fmtPrice(product.price)}</p>
         )}
       </div>
     </button>
