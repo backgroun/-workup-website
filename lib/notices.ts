@@ -219,3 +219,79 @@ export async function setPassStatus(noticeId: string, storeId: number, status: P
   if (error) throw new Error(error.message);
   return data;
 }
+
+export type PassHistoryItem = {
+  noticeId: string;
+  noticeDate: string;
+  productName: string;
+  productImage: string | null;
+  passStatus: PassStatus | null;
+};
+
+export async function getStorePassHistoryByToken(
+  token: string,
+  year: number,
+  month: number
+): Promise<{ storeName: string; items: PassHistoryItem[] } | null> {
+  const sb = createAdminClient();
+
+  const { data: store } = await sb
+    .from("stores")
+    .select("id, name")
+    .eq("pass_link_token", token)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!store) return null;
+
+  const mm = String(month).padStart(2, "0");
+  const startDate = `${year}-${mm}-01`;
+  const endDate = new Date(year, month, 0).toISOString().slice(0, 10);
+
+  const { data: noticeRows } = await sb
+    .from("notices")
+    .select("id, notice_date, product_id, temp_name, temp_image_url")
+    .gte("notice_date", startDate)
+    .lte("notice_date", endDate)
+    .neq("status", "대기")
+    .order("notice_date", { ascending: false });
+
+  const noticeList = noticeRows ?? [];
+  if (!noticeList.length) return { storeName: store.name, items: [] };
+
+  const productIds = [...new Set(noticeList.map((n) => n.product_id).filter((id): id is string => Boolean(id)))];
+  const { data: products } = productIds.length
+    ? await sb.from("products").select("id, name, image_url").in("id", productIds)
+    : { data: [] as { id: string; name: string; image_url: string | null }[] };
+  const productById = new Map((products ?? []).map((p) => [p.id, p]));
+
+  const noticeIds = noticeList.map((n) => n.id);
+  const { data: entries } = await sb
+    .from("pass_entries")
+    .select("notice_id, status")
+    .in("notice_id", noticeIds)
+    .eq("store_id", store.id);
+  const entryByNotice = new Map((entries ?? []).map((e) => [e.notice_id, e.status as PassStatus]));
+
+  const items: PassHistoryItem[] = noticeList.map((n) => {
+    const p = n.product_id ? productById.get(n.product_id) : undefined;
+    return {
+      noticeId: n.id,
+      noticeDate: n.notice_date,
+      productName: p?.name ?? n.temp_name ?? "상품 정보 없음",
+      productImage: p?.image_url ?? n.temp_image_url ?? null,
+      passStatus: entryByNotice.get(n.id) ?? null,
+    };
+  });
+
+  return { storeName: store.name, items };
+}
+
+export async function getNoticeDateCounts(): Promise<Record<string, number>> {
+  const sb = createAdminClient();
+  const { data } = await sb.from("notices").select("notice_date");
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    if (row.notice_date) counts[row.notice_date] = (counts[row.notice_date] ?? 0) + 1;
+  }
+  return counts;
+}

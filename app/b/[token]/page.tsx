@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
 import { notFound } from "next/navigation";
-import { getPassContextByToken, getNoticeSchedule } from "@/lib/notices";
+import { getPassContextByToken, getNoticeSchedule, getNoticeDateCounts } from "@/lib/notices";
 import RefreshButton from "./_components/RefreshButton";
 import NoticeViewToggle, { type NoticeItem } from "./_components/NoticeViewToggle";
 import PassPageShell from "./_components/PassPageShell";
@@ -25,11 +25,14 @@ export default async function BranchPassPage({ params, searchParams }: Props) {
   const { token } = await params;
   const { date } = await searchParams;
   const todayKst = todayKstDate();
-  // 캘린더에서 오늘을 다시 고른 경우도 date=todayKst로 넘어올 수 있으니, 그 경우는 기본(실시간) 조회로 취급한다.
   const selectedDate = date && date !== todayKst ? date : undefined;
-  const ctx = await getPassContextByToken(token, selectedDate);
+
+  const [ctx, schedule, dateCounts] = await Promise.all([
+    getPassContextByToken(token, selectedDate),
+    getNoticeSchedule(),
+    getNoticeDateCounts(),
+  ]);
   if (!ctx) notFound();
-  const schedule = await getNoticeSchedule();
 
   const items: NoticeItem[] = ctx.notices.map((card) => ({
     noticeId: card.notice.id,
@@ -48,28 +51,43 @@ export default async function BranchPassPage({ params, searchParams }: Props) {
   return (
     <PassPageShell>
       <div className="w-full max-w-sm">
-        {/* 지점명 — 박스 밖 별도 줄(긴 지점명이 컨트롤과 폭을 나눠 쓰다 2줄로 깨지는 문제 방지) */}
-        <div className="mb-2 px-1">
-          <h1 className="text-base font-bold text-[#303236] leading-snug">{ctx.store.name}</h1>
-          {ctx.store.manager_name && (
-            <p className="text-[11px] text-gray-400 mt-0.5">{ctx.store.manager_name}님 반갑습니다</p>
-          )}
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
-          <div className="flex items-center justify-between gap-2">
-            <DatePickerButton selectedDate={selectedDate ?? todayKst} todayKst={todayKst} />
+        {/* 지점명 + 새로고침 */}
+        <div className="mb-2 px-1 flex items-start justify-between gap-2">
+          <div>
+            <h1 className="text-base font-bold text-[#303236] leading-snug">{ctx.store.name}</h1>
+            {ctx.store.manager_name && (
+              <p className="text-[11px] text-gray-400 mt-0.5">{ctx.store.manager_name}님 반갑습니다</p>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <a
+              href={`/b/${token}/history`}
+              className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#303236] text-white hover:bg-[#444] whitespace-nowrap"
+            >
+              패스현황 보기
+            </a>
             <RefreshButton />
           </div>
         </div>
 
-        <NoticeViewToggle
-          items={items}
-          token={token}
-          closeTime={schedule.closeTime}
-          emptyMessage={selectedDate ? `${selectedDate} 등록된 공지가 없습니다.` : "오늘 등록된 공지가 없습니다."}
-          isHistorical={Boolean(selectedDate)}
-        />
+        {/* 달력 — 항상 펼쳐져 상단에 고정 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-2.5 mb-4">
+          <DatePickerButton
+            selectedDate={selectedDate ?? todayKst}
+            todayKst={todayKst}
+            markedDates={dateCounts}
+          />
+        </div>
+
+        <div id="notices">
+          <NoticeViewToggle
+            items={items}
+            token={token}
+            closeTime={schedule.closeTime}
+            emptyMessage={selectedDate ? `${selectedDate} 등록된 공지가 없습니다.` : "오늘 등록된 공지가 없습니다."}
+            isHistorical={Boolean(selectedDate)}
+          />
+        </div>
       </div>
     </PassPageShell>
   );

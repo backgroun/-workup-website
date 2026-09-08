@@ -7,16 +7,16 @@ function toDateStr(y: number, m: number, d: number): string {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-// 지점 화면에서 과거 패스 현황을 조회하기 위한 날짜 선택 캘린더 — 라이브러리 없이 순수 그리드.
-// 아직 오지 않은 미래 날짜는 공지가 있을 수 없으므로 선택할 수 없게 막는다.
 export default function MiniCalendar({
   selectedDate,
   todayKst,
   onSelect,
+  markedDates = {},
 }: {
   selectedDate: string;
   todayKst: string;
   onSelect: (date: string) => void;
+  markedDates?: Record<string, number>;
 }) {
   const [y0, m0] = selectedDate.split("-").map(Number);
   const [viewMonth, setViewMonth] = useState(new Date(y0, m0 - 1, 1));
@@ -34,45 +34,46 @@ export default function MiniCalendar({
   for (let d = 1; d <= daysInMonth; d++) cells.push(toDateStr(year, month, d));
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-64">
-      <div className="flex items-center justify-between mb-2">
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-1.5">
         <button
           type="button"
           onClick={() => setViewMonth(new Date(year, month - 1, 1))}
-          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
+          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 text-base"
         >
           ‹
         </button>
-        <span className="text-[12.5px] font-bold text-gray-900">
+        <span className="text-[12px] font-bold text-gray-900">
           {year}년 {month + 1}월
         </span>
         <button
           type="button"
           onClick={() => setViewMonth(new Date(year, month + 1, 1))}
           disabled={isCurrentViewMonth}
-          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent text-base"
         >
           ›
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-0.5 text-center">
+      <div className="grid grid-cols-7 text-center">
         {WEEKDAYS.map((w) => (
-          <div key={w} className="text-[10px] font-semibold text-gray-400 py-1">
+          <div key={w} className="text-[9px] font-semibold text-gray-400 pb-0.5">
             {w}
           </div>
         ))}
         {cells.map((date, i) => {
-          if (!date) return <div key={`empty-${i}`} />;
+          if (!date) return <div key={`empty-${i}`} className="h-8" />;
           const isFuture = date > todayKst;
           const isToday = date === todayKst;
           const isSelected = date === selectedDate;
+          const count = markedDates[date] ?? 0;
           return (
             <button
               key={date}
               type="button"
               onClick={() => !isFuture && onSelect(date)}
               disabled={isFuture}
-              className={`aspect-square rounded text-[12px] flex items-center justify-center transition-colors ${
+              className={`h-8 rounded flex flex-col items-center justify-center transition-colors ${
                 isSelected
                   ? "bg-[#303236] text-white font-bold"
                   : isFuture
@@ -80,7 +81,18 @@ export default function MiniCalendar({
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
               } ${isToday && !isSelected ? "ring-1 ring-inset ring-[#E5541B] font-bold text-[#E5541B]" : ""}`}
             >
-              {Number(date.slice(-2))}
+              <span className="text-[11px] leading-none">{Number(date.slice(-2))}</span>
+              {count > 0 && (
+                <span
+                  className={`mt-0.5 min-w-[14px] h-[13px] px-0.5 rounded-full flex items-center justify-center text-[8px] font-bold leading-none ${
+                    isSelected
+                      ? "bg-white/25 text-white"
+                      : "bg-[#E5541B] text-white"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
             </button>
           );
         })}
@@ -89,7 +101,7 @@ export default function MiniCalendar({
         <button
           type="button"
           onClick={() => onSelect(todayKst)}
-          className="w-full mt-2 pt-2 border-t border-gray-100 text-[12px] font-semibold text-[#E5541B] hover:underline"
+          className="w-full mt-1.5 pt-1.5 border-t border-gray-100 text-[11px] font-semibold text-[#E5541B] hover:underline"
         >
           오늘로 돌아가기
         </button>
