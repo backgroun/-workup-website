@@ -1,0 +1,66 @@
+{
+  "DT6FUATL112": {
+    "arrivalDate": "2026-09-04",
+    "status": "입고완료",
+    "image": null,
+    "changeHistory": []
+  },
+  "BA6FMAJP101": {
+    "status": "입고완료"
+  },
+  "BA6FMASH100": {
+    "status": "입고완료"
+  },
+  "DT6WUAPT139": {
+    "status": "입고완료"
+  },
+  "KW6FMATL121": {
+    "image": "/images/arrival/KW6FMATL121  (2).png,/images/arrival/KW6FMATL121  (3).png,/images/arrival/KW6FMATL121  (4).png,/images/arrival/KW6FMATL121  (5).png,/images/arrival/KW6FMATL121  (6).png,/images/arrival/KW6FMATL121  (7).png,/images/arrival/KW6FMATL121 (1).jpg",
+    "changeHistory": []
+  },
+  "DT6WUATL111": {
+    "status": "입고완료"
+  },
+  "DT6WUAJP123": {
+    "status": "입고완료"
+  },
+  "DT6WUAVS107": {
+    "status": "입고완료"
+  },
+  "DT6WUAJP125": {
+    "status": "입고완료"
+  },
+  "KT6FMATL647": {
+    "image": null,
+    "changeHistory": [],
+    "arrivalDate": "2026-08-14",
+    "status": "입고완료"
+  },
+  "PP6FUAPT100": {
+    "image": null,
+    "changeHistory": [],
+    "arrivalDate": "2026-09-01",
+    "status": "입고완료"
+  },
+  "KT6FMATL646": {
+    "image": null,
+    "changeHistory": [],
+    "arrivalDate": "2026-08-17",
+    "status": "입고완료"
+  },
+  "DT6FUAJP120": {
+    "status": "입고완료"
+  },
+  "DT6WUAVS106": {
+    "status": "입고완료"
+  },
+  "DT6FUATL109": {
+    "status": "입고완료"
+  },
+  "KW6FMATL121::2026-09-21": {
+    "image": "/images/arrival/KW6FMATL121  (2).png,/images/arrival/KW6FMATL121  (3).png,/images/arrival/KW6FMATL121  (4).png,/images/arrival/KW6FMATL121  (5).png,/images/arrival/KW6FMATL121  (6).png,/images/arrival/KW6FMATL121  (7).png",
+    "changeHistory": [],
+    "arrivalDate": "2026-09-21",
+    "status": "입고예정"
+  }
+}

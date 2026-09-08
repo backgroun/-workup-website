@@ -27,33 +27,37 @@ export const DEFAULT_STUDIO_SETTINGS: StudioSettings = {
   designs: [],
 };
 
-export const getStudioSettings = unstable_cache(
+const getStudioSettingsCached = unstable_cache(
   async (): Promise<StudioSettings> => {
-    try {
-      const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("site_settings")
-        .select("config")
-        .eq("section", "studio_settings")
-        .maybeSingle();
-      const raw = data?.config as Partial<StudioSettings> | null;
-      if (!raw) return DEFAULT_STUDIO_SETTINGS;
-      return {
-        enabled: typeof raw.enabled === "boolean" ? raw.enabled : DEFAULT_STUDIO_SETTINGS.enabled,
-        heading: typeof raw.heading === "string" && raw.heading ? raw.heading : DEFAULT_STUDIO_SETTINGS.heading,
-        subheading: typeof raw.subheading === "string" ? raw.subheading : DEFAULT_STUDIO_SETTINGS.subheading,
-        shirtImageUrl: typeof raw.shirtImageUrl === "string" ? raw.shirtImageUrl : DEFAULT_STUDIO_SETTINGS.shirtImageUrl,
-        defaultColor:
-          typeof raw.defaultColor === "string" && raw.defaultColor
-            ? raw.defaultColor
-            : DEFAULT_STUDIO_SETTINGS.defaultColor,
-        enabledColors: Array.isArray(raw.enabledColors) ? raw.enabledColors : DEFAULT_STUDIO_SETTINGS.enabledColors,
-        designs: Array.isArray(raw.designs) ? raw.designs : DEFAULT_STUDIO_SETTINGS.designs,
-      };
-    } catch {
-      return DEFAULT_STUDIO_SETTINGS;
-    }
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("site_settings")
+      .select("config")
+      .eq("section", "studio_settings")
+      .maybeSingle();
+    const raw = data?.config as Partial<StudioSettings> | null;
+    if (!raw) return DEFAULT_STUDIO_SETTINGS;
+    return {
+      enabled: typeof raw.enabled === "boolean" ? raw.enabled : DEFAULT_STUDIO_SETTINGS.enabled,
+      heading: typeof raw.heading === "string" && raw.heading ? raw.heading : DEFAULT_STUDIO_SETTINGS.heading,
+      subheading: typeof raw.subheading === "string" ? raw.subheading : DEFAULT_STUDIO_SETTINGS.subheading,
+      shirtImageUrl: typeof raw.shirtImageUrl === "string" ? raw.shirtImageUrl : DEFAULT_STUDIO_SETTINGS.shirtImageUrl,
+      defaultColor:
+        typeof raw.defaultColor === "string" && raw.defaultColor
+          ? raw.defaultColor
+          : DEFAULT_STUDIO_SETTINGS.defaultColor,
+      enabledColors: Array.isArray(raw.enabledColors) ? raw.enabledColors : DEFAULT_STUDIO_SETTINGS.enabledColors,
+      designs: Array.isArray(raw.designs) ? raw.designs : DEFAULT_STUDIO_SETTINGS.designs,
+    };
   },
   ["studio_settings"],
   { revalidate: 60, tags: ["studio_settings"] }
 );
+
+export async function getStudioSettings(): Promise<StudioSettings> {
+  try {
+    return await getStudioSettingsCached();
+  } catch {
+    return DEFAULT_STUDIO_SETTINGS;
+  }
+}

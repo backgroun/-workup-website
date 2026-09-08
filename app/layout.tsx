@@ -16,6 +16,7 @@ import { getStudioSettings } from "@/lib/studio-server";
 import { getMegaBrandsConfig } from "@/lib/mega-brands-server";
 import { headers } from "next/headers";
 import ScrollToTop from "@/components/ScrollToTop";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 import ImageProtection from "@/components/ImageProtection";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -106,6 +107,7 @@ export default async function RootLayout({
         />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <ScrollToTop />
+        <ScrollToTopButton />
         {!hideChrome && <PixelManager />}
         {!hideChrome && <ImageProtection />}
         <CartProvider>
