@@ -88,21 +88,34 @@ export default function CoverAndDetailImagesField({
       {showCover && (
       <div>
         <label className="block text-sm font-semibold text-gray-600 mb-1.5">대표 썸네일</label>
-        <div className={coverButtonPosition === "below" ? "inline-flex flex-col items-center gap-2" : "flex items-center gap-3"}>
-          <div
-            className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0"
+        {coverButtonPosition === "below" ? (
+          /* 박스 자체 클릭으로 업로드 — 별도 버튼 없음 */
+          <label
+            className="relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0 cursor-pointer group"
             style={{ width: coverSize, height: coverSize }}
           >
             {cover ? (
               <Image src={cover} alt="" fill className="object-cover" sizes={`${coverSize}px`} />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-300 text-[11px] text-center px-1">
-                이미지 없음
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 text-[11px] text-center px-2 gap-1">
+                {uploadingCover ? (
+                  <span className="text-gray-400 text-[12px]">업로드 중...</span>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6 text-gray-300 group-hover:text-gray-400 transition-colors" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.338-2.32 4.5 4.5 0 0 1 1.232 8.845" />
+                    </svg>
+                    <span className="group-hover:text-gray-400 transition-colors">사진 선택</span>
+                  </>
+                )}
               </div>
             )}
-          </div>
-          <label className="px-3 py-2 text-[13px] font-semibold border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
-            {uploadingCover ? "업로드 중..." : cover ? "사진 바꾸기" : "사진 선택"}
+            {/* hover 오버레이 (이미지 있을 때) */}
+            {cover && !uploadingCover && (
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
+                <span className="opacity-0 group-hover:opacity-100 text-white text-[12px] font-semibold transition-opacity">사진 바꾸기</span>
+              </div>
+            )}
             <input
               type="file"
               accept="image/*"
@@ -115,7 +128,37 @@ export default function CoverAndDetailImagesField({
               }}
             />
           </label>
-        </div>
+        ) : (
+          /* 기존 side 배치 — 박스 + 버튼 나란히 */
+          <div className="flex items-center gap-3">
+            <div
+              className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0"
+              style={{ width: coverSize, height: coverSize }}
+            >
+              {cover ? (
+                <Image src={cover} alt="" fill className="object-cover" sizes={`${coverSize}px`} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-[11px] text-center px-1">
+                  이미지 없음
+                </div>
+              )}
+            </div>
+            <label className="px-3 py-2 text-[13px] font-semibold border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+              {uploadingCover ? "업로드 중..." : cover ? "사진 바꾸기" : "사진 선택"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingCover}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleCoverChange(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          </div>
+        )}
         {coverHint && <p className="text-[12px] text-gray-400 mt-1.5">{coverHint}</p>}
       </div>
       )}

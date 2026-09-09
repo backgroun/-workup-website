@@ -1128,7 +1128,7 @@ export default function AdminArrivalPage() {
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-[#1a1a1a]">입고 관리</h1>
+          <h1 className="text-3xl font-black text-[#1a1a1a]">입고 스케쥴</h1>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">

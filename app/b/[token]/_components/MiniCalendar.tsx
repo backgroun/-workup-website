@@ -16,7 +16,7 @@ export default function MiniCalendar({
   selectedDate: string;
   todayKst: string;
   onSelect: (date: string) => void;
-  markedDates?: Record<string, number>;
+  markedDates?: Record<string, { outbound: number; pass: number }>;
 }) {
   const [y0, m0] = selectedDate.split("-").map(Number);
   const [viewMonth, setViewMonth] = useState(new Date(y0, m0 - 1, 1));
@@ -62,41 +62,73 @@ export default function MiniCalendar({
           </div>
         ))}
         {cells.map((date, i) => {
-          if (!date) return <div key={`empty-${i}`} className="h-8" />;
+          if (!date) return <div key={`empty-${i}`} className="h-9" />;
           const isFuture = date > todayKst;
           const isToday = date === todayKst;
           const isSelected = date === selectedDate;
-          const count = markedDates[date] ?? 0;
+          const counts = markedDates[date];
+          const outbound = counts?.outbound ?? 0;
+          const pass = counts?.pass ?? 0;
+
+          // 날짜 셀 스타일
+          // 오늘: 항상 선형(테두리) — 선택 여부 무관
+          // 오늘 아닌 선택: 검정 채움
+          // 나머지: 일반
+          const cellCls = [
+            "h-9 rounded flex flex-col items-center justify-center transition-colors",
+            isSelected && !isToday
+              ? "ring-2 ring-[#303236] text-[#303236] font-bold"
+              : isFuture
+              ? "text-gray-300 cursor-default"
+              : "text-gray-700 hover:bg-gray-100 cursor-pointer",
+            isToday
+              ? isSelected
+                ? "ring-2 ring-[#E5541B] text-[#E5541B] font-bold"
+                : "ring-1 ring-inset ring-[#E5541B] font-bold text-[#E5541B]"
+              : "",
+          ].join(" ");
+
           return (
             <button
               key={date}
               type="button"
               onClick={() => !isFuture && onSelect(date)}
               disabled={isFuture}
-              className={`h-8 rounded flex flex-col items-center justify-center transition-colors ${
-                isSelected
-                  ? "bg-[#303236] text-white font-bold"
-                  : isFuture
-                  ? "text-gray-300 cursor-default"
-                  : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-              } ${isToday && !isSelected ? "ring-1 ring-inset ring-[#E5541B] font-bold text-[#E5541B]" : ""}`}
+              className={cellCls}
             >
               <span className="text-[11px] leading-none">{Number(date.slice(-2))}</span>
-              {count > 0 && (
-                <span
-                  className={`mt-0.5 min-w-[14px] h-[13px] px-0.5 rounded-full flex items-center justify-center text-[8px] font-bold leading-none ${
-                    isSelected
-                      ? "bg-white/25 text-white"
-                      : "bg-[#E5541B] text-white"
-                  }`}
-                >
-                  {count}
-                </span>
+
+              {/* 배지: 출고(주황) + 패스(블랙) — 선택 여부와 무관하게 항상 동일 색상 */}
+              {(outbound > 0 || pass > 0) && (
+                <div className="flex items-center gap-[2px] mt-0.5">
+                  {outbound > 0 && (
+                    <span className="min-w-[13px] h-[12px] px-0.5 rounded-full flex items-center justify-center text-[7px] font-bold leading-none bg-[#E5541B] text-white">
+                      {outbound}
+                    </span>
+                  )}
+                  {pass > 0 && (
+                    <span className="min-w-[13px] h-[12px] px-0.5 rounded-full flex items-center justify-center text-[7px] font-bold leading-none bg-[#303236] text-white">
+                      {pass}
+                    </span>
+                  )}
+                </div>
               )}
             </button>
           );
         })}
       </div>
+      {/* 범례 */}
+      <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 justify-center">
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded-full bg-[#E5541B] flex-shrink-0" />
+          <span className="text-[9px] text-gray-400">출고</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded-full bg-[#303236] flex-shrink-0" />
+          <span className="text-[9px] text-gray-400">패스</span>
+        </div>
+      </div>
+
       {selectedDate !== todayKst && (
         <button
           type="button"

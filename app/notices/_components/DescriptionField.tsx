@@ -10,7 +10,7 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export default function DescriptionField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export default function DescriptionField({ value, onChange, grow }: { value: string; onChange: (v: string) => void; grow?: boolean }) {
   const [templates, setTemplates] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,8 +45,8 @@ export default function DescriptionField({ value, onChange }: { value: string; o
   const removeTemplate = (t: string) => persist(templates.filter((x) => x !== t));
 
   return (
-    <div>
-      <RichTextEditor value={value} onChange={onChange} />
+    <div className={grow ? "flex flex-col flex-1 min-h-0" : ""}>
+      <RichTextEditor value={value} onChange={onChange} grow={grow} />
       <div className="flex items-center justify-between mt-1.5">
         <p className="text-[12px] text-gray-400">자주 쓰는 문구는 저장해두고 다시 골라 쓸 수 있습니다.</p>
         <button

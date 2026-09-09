@@ -21,7 +21,7 @@ export async function GET() {
 
   const { data: notices, error: noticeErr } = await sb
     .from("notices")
-    .select("id, notice_date, product_id, products(id, name)")
+    .select("id, notice_date, product_id, temp_name, products(id, name)")
     .order("notice_date", { ascending: false });
   if (noticeErr) return NextResponse.json({ error: noticeErr.message }, { status: 500 });
 
@@ -30,35 +30,60 @@ export async function GET() {
   for (const n of notices ?? []) {
     noticeDateById.set(n.id, n.notice_date);
     const product = n.products as unknown as { id: string; name: string } | null;
+    const name = product?.name ?? (n as { temp_name?: string | null }).temp_name ?? "상품 정보 없음";
     const list = dailyProducts.get(n.notice_date) ?? [];
-    list.push({ id: product?.id ?? n.product_id, name: product?.name ?? "상품 정보 없음" });
+    list.push({ id: product?.id ?? n.product_id ?? n.id, name });
     dailyProducts.set(n.notice_date, list);
   }
 
+  // 전체 활성 지점 목록 — 미응답 지점도 통계에 포함하기 위해 필요
+  const { data: allStores } = await sb
+    .from("stores")
+    .select("id, name")
+    .eq("is_active", true);
+  const storeNameById = new Map<number, string>((allStores ?? []).map((s) => [s.id, s.name]));
+
   const { data: entries, error: entryErr } = await sb
     .from("pass_entries")
-    .select("notice_id, store_id, status, stores(name)");
+    .select("notice_id, store_id, status");
   if (entryErr) return NextResponse.json({ error: entryErr.message }, { status: 500 });
+
+  // notice_id → Set<store_id> (응답한 지점)
+  const respondedByNotice = new Map<string, Map<number, string>>();
+  for (const e of entries ?? []) {
+    const m = respondedByNotice.get(e.notice_id) ?? new Map<number, string>();
+    m.set(e.store_id, e.status);
+    respondedByNotice.set(e.notice_id, m);
+  }
 
   const overallStoreMap = new Map<number, StoreAgg>();
   const dailyStoreMap = new Map<string, Map<number, StoreAgg>>();
 
-  for (const e of entries ?? []) {
-    const storeName = (e.stores as unknown as { name: string } | null)?.name ?? "알 수 없음";
+  // 모든 공지 × 모든 지점 조합으로 집계 (미응답 = 출고로 처리)
+  const allNotices = notices ?? [];
+  const activeStoreIds = [...storeNameById.keys()];
 
-    const overall = overallStoreMap.get(e.store_id) ?? { name: storeName, pass: 0, outbound: 0 };
-    if (e.status === "패스") overall.pass += 1;
-    else overall.outbound += 1;
-    overallStoreMap.set(e.store_id, overall);
+  for (const n of allNotices) {
+    const date = n.notice_date;
+    const responded = respondedByNotice.get(n.id) ?? new Map<number, string>();
+    const dayMap = dailyStoreMap.get(date) ?? new Map<number, StoreAgg>();
 
-    const noticeDate = noticeDateById.get(e.notice_id);
-    if (!noticeDate) continue;
-    const dayMap = dailyStoreMap.get(noticeDate) ?? new Map<number, StoreAgg>();
-    const cur = dayMap.get(e.store_id) ?? { name: storeName, pass: 0, outbound: 0 };
-    if (e.status === "패스") cur.pass += 1;
-    else cur.outbound += 1;
-    dayMap.set(e.store_id, cur);
-    dailyStoreMap.set(noticeDate, dayMap);
+    for (const sid of activeStoreIds) {
+      const storeName = storeNameById.get(sid) ?? "알 수 없음";
+      const status = responded.get(sid) ?? "출고"; // 미응답 = 출고
+
+      // daily
+      const cur = dayMap.get(sid) ?? { name: storeName, pass: 0, outbound: 0 };
+      if (status === "패스") cur.pass += 1; else cur.outbound += 1;
+      dayMap.set(sid, cur);
+
+      // overall
+      const overall = overallStoreMap.get(sid) ?? { name: storeName, pass: 0, outbound: 0 };
+      if (status === "패스") overall.pass += 1; else overall.outbound += 1;
+      overallStoreMap.set(sid, overall);
+    }
+
+    dailyStoreMap.set(date, dayMap);
   }
 
   const daily = [...dailyProducts.entries()]

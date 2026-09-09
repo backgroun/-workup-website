@@ -7,7 +7,7 @@ import Color from "@tiptap/extension-color";
 
 const COLORS = ["#1f2937", "#b5652e", "#2f4858", "#3e7256", "#b91c1c"];
 
-export default function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+export default function RichTextEditor({ value, onChange, grow }: { value: string; onChange: (html: string) => void; grow?: boolean }) {
   const editor = useEditor({
     extensions: [StarterKit, TextStyle, Color],
     content: value,
@@ -15,7 +15,9 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: "prose-sm max-w-none min-h-[84px] px-3 py-2 text-sm focus:outline-none [&_p]:m-0",
+        class: grow
+          ? "prose-sm max-w-none h-full px-3 py-2 text-sm focus:outline-none [&_p]:m-0"
+          : "prose-sm max-w-none min-h-[84px] px-3 py-2 text-sm focus:outline-none [&_p]:m-0",
       },
     },
   });
@@ -35,8 +37,8 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
     }`;
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#303236]">
-      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-gray-100 bg-gray-50 flex-wrap">
+    <div className={`border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#303236]${grow ? " flex flex-col flex-1 min-h-0" : ""}`}>
+      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-gray-100 bg-gray-50 flex-wrap flex-shrink-0">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -80,7 +82,7 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
           서식 지우기
         </button>
       </div>
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className={grow ? "flex-1 overflow-y-auto min-h-0" : ""} />
     </div>
   );
 }

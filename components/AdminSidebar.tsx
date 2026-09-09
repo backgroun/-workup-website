@@ -212,7 +212,7 @@ export const navGroups: NavGroup[] = [
     label: "지점 및 상품관리",
     items: [
       {
-        label: "26FW 입고 일정",
+        label: "입고 스케쥴",
         href: "/admin/arrival",
         exact: true,
         icon: (

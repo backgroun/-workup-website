@@ -128,6 +128,7 @@ function ProductImage({ product, size = "md" }: { product: ArrivalProduct; size?
   return (
     <img src={src} alt={product.productName}
       className={`w-full ${aspectCls} object-cover bg-[#f0eeeb]`}
+      loading="lazy" decoding="async"
       onError={() => setFailed(true)} />
   );
 }
@@ -208,7 +209,7 @@ function ImageGallery({ product, aspectCls = "aspect-[3/4]" }: { product: Arriva
               <button key={i} onClick={() => setIndex(i)}
                 className={`shrink-0 w-14 h-14 overflow-hidden rounded transition-all ${i === index ? "ring-2 ring-[#1a1a1a]" : "opacity-45 hover:opacity-75"}`}>
                 {!failedSet.has(i) && (
-                  <img src={src} alt="" className="w-full h-full object-cover" onError={() => markFailed(i)} />
+                  <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" onError={() => markFailed(i)} />
                 )}
               </button>
             ))}
@@ -224,6 +225,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
   const { full } = fmtDate(product.arrivalDate);
   const meta = STATUS_META[product.status] ?? STATUS_META["입고예정"];
   const history = product.changeHistory ?? [];
+  const [copied, setCopied] = useState(false);
 
   // 모바일 스와이프 다운으로 닫기
   const startY = useRef(0);
@@ -231,6 +233,14 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
   const onTouchEnd   = (e: React.TouchEvent) => {
     if (e.changedTouches[0].clientY - startY.current > 80) onClose();
   };
+
+  function handleShare() {
+    const url = `${window.location.origin}/arrival?product=${product.productCode}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
@@ -248,7 +258,32 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-gray-200">
           <span className="text-[11px] sm:text-[12px] tracking-[0.2em] text-gray-500 uppercase font-semibold">PRODUCT DETAIL</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-2xl leading-none w-8 h-8 flex items-center justify-center">×</button>
+          <div className="flex items-center gap-1">
+            {/* 공유 버튼 */}
+            <button
+              onClick={handleShare}
+              title="링크 공유"
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 hover:text-[#1a1a1a] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100"
+            >
+              {copied ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-green-600">복사됨</span>
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  <span>공유</span>
+                </>
+              )}
+            </button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-2xl leading-none w-8 h-8 flex items-center justify-center">×</button>
+          </div>
         </div>
 
         {/* 본문 */}
@@ -572,14 +607,16 @@ function MiniThumb({ product }: { product: ArrivalProduct }) {
   return (
     <img src={src} alt={product.productName}
       className="absolute inset-0 w-full h-full object-cover"
+      loading="lazy" decoding="async"
       onError={() => setFailed(true)} />
   );
 }
 
 // ─── PDF 생성 ─────────────────────────────────────────────────────────────────
 // A4 가로 기준 높이 추정값 (mm)
-const PDF_COL_W_MM   = 281 / 7;          // 열 너비 ≈ 40mm (정사각형 이미지 기준)
-const PDF_PRODUCT_MM = PDF_COL_W_MM + 14; // 이미지 + 제품명 + 상태 ≈ 54mm
+const PDF_COL_W_MM   = 281 / 7;          // 열 너비 ≈ 40mm
+const PDF_IMG_MM     = 40;               // 이미지 고정 높이 (CSS .pi-img height와 동일)
+const PDF_PRODUCT_MM = PDF_IMG_MM + 22;  // 이미지 40mm + 텍스트·여유 22mm = 62mm
 const PDF_THEAD_MM   = 20;                // 월 제목 + 요일 헤더
 const PDF_PAGE_MM    = 210 - 12;          // A4 가로 사용 가능 높이 (상하 마진 6mm×2)
 const PDF_CONTENT_MM = PDF_PAGE_MM - PDF_THEAD_MM; // 178mm
@@ -740,7 +777,10 @@ function buildCalendarPDF(
     background: #fff;
   }
 
-  /* 날짜 셀: page-break 금지 해제 → 테이블이 자연스럽게 페이지를 나눌 수 있어야 thead가 반복됨 */
+  /* 주(tr) 단위 잘림 방지 — 각 청크가 이미 독립 테이블이므로 thead 반복과 충돌 없음 */
+  tr { page-break-inside: avoid; break-inside: avoid; }
+
+  /* 날짜 셀 */
   .cell {
     padding: 3px 3px 4px;
     vertical-align: top;
@@ -754,14 +794,15 @@ function buildCalendarPDF(
   .dn { display: block; font-size: 10px; font-weight: 900; color: #1a1a1a; margin-bottom: 2px; line-height: 1; }
   .dn-empty { color: #d1d5db; }
 
-  /* 제품 아이템 단위만 잘림 방지 — tr/td 단위 금지 없애야 thead가 매 페이지 반복됨 */
+  /* 제품 아이템 단위 잘림 방지 */
   .pi { margin-bottom: 3px; page-break-inside: avoid; break-inside: avoid; }
   .pi:last-child { margin-bottom: 0; }
-  .pi-img { width: 100%; }
+  /* 이미지 컨테이너: 인쇄 모드에서 aspect-ratio 미지원 대비 명시적 고정 높이 사용 */
+  .pi-img { width: 100%; height: 40mm; background: #fff; display: flex; align-items: center; justify-content: center; }
   .pi-body { padding: 2px 3px 3px; }
 
-  .pimg     { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
-  .pimg-no  { width: 100%; aspect-ratio: 1/1; display: block; }
+  .pimg     { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .pimg-no  { width: 100%; height: 100%; display: block; background: #f3f4f6; }
   .pi-meta    { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-bottom: 1px; }
   .s-upcoming { font-size: 6.5px; font-weight: 700; color: #374151; }
   .s-delay    { font-size: 6.5px; font-weight: 700; color: #b45309; }
@@ -932,7 +973,7 @@ function CalendarView({ products, onSelect }: {
                       </span>
                     );
                   })}
-                {monthTotal === 0 && <span className="text-[12px] text-gray-400">입고 일정 없음</span>}
+                {monthTotal === 0 && <span className="text-[12px] text-gray-400">입고 스케쥴 없음</span>}
               </div>
             ) : (
               <>
@@ -1001,12 +1042,12 @@ function CalendarView({ products, onSelect }: {
                                 )}
                               </div>
                               {hasItems && (
-                                <div className="space-y-2">
+                                <div className="divide-y divide-gray-100">
                                   {items.map(p => {
                                     const meta = STATUS_META[p.status] ?? STATUS_META["입고예정"];
                                     return (
                                       <button key={`${p.productCode}_${p.arrivalDate || "none"}`} onClick={() => onSelect(p)}
-                                        className="w-full text-left transition-opacity hover:opacity-75">
+                                        className="w-full text-left transition-opacity hover:opacity-75 py-2 first:pt-0 last:pb-0">
                                         <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm bg-[#f0efed]">
                                           <MiniThumb product={p} />
                                         </div>
@@ -1067,6 +1108,35 @@ export default function ArrivalTimeline() {
       .then(data => { if (Array.isArray(data)) setProducts(data); })
       .finally(() => setLoadingData(false));
   }, []);
+
+  // 마운트 시점의 ?product= 값을 미리 저장 (URL sync effect가 지우기 전에)
+  const initialProductCode = useRef(
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("product")
+      : null
+  );
+
+  // 공유 링크 (?product=CODE) 로 접속 시 해당 제품 팝업 자동 오픈
+  useEffect(() => {
+    if (loadingData || products.length === 0) return;
+    const code = initialProductCode.current;
+    if (code) {
+      const found = products.find(p => p.productCode === code);
+      if (found) setSelectedProduct(found);
+    }
+  }, [loadingData, products]);
+
+  // 팝업 열림/닫힘에 따라 URL 파라미터 동기화 (로딩 중엔 건드리지 않음)
+  useEffect(() => {
+    if (loadingData) return;
+    const url = new URL(window.location.href);
+    if (selectedProduct) {
+      url.searchParams.set("product", selectedProduct.productCode);
+    } else {
+      url.searchParams.delete("product");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, [selectedProduct, loadingData]);
 
   const brands     = useMemo(() => Array.from(new Set(products.map(p => p.brand))).sort(),     [products]);
   const categories = useMemo(() => Array.from(new Set(products.map(p => p.category))).sort(), [products]);
@@ -1137,6 +1207,12 @@ export default function ArrivalTimeline() {
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
+      {/* ── 페이지 타이틀 ── */}
+      <div className="px-6 sm:px-10 lg:px-16 pt-8 pb-5">
+        <p className="text-[10px] tracking-[0.25em] text-gray-400 uppercase font-semibold mb-1">WORKUP</p>
+        <h1 className="text-[22px] sm:text-[26px] font-black text-[#1a1a1a] tracking-tight">입고 스케쥴</h1>
+      </div>
+
       {/* ── 필터 + 뷰 전환 ── */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 sm:px-10 lg:px-16 py-2.5">
         <div className="flex items-center gap-2 flex-wrap">

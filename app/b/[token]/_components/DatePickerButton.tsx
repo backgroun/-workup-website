@@ -9,7 +9,7 @@ export default function DatePickerButton({
 }: {
   selectedDate: string;
   todayKst: string;
-  markedDates?: Record<string, number>;
+  markedDates?: Record<string, { outbound: number; pass: number }>;
 }) {
   const router = useRouter();
   const pathname = usePathname();

@@ -14,13 +14,14 @@ type TempProductEntry = {
   temp_tagline: string | null;
 };
 
-export default function NoticeProductPicker() {
+export default function NoticeProductPicker({ onCreated }: { onCreated?: (id: string) => void } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // 이 화면은 "화면 모아보기"(/notices) 안에 iframe(embed=1)으로 열리기도 하고, 단독 페이지로도 열린다.
-  // embed로 열린 상태에서 생성 완료 후 이동하는 페이지도 embed를 유지해야 iframe 안에 헤더가 이중으로 뜨지 않는다.
   const embed = searchParams.get("embed") === "1";
-  const goToNotice = (id: string) => router.push(`/notices/${id}${embed ? "?embed=1" : ""}`);
+  const goToNotice = (id: string) => {
+    if (onCreated) { onCreated(id); return; }
+    router.push(`/notices/${id}${embed ? "?embed=1" : ""}`);
+  };
 
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -133,8 +134,8 @@ export default function NoticeProductPicker() {
         <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">{error}</div>
       )}
 
-      <div className="flex gap-5 items-start">
-        <div className="flex-1 min-w-0">
+      <div className="flex gap-5 items-stretch">
+        <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-800">공지 상품 등록</h2>
             <button
@@ -145,8 +146,8 @@ export default function NoticeProductPicker() {
               {qSaving ? "등록 중..." : "공지용으로 등록"}
             </button>
           </div>
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
-            <div className="flex gap-5 items-start flex-wrap">
+          <div className="flex-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col">
+            <div className="flex gap-5 items-stretch flex-1 min-h-0">
               <div className="flex-shrink-0">
                 <CoverAndDetailImagesField
                   cover={qCover}
@@ -161,8 +162,8 @@ export default function NoticeProductPicker() {
                   coverButtonPosition="below"
                 />
               </div>
-              <div className="flex-1 min-w-[200px] space-y-4">
-                <div>
+              <div className="flex-1 min-w-[200px] flex flex-col gap-4 min-h-0">
+                <div className="flex-shrink-0">
                   <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품명</label>
                   <input
                     value={qName}
@@ -171,19 +172,19 @@ export default function NoticeProductPicker() {
                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#303236]"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품설명</label>
-                  <DescriptionField value={qTagline} onChange={setQTagline} />
+                <div className="flex-1 flex flex-col min-h-0">
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5 flex-shrink-0">상품설명</label>
+                  <DescriptionField value={qTagline} onChange={setQTagline} grow />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-gray-800 mb-3">공지 상품에서 선택</h2>
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div className="p-4 border-b border-gray-100">
+        <div className="flex-1 min-w-0 flex flex-col">
+          <h2 className="text-lg font-bold text-gray-800 mb-3 flex-shrink-0">공지 상품에서 선택</h2>
+          <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="flex-shrink-0 p-4 border-b border-gray-100">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -192,7 +193,7 @@ export default function NoticeProductPicker() {
               />
               <p className="text-[12px] text-gray-400 mt-1.5">지점 출고 패스로 등록했던 상품만 표시됩니다.</p>
             </div>
-            <div className="max-h-[65vh] overflow-y-auto">
+            <div className="overflow-y-auto" style={{ maxHeight: "288px" }}>
               {loading ? (
                 <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
               ) : filtered.length === 0 ? (

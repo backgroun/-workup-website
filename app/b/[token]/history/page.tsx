@@ -104,15 +104,22 @@ export default async function PassHistoryPage({ params, searchParams }: Props) {
                         <span className="flex-1 text-[13px] text-[#303236] font-medium leading-snug">
                           {item.productName}
                         </span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
-                            item.passStatus
-                              ? STATUS_STYLE[item.passStatus] ?? "bg-gray-100 text-gray-500 border-gray-200"
-                              : "bg-orange-50 text-orange-400 border-orange-200"
-                          }`}
-                        >
-                          {item.passStatus ?? "미응답"}
-                        </span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {item.passStatus ? (
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${STATUS_STYLE[item.passStatus] ?? "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                              {item.passStatus}
+                            </span>
+                          ) : (
+                            <>
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold border bg-orange-50 text-orange-400 border-orange-200">
+                                미응답
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold border bg-blue-50 text-blue-600 border-blue-200">
+                                출고
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
