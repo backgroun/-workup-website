@@ -267,7 +267,7 @@ export default function UnifiedCatalogViewer({ workupPages, brands, assembledLin
                 </button>
               ))}
               {assembledLinks.map(a => (
-                <Link key={a.href} href={a.href}
+                <Link key={a.href} href={a.href} target="_blank" rel="noopener noreferrer"
                   className="px-2.5 py-1 text-[11px] tracking-widest font-semibold rounded transition-colors text-white/40 hover:text-white/70 inline-flex items-center gap-1"
                   title={`${a.name} 카탈로그 (전용 페이지로 이동)`}>
                   {a.name}

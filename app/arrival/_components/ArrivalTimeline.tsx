@@ -362,6 +362,13 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
               </tbody>
             </table>
 
+            {product.marketingUsage && (
+              <div className="border border-orange-300 bg-orange-50 rounded-lg px-3 py-2.5">
+                <p className="text-[10px] tracking-widest text-orange-400 uppercase font-bold mb-1">마케팅 활용여부</p>
+                <p className="text-[13px] text-orange-700 font-semibold leading-snug">{product.marketingUsage}</p>
+              </div>
+            )}
+
             {product.description && (
               <div>
                 <p className="text-[11px] tracking-widest text-gray-400 uppercase font-semibold mb-2">설명</p>
@@ -397,7 +404,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
 }
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
-type ViewMode  = "grid" | "list" | "calendar";
+type ViewMode  = "grid" | "list" | "calendar" | "timeline";
 type GroupMode = "date" | "month" | "category" | "brand";
 
 // ─── 상품 카드 (그리드용) ─────────────────────────────────────────────────────
@@ -407,7 +414,9 @@ function ProductCard({ product, onSelect, showDate }: { product: ArrivalProduct;
   return (
     <button onClick={onSelect}
       className="text-left transition-opacity hover:opacity-80 flex flex-col">
-      <div className="w-full overflow-hidden rounded-sm"><ProductImage product={product} size="sm" /></div>
+      <div className={`w-full overflow-hidden rounded-sm border ${product.marketingUsage ? "border-orange-400 border-2" : "border-[#979797]"}`}>
+        <ProductImage product={product} size="sm" />
+      </div>
       <div className="pt-2 flex flex-col gap-1 flex-1">
         <div className="flex items-center justify-between gap-1">
           <span className="text-[11px] tracking-wider text-gray-500 uppercase truncate font-medium">{product.brand}</span>
@@ -428,6 +437,50 @@ function ProductCard({ product, onSelect, showDate }: { product: ArrivalProduct;
 }
 
 const GRID_COLS = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3";
+
+// ─── 브랜드 카탈로그 URL 매핑 ────────────────────────────────────────────────
+const BRAND_CATALOG_SLUGS: Record<string, string> = {
+  "켄타":      "kenta",
+  "블랙아머":  "black-armor",
+  "블랙스미스":"black-smith",
+  "덴버":      "denver",
+  "디트로잇":  "detroit",
+  "디월트":    "dewalt",
+  "이글서플라이": "eagle-supply",
+  "GRBD":      "grbd",
+  "K-WORKERS": "k-workers",
+  "매드독캠프":"maddog",
+  "몬스톤":    "monston",
+  "유니보스":  "uniboss",
+  "볼컴":      "volcom",
+};
+
+function getBrandCatalogUrl(brand: string): string | null {
+  const slug = BRAND_CATALOG_SLUGS[brand];
+  return slug ? `/brands/${slug}/catalog` : null;
+}
+
+function BrandCatalogLink({ brand }: { brand: string }) {
+  const url = getBrandCatalogUrl(brand);
+  if (!url) return null;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={e => e.stopPropagation()}
+      className="inline-flex items-center gap-1.5 text-[11px] text-[#1a1a1a] bg-gray-100 hover:bg-[#1a1a1a] hover:text-white border border-gray-300 hover:border-[#1a1a1a] rounded-md px-3 py-1 transition-all ml-2 font-semibold shrink-0"
+      title={`${brand} 카탈로그 보기`}
+    >
+      카탈로그
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    </a>
+  );
+}
 
 // ─── 그룹 헤더 ───────────────────────────────────────────────────────────────
 function GroupHeader({ groupKey, groupMode, count }: { groupKey: string; groupMode: GroupMode; count: number }) {
@@ -454,9 +507,10 @@ function GroupHeader({ groupKey, groupMode, count }: { groupKey: string; groupMo
     );
   }
   return (
-    <div className="flex items-baseline gap-4 mb-5">
+    <div className="flex items-center gap-4 mb-5">
       <span className="text-2xl font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{groupKey || "미분류"}</span>
-      <span className="text-[13px] text-gray-500 font-medium">{count}개</span>
+      {groupMode === "brand" && groupKey && groupKey !== "미분류" && <BrandCatalogLink brand={groupKey} />}
+      <span className="text-[13px] text-gray-500 font-medium ml-auto">{count}개</span>
     </div>
   );
 }
@@ -465,16 +519,37 @@ function GroupHeader({ groupKey, groupMode, count }: { groupKey: string; groupMo
 function GridView({ grouped, groupMode, onSelect }: {
   grouped: [string, ArrivalProduct[]][]; groupMode: GroupMode; onSelect: (p: ArrivalProduct) => void;
 }) {
+  const collapsible = groupMode === "category" || groupMode === "brand";
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggle = (key: string) =>
+    setCollapsed(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
+
   return (
     <div>
-      {grouped.map(([key, items]) => (
-        <div key={key} id={`group-${key}`} className="border-t border-gray-100 pt-6 pb-10">
-          <GroupHeader groupKey={key} groupMode={groupMode} count={items.length} />
-          <div className={GRID_COLS}>
-            {items.map(p => <ProductCard key={`${p.productCode}_${p.arrivalDate || "none"}`} product={p} onSelect={() => onSelect(p)} showDate={groupMode !== "date"} />)}
+      {grouped.map(([key, items]) => {
+        const isCollapsed = collapsible && collapsed.has(key);
+        return (
+          <div key={key} id={`group-${key}`} className="border-t border-gray-100 pt-6 pb-10">
+            {collapsible ? (
+              <div className="flex items-center gap-3 mb-5">
+                <button onClick={() => toggle(key)} className="flex items-center gap-3 group text-left flex-1 min-w-0">
+                  <span className="text-2xl font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{key || "미분류"}</span>
+                  <span className="text-[13px] text-gray-500 font-medium">{items.length}개</span>
+                  <span className="ml-auto text-[11px] text-gray-400 group-hover:text-gray-600">{isCollapsed ? "▼ 펼치기" : "▲ 접기"}</span>
+                </button>
+                {groupMode === "brand" && key && key !== "미분류" && <BrandCatalogLink brand={key} />}
+              </div>
+            ) : (
+              <GroupHeader groupKey={key} groupMode={groupMode} count={items.length} />
+            )}
+            {!isCollapsed && (
+              <div className={GRID_COLS}>
+                {items.map(p => <ProductCard key={`${p.productCode}_${p.arrivalDate || "none"}`} product={p} onSelect={() => onSelect(p)} showDate={groupMode !== "date"} />)}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -483,11 +558,21 @@ function GridView({ grouped, groupMode, onSelect }: {
 function ListView({ grouped, groupMode, onSelect }: {
   grouped: [string, ArrivalProduct[]][]; groupMode: GroupMode; onSelect: (p: ArrivalProduct) => void;
 }) {
+  const collapsible = groupMode === "category" || groupMode === "brand";
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggle = (key: string) =>
+    setCollapsed(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
+
   return (
     <div className="space-y-1">
-      {grouped.map(([key, items]) => (
+      {grouped.map(([key, items]) => {
+        const isCollapsed = collapsible && collapsed.has(key);
+        return (
         <div key={key} id={`group-${key}`}>
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-gray-100 rounded-lg mb-1">
+          <div
+            className={`flex items-center gap-3 px-4 py-2.5 bg-gray-100 rounded-lg mb-1 ${collapsible ? "cursor-pointer hover:bg-gray-200/60" : ""}`}
+            onClick={collapsible ? () => toggle(key) : undefined}
+          >
             {groupMode === "date" ? (
               <>
                 <span className="text-[14px] font-black text-[#1a1a1a]">{fmtDate(key).mm}.{fmtDate(key).dd}</span>
@@ -498,16 +583,18 @@ function ListView({ grouped, groupMode, onSelect }: {
             ) : (
               <span className="text-[14px] font-black text-[#1a1a1a] uppercase">{key || "미분류"}</span>
             )}
+            {groupMode === "brand" && key && key !== "미분류" && <BrandCatalogLink brand={key} />}
             <span className="text-[12px] text-gray-600 font-medium ml-auto">{items.length}개</span>
+            {collapsible && <span className="text-[11px] text-gray-400">{isCollapsed ? "▼" : "▲"}</span>}
           </div>
-          <div className="space-y-px mb-6">
+          {!isCollapsed && <div className="space-y-px mb-6">
             {items.map(p => {
               const meta = STATUS_META[p.status] ?? STATUS_META["입고예정"];
               const { full, day } = fmtDate(p.arrivalDate);
               const history = p.changeHistory ?? [];
               return (
                 <div key={`${p.productCode}_${p.arrivalDate || "none"}`}
-                  className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                  className={`bg-white rounded-lg overflow-hidden ${p.marketingUsage ? "border-2 border-orange-400" : "border border-gray-100"}`}>
                   {/* 상단 요약 행 */}
                   <div className="flex items-center gap-3 px-4 pt-4 pb-2">
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${meta.cls}`}>{meta.label}</span>
@@ -584,9 +671,10 @@ function ListView({ grouped, groupMode, onSelect }: {
                 </div>
               );
             })}
-          </div>
+          </div>}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -893,15 +981,20 @@ function CalendarView({ products, onSelect }: {
 
   return (
     <div className="space-y-8">
+      {/* 모바일 미지원 안내 */}
+      <div className="sm:hidden bg-gray-100 border border-gray-200 rounded-xl px-4 py-4 text-center">
+        <p className="text-[13px] font-semibold text-gray-600 mb-1">캘린더 보기는 PC에서만 지원됩니다</p>
+        <p className="text-[12px] text-gray-400">모바일에서는 이미지, 타임라인, 리스트 보기를 이용해주세요</p>
+      </div>
+
       {/* 안내 + PDF 버튼 */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="hidden sm:flex items-center gap-3 flex-wrap">
         <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[12px] text-gray-600 flex flex-col sm:flex-row gap-1 sm:gap-3">
           <span><strong className="text-[#1a1a1a]">상품 클릭</strong> → 상세 보기</span>
           <span className="text-gray-400 hidden sm:inline">|</span>
           <span><strong className="text-[#1a1a1a]">월 헤더</strong> → 접기 / 펼치기</span>
           <span className="text-gray-400 hidden sm:inline">|</span>
           <span className="text-gray-500 sm:hidden">좌우로 스크롤해 이미지를 볼 수 있습니다</span>
-          <span className="text-gray-500 hidden sm:inline">PC에서는 이미지가, 모바일에서는 텍스트가 표시됩니다</span>
         </div>
         {/* PDF 버튼: PC 전용 */}
         <button
@@ -934,16 +1027,9 @@ function CalendarView({ products, onSelect }: {
         // 주 단위로 분리 후 입고 없는 주 제거
         const weeks: (number|null)[][] = [];
         for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
-        const activeWeeks = weeks.filter(week =>
-          week.some(day => {
-            if (!day) return false;
-            const k = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-            return (dateMap.get(k)?.length ?? 0) > 0;
-          })
-        );
 
         return (
-          <div key={monthKey} id={`cal-month-${year}-${month}`}>
+          <div key={monthKey} id={`cal-month-${year}-${month}`} className="hidden sm:block">
             {/* 월 헤더 */}
             <button onClick={() => toggleCollapse(monthKey)}
               className="w-full flex items-center gap-3 mb-3 group text-left">
@@ -1019,9 +1105,9 @@ function CalendarView({ products, onSelect }: {
                         <div key={d} className="bg-gray-100 text-center text-[12px] text-gray-500 py-2 font-bold">{d}</div>
                       ))}
                     </div>
-                    {/* 입고 있는 주만 렌더 */}
-                    {activeWeeks.map((week, wi) => (
-                      <div key={wi} className={`grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 ${wi === activeWeeks.length - 1 ? "rounded-b-xl overflow-hidden" : ""}`}>
+                    {/* 모든 주 렌더 (데이터 없는 주도 가로라인 표시) */}
+                    {weeks.map((week, wi) => (
+                      <div key={wi} className={`grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 ${wi === weeks.length - 1 ? "rounded-b-xl overflow-hidden" : ""}`}>
                         {week.map((day, di) => {
                           if (!day) return <div key={di} className="bg-[#fafaf8]" />;
                           const isoKey     = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
@@ -1048,7 +1134,7 @@ function CalendarView({ products, onSelect }: {
                                     return (
                                       <button key={`${p.productCode}_${p.arrivalDate || "none"}`} onClick={() => onSelect(p)}
                                         className="w-full text-left transition-opacity hover:opacity-75 py-2 first:pt-0 last:pb-0">
-                                        <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm bg-[#f0efed]">
+                                        <div className={`relative w-full aspect-[3/4] overflow-hidden rounded-sm bg-[#f0efed] ${p.marketingUsage ? "ring-2 ring-orange-400" : ""}`}>
                                           <MiniThumb product={p} />
                                         </div>
                                         <div className="flex items-center gap-1 mt-1">
@@ -1088,6 +1174,149 @@ function CalendarView({ products, onSelect }: {
   );
 }
 
+// ─── 타임라인 뷰 ─────────────────────────────────────────────────────────────
+function TimelineView({ products, onSelect }: {
+  products: ArrivalProduct[]; onSelect: (p: ArrivalProduct) => void;
+}) {
+  // 월별 → 날짜별 2단 그룹
+  const byMonth = useMemo(() => {
+    const monthMap = new Map<string, Map<string, ArrivalProduct[]>>();
+    for (const p of products) {
+      const dateKey = p.arrivalDate?.trim() || "미정";
+      const mKey = toMonthKey(dateKey);
+      if (!monthMap.has(mKey)) monthMap.set(mKey, new Map());
+      const dateMap = monthMap.get(mKey)!;
+      if (!dateMap.has(dateKey)) dateMap.set(dateKey, []);
+      dateMap.get(dateKey)!.push(p);
+    }
+    return Array.from(monthMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([mKey, dateMap]) => ({
+        mKey,
+        label: mKey === "미정" ? "일정 미정" : monthKeyLabel(mKey),
+        dates: Array.from(dateMap.entries()).sort(([a], [b]) => a.localeCompare(b)),
+        total: Array.from(dateMap.values()).reduce((s, v) => s + v.length, 0),
+      }));
+  }, [products]);
+
+  const today = useMemo(() => { const d = new Date(); d.setHours(0,0,0,0); return d; }, []);
+  const currentMonthKey = useMemo(() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}`;
+  }, []);
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set());
+  // 데이터 로드 시 현재 월 외 모두 접기 (최초 1회)
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (initializedRef.current || byMonth.length === 0) return;
+    initializedRef.current = true;
+    const nonCurrent = new Set(byMonth.map(m => m.mKey).filter(k => k !== currentMonthKey));
+    if (nonCurrent.size > 0) setCollapsedMonths(nonCurrent);
+  }, [byMonth, currentMonthKey]);
+  const toggleMonth = (mKey: string) =>
+    setCollapsedMonths(prev => { const n = new Set(prev); n.has(mKey) ? n.delete(mKey) : n.add(mKey); return n; });
+
+  if (byMonth.length === 0) return (
+    <div className="py-20 text-center text-gray-400 text-[14px]">표시할 데이터가 없습니다.</div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {byMonth.map(({ mKey, label, dates, total }) => {
+        const isCollapsed = collapsedMonths.has(mKey);
+        return (
+          <div key={mKey}>
+            {/* 월 헤더 */}
+            <button
+              onClick={() => toggleMonth(mKey)}
+              className="w-full flex items-center gap-2 mb-4 group text-left"
+            >
+              <span className="text-[13px] font-black text-gray-700 tracking-wide group-hover:text-[#1a1a1a]">{label}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-gray-100 text-gray-600">{total}개</span>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors ${isCollapsed ? "bg-[#1a1a1a] text-white" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>{isCollapsed ? "▼ 펼치기" : "▲ 접기"}</span>
+            </button>
+
+            {isCollapsed ? (
+              <div className="flex flex-wrap gap-1.5 px-1 pb-2">
+                {dates.map(([dateKey, items]) => {
+                  const { dd } = fmtDate(dateKey);
+                  return (
+                    <span key={dateKey} className="text-[12px] text-gray-600 border border-gray-200 rounded px-2 py-0.5 font-medium">
+                      {dd}일 {items.length}개
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="relative">
+                {/* 세로 연결선: 날짜열(4.5rem) + 도트열(1.5rem) 절반 = 5.25rem */}
+                <div className="absolute left-[5.25rem] sm:left-[6.25rem] top-2 bottom-2 w-px bg-gray-200 pointer-events-none" />
+
+                <div className="space-y-6">
+                  {dates.map(([dateKey, items]) => {
+                    const { mm, dd, dayKo } = fmtDate(dateKey);
+                    return (
+                      <div key={dateKey} className="flex items-start gap-0">
+                        {/* 날짜 레이블 열 */}
+                        <div className="w-[4.5rem] sm:w-[5.5rem] shrink-0 flex flex-col items-end pr-2 pt-0.5">
+                          <span className="text-[17px] sm:text-[19px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
+                          <span className="text-[9px] text-gray-500 font-semibold mt-0.5">{dayKo}요일</span>
+                          <span className="text-[9px] text-gray-400">{items.length}개</span>
+                        </div>
+
+                        {/* 도트 열 */}
+                        <div className="w-6 shrink-0 flex justify-center pt-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-[#303236] z-10 relative" />
+                        </div>
+
+                        {/* 상품 카드 가로 스크롤 */}
+                        <div className="flex-1 min-w-0 overflow-x-auto pb-2 pl-1 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+                          <div className="flex items-start gap-2.5" style={{ width: "max-content" }}>
+                            {items.map(p => {
+                              const meta = STATUS_META[p.status] ?? STATUS_META["입고예정"];
+                              return (
+                                <button
+                                  key={`${p.productCode}_${p.arrivalDate || "none"}`}
+                                  onClick={() => onSelect(p)}
+                                  className="shrink-0 w-[96px] sm:w-[108px] text-left hover:opacity-75 transition-opacity"
+                                >
+                                  <div className={`w-full aspect-[3/4] border ${p.marketingUsage ? "border-orange-400 border-2" : "border-[#979797]"}`}>
+                                    <div className="relative w-full h-full overflow-hidden bg-[#f0eeeb]">
+                                      <MiniThumb product={p} />
+                                      <span className={`absolute top-1 left-1 text-[7px] font-bold px-1 py-0.5 rounded leading-none ${meta.cls}`}>
+                                        {meta.label}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="mt-1.5 space-y-0.5">
+                                    <span className={`inline-block text-[8px] font-bold px-1.5 py-0.5 rounded leading-none ${brandBg(p.brand)} ${brandTextCls(p.brand)}`}>
+                                      {p.brand}
+                                    </span>
+                                    <p className="text-[10px] font-semibold text-[#1a1a1a] leading-tight line-clamp-2">
+                                      {stripBrand(p.productName, p.brand)}
+                                    </p>
+                                    {p.price > 0 && (
+                                      <p className="text-[9px] text-gray-500">{fmtPrice(p.price)}</p>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 export default function ArrivalTimeline() {
   const [products,    setProducts]   = useState<ArrivalProduct[]>([]);
@@ -1097,10 +1326,11 @@ export default function ArrivalTimeline() {
   const [viewMode,  setViewMode]  = useState<ViewMode>("grid");
   const [groupMode, setGroupMode] = useState<GroupMode>("month");
 
-  const [filterBrand,    setFilterBrand]    = useState("all");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus,   setFilterStatus]   = useState("all");
-  const [searchQuery,    setSearchQuery]    = useState("");
+  const [filterBrand,     setFilterBrand]     = useState("all");
+  const [filterCategory,  setFilterCategory]  = useState("all");
+  const [filterStatus,    setFilterStatus]    = useState("all");
+  const [searchQuery,     setSearchQuery]     = useState("");
+  const [filterMarketing, setFilterMarketing] = useState(false);
 
   useEffect(() => {
     fetch("/api/arrival")
@@ -1143,14 +1373,22 @@ export default function ArrivalTimeline() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return products.filter(p => {
-      if (filterBrand    !== "all" && p.brand    !== filterBrand)    return false;
-      if (filterCategory !== "all" && p.category !== filterCategory) return false;
-      if (filterStatus   !== "all" && p.status   !== filterStatus)   return false;
-      if (q && !p.productName.toLowerCase().includes(q) && !p.productCode.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [products, filterBrand, filterCategory, filterStatus, searchQuery]);
+    return products
+      .filter(p => {
+        if (filterBrand    !== "all" && p.brand    !== filterBrand)    return false;
+        if (filterCategory !== "all" && p.category !== filterCategory) return false;
+        if (filterStatus   !== "all" && p.status   !== filterStatus)   return false;
+        if (filterMarketing && !p.marketingUsage) return false;
+        if (q && !p.productName.toLowerCase().includes(q) && !p.productCode.toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const da = a.arrivalDate || "9999-99-99";
+        const db = b.arrivalDate || "9999-99-99";
+        if (da !== db) return da.localeCompare(db);
+        return (a.brand || "").localeCompare(b.brand || "");
+      });
+  }, [products, filterBrand, filterCategory, filterStatus, filterMarketing, searchQuery]);
 
   const grouped = useMemo<[string, ArrivalProduct[]][]>(() => {
     const map = new Map<string, ArrivalProduct[]>();
@@ -1190,9 +1428,9 @@ export default function ArrivalTimeline() {
 
   const resetFilters = useCallback(() => {
     setFilterBrand("all"); setFilterCategory("all");
-    setFilterStatus("all"); setSearchQuery("");
+    setFilterStatus("all"); setSearchQuery(""); setFilterMarketing(false);
   }, []);
-  const hasFilter = filterBrand !== "all" || filterCategory !== "all" || filterStatus !== "all" || searchQuery !== "";
+  const hasFilter = filterBrand !== "all" || filterCategory !== "all" || filterStatus !== "all" || searchQuery !== "" || filterMarketing;
 
   if (loadingData) {
     return (
@@ -1214,61 +1452,82 @@ export default function ArrivalTimeline() {
       </div>
 
       {/* ── 필터 + 뷰 전환 ── */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 sm:px-10 lg:px-16 py-2.5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            placeholder="상품명 / 코드"
-            className="border border-gray-300 px-3 py-1.5 text-[13px] rounded-full focus:outline-none focus:border-[#1a1a1a] w-36 text-gray-800 placeholder:text-gray-400" />
-          <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)}
-            className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-full bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-            <option value="all">전체 브랜드</option>
-            {brands.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-            className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-full bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-            <option value="all">전체 카테고리</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-full bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-            <option value="all">전체 상태</option>
-            <option value="입고예정">입고예정</option>
-            <option value="입고완료">입고완료</option>
-            <option value="입고지연">입고지연</option>
-            <option value="일정미정">일정미정</option>
-          </select>
-          {hasFilter && (
-            <button onClick={resetFilters} className="text-[12px] text-gray-500 hover:text-[#1a1a1a] underline underline-offset-2 font-medium">초기화</button>
-          )}
-
-          <div className="ml-auto flex items-center gap-2">
-            {/* 그룹 기준 (캘린더 뷰 제외) */}
-            {viewMode !== "calendar" && (
-              <div className="flex items-center gap-1 border border-gray-200 rounded-full p-0.5">
-                {([ ["month","월별"], ["date","날짜별"], ["category","카테고리별"], ["brand","브랜드별"] ] as [GroupMode, string][]).map(([mode, label]) => (
-                  <button key={mode} onClick={() => setGroupMode(mode)}
-                    className={`px-2.5 py-1 text-[12px] font-semibold rounded-full transition-all whitespace-nowrap ${
-                      groupMode === mode ? "bg-gray-800 text-white" : "text-gray-600 hover:text-[#1a1a1a]"
-                    }`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
+      <div className="sticky top-0 z-30 px-6 sm:px-10 lg:px-16 py-2.5 bg-[#fafaf8]">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 px-4 py-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              placeholder="상품명 / 코드"
+              className="border border-gray-300 px-3 py-1.5 text-[13px] rounded-lg focus:outline-none focus:border-[#1a1a1a] w-64 text-gray-800 placeholder:text-gray-400" />
+            <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)}
+              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+              <option value="all">브랜드</option>
+              {brands.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+              <option value="all">카테고리</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+              <option value="all">상태</option>
+              <option value="입고예정">입고예정</option>
+              <option value="입고완료">입고완료</option>
+              <option value="입고지연">입고지연</option>
+              <option value="일정미정">일정미정</option>
+            </select>
+            <label className="flex items-center gap-1.5 cursor-pointer select-none ml-2 bg-gray-100 rounded-lg px-2.5 py-1.5">
+              <input
+                type="checkbox"
+                checked={filterMarketing}
+                onChange={e => setFilterMarketing(e.target.checked)}
+                className="w-3.5 h-3.5 accent-orange-500 cursor-pointer"
+              />
+              <span className={`text-[12px] font-semibold ${filterMarketing ? "text-orange-500" : "text-gray-500"}`}>마케팅 활용</span>
+            </label>
+            {hasFilter && (
+              <button onClick={resetFilters} className="text-[12px] text-gray-500 hover:text-[#1a1a1a] underline underline-offset-2 font-medium">초기화</button>
             )}
-            {/* 뷰 전환 */}
-            <div className="flex items-center gap-1 border border-gray-200 rounded-full p-0.5">
-              {([ ["grid","▦ 이미지"], ["list","☰ 리스트"], ["calendar","⊞ 캘린더"] ] as [ViewMode, string][]).map(([mode, label]) => (
-                <button key={mode} onClick={() => setViewMode(mode)}
-                  className={`px-3 py-1 text-[12px] font-semibold rounded-full transition-all whitespace-nowrap ${
-                    viewMode === mode ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"
-                  }`}>
-                  {label}
+
+            <div className="ml-auto flex items-center gap-2">
+              {/* 그룹 기준 (캘린더·타임라인 뷰 제외) */}
+              {viewMode !== "calendar" && viewMode !== "timeline" && (
+                <div className="hidden sm:flex items-center gap-1 border border-gray-200 rounded-lg p-0.5">
+                  {([ ["month","월별"], ["date","날짜별"], ["category","카테고리별"], ["brand","브랜드별"] ] as [GroupMode, string][]).map(([mode, label]) => (
+                    <button key={mode} onClick={() => setGroupMode(mode)}
+                      className={`px-2.5 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${
+                        groupMode === mode ? "bg-gray-800 text-white" : "text-gray-600 hover:text-[#1a1a1a]"
+                      }`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* 뷰 전환: 이미지 / 타임라인 / 캘린더(PC) / 리스트 */}
+              <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5">
+                <button onClick={() => setViewMode("grid")}
+                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "grid" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
+                  ▦ 이미지
                 </button>
-              ))}
+                <button onClick={() => setViewMode("timeline")}
+                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "timeline" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
+                  ↓ 타임라인
+                </button>
+                <button onClick={() => setViewMode("calendar")}
+                  className={`hidden sm:block px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "calendar" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
+                  ⊞ 캘린더
+                </button>
+                <button onClick={() => setViewMode("list")}
+                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "list" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
+                  ☰ 리스트
+                </button>
+              </div>
+              <span className="text-[12px] text-gray-600 font-medium shrink-0">{filtered.length}개</span>
             </div>
-            <span className="text-[12px] text-gray-600 font-medium shrink-0">{filtered.length}개</span>
           </div>
         </div>
+        {/* 범례 */}
+        <p className="text-[10px] text-gray-400 mt-1.5 text-right pr-1">* 마케팅 활용 제품 = 주황 테두리 &nbsp;/&nbsp; 캘린더 보기 = 모바일 미지원</p>
       </div>
 
       {/* ── 본문 ── */}
@@ -1282,6 +1541,8 @@ export default function ArrivalTimeline() {
           <GridView grouped={grouped} groupMode={groupMode} onSelect={setSelectedProduct} />
         ) : viewMode === "list" ? (
           <ListView grouped={grouped} groupMode={groupMode} onSelect={setSelectedProduct} />
+        ) : viewMode === "timeline" ? (
+          <TimelineView products={filtered} onSelect={setSelectedProduct} />
         ) : (
           <CalendarView products={filtered} onSelect={setSelectedProduct} />
         )}

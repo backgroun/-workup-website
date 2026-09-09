@@ -93,7 +93,7 @@ function parseSheetRows(rows: string[][]): ArrivalProduct[] {
   const IDX = {
     no: 1, productType: 2, newArrivalType: 3, cat: 4, arrivalDate: 6,
     brand: 8, name: 17, code: 18, colorCode: 19,
-    fullCode: 20, colorName: 23, note: 28,
+    fullCode: 20, colorName: 23, note: 28, marketingUsage: 29,
     supplyPrice: 32, price: 33, quantity: 38,
   } as const;
 
@@ -117,6 +117,7 @@ function parseSheetRows(rows: string[][]): ArrivalProduct[] {
     const color = colorName || colorCode;
 
     if (!groups.has(key)) {
+      const marketingUsage = (row[IDX.marketingUsage] ?? "").trim() || undefined;
       groups.set(key, {
         productCode: baseCode,
         productName: (row[IDX.name] ?? "").trim(),
@@ -132,6 +133,7 @@ function parseSheetRows(rows: string[][]): ArrivalProduct[] {
         status,
         description: "",
         note: (row[IDX.note] ?? "").trim(),
+        marketingUsage,
         image: null,
         detailUrl: null,
         changeHistory: [],

@@ -14,6 +14,7 @@
     "status": "입고완료",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -33,25 +34,7 @@
     "status": "입고완료",
     "description": "",
     "note": "",
-    "image": null,
-    "detailUrl": null,
-    "changeHistory": []
-  },
-  {
-    "productCode": "KT6FUGAH642",
-    "productName": "리버시블 워싱 버킷햇",
-    "brand": "켄타",
-    "category": "ACC",
-    "productType": "사입",
-    "newArrivalType": "신규",
-    "color": "블랙,다크카키",
-    "supplyPrice": 9100,
-    "price": 13900,
-    "quantity": 2000,
-    "arrivalDate": "2026-08-20",
-    "status": "입고완료",
-    "description": "",
-    "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -95,25 +78,6 @@
     "changeHistory": []
   },
   {
-    "productCode": "KT6FMAJP639",
-    "productName": "기모 후디집업",
-    "brand": "켄타",
-    "category": "점퍼",
-    "productType": "사입",
-    "newArrivalType": "신규",
-    "color": "블랙,멜란지그레이",
-    "supplyPrice": 20800,
-    "price": 31900,
-    "quantity": 5000,
-    "arrivalDate": "2026-08-26",
-    "status": "입고완료",
-    "description": "",
-    "note": "아소트패킹 전달 완료",
-    "image": null,
-    "detailUrl": null,
-    "changeHistory": []
-  },
-  {
     "productCode": "DT6FUATL110",
     "productName": "오버립 스트라이프 긴팔티",
     "brand": "디트로잇",
@@ -128,6 +92,7 @@
     "status": "입고완료",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -223,6 +188,7 @@
     "status": "입고완료",
     "description": "",
     "note": "",
+    "marketingUsage": "A",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -296,7 +262,7 @@
     "price": 56900,
     "quantity": 5000,
     "arrivalDate": "2026-09-08",
-    "status": "입고예정",
+    "status": "입고완료",
     "description": "",
     "note": "",
     "image": null,
@@ -315,7 +281,7 @@
     "price": 42900,
     "quantity": 1500,
     "arrivalDate": "2026-09-08",
-    "status": "입고예정",
+    "status": "입고완료",
     "description": "",
     "note": "DT5WUAVS102\n제진행",
     "image": null,
@@ -334,7 +300,7 @@
     "price": 50900,
     "quantity": 6000,
     "arrivalDate": "2026-09-08",
-    "status": "입고예정",
+    "status": "입고완료",
     "description": "",
     "note": "",
     "image": null,
@@ -356,6 +322,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "C",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -584,6 +551,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "빈티지",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -603,6 +571,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "빈티지",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -755,6 +724,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -793,44 +763,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
-    "image": null,
-    "detailUrl": null,
-    "changeHistory": []
-  },
-  {
-    "productCode": "MD6FUATL277",
-    "productName": "피그먼트 맨투맨",
-    "brand": "매드독캠프",
-    "category": "긴팔티",
-    "productType": "위탁",
-    "newArrivalType": "신규",
-    "color": "블랙,그레이",
-    "supplyPrice": 18700,
-    "price": 28900,
-    "quantity": 3000,
-    "arrivalDate": "2026-09-15",
-    "status": "입고예정",
-    "description": "",
-    "note": "350g",
-    "image": null,
-    "detailUrl": null,
-    "changeHistory": []
-  },
-  {
-    "productCode": "MD6FUATL266",
-    "productName": "피그먼트 후드티셔츠",
-    "brand": "매드독캠프",
-    "category": "긴팔티",
-    "productType": "위탁",
-    "newArrivalType": "신규",
-    "color": "블랙",
-    "supplyPrice": 22000,
-    "price": 33900,
-    "quantity": 1500,
-    "arrivalDate": "2026-09-15",
-    "status": "입고예정",
-    "description": "",
-    "note": "350g",
+    "marketingUsage": "A",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -945,6 +878,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -964,6 +898,7 @@
     "status": "입고예정",
     "description": "",
     "note": "25FW 재진행\n원가 변경",
+    "marketingUsage": "대물량 러닝상품",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -983,6 +918,7 @@
     "status": "입고예정",
     "description": "",
     "note": "25FW 재진행\n원가 변경",
+    "marketingUsage": "대물량 러닝상품",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1159,6 +1095,25 @@
     "changeHistory": []
   },
   {
+    "productCode": "KT6FMAJP639",
+    "productName": "기모 후디집업",
+    "brand": "켄타",
+    "category": "점퍼",
+    "productType": "사입",
+    "newArrivalType": "신규",
+    "color": "블랙,멜란지그레이",
+    "supplyPrice": 20800,
+    "price": 31900,
+    "quantity": 5000,
+    "arrivalDate": "2026-09-20",
+    "status": "입고예정",
+    "description": "",
+    "note": "아소트패킹 전달 완료",
+    "image": null,
+    "detailUrl": null,
+    "changeHistory": []
+  },
+  {
     "productCode": "VC6WUACT101",
     "productName": "라쳇 하이넥 윈드브레이커",
     "brand": "볼컴",
@@ -1184,14 +1139,15 @@
     "category": "점퍼",
     "productType": "위탁",
     "newArrivalType": "신규",
-    "color": "챠콜그레이,베이지",
+    "color": "챠콜그레이",
     "supplyPrice": 39000,
     "price": 59900,
-    "quantity": 3000,
+    "quantity": 1500,
     "arrivalDate": "2026-09-21",
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1222,7 +1178,7 @@
     "category": "점퍼",
     "productType": "위탁",
     "newArrivalType": "신규",
-    "color": "블랙,세이지그린,블루",
+    "color": "블랙,올리브,블루",
     "supplyPrice": 29900,
     "price": 45900,
     "quantity": 6500,
@@ -1230,6 +1186,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1249,6 +1206,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1363,6 +1321,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1382,6 +1341,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1401,6 +1361,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1439,6 +1400,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "여성",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1458,6 +1420,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "여성",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1477,6 +1440,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "여성",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1496,6 +1460,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "여성",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1515,13 +1480,14 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
   },
   {
     "productCode": "KT6WMAPT550",
-    "productName": "켄타_보아고주파패딩팬츠A",
+    "productName": "보아고주파패딩팬츠A",
     "brand": "켄타",
     "category": "긴바지",
     "productType": "사입",
@@ -1531,6 +1497,25 @@
     "price": 19900,
     "quantity": 7500,
     "arrivalDate": "2026-09-23",
+    "status": "입고예정",
+    "description": "",
+    "note": "",
+    "image": null,
+    "detailUrl": null,
+    "changeHistory": []
+  },
+  {
+    "productCode": "KT6FUGAH642",
+    "productName": "리버시블 워싱 버킷햇",
+    "brand": "켄타",
+    "category": "ACC",
+    "productType": "사입",
+    "newArrivalType": "신규",
+    "color": "블랙,다크카키",
+    "supplyPrice": 9100,
+    "price": 13900,
+    "quantity": 2000,
+    "arrivalDate": "2026-09-24",
     "status": "입고예정",
     "description": "",
     "note": "",
@@ -1596,6 +1581,46 @@
     "changeHistory": []
   },
   {
+    "productCode": "MD6FUATL277",
+    "productName": "피그먼트 맨투맨",
+    "brand": "매드독캠프",
+    "category": "긴팔티",
+    "productType": "위탁",
+    "newArrivalType": "신규",
+    "color": "블랙,그레이",
+    "supplyPrice": 18700,
+    "price": 28900,
+    "quantity": 3000,
+    "arrivalDate": "2026-09-28",
+    "status": "입고예정",
+    "description": "",
+    "note": "350g",
+    "marketingUsage": "A",
+    "image": null,
+    "detailUrl": null,
+    "changeHistory": []
+  },
+  {
+    "productCode": "MD6FUATL266",
+    "productName": "피그먼트 후드티셔츠",
+    "brand": "매드독캠프",
+    "category": "긴팔티",
+    "productType": "위탁",
+    "newArrivalType": "신규",
+    "color": "블랙",
+    "supplyPrice": 22000,
+    "price": 33900,
+    "quantity": 1500,
+    "arrivalDate": "2026-09-28",
+    "status": "입고예정",
+    "description": "",
+    "note": "350g",
+    "marketingUsage": "A",
+    "image": null,
+    "detailUrl": null,
+    "changeHistory": []
+  },
+  {
     "productCode": "DT6WUAJP126",
     "productName": "시어에센셜패딩자켓",
     "brand": "디트로잇",
@@ -1610,6 +1635,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1800,6 +1826,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "A",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1819,6 +1846,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "A",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1838,6 +1866,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "A",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1857,6 +1886,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1876,6 +1906,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1895,6 +1926,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "웜기어",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1914,6 +1946,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "웜기어",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1933,6 +1966,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1952,6 +1986,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -1990,6 +2025,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2009,6 +2045,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2154,9 +2191,9 @@
     "productType": "위탁",
     "newArrivalType": "신규",
     "color": "블랙",
-    "supplyPrice": 0,
+    "supplyPrice": 67800,
     "price": 96900,
-    "quantity": 0,
+    "quantity": 3000,
     "arrivalDate": "2026-10-08",
     "status": "입고예정",
     "description": "",
@@ -2237,6 +2274,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "여성",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2332,6 +2370,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "C",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2351,6 +2390,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "C",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2370,6 +2410,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "작업복",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2389,6 +2430,7 @@
     "status": "입고예정",
     "description": "",
     "note": "25FW\n기존매입가_20,900\n기존판매가_37,900",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2446,6 +2488,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2465,6 +2508,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2484,6 +2528,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2503,6 +2548,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2522,6 +2568,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2541,6 +2588,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "D",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2845,6 +2893,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "B",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2864,6 +2913,7 @@
     "status": "입고예정",
     "description": "",
     "note": "25FW\n기존매입가_12,480\n기존판매가_24,900",
+    "marketingUsage": "이용진",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2883,6 +2933,7 @@
     "status": "입고예정",
     "description": "",
     "note": "리버서블",
+    "marketingUsage": "여성\n골덴이랑",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2902,6 +2953,7 @@
     "status": "입고예정",
     "description": "",
     "note": "5OZ항아리퀼팅\n넼리스,지퍼플라이",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2921,6 +2973,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2940,6 +2993,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []
@@ -2959,6 +3013,7 @@
     "status": "입고예정",
     "description": "",
     "note": "",
+    "marketingUsage": "V",
     "image": null,
     "detailUrl": null,
     "changeHistory": []

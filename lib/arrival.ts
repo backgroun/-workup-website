@@ -28,6 +28,7 @@ export interface ArrivalProduct {
   image: string | null;
   detailUrl: string | null;
   changeHistory?: ChangeHistoryEntry[];
+  marketingUsage?: string; // 마케팅 활용여부 (구글 시트 AD열)
 }
 
 export interface ArrivalOverride {
