@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import NoticeStatusSelect, { type NoticeStatus } from "./_components/NoticeStatusSelect";
 import NoticeStatusLine from "./_components/NoticeStatusLine";
 import PassEntriesTable from "./_components/PassEntriesTable";
@@ -79,6 +79,22 @@ export default function NoticesPreviewPage() {
   const [reregError, setReregError] = useState("");
   const [reregInfo, setReregInfo] = useState("");
   const [reregSaving, setReregSaving] = useState(false);
+
+  // ── 지점 화면 미리보기 ──
+  const [previewModalToken, setPreviewModalToken] = useState<string | null>(null);
+  const [previewFetching, setPreviewFetching] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const openPreviewModal = () => {
+    setPreviewFetching(true);
+    fetch("/api/admin/stores")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { pass_link_token: string | null }[]) => {
+        const first = Array.isArray(data) ? data.find((s) => s.pass_link_token) : null;
+        if (first?.pass_link_token) setPreviewModalToken(first.pass_link_token);
+        else alert("링크가 발급된 지점이 없습니다.");
+      })
+      .finally(() => setPreviewFetching(false));
+  };
 
   // ── 마감 관리 썸머리 ──
   const [dlCounts, setDlCounts] = useState<DeadlineStatus>({ 대기: 0, 진행중: 0, 마감: 0, total: 0 });
@@ -311,7 +327,37 @@ export default function NoticesPreviewPage() {
                 {n.label}
               </button>
             ))}
+            <div className="pt-2" ref={previewRef}>
+              <button
+                onClick={openPreviewModal}
+                disabled={previewFetching}
+                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-100 flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                {previewFetching ? "불러오는 중..." : "지점 화면 보기"}
+              </button>
+            </div>
           </nav>
+
+          {/* ── 지점 화면 미리보기 모달 ── */}
+          {previewModalToken && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setPreviewModalToken(null)}>
+              <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ width: 420, height: "85vh" }} onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+                  <span className="text-sm font-semibold text-gray-700">지점 화면 샘플</span>
+                  <button onClick={() => setPreviewModalToken(null)} className="text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <iframe src={`/b/${previewModalToken}`} className="flex-1 w-full border-0" title="지점 화면 샘플" />
+              </div>
+            </div>
+          )}
 
           {adminTab === "detail" ? (
             <div className="flex-1 min-w-0 space-y-4">
