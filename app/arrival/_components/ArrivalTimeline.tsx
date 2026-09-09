@@ -1636,7 +1636,7 @@ export default function ArrivalTimeline() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf8] overflow-x-clip">
+    <div className="min-h-screen bg-[#fafaf8]">
       {/* ── 필터 + 뷰 전환 (sticky) ── */}
       <div className="sticky top-0 z-30 px-3 sm:px-8 lg:px-14 pt-3 pb-1.5 bg-[#fafaf8]">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-3 py-2">

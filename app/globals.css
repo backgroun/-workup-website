@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* 모바일 가로 스크롤 전역 방지 */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 :root {
   --background: #FAFAF8;
   --foreground: #303236;
