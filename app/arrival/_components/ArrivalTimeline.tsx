@@ -1411,7 +1411,7 @@ function TimelineView({ products, onSelect }: {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {byMonth.map(({ mKey, label, dates, total }) => {
         const isCollapsed = collapsedMonths.has(mKey);
         return (
