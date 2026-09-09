@@ -94,6 +94,10 @@ function monthKeyLabel(key: string) {
   const [y, m] = key.split("-");
   return `${y}년 ${MONTH_KO[parseInt(m)-1]}`;
 }
+function monthKeyLabelShort(key: string) {
+  const [y, m] = key.split("-");
+  return `${String(y).slice(2)}.${parseInt(m)}월`;
+}
 
 const STATUS_META: Record<ArrivalStatus, { label: string; cls: string }> = {
   입고완료:   { label: "완료",      cls: "bg-gray-200 text-gray-600" },
@@ -1417,7 +1421,8 @@ function TimelineView({ products, onSelect }: {
               onClick={() => toggleMonth(mKey)}
               className="w-full flex items-center gap-2 mb-4 group text-left"
             >
-              <span className="text-[13px] font-black text-gray-700 tracking-wide group-hover:text-[#1a1a1a]">{label}</span>
+              <span className="sm:hidden text-[11px] font-black text-gray-700 tracking-wide group-hover:text-[#1a1a1a]">{mKey === "미정" ? "일정 미정" : monthKeyLabelShort(mKey)}</span>
+              <span className="hidden sm:inline text-[13px] font-black text-gray-700 tracking-wide group-hover:text-[#1a1a1a]">{label}</span>
               <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-gray-100 text-gray-600">{total}개</span>
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors ${isCollapsed ? "bg-[#1a1a1a] text-white" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>{isCollapsed ? "▼ 펼치기" : "▲ 접기"}</span>
             </button>
@@ -1436,7 +1441,7 @@ function TimelineView({ products, onSelect }: {
             ) : (
               <div className="relative">
                 {/* 세로 연결선: 날짜열(3.5rem) + 도트열(1.5rem) 절반 */}
-                <div className="absolute left-[4.25rem] sm:left-[5rem] top-2 bottom-2 w-px bg-gray-200 pointer-events-none" />
+                <div className="absolute left-[3.25rem] sm:left-[5rem] top-2 bottom-2 w-px bg-gray-200 pointer-events-none" />
 
                 <div className="space-y-5">
                   {dates.map(([dateKey, items]) => {
@@ -1444,7 +1449,7 @@ function TimelineView({ products, onSelect }: {
                     return (
                       <div key={dateKey} className="flex items-start gap-0">
                         {/* 날짜 레이블 열 */}
-                        <div className="w-[3.5rem] sm:w-[4rem] shrink-0 flex flex-col items-end pr-2 pt-0.5">
+                        <div className="w-[2.5rem] sm:w-[4rem] shrink-0 flex flex-col items-end pr-1.5 pt-0.5">
                           <span className="text-[8px] sm:text-[15px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
                           <span className="text-[8px] text-gray-500 font-semibold mt-0.5">{dayKo}요일</span>
                           <span className="text-[8px] text-gray-400">{items.length}개</span>
