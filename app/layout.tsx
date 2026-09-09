@@ -31,6 +31,7 @@ const notoSansKR = Noto_Sans_KR({ weight: ["400", "700", "900"], display: "optio
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
@@ -100,6 +101,8 @@ export default async function RootLayout({
         {/* 상단 탑배너를 없애고 가맹/제휴문의를 헤더 로고 행에 통합했으므로 탑바 높이는 항상 0 —
             카탈로그 뷰어 등에서 여전히 참조하는 --wu-topbar-h 변수는 하위 호환을 위해 유지한다. */}
         <style>{`:root{--wu-topbar-h:0px}`}</style>
+        {/* 모바일 핀치줌 차단 — iOS Safari는 meta viewport user-scalable=no를 무시하므로 JS로 처리 */}
+        <script dangerouslySetInnerHTML={{ __html: `document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});` }} />
         {/* 웹폰트 라이브러리 (영문+한글 장식용) — 슬라이딩 메뉴 텍스트 캔버스용 · 실제 사용 시에만 폰트 파일 다운로드 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
