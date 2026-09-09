@@ -1768,7 +1768,7 @@ export default function ArrivalTimeline() {
       </div>
 
       {/* ── 본문 ── */}
-      <div className="px-3 sm:px-8 lg:px-14 py-4">
+      <div className="px-3 sm:px-8 lg:px-14 py-4 overflow-x-hidden">
         {filtered.length === 0 ? (
           <div className="py-32 text-center">
             <p className="text-[13px] text-gray-400">조건에 맞는 상품이 없습니다.</p>
