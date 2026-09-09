@@ -74,7 +74,7 @@ export type NoticeCard = {
     id: string;
     status: NoticeStatus;
     notice_date: string;
-    // 정식등록된 상품이라도 이번 공지에 한해 대표 사진 아래에 덧붙이는 추가 설명·사진 (상품 자체 데이터는 그대로 둔다)
+    badge: string | null;
     description: string | null;
     extraImages: string[];
   };
@@ -115,7 +115,7 @@ export async function getPassContextByToken(token: string, date?: string): Promi
 
   let query = sb
     .from("notices")
-    .select("id, status, notice_date, product_id, description, extra_images, temp_name, temp_image_url, temp_tagline")
+    .select("id, status, notice_date, badge, product_id, description, extra_images, temp_name, temp_image_url, temp_tagline")
     .order("created_at", { ascending: true });
 
   if (date) {
@@ -173,6 +173,7 @@ export async function getPassContextByToken(token: string, date?: string): Promi
         id: n.id,
         status: n.status as NoticeStatus,
         notice_date: n.notice_date,
+        badge: (n.badge ?? null) as string | null,
         description: n.description ?? null,
         extraImages: (n.extra_images ?? []) as string[],
       },
@@ -286,12 +287,29 @@ export async function getStorePassHistoryByToken(
   return { storeName: store.name, items };
 }
 
-export async function getNoticeDateCounts(): Promise<Record<string, number>> {
+export type DatePassCounts = Record<string, { outbound: number; pass: number }>;
+
+export async function getNoticeDateCounts(storeId: number): Promise<DatePassCounts> {
   const sb = createAdminClient();
-  const { data } = await sb.from("notices").select("notice_date");
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    if (row.notice_date) counts[row.notice_date] = (counts[row.notice_date] ?? 0) + 1;
+
+  // 전체 공지 날짜 목록
+  const { data: notices } = await sb.from("notices").select("id, notice_date");
+  // 이 지점의 pass_entries (패스한 것만)
+  const { data: entries } = await sb
+    .from("pass_entries")
+    .select("notice_id, status")
+    .eq("store_id", storeId)
+    .eq("status", "패스");
+
+  const passSet = new Set((entries ?? []).map((e) => e.notice_id));
+
+  const counts: DatePassCounts = {};
+  for (const n of notices ?? []) {
+    if (!n.notice_date) continue;
+    const cur = counts[n.notice_date] ?? { outbound: 0, pass: 0 };
+    if (passSet.has(n.id)) cur.pass += 1;
+    else cur.outbound += 1;
+    counts[n.notice_date] = cur;
   }
   return counts;
 }

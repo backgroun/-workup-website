@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: Params) {
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("notices")
-    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, temp_name, temp_image_url, temp_tagline, products(id, name, image_url, tagline, registration_status)")
+    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, temp_name, temp_image_url, temp_tagline, badge, products(id, name, image_url, tagline, registration_status)")
     .eq("id", id)
     .single();
   if (error || !data) {
@@ -75,6 +75,10 @@ export async function PATCH(req: Request, { params }: Params) {
       }
     }
     if (status === "마감") patch.closed_at = new Date().toISOString();
+    // 대기로 되돌릴 때는 지점 응답(출고/패스) 초기화 — 재오픈 시 처음부터 다시 받는다.
+    if (status === "대기") {
+      await sb.from("pass_entries").delete().eq("notice_id", id);
+    }
     summary = `수동 상태 변경 → ${status}`;
   }
   if (body.description !== undefined) {
@@ -97,6 +101,10 @@ export async function PATCH(req: Request, { params }: Params) {
   if (body.temp_tagline !== undefined) {
     patch.temp_tagline = body.temp_tagline || null;
     summary = summary || "마감패스 상품 정보 수정";
+  }
+  if (body.badge !== undefined) {
+    patch.badge = body.badge || null;
+    summary = summary || "공지 뱃지 수정";
   }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "수정할 내용이 없습니다." }, { status: 400 });

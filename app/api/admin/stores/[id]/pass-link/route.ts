@@ -25,6 +25,7 @@ export async function POST(_req: Request, { params }: Params) {
     resourceLabel: "지점 링크",
     target: data?.name,
     targetId: id,
+    summary: `지점 링크 '${data?.name}' 재발급`,
   });
   return NextResponse.json(data);
 }

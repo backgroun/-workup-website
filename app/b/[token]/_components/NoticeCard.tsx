@@ -18,6 +18,13 @@ export default function NoticeCard({ item, token, closeTime }: { item: NoticeIte
 
   return (
     <div className={`rounded-2xl shadow-sm border p-6 ${isClosed ? "bg-gray-100 border-gray-200" : "bg-white border-gray-100"}`}>
+      {item.badge && (
+        <div className="mb-3">
+          <span className="inline-block px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+            {item.badge}
+          </span>
+        </div>
+      )}
       {!closed ? (
         <div className="flex items-stretch gap-2 mb-3">
           <div

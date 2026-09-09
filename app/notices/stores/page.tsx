@@ -10,6 +10,17 @@ type StoreRow = {
   pass_link_token: string | null;
 };
 
+type HistoryRow = { id: number; summary: string; actor_name: string; created_at: string };
+
+function fmtHistTime(iso: string) {
+  const d = new Date(iso);
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${m}/${day} ${h}:${min}`;
+}
+
 export default function PassLinksPage() {
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,9 +31,14 @@ export default function PassLinksPage() {
   const [previewStoreId, setPreviewStoreId] = useState<number | null>(null);
   const [showStatus, setShowStatus] = useState(false);
   const [search, setSearch] = useState("");
-  const previewStore = stores.find((s) => s.id === previewStoreId) ?? null;
+  // 링크 히스토리 모달
+  const [linkModalStoreId, setLinkModalStoreId] = useState<number | null>(null);
+  const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
-  // 지점코드순 정렬(코드 없는 매장은 맨 뒤) + 지점명/지점코드 검색.
+  const previewStore = stores.find((s) => s.id === previewStoreId) ?? null;
+  const linkModalStore = stores.find((s) => s.id === linkModalStoreId) ?? null;
+
   const filteredStores = stores
     .filter((s) => {
       const q = search.trim().toLowerCase();
@@ -83,6 +99,9 @@ export default function PassLinksPage() {
       if (res.ok) {
         showMsg("링크가 재발급됐습니다.");
         load();
+        if (linkModalStoreId === id) {
+          loadHistory(id);
+        }
       } else {
         const d = await res.json().catch(() => ({}));
         showMsg(`재발급 실패: ${d.error ?? res.status}`);
@@ -101,6 +120,29 @@ export default function PassLinksPage() {
     } catch {
       showMsg(url);
     }
+  };
+
+  const loadHistory = async (id: number) => {
+    setHistoryLoading(true);
+    setHistory([]);
+    try {
+      const res = await fetch(`/api/admin/stores/${id}/pass-link/history`);
+      const data = await res.json();
+      setHistory(Array.isArray(data) ? data : []);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const openLinkModal = (id: number) => {
+    setLinkModalStoreId(id);
+    setHistory([]);
+    loadHistory(id);
+  };
+
+  const closeLinkModal = () => {
+    setLinkModalStoreId(null);
+    setHistory([]);
   };
 
   return (
@@ -170,9 +212,20 @@ export default function PassLinksPage() {
                     </td>
                     <td className="px-5 py-3">
                       {s.pass_link_token ? (
-                        <button onClick={() => copyLink(s.pass_link_token)} className="text-sm text-[#3A6DF0] hover:underline">
-                          링크 복사
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => copyLink(s.pass_link_token)}
+                            className="px-2.5 py-1 text-[12px] font-semibold text-[#3A6DF0] border border-[#3A6DF0]/30 rounded-lg hover:bg-blue-50"
+                          >
+                            링크 복사
+                          </button>
+                          <button
+                            onClick={() => openLinkModal(s.id)}
+                            className="px-2.5 py-1 text-[12px] font-semibold text-gray-600 border border-gray-300 rounded-lg hover:border-gray-500 hover:text-gray-800"
+                          >
+                            히스토리
+                          </button>
+                        </div>
                       ) : (
                         <span className="px-2.5 py-0.5 text-[12px] font-semibold rounded-full bg-amber-100 text-amber-700">발급 필요</span>
                       )}
@@ -197,6 +250,7 @@ export default function PassLinksPage() {
         )}
       </div>
 
+      {/* 오른쪽 화면 확인 패널 */}
       <div className="fixed top-0 right-0 h-screen w-full sm:w-[32vw] bg-white border-l border-gray-200 shadow-2xl z-40 flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 gap-3">
           <span className="text-sm font-semibold text-gray-900 truncate">
@@ -204,15 +258,6 @@ export default function PassLinksPage() {
           </span>
           {previewStore && (
             <div className="flex items-center gap-2 flex-shrink-0">
-              {previewStore.pass_link_token && (
-                <button
-                  type="button"
-                  onClick={() => copyLink(previewStore.pass_link_token)}
-                  className="px-2.5 py-1 text-[12px] font-semibold text-[#3A6DF0] border border-[#3A6DF0]/30 rounded-lg hover:bg-blue-50"
-                >
-                  링크 복사
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => regenerate(previewStore.id, previewStore.name)}
@@ -232,7 +277,8 @@ export default function PassLinksPage() {
             </div>
           )}
         </div>
-        <div className="flex-1 bg-gray-100">
+
+        <div className="flex-1 bg-gray-100 min-h-0 overflow-hidden">
           {previewStore?.pass_link_token ? (
             <iframe
               key={previewStore.id}
@@ -251,6 +297,87 @@ export default function PassLinksPage() {
           )}
         </div>
       </div>
+
+      {/* 링크 확인 모달 */}
+      {linkModalStore && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={closeLinkModal}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="font-bold text-[16px] text-gray-900">{linkModalStore.name} 링크 히스토리</h3>
+              <button onClick={closeLinkModal} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {linkModalStore.pass_link_token ? (
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2">현재 링크 주소</p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 flex items-start gap-2">
+                    <p className="text-[12px] text-gray-700 font-mono break-all flex-1 select-all leading-relaxed">
+                      {`${typeof window !== "undefined" ? window.location.origin : ""}/b/${linkModalStore.pass_link_token}`}
+                    </p>
+                    <button
+                      onClick={() => copyLink(linkModalStore.pass_link_token)}
+                      className="flex-shrink-0 px-2.5 py-1 text-[12px] font-semibold text-[#3A6DF0] border border-[#3A6DF0]/30 rounded-lg hover:bg-blue-50"
+                    >
+                      복사
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
+                  아직 링크가 발급되지 않았습니다.
+                </div>
+              )}
+
+              {/* 재발급 히스토리 */}
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2">재발급 히스토리</p>
+                <div className="border border-gray-100 rounded-xl max-h-52 overflow-y-auto">
+                  {historyLoading ? (
+                    <p className="px-4 py-3 text-[12px] text-gray-400">불러오는 중...</p>
+                  ) : history.length === 0 ? (
+                    <p className="px-4 py-3 text-[12px] text-gray-400">재발급 기록이 없습니다.</p>
+                  ) : (
+                    <ul className="divide-y divide-gray-50">
+                      {history.map((h) => (
+                        <li key={h.id} className="px-4 py-2.5 flex items-start justify-between gap-2">
+                          <span className="text-[12px] text-gray-700">{h.summary}</span>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-[11px] text-gray-400 font-mono">{fmtHistTime(h.created_at)}</p>
+                            <p className="text-[11px] text-gray-500">{h.actor_name}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1 border-t border-gray-100">
+                <button
+                  onClick={() => regenerate(linkModalStore.id, linkModalStore.name)}
+                  disabled={regenId === linkModalStore.id}
+                  className="flex-1 px-4 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 disabled:opacity-50"
+                >
+                  {regenId === linkModalStore.id ? "처리 중..." : linkModalStore.pass_link_token ? "재발급" : "발급"}
+                </button>
+                <button
+                  onClick={closeLinkModal}
+                  className="flex-1 px-4 py-2 text-sm font-semibold border border-gray-200 rounded-xl hover:bg-gray-50"
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showStatus && <StoreStatusModal onClose={() => setShowStatus(false)} />}
     </>

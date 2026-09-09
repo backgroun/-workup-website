@@ -27,17 +27,19 @@ export default async function BranchPassPage({ params, searchParams }: Props) {
   const todayKst = todayKstDate();
   const selectedDate = date && date !== todayKst ? date : undefined;
 
-  const [ctx, schedule, dateCounts] = await Promise.all([
+  const [ctx, schedule] = await Promise.all([
     getPassContextByToken(token, selectedDate),
     getNoticeSchedule(),
-    getNoticeDateCounts(),
   ]);
   if (!ctx) notFound();
+
+  const dateCounts = await getNoticeDateCounts(ctx.store.id);
 
   const items: NoticeItem[] = ctx.notices.map((card) => ({
     noticeId: card.notice.id,
     status: card.notice.status,
     productName: card.product?.name ?? "상품 정보 없음",
+    badge: card.notice.badge,
     images: [card.product?.image_url, ...(card.product?.detail_image_urls ?? [])].filter(
       (u): u is string => Boolean(u)
     ),

@@ -5,12 +5,15 @@ import CoverAndDetailImagesField from "./CoverAndDetailImagesField";
 
 // 마감패스 전용(product_id 없음) 공지 수정 — products 테이블과 무관하게 공지(notices)에
 // 직접 저장된 이름·썸네일·설명 + 추가 사진을 한 화면에서 고친다.
+const PRESET_BADGES = ["재공지", "정보변경", "가격변동"];
+
 export default function TempNoticeEditModal({
   noticeId,
   initialName,
   initialImageUrl,
   initialTagline,
   initialExtraImages,
+  initialBadge,
   onClose,
   onSaved,
 }: {
@@ -19,18 +22,24 @@ export default function TempNoticeEditModal({
   initialImageUrl: string | null;
   initialTagline: string | null;
   initialExtraImages: string[];
+  initialBadge?: string | null;
   onClose: () => void;
   onSaved: (data: {
     temp_name: string;
     temp_image_url: string | null;
     temp_tagline: string | null;
     extra_images: string[];
+    badge: string | null;
   }) => void;
 }) {
   const [name, setName] = useState(initialName);
   const [cover, setCover] = useState(initialImageUrl ?? "");
   const [tagline, setTagline] = useState(initialTagline ?? "");
   const [extraImages, setExtraImages] = useState<string[]>(initialExtraImages);
+  const [badgeValue, setBadgeValue] = useState(initialBadge ?? "");
+  const [showCustomBadge, setShowCustomBadge] = useState(
+    !!initialBadge && !PRESET_BADGES.includes(initialBadge)
+  );
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,6 +65,7 @@ export default function TempNoticeEditModal({
           temp_image_url: cover || null,
           temp_tagline: tagline.trim() || null,
           extra_images: extraImages,
+          badge: badgeValue.trim() || null,
         }),
       });
       const data = await res.json();
@@ -68,6 +78,7 @@ export default function TempNoticeEditModal({
         temp_image_url: data.temp_image_url ?? null,
         temp_tagline: data.temp_tagline ?? null,
         extra_images: data.extra_images ?? [],
+        badge: data.badge ?? null,
       });
     } catch {
       setError("네트워크 오류로 저장에 실패했습니다.");
@@ -112,6 +123,40 @@ export default function TempNoticeEditModal({
             onInfo={showInfo}
             coverSize={140}
           />
+
+          {/* 뱃지 */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-600 mb-1.5">뱃지 <span className="font-normal text-gray-400">(선택)</span></label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              <button
+                type="button"
+                onClick={() => { setBadgeValue(""); setShowCustomBadge(false); }}
+                className={`px-2.5 py-1 text-[12px] font-semibold rounded-full border transition-colors ${badgeValue === "" && !showCustomBadge ? "bg-gray-200 border-gray-400 text-gray-800" : "border-gray-200 text-gray-500 hover:border-gray-400"}`}
+              >없음</button>
+              {PRESET_BADGES.map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => { setBadgeValue(b); setShowCustomBadge(false); }}
+                  className={`px-2.5 py-1 text-[12px] font-semibold rounded-full border transition-colors ${badgeValue === b && !showCustomBadge ? "bg-orange-100 border-orange-400 text-orange-800" : "border-gray-200 text-gray-500 hover:border-orange-200 hover:text-orange-700"}`}
+                >{b}</button>
+              ))}
+              <button
+                type="button"
+                onClick={() => { setShowCustomBadge(true); if (PRESET_BADGES.includes(badgeValue)) setBadgeValue(""); }}
+                className={`px-2.5 py-1 text-[12px] font-semibold rounded-full border transition-colors ${showCustomBadge ? "bg-orange-100 border-orange-400 text-orange-800" : "border-gray-200 text-gray-500 hover:border-orange-200 hover:text-orange-700"}`}
+              >직접 입력</button>
+            </div>
+            {showCustomBadge && (
+              <input
+                value={badgeValue}
+                onChange={(e) => setBadgeValue(e.target.value)}
+                placeholder="뱃지 내용 입력 (예: 한정수량)"
+                maxLength={10}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#303236]"
+              />
+            )}
+          </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-600 mb-1.5">상품명</label>

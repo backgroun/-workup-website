@@ -10,8 +10,8 @@ export type NoticeItem = {
   noticeId: string;
   status: "대기" | "진행중" | "마감";
   productName: string;
+  badge?: string | null;
   images: string[];
-  // 서버에서 DOMPurify로 이미 살균된 HTML 문자열 — 렌더링 시점(여기)에서만 dangerouslySetInnerHTML로 표시한다.
   taglineHtml: string | null;
   descriptionHtml: string | null;
   extraImages: string[];

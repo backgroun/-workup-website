@@ -8,7 +8,7 @@ export async function GET() {
   const sb = createAdminClient();
   const { data, error } = await sb
     .from("notices")
-    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, temp_name, temp_image_url, temp_tagline, products(id, name, image_url, registration_status)")
+    .select("id, product_id, notice_date, status, opened_at, closed_at, created_at, description, extra_images, temp_name, temp_image_url, temp_tagline, badge, products(id, name, image_url, registration_status)")
     .order("notice_date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,6 +34,7 @@ export async function POST(req: Request) {
       status: "대기",
       description: body.description ?? null,
       extra_images: Array.isArray(body.extra_images) ? body.extra_images : [],
+      badge: body.badge ?? null,
     })
     .select()
     .single();
