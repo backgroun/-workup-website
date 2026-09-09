@@ -254,7 +254,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
         onTouchEnd={onTouchEnd}
       >
         {/* 닫기 버튼 (최소형, 오른쪽 상단) */}
-        <div className="flex justify-end px-3 pt-2 pb-0 shrink-0">
+        <div className="flex justify-end px-2 pt-1 pb-0 sm:px-3 sm:pt-2 shrink-0">
           <div className="flex items-center gap-1">
             <button
               onClick={handleShare}
@@ -272,13 +272,18 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
           <div className="flex flex-col sm:flex-row gap-0 sm:items-start">
             {/* 이미지 영역 */}
             <div className="w-full sm:w-[520px] shrink-0">
-              <div className="px-4 pt-2 pb-2 sm:px-4 sm:pt-4 sm:pb-4">
+              <div className="relative px-3 pt-1 pb-1 sm:px-4 sm:pt-4 sm:pb-4">
                 <ImageGallery product={product} aspectCls="aspect-square sm:aspect-[3/4]" />
+                {product.marketingUsage && (
+                  <span className="sm:hidden absolute top-4 left-6 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full shadow">
+                    마케팅
+                  </span>
+                )}
               </div>
             </div>
 
             {/* 정보 영역 */}
-            <div className="flex-1 flex flex-col gap-3 px-4 sm:px-4 sm:pr-6 pb-6 pt-1 sm:pt-4 min-w-0 sm:border-l sm:border-gray-100">
+            <div className="flex-1 flex flex-col gap-1.5 sm:gap-3 px-3 sm:px-4 sm:pr-6 pb-3 sm:pb-6 pt-0.5 sm:pt-4 min-w-0 sm:border-l sm:border-gray-100">
 
             {/* ── PC 레이아웃 (sm: 이상) ── */}
             <div className="hidden sm:block">
@@ -338,44 +343,44 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
 
             {/* ── 모바일 레이아웃 (sm: 미만) ── */}
             <div className="sm:hidden">
-              <h2 className="text-[18px] font-bold text-[#1a1a1a] leading-snug mb-3">{product.productName}</h2>
+              <h2 className="text-[15px] font-bold text-[#1a1a1a] leading-snug mb-1.5">{product.productName}</h2>
               <table className="w-full border-collapse">
                 <tbody>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드/코드</td>
-                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
+                    <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-[72px] align-middle">브랜드/코드</td>
+                    <td className="py-1 text-[11px] text-[#1a1a1a] align-middle">
                       <span className="font-semibold">{product.brand}</span>
-                      {product.productCode && <span className="text-gray-300 mx-1.5">|</span>}
+                      {product.productCode && <span className="text-gray-300 mx-1">|</span>}
                       <span className="font-mono text-gray-500">{product.productCode}</span>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상태</td>
-                    <td className="py-2 text-[12px] align-middle">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상태</td>
+                    <td className="py-1 text-[11px] align-middle">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[#1a1a1a]">{full}</span>
-                        <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
+                        <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
                       </div>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
-                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
+                    <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
+                    <td className="py-1 text-[11px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
                   </tr>
                   {(product.productType || product.newArrivalType) && (
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">구분</td>
-                      <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{[product.productType, product.newArrivalType].filter(Boolean).join(" / ")}</td>
+                      <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">구분</td>
+                      <td className="py-1 text-[11px] text-[#1a1a1a] align-middle">{[product.productType, product.newArrivalType].filter(Boolean).join(" / ")}</td>
                     </tr>
                   )}
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
-                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
+                    <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
+                    <td className="py-1 text-[11px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급/판매가</td>
-                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                    <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급/판매가</td>
+                    <td className="py-1 text-[11px] text-[#1a1a1a] align-middle">
+                      <div className="flex items-center gap-1 flex-wrap">
                         <span className="text-gray-500">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</span>
                         <span className="text-gray-300">/</span>
                         <span className="font-bold">{product.price > 0 ? fmtPrice(product.price) : "—"}</span>
@@ -384,8 +389,8 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
                   </tr>
                   {product.quantity != null && product.quantity > 0 && (
                     <tr className="border-b border-gray-100">
-                      <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
-                      <td className="py-2 text-[12px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
+                      <td className="py-1 pr-3 text-[10px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
+                      <td className="py-1 text-[11px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
                     </tr>
                   )}
                 </tbody>
@@ -393,22 +398,12 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
             </div>
 
             {product.marketingUsage && (
-              <>
-                {/* 모바일: 뱃지 */}
-                <div className="sm:hidden">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 border border-orange-300 rounded-full text-[11px] text-orange-600 font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
-                    마케팅 · {product.marketingUsage}
-                  </span>
+              <div className="hidden sm:block border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] tracking-widest text-orange-400 uppercase font-bold shrink-0">마케팅</span>
+                  <span className="text-[13px] text-orange-700 font-semibold">{product.marketingUsage}</span>
                 </div>
-                {/* PC: 박스 */}
-                <div className="hidden sm:block border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] tracking-widest text-orange-400 uppercase font-bold shrink-0">마케팅</span>
-                    <span className="text-[13px] text-orange-700 font-semibold">{product.marketingUsage}</span>
-                  </div>
-                </div>
-              </>
+              </div>
             )}
 
             {product.description && (
