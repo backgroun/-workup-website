@@ -31,6 +31,8 @@ const notoSansKR = Noto_Sans_KR({ weight: ["400", "700", "900"], display: "optio
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
