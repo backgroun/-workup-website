@@ -1445,7 +1445,7 @@ function TimelineView({ products, onSelect }: {
                       <div key={dateKey} className="flex items-start gap-0">
                         {/* 날짜 레이블 열 */}
                         <div className="w-[3.5rem] sm:w-[4rem] shrink-0 flex flex-col items-end pr-2 pt-0.5">
-                          <span className="text-[14px] sm:text-[15px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
+                          <span className="text-[8px] sm:text-[15px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
                           <span className="text-[8px] text-gray-500 font-semibold mt-0.5">{dayKo}요일</span>
                           <span className="text-[8px] text-gray-400">{items.length}개</span>
                         </div>
