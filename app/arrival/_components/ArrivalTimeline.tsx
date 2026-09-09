@@ -118,7 +118,7 @@ function ProductImage({ product, size = "md" }: { product: ArrivalProduct; size?
   const aspectCls = "aspect-[3/4]";
   if (failed) {
     return (
-      <div className={`w-full ${aspectCls} bg-[#f0eeeb] flex flex-col items-center justify-center gap-1`}>
+      <div className={`w-full ${aspectCls} bg-white flex flex-col items-center justify-center gap-1`}>
         <span className="text-[10px] tracking-widest text-gray-500 font-mono uppercase">{product.productCode}</span>
         <div className="w-6 h-px bg-gray-300" />
         <span className="text-[10px] tracking-widest text-gray-400 uppercase">no image</span>
@@ -127,7 +127,7 @@ function ProductImage({ product, size = "md" }: { product: ArrivalProduct; size?
   }
   return (
     <img src={src} alt={product.productName}
-      className={`w-full ${aspectCls} object-cover bg-[#f0eeeb]`}
+      className={`w-full ${aspectCls} object-cover bg-white`}
       loading="lazy" decoding="async"
       onError={() => setFailed(true)} />
   );
@@ -150,7 +150,7 @@ function ImageGallery({ product, aspectCls = "aspect-[3/4]" }: { product: Arriva
 
   if (allFailed) {
     return (
-      <div className={`w-full ${aspectCls} bg-[#f0eeeb] flex flex-col items-center justify-center gap-1 rounded-sm`}>
+      <div className={`w-full ${aspectCls} bg-white flex flex-col items-center justify-center gap-1 rounded-sm`}>
         <span className="text-[10px] tracking-widest text-gray-500 font-mono uppercase">{product.productCode}</span>
         <div className="w-6 h-px bg-gray-300" />
         <span className="text-[10px] tracking-widest text-gray-400 uppercase">no image</span>
@@ -173,13 +173,13 @@ function ImageGallery({ product, aspectCls = "aspect-[3/4]" }: { product: Arriva
         )}
 
         {/* 이미지 */}
-        <div className={`relative flex-1 ${aspectCls} overflow-hidden rounded-sm bg-[#f0eeeb]`}>
+        <div className={`relative flex-1 ${aspectCls} overflow-hidden rounded-sm bg-white`}>
           {!failedSet.has(index) && (
             <img
               key={images[index]}
               src={images[index]}
               alt={`${product.productName} ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               onError={() => markFailed(index)}
             />
           )}
@@ -204,13 +204,15 @@ function ImageGallery({ product, aspectCls = "aspect-[3/4]" }: { product: Arriva
       {/* 썸네일 스트립 */}
       {images.length > 1 && (
         <div className="px-11">
-          <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-1.5">
+          <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-1.5 pt-0.5 pl-0.5">
             {images.map((src, i) => (
               <button key={i} onClick={() => setIndex(i)}
-                className={`shrink-0 w-14 h-14 overflow-hidden rounded transition-all ${i === index ? "ring-2 ring-[#1a1a1a]" : "opacity-45 hover:opacity-75"}`}>
-                {!failedSet.has(i) && (
-                  <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" onError={() => markFailed(i)} />
-                )}
+                className={`shrink-0 w-14 h-14 rounded transition-all ${i === index ? "ring-2 ring-[#1a1a1a]" : "opacity-45 hover:opacity-75"}`}>
+                <div className="w-full h-full overflow-hidden rounded">
+                  {!failedSet.has(i) && (
+                    <img src={src} alt="" className="w-full h-full object-contain" loading="lazy" decoding="async" onError={() => markFailed(i)} />
+                  )}
+                </div>
               </button>
             ))}
           </div>
@@ -243,129 +245,107 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
       <div
-        className="bg-white w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
+        className="bg-white w-full max-w-xl flex flex-col rounded-2xl overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* 모바일 핸들 */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-gray-200">
-          <span className="text-[11px] sm:text-[12px] tracking-[0.2em] text-gray-500 uppercase font-semibold">PRODUCT DETAIL</span>
+        {/* 닫기 버튼 (최소형, 오른쪽 상단) */}
+        <div className="flex justify-end px-3 pt-2 pb-0 shrink-0">
           <div className="flex items-center gap-1">
-            {/* 공유 버튼 */}
             <button
               onClick={handleShare}
               title="링크 공유"
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 hover:text-[#1a1a1a] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100"
+              className="hidden sm:flex items-center gap-1 text-[11px] font-semibold text-gray-400 hover:text-[#1a1a1a] transition-colors px-2 py-1 rounded-lg hover:bg-gray-100"
             >
-              {copied ? (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span className="text-green-600">복사됨</span>
-                </>
-              ) : (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                  </svg>
-                  <span>공유</span>
-                </>
-              )}
+              {copied ? <span className="text-green-600">복사됨</span> : <span>공유</span>}
             </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-2xl leading-none w-8 h-8 flex items-center justify-center">×</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100">×</button>
           </div>
         </div>
 
-        {/* 본문 */}
-        <div className="flex flex-col sm:flex-row gap-0 sm:gap-8 sm:p-6">
-          {/* 이미지 영역 */}
-          <div className="sm:w-[480px] shrink-0">
-            {/* 모바일: 4:3 비율 */}
-            <div className="sm:hidden pt-4 pb-2 px-5">
-              <ImageGallery product={product} aspectCls="aspect-[4/3]" />
+        {/* 본문 (스크롤) */}
+        <div className="overflow-y-auto">
+          <div className="flex flex-col gap-0">
+            {/* 이미지 영역 */}
+            <div className="w-full">
+              <div className="px-4 pt-2 pb-2 sm:px-6 sm:pt-2 sm:pb-3">
+                <ImageGallery product={product} aspectCls="aspect-square sm:aspect-[5/4]" />
+              </div>
             </div>
-            {/* PC: 3:4 비율 (세로형) */}
-            <div className="hidden sm:block">
-              <ImageGallery product={product} aspectCls="aspect-[3/4]" />
-            </div>
-          </div>
 
-          {/* 정보 영역 */}
-          <div className="flex-1 flex flex-col gap-5 px-5 sm:px-0 pb-6 sm:pb-0 pt-2 sm:pt-1">
-            {/* 브랜드 + 제품명 */}
-            <div>
-              <p className="text-[11px] tracking-[0.2em] text-gray-400 uppercase font-semibold mb-1">{product.brand}</p>
-              <h2 className="text-[20px] sm:text-[22px] font-bold text-[#1a1a1a] leading-snug">{product.productName}</h2>
-            </div>
+            {/* 정보 영역 */}
+            <div className="flex-1 flex flex-col gap-3 px-4 sm:px-6 pb-6 pt-1 min-w-0">
+            {/* 제품명 */}
+            <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1a1a1a] leading-snug">{product.productName}</h2>
 
             {/* 스펙 테이블 */}
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full border-collapse">
               <tbody>
+                {/* 브랜드 | 코드 */}
                 <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-24 align-middle">상태</td>
-                  <td className="py-2.5 align-middle">
-                    <span className={`inline-block text-[12px] px-2.5 py-1 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
+                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드</td>
+                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
+                    <span className="font-semibold">{product.brand}</span>
+                    {product.productCode && <span className="text-gray-300 mx-1.5">|</span>}
+                    <span className="font-mono text-gray-500">{product.productCode}</span>
+                  </td>
+                </tr>
+                {/* 상태 + 입고일 한 줄 */}
+                <tr className="border-b border-gray-100">
+                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상태</td>
+                  <td className="py-2 text-[12px] align-middle">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[#1a1a1a]">{full}</span>
+                      <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
+                    </div>
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">코드</td>
-                  <td className="py-2.5 font-mono text-[12px] text-[#1a1a1a] align-middle">{product.productCode}</td>
+                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
+                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
                 </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
-                  <td className="py-2.5 text-[#1a1a1a] align-middle">{product.category || "—"}</td>
-                </tr>
-                {product.productType && (
+                {(product.productType || product.newArrivalType) && (
                   <tr className="border-b border-gray-100">
-                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상품구분</td>
-                    <td className="py-2.5 text-[#1a1a1a] align-middle">{product.productType}</td>
-                  </tr>
-                )}
-                {product.newArrivalType && (
-                  <tr className="border-b border-gray-100">
-                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">신상구분</td>
-                    <td className="py-2.5 text-[#1a1a1a] align-middle">{product.newArrivalType}</td>
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">구분</td>
+                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
+                      {[product.productType, product.newArrivalType].filter(Boolean).join(" / ")}
+                    </td>
                   </tr>
                 )}
                 <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
-                  <td className="py-2.5 text-[#1a1a1a] align-middle">{product.color || "—"}</td>
+                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
+                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
                 </tr>
+                {/* 공급가 / 판매가 한 줄 */}
                 <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급가</td>
-                  <td className="py-2.5 text-[#1a1a1a] align-middle">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">판매가</td>
-                  <td className="py-2.5 font-bold text-[16px] text-[#1a1a1a] align-middle">{product.price > 0 ? fmtPrice(product.price) : "—"}</td>
+                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급/판매가</td>
+                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-gray-500">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</span>
+                      <span className="text-gray-300">/</span>
+                      <span className="font-bold">{product.price > 0 ? fmtPrice(product.price) : "—"}</span>
+                    </div>
+                  </td>
                 </tr>
                 {product.quantity != null && product.quantity > 0 && (
                   <tr className="border-b border-gray-100">
-                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
-                    <td className="py-2.5 text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
+                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
                   </tr>
                 )}
-                <tr className="last:border-0">
-                  <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">입고일</td>
-                  <td className="py-2.5 text-[#1a1a1a] align-middle">{full}</td>
-                </tr>
               </tbody>
             </table>
 
             {product.marketingUsage && (
-              <div className="border border-orange-300 bg-orange-50 rounded-lg px-3 py-2.5">
-                <p className="text-[10px] tracking-widest text-orange-400 uppercase font-bold mb-1">마케팅 활용여부</p>
-                <p className="text-[13px] text-orange-700 font-semibold leading-snug">{product.marketingUsage}</p>
+              <div className="border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] tracking-widest text-orange-400 uppercase font-bold shrink-0">마케팅</span>
+                  <span className="text-[13px] text-orange-700 font-semibold">{product.marketingUsage}</span>
+                </div>
               </div>
             )}
 
@@ -397,14 +377,16 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
               </div>
             )}
           </div>
+          </div>
         </div>
+      </div>
       </div>
     </div>
   );
 }
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
-type ViewMode  = "grid" | "list" | "calendar" | "timeline";
+type ViewMode  = "grid" | "list" | "calendar" | "timeline" | "gantt";
 type GroupMode = "date" | "month" | "category" | "brand";
 
 // ─── 상품 카드 (그리드용) ─────────────────────────────────────────────────────
@@ -487,30 +469,30 @@ function GroupHeader({ groupKey, groupMode, count }: { groupKey: string; groupMo
   if (groupMode === "date") {
     const { mm, dd, day, month } = fmtDate(groupKey);
     return (
-      <div className="flex items-baseline gap-4 mb-5">
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-black text-[#1a1a1a] tracking-tighter leading-none">{mm}.{dd}</span>
-          <span className="text-[13px] tracking-[0.15em] text-gray-600 uppercase font-semibold">{day}</span>
-          <span className="text-[13px] text-gray-500">{month}</span>
+      <div className="flex items-baseline gap-3 mb-4">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[20px] font-black text-[#1a1a1a] tracking-tighter leading-none">{mm}.{dd}</span>
+          <span className="text-[12px] tracking-[0.12em] text-gray-600 uppercase font-semibold">{day}</span>
+          <span className="text-[12px] text-gray-500">{month}</span>
         </div>
-        <span className="text-[13px] text-gray-500 font-medium">{count}개</span>
+        <span className="text-[12px] text-gray-500 font-medium">{count}개</span>
       </div>
     );
   }
   if (groupMode === "month") {
     const label = groupKey === "미정" ? "일정 미정" : monthKeyLabel(groupKey);
     return (
-      <div className="flex items-baseline gap-4 mb-5">
-        <span className="text-3xl font-black text-[#1a1a1a] tracking-tight leading-none">{label}</span>
-        <span className="text-[13px] text-gray-500 font-medium">{count}개</span>
+      <div className="flex items-baseline gap-3 mb-4">
+        <span className="text-[18px] font-black text-[#1a1a1a] tracking-tight leading-none">{label}</span>
+        <span className="text-[12px] text-gray-500 font-medium">{count}개</span>
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-4 mb-5">
-      <span className="text-2xl font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{groupKey || "미분류"}</span>
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-[16px] font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{groupKey || "미분류"}</span>
       {groupMode === "brand" && groupKey && groupKey !== "미분류" && <BrandCatalogLink brand={groupKey} />}
-      <span className="text-[13px] text-gray-500 font-medium ml-auto">{count}개</span>
+      <span className="text-[12px] text-gray-500 font-medium ml-auto">{count}개</span>
     </div>
   );
 }
@@ -533,8 +515,8 @@ function GridView({ grouped, groupMode, onSelect }: {
             {collapsible ? (
               <div className="flex items-center gap-3 mb-5">
                 <button onClick={() => toggle(key)} className="flex items-center gap-3 group text-left flex-1 min-w-0">
-                  <span className="text-2xl font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{key || "미분류"}</span>
-                  <span className="text-[13px] text-gray-500 font-medium">{items.length}개</span>
+                  <span className="text-[16px] font-black text-[#1a1a1a] tracking-tight leading-none uppercase">{key || "미분류"}</span>
+                  <span className="text-[12px] text-gray-500 font-medium">{items.length}개</span>
                   <span className="ml-auto text-[11px] text-gray-400 group-hover:text-gray-600">{isCollapsed ? "▼ 펼치기" : "▲ 접기"}</span>
                 </button>
                 {groupMode === "brand" && key && key !== "미분류" && <BrandCatalogLink brand={key} />}
@@ -1174,6 +1156,153 @@ function CalendarView({ products, onSelect }: {
   );
 }
 
+// ─── 간트 뷰 (브랜드 × 날짜 매트릭스) ──────────────────────────────────────
+function GanttView({ products, onSelect }: {
+  products: ArrivalProduct[]; onSelect: (p: ArrivalProduct) => void;
+}) {
+  const todayIso = useMemo(() => {
+    const d = new Date(); d.setHours(0,0,0,0);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }, []);
+
+  // 고유 날짜 목록 (오름차순) & 브랜드 목록 (오름차순)
+  const dates  = useMemo(() => Array.from(new Set(products.map(p => p.arrivalDate).filter(Boolean))).sort(), [products]);
+  const brands = useMemo(() => Array.from(new Set(products.map(p => p.brand))).sort(), [products]);
+
+  // 셀 조회용 맵 [brand][date] → ArrivalProduct[]
+  const cellMap = useMemo(() => {
+    const m = new Map<string, Map<string, ArrivalProduct[]>>();
+    for (const p of products) {
+      if (!p.arrivalDate) continue;
+      if (!m.has(p.brand)) m.set(p.brand, new Map());
+      const dm = m.get(p.brand)!;
+      if (!dm.has(p.arrivalDate)) dm.set(p.arrivalDate, []);
+      dm.get(p.arrivalDate)!.push(p);
+    }
+    return m;
+  }, [products]);
+
+  // 날짜 미정 제품
+  const undated = useMemo(() => products.filter(p => !p.arrivalDate), [products]);
+
+  if (dates.length === 0) return (
+    <div className="py-20 text-center text-gray-400 text-[14px]">표시할 데이터가 없습니다.</div>
+  );
+
+  // 날짜 헤더를 월별로 그룹 (colspan용)
+  type MonthGroup = { label: string; dates: string[] };
+  const monthGroups: MonthGroup[] = [];
+  for (const iso of dates) {
+    const { mm: m } = fmtDate(iso);
+    const d = parseDate(iso)!;
+    const label = `${d.getFullYear()}. ${d.getMonth()+1}월`;
+    const last = monthGroups[monthGroups.length - 1];
+    if (last && last.label === label) last.dates.push(iso);
+    else monthGroups.push({ label, dates: [iso] });
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="border-collapse text-[11px]" style={{ minWidth: `${140 + dates.length * 56}px` }}>
+        <thead>
+          {/* 월 헤더 */}
+          <tr>
+            <th className="w-[140px] min-w-[140px] bg-gray-50 border border-gray-200 px-3 py-2 text-left text-[10px] text-gray-400 font-semibold">브랜드</th>
+            {monthGroups.map(mg => (
+              <th key={mg.label} colSpan={mg.dates.length}
+                className="bg-gray-50 border border-gray-200 px-2 py-2 text-center text-[10px] font-bold text-gray-600 whitespace-nowrap">
+                {mg.label}
+              </th>
+            ))}
+          </tr>
+          {/* 날짜 헤더 */}
+          <tr>
+            <th className="bg-gray-50 border border-gray-200" />
+            {dates.map(iso => {
+              const { mm, dd, dayKo } = fmtDate(iso);
+              const isToday = iso === todayIso;
+              return (
+                <th key={iso} className={`border border-gray-200 px-1 py-1.5 text-center whitespace-nowrap w-14 ${isToday ? "bg-red-50" : "bg-white"}`}>
+                  <span className={`block text-[11px] font-black ${isToday ? "text-red-500" : "text-gray-700"}`}>{mm}.{dd}</span>
+                  <span className={`block text-[9px] font-medium ${isToday ? "text-red-400" : "text-gray-400"}`}>{dayKo}</span>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {brands.map((brand, bi) => {
+            const dm = cellMap.get(brand);
+            const brandTotal = products.filter(p => p.brand === brand).length;
+            return (
+              <tr key={brand} className={bi % 2 === 0 ? "bg-white" : "bg-gray-50/60"}>
+                {/* 브랜드명 열 */}
+                <td className="border border-gray-200 px-3 py-2 font-bold text-gray-700 uppercase whitespace-nowrap sticky left-0 bg-inherit z-10">
+                  <span className="block text-[11px] leading-tight">{brand}</span>
+                  <span className="block text-[9px] text-gray-400 font-normal">{brandTotal}개</span>
+                </td>
+                {/* 날짜 셀 */}
+                {dates.map(iso => {
+                  const ps = dm?.get(iso) ?? [];
+                  if (ps.length === 0) {
+                    return <td key={iso} className={`border border-gray-100 w-14 ${iso === todayIso ? "bg-red-50/40" : ""}`} />;
+                  }
+                  const hasMarketing = ps.some(p => p.marketingUsage);
+                  const allDone      = ps.every(p => p.status === "입고완료");
+                  const cellCls = hasMarketing
+                    ? "bg-orange-50 border-orange-200"
+                    : allDone
+                    ? "bg-gray-100 border-gray-200"
+                    : "bg-[#1a1a1a]/5 border-gray-200";
+                  const badgeCls = hasMarketing
+                    ? "bg-orange-400 text-white"
+                    : allDone
+                    ? "bg-gray-300 text-gray-600"
+                    : "bg-[#1a1a1a] text-white";
+                  return (
+                    <td key={iso} className={`border w-14 p-1 text-center align-middle ${cellCls}`}>
+                      <button
+                        onClick={() => onSelect(ps[0])}
+                        title={ps.map(p => p.productName).join("\n")}
+                        className="w-full h-full flex items-center justify-center hover:opacity-70 transition-opacity">
+                        <span className={`inline-flex items-center justify-center text-[10px] font-black rounded-full w-5 h-5 leading-none ${badgeCls}`}>
+                          {ps.length}
+                        </span>
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* 날짜 미정 */}
+      {undated.length > 0 && (
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <p className="text-[11px] font-bold text-gray-400 mb-2">일정 미정 ({undated.length}개)</p>
+          <div className="flex flex-wrap gap-1.5">
+            {undated.map(p => (
+              <button key={`${p.productCode}_none`} onClick={() => onSelect(p)}
+                className="text-[10px] text-gray-500 border border-gray-200 rounded px-2 py-0.5 hover:border-gray-400 hover:text-gray-700 transition-colors">
+                {p.brand} · {p.productName.slice(0, 14)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 범례 */}
+      <div className="flex items-center gap-5 mt-5 pt-4 border-t border-gray-100 text-[10px] text-gray-400">
+        <span className="flex items-center gap-1.5"><span className="inline-flex w-5 h-5 rounded-full bg-[#1a1a1a] items-center justify-center text-white text-[9px] font-black">N</span>입고예정</span>
+        <span className="flex items-center gap-1.5"><span className="inline-flex w-5 h-5 rounded-full bg-gray-300 items-center justify-center text-gray-600 text-[9px] font-black">N</span>입고완료</span>
+        <span className="flex items-center gap-1.5"><span className="inline-flex w-5 h-5 rounded-full bg-orange-400 items-center justify-center text-white text-[9px] font-black">N</span>마케팅 활용</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── 타임라인 뷰 ─────────────────────────────────────────────────────────────
 function TimelineView({ products, onSelect }: {
   products: ArrivalProduct[]; onSelect: (p: ArrivalProduct) => void;
@@ -1249,19 +1378,19 @@ function TimelineView({ products, onSelect }: {
               </div>
             ) : (
               <div className="relative">
-                {/* 세로 연결선: 날짜열(4.5rem) + 도트열(1.5rem) 절반 = 5.25rem */}
-                <div className="absolute left-[5.25rem] sm:left-[6.25rem] top-2 bottom-2 w-px bg-gray-200 pointer-events-none" />
+                {/* 세로 연결선: 날짜열(3.5rem) + 도트열(1.5rem) 절반 */}
+                <div className="absolute left-[4.25rem] sm:left-[5rem] top-2 bottom-2 w-px bg-gray-200 pointer-events-none" />
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {dates.map(([dateKey, items]) => {
                     const { mm, dd, dayKo } = fmtDate(dateKey);
                     return (
                       <div key={dateKey} className="flex items-start gap-0">
                         {/* 날짜 레이블 열 */}
-                        <div className="w-[4.5rem] sm:w-[5.5rem] shrink-0 flex flex-col items-end pr-2 pt-0.5">
-                          <span className="text-[17px] sm:text-[19px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
-                          <span className="text-[9px] text-gray-500 font-semibold mt-0.5">{dayKo}요일</span>
-                          <span className="text-[9px] text-gray-400">{items.length}개</span>
+                        <div className="w-[3.5rem] sm:w-[4rem] shrink-0 flex flex-col items-end pr-2 pt-0.5">
+                          <span className="text-[14px] sm:text-[15px] font-black text-[#1a1a1a] leading-none">{mm}.{dd}</span>
+                          <span className="text-[8px] text-gray-500 font-semibold mt-0.5">{dayKo}요일</span>
+                          <span className="text-[8px] text-gray-400">{items.length}개</span>
                         </div>
 
                         {/* 도트 열 */}
@@ -1281,7 +1410,7 @@ function TimelineView({ products, onSelect }: {
                                   className="shrink-0 w-[96px] sm:w-[108px] text-left hover:opacity-75 transition-opacity"
                                 >
                                   <div className={`w-full aspect-[3/4] border ${p.marketingUsage ? "border-orange-400 border-2" : "border-[#979797]"}`}>
-                                    <div className="relative w-full h-full overflow-hidden bg-[#f0eeeb]">
+                                    <div className="relative w-full h-full overflow-hidden bg-white">
                                       <MiniThumb product={p} />
                                       <span className={`absolute top-1 left-1 text-[7px] font-bold px-1 py-0.5 rounded leading-none ${meta.cls}`}>
                                         {meta.label}
@@ -1331,6 +1460,7 @@ export default function ArrivalTimeline() {
   const [filterStatus,    setFilterStatus]    = useState("all");
   const [searchQuery,     setSearchQuery]     = useState("");
   const [filterMarketing, setFilterMarketing] = useState(false);
+  const [filterOpen,      setFilterOpen]      = useState(false);
 
   useEffect(() => {
     fetch("/api/arrival")
@@ -1406,7 +1536,7 @@ export default function ArrivalTimeline() {
 
   // 날짜별 모드로 전환 시 오늘과 가장 가까운 날짜 그룹으로 스크롤
   useEffect(() => {
-    if (groupMode !== "date" || viewMode === "calendar" || grouped.length === 0) return;
+    if (groupMode !== "date" || viewMode === "calendar" || viewMode === "gantt" || grouped.length === 0) return;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const target = grouped.find(([key]) => {
@@ -1445,93 +1575,138 @@ export default function ArrivalTimeline() {
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
-      {/* ── 페이지 타이틀 ── */}
-      <div className="px-6 sm:px-10 lg:px-16 pt-8 pb-5">
-        <p className="text-[10px] tracking-[0.25em] text-gray-400 uppercase font-semibold mb-1">WORKUP</p>
-        <h1 className="text-[22px] sm:text-[26px] font-black text-[#1a1a1a] tracking-tight">입고 스케쥴</h1>
-      </div>
+      {/* ── 필터 + 뷰 전환 (sticky) ── */}
+      <div className="sticky top-0 z-30 px-3 sm:px-8 lg:px-14 pt-3 pb-1.5 bg-[#fafaf8]">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-3 py-2">
 
-      {/* ── 필터 + 뷰 전환 ── */}
-      <div className="sticky top-0 z-30 px-6 sm:px-10 lg:px-16 py-2.5 bg-[#fafaf8]">
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 px-4 py-2.5">
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* ── Row 1: 타이틀 / 검색 / 필터토글(모바일) / 뷰버튼 / 개수 ── */}
+          <div className="flex items-center gap-1.5">
+            {/* 타이틀 (모바일에서 검색 왼쪽) */}
+            <span className="text-[13px] font-black text-[#1a1a1a] tracking-tight shrink-0 mr-1 hidden sm:block">입고 스케쥴</span>
+
+            {/* 검색 */}
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="상품명 / 코드"
-              className="border border-gray-300 px-3 py-1.5 text-[13px] rounded-lg focus:outline-none focus:border-[#1a1a1a] w-64 text-gray-800 placeholder:text-gray-400" />
-            <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)}
-              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-              <option value="all">브랜드</option>
-              {brands.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-              <option value="all">카테고리</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-              className="border border-gray-300 px-2 py-1.5 text-[13px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
-              <option value="all">상태</option>
-              <option value="입고예정">입고예정</option>
-              <option value="입고완료">입고완료</option>
-              <option value="입고지연">입고지연</option>
-              <option value="일정미정">일정미정</option>
-            </select>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none ml-2 bg-gray-100 rounded-lg px-2.5 py-1.5">
-              <input
-                type="checkbox"
-                checked={filterMarketing}
-                onChange={e => setFilterMarketing(e.target.checked)}
-                className="w-3.5 h-3.5 accent-orange-500 cursor-pointer"
-              />
-              <span className={`text-[12px] font-semibold ${filterMarketing ? "text-orange-500" : "text-gray-500"}`}>마케팅 활용</span>
-            </label>
-            {hasFilter && (
-              <button onClick={resetFilters} className="text-[12px] text-gray-500 hover:text-[#1a1a1a] underline underline-offset-2 font-medium">초기화</button>
-            )}
+              className="border border-gray-200 px-2.5 py-1 text-[12px] rounded-lg focus:outline-none focus:border-[#1a1a1a] w-full sm:w-40 text-gray-800 placeholder:text-gray-400 min-w-0" />
 
-            <div className="ml-auto flex items-center gap-2">
-              {/* 그룹 기준 (캘린더·타임라인 뷰 제외) */}
-              {viewMode !== "calendar" && viewMode !== "timeline" && (
-                <div className="hidden sm:flex items-center gap-1 border border-gray-200 rounded-lg p-0.5">
+            {/* 모바일 필터 토글 버튼 */}
+            <button
+              onClick={() => setFilterOpen(v => !v)}
+              className={`sm:hidden flex items-center gap-1 px-2.5 py-1 text-[12px] font-semibold rounded-lg border transition-all shrink-0 ${
+                filterOpen || hasFilter ? "bg-[#1a1a1a] text-white border-[#1a1a1a]" : "border-gray-200 text-gray-600"
+              }`}>
+              필터{hasFilter ? ` (${[filterBrand!=="all",filterCategory!=="all",filterStatus!=="all",filterMarketing].filter(Boolean).length})` : ""}
+            </button>
+
+            {/* 데스크탑 인라인 필터 */}
+            <div className="hidden sm:flex items-center gap-1.5 flex-1">
+              <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)}
+                className="border border-gray-200 px-2 py-1 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+                <option value="all">브랜드</option>
+                {brands.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+                className="border border-gray-200 px-2 py-1 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+                <option value="all">카테고리</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                className="border border-gray-200 px-2 py-1 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700">
+                <option value="all">상태</option>
+                <option value="입고예정">입고예정</option>
+                <option value="입고완료">입고완료</option>
+                <option value="입고지연">입고지연</option>
+                <option value="일정미정">일정미정</option>
+              </select>
+              <label className="flex items-center gap-1 cursor-pointer select-none bg-gray-50 rounded-lg px-2 py-1">
+                <input type="checkbox" checked={filterMarketing} onChange={e => setFilterMarketing(e.target.checked)}
+                  className="w-3 h-3 accent-orange-500 cursor-pointer" />
+                <span className={`text-[11px] font-semibold whitespace-nowrap ${filterMarketing ? "text-orange-500" : "text-gray-500"}`}>마케팅</span>
+              </label>
+              {hasFilter && (
+                <button onClick={resetFilters} className="text-[11px] text-gray-400 hover:text-[#1a1a1a] underline underline-offset-2 whitespace-nowrap">초기화</button>
+              )}
+            </div>
+
+            <div className="ml-auto flex items-center gap-1.5 shrink-0">
+              {/* 그룹 기준 (sm+, 캘린더·타임라인·간트 제외) */}
+              {viewMode !== "calendar" && viewMode !== "timeline" && viewMode !== "gantt" && (
+                <div className="hidden sm:flex items-center gap-0.5 border border-gray-200 rounded-lg p-0.5">
                   {([ ["month","월별"], ["date","날짜별"], ["category","카테고리별"], ["brand","브랜드별"] ] as [GroupMode, string][]).map(([mode, label]) => (
                     <button key={mode} onClick={() => setGroupMode(mode)}
-                      className={`px-2.5 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${
-                        groupMode === mode ? "bg-gray-800 text-white" : "text-gray-600 hover:text-[#1a1a1a]"
+                      className={`px-2 py-0.5 text-[11px] font-semibold rounded-md transition-all whitespace-nowrap ${
+                        groupMode === mode ? "bg-gray-800 text-white" : "text-gray-500 hover:text-[#1a1a1a]"
                       }`}>
                       {label}
                     </button>
                   ))}
                 </div>
               )}
-              {/* 뷰 전환: 이미지 / 타임라인 / 캘린더(PC) / 리스트 */}
-              <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5">
+              {/* 뷰 전환 버튼 */}
+              <div className="flex items-center gap-0.5 border border-gray-200 rounded-lg p-0.5">
                 <button onClick={() => setViewMode("grid")}
-                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "grid" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
-                  ▦ 이미지
+                  className={`px-2 py-0.5 text-[11px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "grid" ? "bg-[#1a1a1a] text-white" : "text-gray-500 hover:text-[#1a1a1a]"}`}>
+                  ▦<span className="hidden sm:inline"> 이미지</span>
                 </button>
                 <button onClick={() => setViewMode("timeline")}
-                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "timeline" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
-                  ↓ 타임라인
+                  className={`px-2 py-0.5 text-[11px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "timeline" ? "bg-[#1a1a1a] text-white" : "text-gray-500 hover:text-[#1a1a1a]"}`}>
+                  ↓<span className="hidden sm:inline"> 타임라인</span>
                 </button>
+                {/* 간트 버튼: 개선 예정, 임시 비노출 */}
+                {false && <button onClick={() => setViewMode("gantt")} className="hidden">▬ 간트</button>}
                 <button onClick={() => setViewMode("calendar")}
-                  className={`hidden sm:block px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "calendar" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
-                  ⊞ 캘린더
+                  className={`hidden sm:block px-2 py-0.5 text-[11px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "calendar" ? "bg-[#1a1a1a] text-white" : "text-gray-500 hover:text-[#1a1a1a]"}`}>
+                  ⊞<span className="hidden sm:inline"> 캘린더</span>
                 </button>
                 <button onClick={() => setViewMode("list")}
-                  className={`px-3 py-1 text-[12px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "list" ? "bg-[#1a1a1a] text-white" : "text-gray-600 hover:text-[#1a1a1a]"}`}>
-                  ☰ 리스트
+                  className={`px-2 py-0.5 text-[11px] font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === "list" ? "bg-[#1a1a1a] text-white" : "text-gray-500 hover:text-[#1a1a1a]"}`}>
+                  ☰<span className="hidden sm:inline"> 리스트</span>
                 </button>
               </div>
-              <span className="text-[12px] text-gray-600 font-medium shrink-0">{filtered.length}개</span>
+              <span className="text-[11px] text-gray-500 font-medium">{filtered.length}개</span>
             </div>
           </div>
+
+          {/* ── Row 2: 모바일 펼침 필터 ── */}
+          {filterOpen && (
+            <div className="sm:hidden mt-2 pt-2 border-t border-gray-100 flex flex-wrap gap-2">
+              <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)}
+                className="border border-gray-200 px-2.5 py-1.5 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700 flex-1 min-w-[100px]">
+                <option value="all">브랜드 전체</option>
+                {brands.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+                className="border border-gray-200 px-2.5 py-1.5 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700 flex-1 min-w-[100px]">
+                <option value="all">카테고리 전체</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                className="border border-gray-200 px-2.5 py-1.5 text-[12px] rounded-lg bg-white focus:outline-none focus:border-[#1a1a1a] text-gray-700 flex-1 min-w-[100px]">
+                <option value="all">상태 전체</option>
+                <option value="입고예정">입고예정</option>
+                <option value="입고완료">입고완료</option>
+                <option value="입고지연">입고지연</option>
+                <option value="일정미정">일정미정</option>
+              </select>
+              <div className="flex items-center gap-2 w-full">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none bg-gray-50 rounded-lg px-2.5 py-1.5">
+                  <input type="checkbox" checked={filterMarketing} onChange={e => setFilterMarketing(e.target.checked)}
+                    className="w-3.5 h-3.5 accent-orange-500 cursor-pointer" />
+                  <span className={`text-[12px] font-semibold ${filterMarketing ? "text-orange-500" : "text-gray-500"}`}>마케팅 활용</span>
+                </label>
+                {hasFilter && (
+                  <button onClick={resetFilters} className="text-[12px] text-gray-400 hover:text-[#1a1a1a] underline underline-offset-2 font-medium">초기화</button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         {/* 범례 */}
-        <p className="text-[10px] text-gray-400 mt-1.5 text-right pr-1">* 마케팅 활용 제품 = 주황 테두리 &nbsp;/&nbsp; 캘린더 보기 = 모바일 미지원</p>
+        <p className="text-[9px] text-gray-400 mt-1 text-right pr-0.5">* 마케팅 = 주황 테두리 / 캘린더 = 모바일 미지원</p>
       </div>
 
       {/* ── 본문 ── */}
-      <div className="px-6 sm:px-10 lg:px-16 py-6">
+      <div className="px-3 sm:px-8 lg:px-14 py-4">
         {filtered.length === 0 ? (
           <div className="py-32 text-center">
             <p className="text-[13px] text-gray-400">조건에 맞는 상품이 없습니다.</p>
@@ -1543,6 +1718,8 @@ export default function ArrivalTimeline() {
           <ListView grouped={grouped} groupMode={groupMode} onSelect={setSelectedProduct} />
         ) : viewMode === "timeline" ? (
           <TimelineView products={filtered} onSelect={setSelectedProduct} />
+        ) : viewMode === "gantt" ? (
+          <GanttView products={filtered} onSelect={setSelectedProduct} />
         ) : (
           <CalendarView products={filtered} onSelect={setSelectedProduct} />
         )}
