@@ -245,7 +245,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
       <div
         className="bg-white w-full max-w-[1025px] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
@@ -342,7 +342,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
               <table className="w-full border-collapse">
                 <tbody>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드</td>
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드/코드</td>
                     <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
                       <span className="font-semibold">{product.brand}</span>
                       {product.productCode && <span className="text-gray-300 mx-1.5">|</span>}
@@ -393,12 +393,22 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
             </div>
 
             {product.marketingUsage && (
-              <div className="border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] tracking-widest text-orange-400 uppercase font-bold shrink-0">마케팅</span>
-                  <span className="text-[13px] text-orange-700 font-semibold">{product.marketingUsage}</span>
+              <>
+                {/* 모바일: 뱃지 */}
+                <div className="sm:hidden">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 border border-orange-300 rounded-full text-[11px] text-orange-600 font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
+                    마케팅 · {product.marketingUsage}
+                  </span>
                 </div>
-              </div>
+                {/* PC: 박스 */}
+                <div className="hidden sm:block border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] tracking-widest text-orange-400 uppercase font-bold shrink-0">마케팅</span>
+                    <span className="text-[13px] text-orange-700 font-semibold">{product.marketingUsage}</span>
+                  </div>
+                </div>
+              </>
             )}
 
             {product.description && (
