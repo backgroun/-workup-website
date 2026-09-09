@@ -248,7 +248,7 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
       <div
-        className="bg-white w-full max-w-xl flex flex-col rounded-2xl overflow-hidden shadow-2xl"
+        className="bg-white w-full max-w-[1025px] flex flex-col rounded-2xl overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
@@ -269,76 +269,128 @@ function ProductModal({ product, onClose }: { product: ArrivalProduct; onClose: 
 
         {/* 본문 (스크롤) */}
         <div className="overflow-y-auto">
-          <div className="flex flex-col gap-0">
+          <div className="flex flex-col sm:flex-row gap-0 sm:items-start">
             {/* 이미지 영역 */}
-            <div className="w-full">
-              <div className="px-4 pt-2 pb-2 sm:px-6 sm:pt-2 sm:pb-3">
-                <ImageGallery product={product} aspectCls="aspect-square sm:aspect-[5/4]" />
+            <div className="w-full sm:w-[520px] shrink-0">
+              <div className="px-4 pt-2 pb-2 sm:px-4 sm:pt-4 sm:pb-4">
+                <ImageGallery product={product} aspectCls="aspect-square sm:aspect-[3/4]" />
               </div>
             </div>
 
             {/* 정보 영역 */}
-            <div className="flex-1 flex flex-col gap-3 px-4 sm:px-6 pb-6 pt-1 min-w-0">
-            {/* 제품명 */}
-            <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1a1a1a] leading-snug">{product.productName}</h2>
+            <div className="flex-1 flex flex-col gap-3 px-4 sm:px-4 sm:pr-6 pb-6 pt-1 sm:pt-4 min-w-0 sm:border-l sm:border-gray-100">
 
-            {/* 스펙 테이블 */}
-            <table className="w-full border-collapse">
-              <tbody>
-                {/* 브랜드 | 코드 */}
-                <tr className="border-b border-gray-100">
-                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드</td>
-                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
-                    <span className="font-semibold">{product.brand}</span>
-                    {product.productCode && <span className="text-gray-300 mx-1.5">|</span>}
-                    <span className="font-mono text-gray-500">{product.productCode}</span>
-                  </td>
-                </tr>
-                {/* 상태 + 입고일 한 줄 */}
-                <tr className="border-b border-gray-100">
-                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상태</td>
-                  <td className="py-2 text-[12px] align-middle">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[#1a1a1a]">{full}</span>
-                      <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
-                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
-                </tr>
-                {(product.productType || product.newArrivalType) && (
+            {/* ── PC 레이아웃 (sm: 이상) ── */}
+            <div className="hidden sm:block">
+              <p className="text-[11px] tracking-[0.2em] text-gray-400 uppercase font-semibold mb-1">{product.brand}</p>
+              <h2 className="text-[22px] font-bold text-[#1a1a1a] leading-snug mb-4">{product.productName}</h2>
+              <table className="w-full border-collapse">
+                <tbody>
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">구분</td>
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-24 align-middle">상태</td>
+                    <td className="py-2.5 align-middle"><span className={`inline-block text-[12px] px-2.5 py-1 rounded-full font-bold ${meta.cls}`}>{meta.label}</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">코드</td>
+                    <td className="py-2.5 font-mono text-[13px] text-[#1a1a1a] align-middle">{product.productCode}</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
+                    <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
+                  </tr>
+                  {product.productType && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상품구분</td>
+                      <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{product.productType}</td>
+                    </tr>
+                  )}
+                  {product.newArrivalType && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">신상구분</td>
+                      <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{product.newArrivalType}</td>
+                    </tr>
+                  )}
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
+                    <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급가</td>
+                    <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">판매가</td>
+                    <td className="py-2.5 text-[13px] font-bold text-[#1a1a1a] align-middle">{product.price > 0 ? fmtPrice(product.price) : "—"}</td>
+                  </tr>
+                  {product.quantity != null && product.quantity > 0 && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
+                      <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
+                    </tr>
+                  )}
+                  <tr className="last:border-0">
+                    <td className="py-2.5 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">입고일</td>
+                    <td className="py-2.5 text-[13px] text-[#1a1a1a] align-middle">{full}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── 모바일 레이아웃 (sm: 미만) ── */}
+            <div className="sm:hidden">
+              <h2 className="text-[18px] font-bold text-[#1a1a1a] leading-snug mb-3">{product.productName}</h2>
+              <table className="w-full border-collapse">
+                <tbody>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap w-20 align-middle">브랜드</td>
                     <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
-                      {[product.productType, product.newArrivalType].filter(Boolean).join(" / ")}
+                      <span className="font-semibold">{product.brand}</span>
+                      {product.productCode && <span className="text-gray-300 mx-1.5">|</span>}
+                      <span className="font-mono text-gray-500">{product.productCode}</span>
                     </td>
                   </tr>
-                )}
-                <tr className="border-b border-gray-100">
-                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
-                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
-                </tr>
-                {/* 공급가 / 판매가 한 줄 */}
-                <tr className="border-b border-gray-100">
-                  <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급/판매가</td>
-                  <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-gray-500">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</span>
-                      <span className="text-gray-300">/</span>
-                      <span className="font-bold">{product.price > 0 ? fmtPrice(product.price) : "—"}</span>
-                    </div>
-                  </td>
-                </tr>
-                {product.quantity != null && product.quantity > 0 && (
                   <tr className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
-                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">상태</td>
+                    <td className="py-2 text-[12px] align-middle">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[#1a1a1a]">{full}</span>
+                        <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-bold ${meta.cls}`}>{meta.label}</span>
+                      </div>
+                    </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">카테고리</td>
+                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.category || "—"}</td>
+                  </tr>
+                  {(product.productType || product.newArrivalType) && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">구분</td>
+                      <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{[product.productType, product.newArrivalType].filter(Boolean).join(" / ")}</td>
+                    </tr>
+                  )}
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">컬러</td>
+                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">{product.color || "—"}</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">공급/판매가</td>
+                    <td className="py-2 text-[12px] text-[#1a1a1a] align-middle">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-gray-500">{product.supplyPrice && product.supplyPrice > 0 ? fmtPrice(product.supplyPrice) : "—"}</span>
+                        <span className="text-gray-300">/</span>
+                        <span className="font-bold">{product.price > 0 ? fmtPrice(product.price) : "—"}</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {product.quantity != null && product.quantity > 0 && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-2 pr-4 text-[11px] tracking-widest text-gray-400 uppercase font-semibold whitespace-nowrap align-middle">수량</td>
+                      <td className="py-2 text-[12px] text-[#1a1a1a] align-middle font-semibold">{product.quantity.toLocaleString("ko-KR")}개</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {product.marketingUsage && (
               <div className="border border-orange-300 bg-orange-50 rounded-lg px-3 py-2">
